@@ -60,41 +60,6 @@ def main():
         pass
 
     Window.run_all()
-    #
-    # # # Loop until the user closes the window
-    # # # TODO refine timing considering time used for processing main loop
-    #
-    # #
-    # # # set frame rate
-    # # framerate = 30
-    # # glfw.swap_interval(int(60 / framerate))
-    # # points['vertex'] = points['vertex']*0.5
-    # # buffer2 = Buffer(points, index)
-    # # program2 = Shader('sample','small')
-    # # renderer2 = Renderer(program, buffer2)
-    #
-    # all_closed = 2
-    #
-    # # while all_closed is not 0:
-    # #     # Make the window's context current
-    # #
-    # #
-    # #     # pre-draw
-    # #     renderer.clear()
-    # #     # set new value
-    # #     renderer.set_variable('u_color',(0,alpha,1,1))
-    # #     # draw
-    # #     renderer.draw()
-    # #     # Renderer.drawall()
-    # #     # post_draw
-    # #     # Swap front and back buffers
-    # #     glfw.swap_buffers(window)
-    # #     # Poll for and process events
-    # #     glfw.poll_events()
-    #
-    # Shader.deleteProgram()
-    #
-    # glfw.terminate()
 
 
 
