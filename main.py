@@ -1,5 +1,5 @@
 import glfw
-import glfw.GLFW as GLFW
+from glfw.GLFW import *
 from OpenGL.GL import *
 
 import numpy as np
@@ -13,55 +13,46 @@ from renderer import Renderer
 from gloverride import *
 from window import Window
 
-def main():
-    # Initialize the library
-    Window.glfw_init()
+# Initialize the library
+Window.glfw_init()
 
-    # Create a windowed mode window and its OpenGL context
-    window = Window(640, 480, "Hello World", None, None)
-    window2 = Window(1000,300,'second_screen',None,None)
-    @window.init
-    def init():
-        # vertex, index buffers
-        points = np.zeros(4, [('vertex', np.float32, 2)])
-        points['vertex'] = [-1, 1], [-1, -1], [1, 1], [1, -1]
-        index = np.array([0, 1, 2, 2, 1, 3], np.uint32)
+# Create a windowed mode window and its OpenGL context
+window = Window(640, 480, "Hello World", None, None)
+# window2 = Window(1000,300,'second_screen',None, None)
 
-        buffer = Buffer(points, index)
-        # shader
-        program = Shader('sample', 'sample_quad')
+@window.init
+def init():
+    # vertex, index buffers
+    points = np.zeros(4, [('vertex', np.float32, 2)])
+    points['vertex'] = [-1, 1], [-1, -1], [1, 1], [1, -1]
+    index = np.array([0, 1, 2, 2, 1, 3], np.uint32)
 
-        # renderer
-        renderer = Renderer(program, buffer,'render1')
+    buffer = Buffer(points, index)
+    # shader
+    program = Shader('sample', 'sample_quad')
 
-        alpha = 0
-        increment = 0.05
+    # renderer
+    renderer = Renderer(program, buffer,'render1')
 
-    @window2.init
-    def init():
-        pass
+    alpha = 0
+    increment = 0.05
 
-    @window.draw
-    def draw():
+@window.draw
+def draw():
 
-        renderer.clear()
-        # set new value
-        renderer.set_variable('u_color', (0, alpha, 1, 1))
-        # draw
-        renderer.draw()
+    renderer.clear()
+    # set new value
+    renderer.set_variable('u_color', (0, alpha, 1, 1))
+    # draw
+    renderer.draw()
 
-        # animation
-        if alpha > 1 or alpha < 0:
-            increment = -increment
-        alpha += increment
-
-    @window2.draw
-    def draw():
-        pass
-
-    Window.run_all()
+    # animation
+    if alpha > 1 or alpha < 0:
+        increment = -increment
+    alpha += increment
 
 
-
-if __name__ == "__main__":
-    main()
+# Window.print_framerate(True)
+Window.run_all2()
+# Window.run_all()
+print(window,type(window))
