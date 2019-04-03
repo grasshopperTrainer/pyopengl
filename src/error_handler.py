@@ -1,7 +1,18 @@
 import inspect
+import copy
 
 def print_message(text:str, header:str = ''):
-
+    """
+    print with info about function and class of place
+    of messege transmition.
+    Will disturb destroying origin of weakref proxy.
+    TODO think of relationship between inspect and weakref proxy
+    I think that's because of 'inspect'.
+    So use only for debuging before it is fixed for general use.
+    :param text: comment to print
+    :param header: category indication to print
+    :return: None
+    """
     # format header
     header = header.upper()
     # construct file path

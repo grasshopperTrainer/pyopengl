@@ -5,6 +5,15 @@ from shader import Shader
 from gloverride import *
 
 class Renderer:
+    """
+    Pattern sould be determined:
+    1. Renderer instance contain only one shader
+    Problem is the buffers. Should Renderer contain one buffers for each kinds
+    or could it contain multiple buffers and switch between them while rendering?
+
+    For now leave all be single: sinble shader, single vao,vbo,vio.
+
+    """
     _renderers = {}
     def __init__(self, shader: Shader, buffer: Buffer, name: str = None):
         self._shader = shader
@@ -18,8 +27,8 @@ class Renderer:
         self.context = glfw.get_current_context()
         self._mode = GL_TRIANGLES
 
-
     def draw(self, func = None):
+        # print(self._shader.shader,self._buffer.array,self._buffer.indexbuffer)
         glUseProgram(self._shader.shader)
         glBindVertexArray(self._buffer.array)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._buffer.indexbuffer)
@@ -32,6 +41,10 @@ class Renderer:
         else:
             func()
 
+    def rebind(self):
+        self._buffer.rebuild_vertexarray()
+
+        pass
     @property
     def name(self):
         return self._name
@@ -66,3 +79,6 @@ class Renderer:
     def mode(self, value):
         if isinstance(value, int):
             self._mode = value
+
+    def signal(self):
+        print(self)

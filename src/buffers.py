@@ -8,12 +8,39 @@ class Buffer:
                  vb_glusage = GL_STATIC_DRAW, ib_glusage = GL_STATIC_DRAW):
         self._vao = glGenVertexArrays(1)
         glBindVertexArray(self._vao)
+        self._vb_data = vb_data
+        self._vb_glusage = vb_glusage
+        self._ib_glusage = ib_glusage
+        self._ib_data = ib_data
 
-        self._vbo = _Vertexbuffer(vb_data, GL_ARRAY_BUFFER, vb_glusage).glindex
-        self._ibo = _Indexbuffer(ib_data, GL_ELEMENT_ARRAY_BUFFER, ib_glusage).glindex
+        self._vbo = glGenBuffers(1)
+        _Vertexbuffer(vb_data, GL_ARRAY_BUFFER, vb_glusage,self._vbo)
+        self._ibo = glGenBuffers(1)
+        _Indexbuffer(ib_data, GL_ELEMENT_ARRAY_BUFFER, ib_glusage,self._ibo)
 
         # unbind
+        self.unbind()
+
+    def unbind(self):
+        glBindBuffer(GL_ARRAY_BUFFER,0)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0)
         glBindVertexArray(0)
+
+    def rebuild_vertexarray(self):
+        """
+        in glfw context sharing, vertex array is not shared.
+        This fact is crucial especially for CORE_PROFILE because
+        giving vertex array is must.
+        This method is to rebuild vertex array according to the vertex buffer
+        stored here.
+        :return: None
+        """
+        vao = glGenVertexArrays(1)
+        glBindVertexArray(vao)
+
+        _Vertexbuffer(self._vb_data,GL_ARRAY_BUFFER,self._vb_glusage,self._vbo)
+
+        self.unbind()
 
     @property
     def array(self):
@@ -22,6 +49,10 @@ class Buffer:
     @property
     def indexbuffer(self):
         return self._ibo
+
+    @property
+    def vertexbuffer(self):
+        return self._vbo
 
 class _Buffer:
 
@@ -73,15 +104,13 @@ class _Buffer:
 
 class _Vertexbuffer(_Buffer):
 
-    def __init__(self, data: np.ndarray, gltarget, glusage):
+    def __init__(self, data: np.ndarray, gltarget, glusage, vbo):
         # type check
         super().__init__(data, gltarget,glusage)
 
         datasize = data.size * data.itemsize
 
-        buffer = glGenBuffers(1)
-        self.glindex = buffer
-        glBindBuffer(gltarget, buffer)
+        glBindBuffer(gltarget, vbo)
         glBufferData(gltarget, datasize, data, glusage)
 
         # set attribute
@@ -124,15 +153,13 @@ class _Vertexbuffer(_Buffer):
 
 class _Indexbuffer(_Buffer):
 
-    def __init__(self, data: np.ndarray, gltarget, glusage):
+    def __init__(self, data: np.ndarray, gltarget, glusage, ibo):
         # input type checker
         super().__init__(data,gltarget,glusage)
 
         datasize = data.size * data.itemsize
 
-        buffer = glGenBuffers(1)
-        self.glindex = buffer
-        glBindBuffer(gltarget, buffer)
+        glBindBuffer(gltarget, ibo)
         glBufferData(gltarget, datasize, data, glusage)
 
         # # unbind

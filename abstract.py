@@ -33,7 +33,7 @@ def event():
         pass
 
 # main function for runnging frame draw
-renderer.run()
+renderer.thread_run()
 
 
 # how to manage co rutine?
