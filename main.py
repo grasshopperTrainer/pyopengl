@@ -19,13 +19,10 @@ Window.glfw_init()
 # Create a windowed mode window and its OpenGL context
 window = Window(640, 480, "Hello World", None, None)
 window2 = Window(1000,300,'second_screen',None, window)
-window3 = Window(2000,500,'third', None, window)
-print(window.glfw_window)
-print(window2.glfw_window)
-print(window3.glfw_window)
-# wins = []
-# for i in range(3):
-#     wins.append(Window(1000,50,str(i),None,None))
+# window3 = Window(2000,500,'third', None, None)
+# window4 = Window(500,1000,'fourth',None,None)
+# window3.follow_close(window, window2)
+# window4.follow_close(window3)
 
 @window.init
 def init():
@@ -48,37 +45,75 @@ def draw():
     renderer.set_variable('u_color',(1,alpha,1,1))
     renderer.draw()
     alpha += increment
+
     if alpha > 1:
         increment = -increment
     elif alpha < 0:
         increment = -increment
+    # print(id(alpha))
+    # print('alpha from window1: ', alpha)
+    # alpha += 1
+    # print(self._vars)
+    print(alpha)
+    # print(ceta)
 
 @window2.init
 def init():
-    a = 10
-
-@window2.event
-def event():
-    if window.key_pressed(GLFW.GLFW_KEY_ESCAPE):
-        window.close_window()
+    alpha = 'ddd'
+    ceta = 'ceta'
 
 @window2.draw
 def draw():
-    renderer.clear()
-    renderer.set_variable('u_color',(1,1,alpha,1))
-    renderer.draw()
-    # print(windows.window.name)
-    # print(window.keys_pressed)
-    # print(window.keys_pressed)
-    print(windows.window2)
+    # print(id(alpha))
+    print(alpha)
+    # ddd
+    print(d)
 
-@window3.draw
-def draw():
-    # print(increment)
-    pass
+
+# @window2.init
+# def init():
+#     a = 10
+#
+#
+# @window2.keyboard.press
+# def event():
+#     if window.keyboard.key_pressed(GLFW.GLFW_KEY_A, GLFW.GLFW_KEY_E):
+#         window.close_window_concequently()
+#
+# @window2.mouse.move
+# def event():
+#     print('mouse moving')
+# @window2.mouse.enter
+# def event():
+#     print('on')
+# @window2.mouse.exit
+# def event():
+#     print('out')
+# @window2.mouse.click
+# def event():
+#     print(window.mouse.button_pressed)
+# @window2.mouse.scroll
+# def event():
+#     print('scrolling')
+#     print(window.mouse.scroll_offset)
+#
+# @window2.draw
+# def draw():
+#     renderer.clear()
+#     renderer.set_variable('u_color',(1,1,alpha,1))
+#     renderer.draw()
+#     # print(windows.window.name)
+#     # print(window.keys_pressed)
+#     # print(window.keys_pressed)
+#     # print(windows)
+#
+# @window3.draw
+# def draw():
+#     # print(increment)
+#     pass
 
 
 Window.run_single_thread()
 # Window.run_multi_thread()
 
-print(window,type(window))
+# print(window,type(window))

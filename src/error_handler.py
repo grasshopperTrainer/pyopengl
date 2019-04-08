@@ -1,7 +1,7 @@
 import inspect
 import copy
 
-def print_message(text:str, header:str = ''):
+def print_message(text:str, header:str = '', where_from = None, var_info = None):
     """
     print with info about function and class of place
     of messege transmition.
@@ -16,27 +16,37 @@ def print_message(text:str, header:str = ''):
     # format header
     header = header.upper()
     # construct file path
-    path = ''
-    stack = inspect.stack()
-    for i,frameinfo in enumerate(stack):
+    if where_from is None:
+        path = ''
+        stack = inspect.stack()
+        for i,frameinfo in enumerate(stack):
 
-        if i is not 0:
-            path = f'.{frameinfo[3]}{path}'
-        argvalues = inspect.getargvalues(frameinfo[0])
-        if 'self' in argvalues[0]:
-            instance = argvalues[3]['self']
-            path = f'{instance.__class__.__name__}{path}'
-            break
-        elif 'cls' in argvalues[0]:
-            instance = argvalues[3]['cls']
-            path = f'{instance.__name__}{path}'
-            break
+            if i is not 0:
+                path = f'.{frameinfo[3]}{path}'
+            argvalues = inspect.getargvalues(frameinfo[0])
+            if 'self' in argvalues[0]:
+                instance = argvalues[3]['self']
+                path = f'{instance.__class__.__name__}{path}'
+                break
+            elif 'cls' in argvalues[0]:
+                instance = argvalues[3]['cls']
+                path = f'{instance.__name__}{path}'
+                break
+    else:
+        path = where_from
+
     #construct information about input variables
-    fullvarinfo = inspect.getargvalues(inspect.currentframe().f_back)
-    varvalue = [fullvarinfo[3][i] for i in fullvarinfo[0]]
-    varinfo = []
-    for name, value in zip(fullvarinfo[0], varvalue):
-        varinfo.append(f'{name} : {str(value)}')
+    if var_info is None:
+        fullvarinfo = inspect.getargvalues(inspect.currentframe().f_back)
+        varvalue = [fullvarinfo[3][i] for i in fullvarinfo[0]]
+        varinfo = []
+        for name, value in zip(fullvarinfo[0], varvalue):
+            varinfo.append(f'{name} : {str(value)}')
+    else:
+        if isinstance(var_info, (tuple, list)):
+            varinfo = var_info
+        else:
+            varinfo = [var_info]
 
 
     head = f'[from] {path}: '

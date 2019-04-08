@@ -5,6 +5,7 @@ from OpenGL.GL import *
 from time import sleep
 from time import time
 
+from functools import reduce
 import threading
 import inspect
 import weakref
@@ -18,15 +19,127 @@ from error_handler import *
 from gltracker import GLtracker
 from gloverride import *
 from input_dictionary import _Input_dicts
+from virtual_scope import Virtual_scope
 
 
-class _Context_scope:
+class _Mouse:
 
-    def __setattr__(self, key, value):
-        self.__dict__[key] = value
+    def __init__(self, window):
+        self._window = window
 
-    def __getattr__(self, item):
+        self._button_pressed = []
+        self._scroll_offset = []
+        self._flag_cursor_onscreen = False
+        self._event_mouse_move = 'pass'
+        self._event_mouse_enter = 'pass'
+        self._event_mouse_exit = 'pass'
+        self._event_mouse_click = 'pass'
+        self._event_mouse_scroll = 'pass'
+
+        glfw.set_cursor_pos_callback(self._window.glfw_window, self._callback_mouse_move)
+        glfw.set_cursor_enter_callback(self._window.glfw_window, self._callback_mouse_enter)
+        glfw.set_mouse_button_callback(self._window.glfw_window, self._callback_mouse_button)
+        glfw.set_scroll_callback(self._window.glfw_window, self._callback_mouse_scroll)
+
+    def move(self,func):
+        self._event_mouse_move = self._window._snatch_decorated(func)
+
+    def enter(self,func):
+        self._event_mouse_enter = self._window._snatch_decorated(func)
+
+    def exit(self,func):
+        self._event_mouse_exit = self._window._snatch_decorated(func)
+
+    def click(self,func):
+        self._event_mouse_click = self._window._snatch_decorated(func)
+
+    def scroll(self,func):
+        self._event_mouse_scroll = self._window._snatch_decorated(func)
+
+    def _callback_mouse_move(self, context, xpos, ypos):
+        self._window.execute(self._window, self._event_mouse_move)
         pass
+
+    def _callback_mouse_enter(self, context, entered):
+        if entered:
+            self._window.execute(self._window, self._event_mouse_enter)
+            self._flag_cursor_onscreen = True
+        else:
+            self._window.execute(self._window, self._event_mouse_exit)
+            self._flag_cursor_onscreen = False
+
+    def _callback_mouse_button(self, context, button, action, mods):
+        if action is 1:
+            self._button_pressed.append(button)
+        if action is 0:
+            self._button_pressed.remove(button)
+
+        self._window.execute(self._window, self._event_mouse_click)
+
+    def _callback_mouse_scroll(self, context, xoffset, yoffset):
+        self._scroll_offset = xoffset, yoffset
+        self._window.execute(self,self._event_mouse_scroll)
+
+    @property
+    def cursor_onscreen(self):
+        return self._flag_cursor_onscreen
+
+    @property
+    def mouse_position(self):
+        try:
+            x, y = glfw.get_cursor_pos(self._glfw_window)
+        except:
+            x, y = -1, -1
+        return x, y
+
+    @property
+    def scroll_offset(self):
+        return self._scroll_offset
+
+    @property
+    def button_pressed(self):
+        return self._button_pressed
+
+
+class _Keyboard:
+
+    def __init__(self, window):
+        self._window = window
+
+        self._pressed_keys = []
+        self._event_keyboard = 'pass'
+
+        glfw.set_key_callback(self._window._glfw_window, self._callback_keyboard)
+
+    def press(self, func):
+        self._event_keyboard = self._window._snatch_decorated(func)
+
+    def _callback_keyboard(self,instance, key,scancode,action,mods):
+        if action is 1:
+            self.pressed_keys.append(key)
+        if action is 0:
+            self.pressed_keys.remove(key)
+
+        self._window.execute(self._window,self._event_keyboard)
+
+    @property
+    def pressed_keys(self):
+        return self._pressed_keys
+
+    def key_pressed(self, *keys):
+        pressed = True
+        for key in keys:
+            pressed = pressed and key in self.pressed_keys
+
+        return pressed
+
+
+
+
+
+
+
+
 
 class Switch:
     def __init__(self):
@@ -56,17 +169,21 @@ class _Windows:
         self.windows.pop(item.instance_name)
 
     def __add__(self, other):
-        self.__class__.windows[other.instance_name] = other
+        self.windows[other.instance_name] = other
+    def __sub__(self, other):
+        self.windows.pop(other.instance_name)
 
     def __iter__(self):
         return self
     def __next__(self):
         if self.iter_count < len(self.windows):
             self.iter_count +=1
-            return self.windows[list(self.windows.keys())[self.iter_count-1]]
+            return self.windows[list(self.windows.keys())[self.iter_count-1]] #type: Window
         else:
             self.iter_count = 0
             raise StopIteration
+    def __len__(self):
+        return len(self.windows)
 
 class Window:
     _windows = _Windows()
@@ -96,7 +213,7 @@ class Window:
         return weakref.proxy(self)
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
-
+        self._windows = self.__class__._windows
         # threading.Thread.__init__(self)
 
         # save name of instance
@@ -135,9 +252,6 @@ class Window:
 
         self._option_close = 0
 
-        self.draw_source = 'glClear(GL_COLOR_BUFFER_BIT)'
-        self.init_source = 'pass' #type: str
-
         self._framerate_target = 60
         self._framecount = 0
         self._framerendered_flag = False
@@ -146,11 +260,17 @@ class Window:
         self.thread = None
 
         self._renderers = [] # type: List[Renderer]
-        self._context_scope = _Context_scope()
 
-        self._enable_event()
-        self._keys_pressed = []
-        self._event_function = None
+        self._draw_func = None
+        self._init_func = None
+        self._context_scope = Virtual_scope()
+
+        #enable inputs
+        self._keyboard = _Keyboard(self)
+        self._mouse = _Mouse(self)
+
+
+        self._follow_close = []
 
     @property
     def mother_window(self):
@@ -166,36 +286,18 @@ class Window:
         glfw.window_hint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3)
         glfw.window_hint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE)
 
-    def _enable_event(self):
-        # glfw.set_input_mode(self.glfw_window, GLFW.GLFW_STICKY_KEYS, GL_TRUE)
-        glfw.set_key_callback(self.glfw_window, self._callback_keyboard)
-        pass
-
-    def event(self,func):
-        self._event_function = self._snatch_decorated(func)
-
-    def _callback_keyboard(self,instance, key,scancode,action,mods):
-        # print()
-        # print(self,instance,key,scancode,action,mods)
-        if action is 1:
-            self.keys_pressed.append(key)
-        if action is 0:
-            self.keys_pressed.remove(key)
-
-        if self._event_function is not None:
-            # will use 'window' for referencing self
-            window = self
-            exec(self._event_function)
-
-    def close_window(self):
-        glfw.set_window_should_close(self.glfw_window,True)
-
     @property
-    def keys_pressed(self):
-        return self._keys_pressed
+    def draw_func(self):
+        return self._draw_func
+    @property
+    def init_func(self):
+        return self._init_func
 
-    def key_pressed(self, key):
-        return key in self.keys_pressed
+    @staticmethod
+    def execute(window,_source):
+        window = window
+        windows = window._windows
+        exec(_source)
 
     @property
     def framerate(self):
@@ -205,17 +307,24 @@ class Window:
     def framerate(self, value):
         self._framerate_target = value
 
-    def __getattr__(self, item):
-        # print(item)
-        if item in Renderer.get_instances():
-            renderer = Renderer.get_instances()[item]
-            name = renderer.name
-            # print(f'self.{name} = renderer')
-            self.__setattr__(name,renderer)
-            return renderer
-        else:
-            print_message("can't find attribute")
-            raise AttributeError
+    @property
+    def mouse(self):
+        return self._mouse
+    @property
+    def keyboard(self):
+        return self._keyboard
+
+    # def __getattr__(self, item):
+    #     # print(item)
+    #     if item in Renderer.get_instances():
+    #         renderer = Renderer.get_instances()[item]
+    #         name = renderer.name
+    #         # print(f'self.{name} = renderer')
+    #         self.__setattr__(name,renderer)
+    #         return renderer
+    #     else:
+    #         print_message("can't find attribute")
+    #         raise AttributeError
 
 
 
@@ -257,42 +366,42 @@ class Window:
 
 
     def init(self, func):
-        self.init_source = self._snatch_decorated(func)
+        self._init_func = func
 
     def draw(self, func):
-        self.draw_source = self._snatch_decorated(func)
+        self._draw_func = func
 
 
-    def thread_run(self):
-        # if glfw.get_current_context() is not self.glfw_window:
-        glfw.make_context_current(self.glfw_window)
-        # glfw.swap_interval(1)
-        exec(self.init_source)
-
-        timer = Timer(self.framerate, self.name)
-        timer.set_init_position()
-        timer.print_framerate()
-        while True:
-            timer.set_routine_start()
-            # print(self)
-            if self._terminate_flag:
-                # will mulfunction if not detached before thread is over
-                glfw.make_context_current(None)
-                break
-            # print(self.draw_source)
-            for line in self.draw_source:
-                exec(line)
-            glfw.swap_buffers(self.glfw_window)
-            # print(self, self.draw_source)
-
-            self._framerendered_flag = True
-
-            timer.set_routine_end()
+    # def thread_run(self):
+    #     # if glfw.get_current_context() is not self.glfw_window:
+    #     glfw.make_context_current(self.glfw_window)
+    #     # glfw.swap_interval(1)
+    #     exec(self.init_source)
+    #
+    #     timer = Timer(self.framerate, self.name)
+    #     timer.set_init_position()
+    #     timer.print_framerate()
+    #     while True:
+    #         timer.set_routine_start()
+    #         # print(self)
+    #         if self._terminate_flag:
+    #             # will mulfunction if not detached before thread is over
+    #             glfw.make_context_current(None)
+    #             break
+    #         # print(self.draw_source)
+    #         for line in self.draw_source:
+    #             exec(line)
+    #         glfw.swap_buffers(self.glfw_window)
+    #         # print(self, self.draw_source)
+    #
+    #         self._framerendered_flag = True
+    #
+    #         timer.set_routine_end()
 
 
 
     @classmethod
-    def run_single_thread(cls):
+    def run_single_thread(cls, framecount = None):
         """
         runs all windows in single thread.
         works very fine.
@@ -303,84 +412,17 @@ class Window:
         for window in cls._windows:
             glfw.make_context_current(window.glfw_window)
 
-            # if window has mother window
-            condition1 = window._mother_window is not None
-            profile = glfw.get_window_attrib(window.glfw_window,GLFW.GLFW_OPENGL_PROFILE)
-            condition2 = profile == GLFW.GLFW_OPENGL_CORE_PROFILE
 
-            if condition1 and condition2:
+            # if window has mother window
+            if window._mother_window is not None:
+                if window.mother_window.init_func is not None:
+                    window._context_scope.append_scope_byscope(window.mother_window._context_scope)
                 renderers = window.mother_window.renderers
                 for _renderer in renderers:
                     _renderer.rebind()
-                pass
-            # first execute and save names, values in current namespace
-            exec(window.init_source)
+            if window.init_func is not None:
+                window._context_scope.append_scope_byfunc(window.init_func)
 
-            # translate into scope
-            lines = window.init_source.splitlines()
-            att_names = []
-
-            for i,line in enumerate(lines):
-                #scratch Renderer objects
-                if 'Renderer(' in line:
-                    att_name = line.split('=')[0].strip()
-                    exec(f'window.renderers.append({att_name})')
-                #scratch attributes
-                if '=' in line:
-                    name_value = [i.strip() for i in line.split('=')]
-                    att_names.append(name_value[0])
-                    # exec(f'window._hollow_window.{name_value[0]} = {name_value[1]}')
-                    lines[i] = f'window._context_scope.{name_value[0]} = {name_value[1]}'
-
-            #execute again to save attributes to scope
-            merged = ''
-            for line in lines:
-                merged += line + '\n'
-            exec(merged)
-
-            #erase all attribute names from exec() namespace
-            attributes = list(window._context_scope.__dict__.keys())
-            for name in attributes:
-                exec(f'del {name}')
-
-            #reformat draw_source so it could only reference given scope
-            lines = window.draw_source.splitlines()
-            merged = ''
-            attributes = dict(zip(attributes,('window._context_scope',)*len(attributes)))
-
-            #incase context is shared make it excessible
-            if window.mother_window is not None:
-                mother_attributes = list(window.mother_window._context_scope.__dict__.keys())
-                mother_attributes = dict(zip(mother_attributes, ('window.mother_window._context_scope',)*len(mother_attributes)))
-                #override
-                mother_attributes.update(attributes)
-                attributes = mother_attributes
-
-            for line in lines:
-                for name in attributes:
-                    if name in line:
-                        #check if word represents attribute
-                        #TODO still translation is not perfect
-                        #   for example in case name of attribute is
-                        #   inside a string 'ddd (attribute name) ddd'
-                        #   translation below wouldn't catch it.
-                        #   So fix it
-                        position = line.index(name)
-                        left_condition = True
-                        right_condition = True
-                        if position is not 0:
-                            left = line[position - 1]
-                            if left.isalpha() or left.isnumeric():
-                                left_condition = True
-                        if position + len(name) is not len(line):
-                            right = line[position + len(name)]
-                            if right.isalpha() or right.isnumeric():
-                                right_condition = False
-                        #if a word is a name of attribute
-                        if left_condition and right_condition:
-                            line = line.replace(name,f'{attributes[name]}.{name}')
-                merged += line + '\n'
-            window.draw_source = merged
 
 
         timer = Timer(cls._framerate_target,'single thread')
@@ -390,17 +432,19 @@ class Window:
         while True:
             timer.set_routine_start()
             if cls._display_window():
-
+                # to give access to other windows through keyword 'windows'
                 windows = cls._windows
                 for window in cls._windows:
                     #drawing
+                    # try:
+                    glfw.make_context_current(None)
+                    glfw.make_context_current(window.glfw_window)
 
-                    if glfw.get_current_context() is not window.glfw_window:
-                        glfw.make_context_current(window.glfw_window)
-                    # print(glfw.get_window_attrib(window.glfw_window,GLFW.GLFW_DECORATED))
-                    lines = window.draw_source.splitlines()
+                    window._context_scope.run_func(window.draw_func)
 
-                    exec(window.draw_source)
+                    # except Exception as e:
+                    #     print(e, window.instance_name, len(cls._windows))
+                    #     break
                     glfw.swap_buffers(window.glfw_window)
 
                 glfw.poll_events()
@@ -408,6 +452,9 @@ class Window:
             else:
                 break
             timer.set_routine_end()
+            if timer.framecount == framecount:
+                break
+
         # TODO fix ↓
         # Shader.deleteProgram()
         glfw.terminate()
@@ -441,6 +488,15 @@ class Window:
     def print_framerate(cls, state: bool = True):
         cls._print_framerate = state
 
+    def close_window_concequently(self):
+        for window in self._windows:
+            if window.mother_window == self or self in window._follow_close:
+                window.close_window_concequently()
+                break
+        glfw.make_context_current(None)
+        glfw.destroy_window(self.glfw_window)
+        self._windows - self
+
     @classmethod
     def _display_window(cls, multi_thread = False):
         """
@@ -453,16 +509,16 @@ class Window:
         # close operation
         for i,window in enumerate(cls._windows):
             if glfw.window_should_close(window.glfw_window):
+                glfw.make_context_current(None)
                 if multi_thread:
                     window._terminate_flag = True
                     window.thread.join()
                 else:
                     pass
+
                 if window.option_close is 0:
-                    glfw.make_context_current(None)
-                    glfw.destroy_window(window.glfw_window)
-                    # print_message(f'{window} destryed')
-                    cls._windows.remove(window)
+                    window.close_window_concequently()
+                    pass
 
                 elif window.option_close is 1:
                     glfw.hide_window(window.glfw_window)
@@ -491,6 +547,9 @@ class Window:
     @property
     def option_close(self):
         return self._option_close
+
+    def follow_close(self, *windows):
+        self._follow_close += windows
 
     @option_close.setter
     def option_close(self, option: (int, str)):
@@ -558,7 +617,6 @@ class Timer:
             # print(self._frame_compensation)
 
     def set_routine_end(self):
-        self._framecount += 1
         # measure sleep
         if self._framecount % self._frametarget is 0:
             per_second_rendering_time = time() - self._saved_time_second
@@ -580,6 +638,7 @@ class Timer:
                 print(f'drawing_framerate: {fps}')
             self._glfwtime = glfw.get_time()
 
+        self._framecount += 1
         #sleep
         waiting_time = target - rendering_time - self._frame_compensation
         if waiting_time >= 0:
@@ -589,4 +648,7 @@ class Timer:
     @property
     def current_framerate(self):
         return self._current_framerate
+    @property
+    def framecount(self):
+        return self._framecount
 

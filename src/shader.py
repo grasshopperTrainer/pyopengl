@@ -101,6 +101,7 @@ class Shader:
             loc = item[2]
             val = item[1]
             data_type = item[0]
+
             glUniform4f(loc, val[0], val[1], val[2], val[3])
 
     @classmethod
