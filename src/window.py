@@ -186,13 +186,14 @@ class _Windows:
         return len(self.windows)
 
 class Window:
+    _init_global = None
     _windows = _Windows()
 
     _framecount = 0
     _framerate_target = 60
     _print_framerate = False
     @classmethod
-    def glfw_init(cls):
+    def glfw_init(cls,func = None):
         glfw.init()
 
     def __new__(cls,*args,**kwargs):
@@ -278,7 +279,7 @@ class Window:
 
     @property
     def renderers(self):
-        return self._renderers
+        return self._context_scope.search_value_bytype(Renderer)
 
     def _preset_window_default(self):
         # default setting
@@ -365,8 +366,12 @@ class Window:
 
 
 
-    def init(self, func):
-        self._init_func = func
+    def init(self = None, func = None):
+        if not isinstance(self, Window):
+            # Window.glfw_init()
+            Window._init_global = self
+        else:
+            self._init_func = func
 
     def draw(self, func):
         self._draw_func = func
@@ -412,15 +417,20 @@ class Window:
         for window in cls._windows:
             glfw.make_context_current(window.glfw_window)
 
-
+            # if Window has global init
+            if window.__class__._init_global is not None:
+                func = window.__class__._init_global
+                window._context_scope.append_scope_byfunc(func)
+                # window._context_scope.run_func(func)
             # if window has mother window
             if window._mother_window is not None:
                 if window.mother_window.init_func is not None:
                     window._context_scope.append_scope_byscope(window.mother_window._context_scope)
                 renderers = window.mother_window.renderers
-                for _renderer in renderers:
-                    _renderer.rebind()
+                for renderer in renderers:
+                    renderer[1].rebind()
             if window.init_func is not None:
+
                 window._context_scope.append_scope_byfunc(window.init_func)
 
 
@@ -620,23 +630,27 @@ class Timer:
         # measure sleep
         if self._framecount % self._frametarget is 0:
             per_second_rendering_time = time() - self._saved_time_second
-            self._current_framerate = self._frametarget / per_second_rendering_time
-            self._saved_time_second = time()
-            if self._print_framerate:
-                print()
-                print(f'{self._name}: framerate: {round(self._current_framerate)}')
+            try:
+                self._current_framerate = self._frametarget / per_second_rendering_time
+            except:
+                pass
+            else:
+                self._saved_time_second = time()
+                # if self._print_framerate:
+                #     print()
+                #     print(f'{self._name}: framerate: {round(self._current_framerate)}')
 
         target = 1/self._frametarget
         rendering_time = glfw.get_time()
 
-        if self._print_framerate_drawing:
-            if self._framecount % self._frametarget is 0:
-                try:
-                    fps = 1/rendering_time
-                except:
-                    fps = 0
-                print(f'drawing_framerate: {fps}')
-            self._glfwtime = glfw.get_time()
+        # if self._print_framerate_drawing:
+        #     if self._framecount % self._frametarget is 0:
+        #         try:
+        #             fps = 1/rendering_time
+        #         except:
+        #             fps = 0
+        #         print(f'drawing_framerate: {fps}')
+        #     self._glfwtime = glfw.get_time()
 
         self._framecount += 1
         #sleep

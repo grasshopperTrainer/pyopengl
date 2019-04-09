@@ -2,7 +2,10 @@ import glfw
 from OpenGL.GL import *
 from buffers import Buffer
 from shader import Shader
+
+from numbers import Number
 from gloverride import *
+from error_handler import print_message
 
 class Renderer:
     """
@@ -65,8 +68,19 @@ class Renderer:
             self._shader.set_variable(n, dic[n])
             self._shader.update_variable()
 
-    def set_variable(self,name, value):
-        self.variables_to_update[name] = value
+    def set_variable(self, name: str, values: (list, tuple)) -> None:
+        if not isinstance(values, (tuple, list)):
+            raise TypeError()
+
+        if isinstance(values[0], Number):
+            sign = Number
+        else:
+            sign = type(values[0])
+
+        if not all([isinstance(v, sign) for v in values]):
+            raise  TypeError('input types inconsistent')
+
+        self.variables_to_update[name] = values
 
     def clear(self):
         glClear(GL_COLOR_BUFFER_BIT)

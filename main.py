@@ -2,19 +2,14 @@ import glfw
 import glfw.GLFW as GLFW
 from OpenGL.GL import *
 
-import numpy as np
-import time
-import ctypes
 
-from shader import Shader
-from buffers import Buffer
-from gltracker import GLtracker
-from renderer import Renderer
-from gloverride import *
+
+
 from window import Window
 
 # Initialize the library
 Window.glfw_init()
+
 
 # Create a windowed mode window and its OpenGL context
 window = Window(640, 480, "Hello World", None, None)
@@ -24,8 +19,19 @@ window2 = Window(1000,300,'second_screen',None, window)
 # window3.follow_close(window, window2)
 # window4.follow_close(window3)
 
+@Window.init
+def init():
+    import numpy as np
+    from shader import Shader
+    from buffers import Buffer
+    from renderer import Renderer
+
+    delta = '100'
+    pass
+
 @window.init
 def init():
+
     # glfw.make_context_current(window.glfw_window)
     points = np.zeros(4, [('vertex', np.float32, 2)])
     index = np.array([0,1,2,2,1,3],np.int32)
@@ -41,6 +47,7 @@ def init():
 
 @window.draw
 def draw():
+    # print(alpha)
     renderer.clear()
     renderer.set_variable('u_color',(1,alpha,1,1))
     renderer.draw()
@@ -54,20 +61,21 @@ def draw():
     # print('alpha from window1: ', alpha)
     # alpha += 1
     # print(self._vars)
-    print(alpha)
+    # print(delta)
+    # print(ceta)
     # print(ceta)
 
 @window2.init
 def init():
-    alpha = 'ddd'
+    # alpha = 'ddd'
     ceta = 'ceta'
 
-@window2.draw
-def draw():
-    # print(id(alpha))
-    print(alpha)
-    # ddd
-    print(d)
+# @window2.draw
+# def draw():
+#     # print(id(alpha))
+#     print(alpha)
+#     # ddd
+#     # print(d)
 
 
 # @window2.init
@@ -106,6 +114,9 @@ def draw():
 #     # print(window.keys_pressed)
 #     # print(window.keys_pressed)
 #     # print(windows)
+#     # print('delta')
+#     # print(alpha)
+#     print(ceta)
 #
 # @window3.draw
 # def draw():

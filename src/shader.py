@@ -83,26 +83,29 @@ class Shader:
 
     def set_variable(self, name ,value):
         self.shader_raw[name] = value
+
     def update_variable(self):
         # update attributes
         att = self.shader_raw.attribute
         for name in att:
             item = att[name]
             loc = item[2]
-            val = item[1]
+            vals = item[1]
+
             data_type = att[0]
 
-            glUniform4f(loc, val[0], val[1], val[2], val[3])
+            glUniform4f(loc, vals[0], vals[1], vals[2], vals[3])
 
         # update uniform
         uni = self.shader_raw.uniform
         for name in uni:
             item = uni[name]
             loc = item[2]
-            val = item[1]
+            vals = item[1]
+
             data_type = item[0]
 
-            glUniform4f(loc, val[0], val[1], val[2], val[3])
+            glUniform4f(loc, vals[0], vals[1], vals[2], vals[3])
 
     @classmethod
     def deleteProgram(cls, *index):
