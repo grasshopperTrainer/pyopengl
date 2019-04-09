@@ -565,7 +565,7 @@ class Window:
     def option_close(self):
         return self._option_close
 
-    def follow_close(self, *windows):
+    def follows_closing(self, *windows):
         self._follow_close += windows
 
     @option_close.setter
