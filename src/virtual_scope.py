@@ -55,25 +55,25 @@ class Namespace:
             self._namespaces = value._namespaces + self._namespaces
 
     def append_rear(self, value):
-        # """
-        # Add new or existing namespaces in back of this instance's namespace.
-        #
-        # Back means when namespce is looked up for a value of a variable,
-        # this variable_name - value dict will be looked only if
-        # existing dicts in front doesn't have the value.
-        #
-        # :param value: dictionary or Namespace instance to add on front
-        # :return: None
-        # """
-        # if isinstance(value, dict):
-        #     self._namespaces.insert(0, value)
-        #
-        # # elif isinstance(value, (tuple, list)):
-        # #     dic = dict(zip(value, [None]*len(value)))
-        # #     self._namespaces.insert(0, dic)
-        #
-        # elif isinstance(value, Namespace):
-        #     self._namespaces = value._namespaces + self._namespaces
+        """
+        Add new or existing namespaces in back of this instance's namespace.
+
+        Back means when namespce is looked up for a value of a variable,
+        this variable_name - value dict will be looked only if
+        existing dicts in front doesn't have the value.
+
+        :param value: dictionary, list, tuple or Namespace instance to add on front
+        :return: None
+        """
+        if isinstance(value, dict):
+            self._namespaces.append(value)
+
+        elif isinstance(value, (tuple, list)):
+            dic = dict(zip(value, [None]*len(value)))
+            self._namespaces.append(dic)
+
+        elif isinstance(value, Namespace):
+            self._namespaces = self._namespaces + value._namespaces
         pass
 
     @property
@@ -165,7 +165,7 @@ class Virtual_scope:
             return source
 
     @staticmethod
-    def source_replace_var_name(source: list, old: list) -> str:
+    def source_replace_var_name(source: list, var_names: list, new_format ='self.namespace["{}"]') -> str:
         source = source.splitlines()
 
         translated = ''
@@ -195,7 +195,7 @@ class Virtual_scope:
                         searching = searching[end_i + 1 : ]
 
                 translated += line + '\n'
-                translated += f'self.namespace["{name}"] = {name}' + '\n'
+                translated += f'{new_format.format(name)} = {name}' + '\n'
                 continue
 
             # else if context is import ~
@@ -210,27 +210,28 @@ class Virtual_scope:
                         if line[start_i-1] is ' ' and line[end_i + 1] is ' ':
                             name = line[end_i + 1:].strip()
                             break
-                    translated += f'self.namespace["{name}"] = {name}' + '\n'
+
+                    translated += f'{new_format.format(name)} = {name}' + '\n'
                 else:
                     name = line.split('import')[1].strip()
-                    translated += f'self.namespace["{name}"] = {name}' + '\n'
+                    translated += f'{new_format.format(name)} = {name}' + '\n'
 
                 continue
 
             # for variable names
             else:
-                for old_name in old:
+                for name in var_names:
                     processed = ''
 
                     while True:
-                        start_index = remainder.find(old_name)
+                        start_index = remainder.find(name)
                         if start_index == -1:
                             if len(processed) is not 0:
                                 remainder = processed + remainder
                             break
 
                         else:
-                            end_index = start_index + len(old_name) - 1
+                            end_index = start_index + len(name) - 1
                             front_cond = True
                             end_cond = True
 
@@ -258,7 +259,7 @@ class Virtual_scope:
 
                             # meaning a substring is a variable name
                             if front_cond and end_cond:
-                                processed += remainder[:end_index + 1].replace(old_name, f'self.namespace["{old_name}"]')
+                                processed += remainder[:end_index + 1].replace(name, new_format.format(name))
                             else:
                                 processed += remainder[:end_index + 1]
 

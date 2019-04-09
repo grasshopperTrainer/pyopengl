@@ -270,8 +270,15 @@ class Window:
         self._keyboard = _Keyboard(self)
         self._mouse = _Mouse(self)
 
-
+        #window to follow when close
+        # TODO maybe it has to be reversed? like...
+        #   not a window that has to follow other windows closing
+        #   stores that window object, but window that closes other windows
+        #   contain windows that it has to close.
         self._follow_close = []
+
+        # drawing layers
+        self._layers = []
 
     @property
     def mother_window(self):
