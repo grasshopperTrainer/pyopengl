@@ -186,7 +186,9 @@ class _Windows:
 class Window:
 
     def _global_init():
-        pass
+        import OpenGL.GL as gl
+        import numpy as np
+        from renderers.TestRenderer import Renderer
 
     _init_global = _global_init
     _windows = _Windows()
