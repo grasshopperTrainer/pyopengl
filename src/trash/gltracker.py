@@ -1,10 +1,7 @@
-from OpenGL.GL import *
-import glfw
 import ctypes
-import numpy as np
-from vertex_array import Vertex_array
-from collections import OrderedDict
-from error_handler import print_message
+
+import glfw
+
 
 class GLindex:
     def __init__(self):

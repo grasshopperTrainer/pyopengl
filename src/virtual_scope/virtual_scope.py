@@ -1,10 +1,10 @@
 import inspect
-import weakref
 import sys
-import os
-
+import traceback
 from functools import reduce
+
 from error_handler import print_message
+
 
 class Namespace:
     def __init__(self):
@@ -17,6 +17,7 @@ class Namespace:
             for dic in self._namespaces:
                 if item in dic:
                     return dic[item]
+            raise KeyError('no key in namespace')
 
         # return namespace
         elif isinstance(item, int):
@@ -76,6 +77,23 @@ class Namespace:
             self._namespaces = self._namespaces + value._namespaces
         pass
 
+    def add_new_variable(self, names, values=None, position=0):
+        if not isinstance(names, (list, tuple)):
+            names = [names, ]
+        if not isinstance(values, (list, tuple)):
+            values = [values, ]
+
+        if values is None:
+            values = [None, ] * len(names)
+
+        for name, value in zip(names, values):
+            try:
+                self[name]
+            except:
+                self._namespaces[position][name] = value
+                return True
+
+
     @property
     def names(self):
         names = []
@@ -104,6 +122,17 @@ class Virtual_scope:
         else:
             self.namespace.append_rear(scope.namespace)
 
+    def append_scope_byitems(self, names, values, position=0):
+        if not isinstance(names, (tuple, list)):
+            names = [names, ]
+            values = [values, ]
+        dic = dict(zip(names, values))
+
+        if position == 0:
+            self.namespace.append_front(dic)
+        else:
+            self.namespace.append_rear(dic)
+
     @property
     def namespace(self):
         return self._namespaces
@@ -124,7 +153,7 @@ class Virtual_scope:
     def get_value(self, var):
         return eval(f'self.{var}')
 
-    def append_scope_byfunc(self, func, position = 0):
+    def append_scope_byfunc(____, func, position=0):
         """
         Expends scope by function. Will grab all variables
         inside function and copy into this instance's name space.
@@ -144,20 +173,50 @@ class Virtual_scope:
         vars = func.__code__.co_varnames
         # append new namespace
         if position == 0:
-            self.namespace.append_front(vars)
+            ____.namespace.append_front(vars)
         else:
-            self.namespace.append_rear(vars)
+            ____.namespace.append_rear(vars)
 
         # run to save values
-        source = self.func_to_exec_source(func)
-        translated = self.source_replace_var_name(source, self.namespace.names)
+        source = ____.get_content_source(func)
+        translated = ____.source_replace_var_name(source, ____.namespace.names)
+
         code = compile(translated, func.__module__, 'exec')
         exec(code)
 
     @staticmethod
-    def func_to_exec_source(func, tolines = False):
-        source = inspect.getsource(func).splitlines()[2:]
+    def get_content_source(obj, tolines=False):
+        if callable(obj):
+            source = inspect.getsource(obj).splitlines()
+        elif isinstance(obj, str):
+            source = obj.splitlines()
+        elif isinstance(obj, list):
+            source = obj
+
+        indent = 0
+        for line in source:
+            if line.strip()[0] == '\n':
+                continue
+            elif line.strip()[0] == '#':
+                continue
+
+            for i, l in enumerate(line):
+                if l != ' ':
+                    indent = i
+                    break
+            break
+
+        source = [line[indent:] for line in source]
+        head_i = -1
+        # check if source is a definition of function
+        for i, line in enumerate(source):
+            if line.find('def') == 0:
+                head_i = i
+                break
+
+        source = source[head_i + 1:]
         source = list(map(lambda x: x[4:], source))
+
         if tolines:
             return source
         else:
@@ -165,8 +224,123 @@ class Virtual_scope:
             return source
 
     @staticmethod
-    def source_replace_var_name(source: list, var_names: list, new_format ='self.namespace["{}"]') -> str:
+    def clean_source(source):
         source = source.splitlines()
+
+        # find valid first line
+        first_line = ''
+        first_line_i = 0
+        for i, line in enumerate(source):
+            if line.strip()[0] == '\n':
+                continue
+            if line.strip()[0] == '#':
+                continue
+            else:
+                first_line = line
+                first_line_i = i
+                break
+
+        # look for margin
+        margin = 0
+        for l in first_line:
+            if l == ' ':
+                margin += 1
+            else:
+                break
+
+        # remove margins
+        for i, line in enumerate(source):
+            if line.strip()[0] == '#':
+                i = line.find('#')
+                move = margin - i
+                # if comment is in fron margin push
+                if move > 0:
+                    source[i] = ' ' * move + line
+            else:
+                source[i] = line[margin:]
+
+        return source
+
+    @staticmethod
+    def search_defined_varnames_manually(source):
+        # find valid first line
+        if isinstance(source, str):
+            source = source.splitlines()
+        elif isinstance(source, list):
+            pass
+        else:
+            raise TypeError('source is not a string or list of strings')
+
+        first_line = ''
+        first_line_i = 0
+        for i, line in enumerate(source):
+            if line.strip()[0] == '\n':
+                continue
+            if line.strip()[0] == '#':
+                continue
+            else:
+                first_line = line
+                first_line_i = i
+                break
+
+        # by type of source look for filename and content block
+        # TODO maybe I need to cover class definition too
+        if source[first_line_i][:3] == 'def':
+            filename = source[first_line_i][4:source[first_line_i].find('(')]
+            content = [line[4:] for line in source[first_line_i + 1:]]
+        elif source[0][0] == '@':
+            filename = source[first_line_i + 1][4:source[first_line_i + 1].find('(')]
+            content = [line[4:] for line in source[first_line_i + 2:]]
+        else:
+            content = source
+
+        # search for variable names by looking through each line
+        varnames = []
+        for line in content:
+            # ignore blank and comment line
+            if line.strip()[0] == '\n':
+                continue
+            if line.strip()[0] == '#':
+                continue
+
+            # if a line has a hint of variable name
+            if '=' in line:
+                index = line.find('=')
+                isquot = False
+
+                # check if '=' is inside a quotation
+                quot_pos_start = [line.find("'"), line.find('"')]
+                if max(quot_pos_start) != -1:
+                    mark = ''
+                    if quot_pos_start[0] > quot_pos_start[1]:
+                        mark = "'"
+                        quot_pos_start = quot_pos_start[0]
+                    else:
+                        mark = '"'
+                        quot_pos_start = quot_pos_start[1]
+
+                    quot_pos_end = reversed(line).find(mark)
+                    if quot_pos_end != -1:
+                        quot_pos_end = len(line) - 1 - quot_pos_end
+                        if index > quot_pos_start and index < quot_pos_end:
+                            isquot = True
+                    else:
+                        raise SyntaxError('annotation incorrect')
+
+                # proceed when not a part of a quotation
+                if not isquot:
+                    name_value = line.split('=')
+                    name = name_value[0].strip()
+                    varnames.append(name)
+
+        return varnames
+
+    @staticmethod
+    def source_replace_var_name(source: list, var_names: list, new_format='____.namespace["{}"]') -> str:
+        if isinstance(source, str):
+            source = source.splitlines()
+        else:
+            pass
 
         translated = ''
         for line in source:
@@ -176,7 +350,7 @@ class Virtual_scope:
 
             # for module import
             # if context is from ~ import
-            if line.find('from') == 0:
+            if line.find('from ') == 0:
 
                 if 'import' in line:
                     mark = 'import'
@@ -199,7 +373,7 @@ class Virtual_scope:
                 continue
 
             # else if context is import ~
-            elif line.find('import') == 0:
+            elif line.find('import ') == 0:
                 translated += line + '\n'
                 if 'as' in line:
                     while True:
@@ -273,18 +447,51 @@ class Virtual_scope:
 
         return translated
 
-    def run_func(self, func):
+    def compile(self, obj):
+        should_recompile = False
+        # compiling object is a function
+        filename = 'arbitrary'
+        if callable(obj):
+            # initiation, first call
+            source = self.get_content_source(obj)
+            filename = obj.__module__
+            varnames = obj.__code__.co_varnames
+            self.namespace.add_new_variable(varnames)
+
+        # compiling object is a string of source
+        elif isinstance(obj, str):
+            source = self.get_content_source(obj)
+            varnames = self.search_defined_varnames_manually(source)
+            # if there is a new varnames
+            if self.namespace.add_new_variable(varnames):
+                # recompile stored sources
+                for code in self._code_dict:
+                    compiled = self.compile(code)
+                    # self._code_dict[code] = compiled
+
+        # translate with namespace
+        translated = self.source_replace_var_name(source, self.namespace.names)
+        # compile
+        code = compile(translated, filename, 'exec')
+        self._code_dict[obj] = code
+        return code
+
+    def run(____, obj):
         # do nothing
-        if func is None:
+        if obj is None:
             return
 
-        if func in self._code_dict:
+        if obj in ____._code_dict:
             try:
-                exec(self._code_dict[func])
+                exec(____._code_dict[obj])
             except Exception as e:
                 lineno = sys.exc_info()[2].tb_next.tb_lineno
                 head = []
-                source = inspect.getsource(func).splitlines()
+                if callable(obj):
+                    source = inspect.getsource(obj).splitlines()
+                elif isinstance(obj, str):
+                    source = obj.splitlines()
+
                 for i,line in enumerate(source):
 
                     if len(line) is 0 or line[0] is ' ':
@@ -295,16 +502,11 @@ class Virtual_scope:
                 head = reduce(lambda x,y: x+' - '+ y, head)
                 error_line = source[lineno-1]
                 print_message(str(e),header='error',where_from=head[:-1], var_info = f'source: {error_line}')
-
+                print(traceback.format_exc())
                 exit()
 
         else:
-            # initiation, first call
-            source = self.func_to_exec_source(func)
-            translated = self.source_replace_var_name(source, self.namespace.names)
-            code = compile(translated, func.__module__, 'exec')
-            self._code_dict[func] = code
-
+            code = ____.compile(obj)
+            ____._code_dict[obj] = code
             # go back to execution
-            self.run_func(func)
-
+            ____.run(obj)

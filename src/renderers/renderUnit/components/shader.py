@@ -1,12 +1,12 @@
-from OpenGL.GL import *
-import numpy as np
-from vertex_array import Vertex_array
 from collections import OrderedDict
-from gltracker import GLtracker
-from gloverride import *
+
+from OpenGL.GL import *
+
+from error_handler import print_message
+from .buffer import _Buffer
 
 
-class Shader:
+class Shader(_Buffer):
     _dic_shaders = OrderedDict()
 
     def __init__(self, file_name: str, name: str = None):
@@ -87,6 +87,7 @@ class Shader:
     def update_variable(self):
         # update attributes
         att = self.shader_raw.attribute
+
         for name in att:
             item = att[name]
             loc = item[2]
@@ -104,9 +105,24 @@ class Shader:
             vals = item[1]
 
             data_type = item[0]
+            if loc != -1:
+                if 'vec' in data_type:
+                    n = int(data_type.split('vec')[1])
+                    exec_line = f'glUniform{n}f(loc'
+                    for i in range(n):
+                        exec_line += f',vals[{i}]'
+                    exec_line += ')'
+                    # print(name,loc, exec_line)
+                    # glUniform4f(loc, vals[0], vals[1], vals[2], vals[3])
+                elif 'sampler' in data_type:
+                    exec_line = f'glUniform1i(loc, vals[0])'
+                else:
+                    print_message("unknown glsl var type. can't parse", "error", var_info=f'{name},{uni[name]}')
+                    # raise Exception("unknown glsl var type. can't parse")
 
-            glUniform4f(loc, vals[0], vals[1], vals[2], vals[3])
-
+                exec(exec_line)
+            else:
+                pass
     @classmethod
     def deleteProgram(cls, *index):
         d = cls._dic_shaders
@@ -121,9 +137,18 @@ class Shader:
                 glDeleteProgram(v)
 
     def bindbuffer(self, buffer):
-        self._vao = buffer.array
+        self._vao = buffer.print_va_info
         self._vbo = buffer.vbo
         self._ibo = buffer.ibo
+
+    def build(self):
+        pass
+
+    def bind(self):
+        glUseProgram(self.glindex)
+
+    def unbind(self):
+        glUseProgram(0)
 
     @property
     def vertexarray(self):
@@ -138,7 +163,7 @@ class Shader:
         return self._ibo
 
     @property
-    def shader(self):
+    def glindex(self):
         return self._glindex
 
     def get_uniform_location(self, name:str):
@@ -209,7 +234,16 @@ class _Shader_loader:
                     n = int(type.replace('vec', ''))
                     default_val = (0.0,) * n
                     pass
-                elif None:
+                elif 'sampler' in type:
+                    # if type.split('sampler')[1] == '2D':
+                    default_val = (0,)
+
+                else:
+                    raise TypeError(f"""
+                    in glsl code:
+                    in line: '{line[:-1]}'
+                    type: '{type}' is unknown
+                    please define parsing""")
                     # TODO parse if other types are used for shader 'attribute', or 'uniform'
                     pass
                 # store value

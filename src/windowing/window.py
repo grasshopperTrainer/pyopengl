@@ -1,24 +1,15 @@
-import glfw as glfw
-import glfw.GLFW as GLFW
-from OpenGL.GL import *
-
+import threading
+import weakref
+from collections import OrderedDict
 from time import sleep
 from time import time
 
-from functools import reduce
-import threading
-import inspect
-import weakref
-import numpy as np
-from collections import OrderedDict
+import OpenGL.GL as gl
+import glfw as glfw
+import glfw.GLFW as GLFW
 
-from buffers import Buffer
-from renderer import Renderer
-from shader import Shader
 from error_handler import *
-from gltracker import GLtracker
-from gloverride import *
-from input_dictionary import _Input_dicts
+from renderers.renderUnit.renderunit import RenderUnit
 from virtual_scope import Virtual_scope
 
 
@@ -30,42 +21,50 @@ class _Mouse:
         self._button_pressed = []
         self._scroll_offset = []
         self._flag_cursor_onscreen = False
-        self._event_mouse_move = 'pass'
-        self._event_mouse_enter = 'pass'
-        self._event_mouse_exit = 'pass'
-        self._event_mouse_click = 'pass'
-        self._event_mouse_scroll = 'pass'
+
+        def empty(*args, **kwargs):
+            pass
+
+        self._event_move = empty
+        self._event_enter = empty
+        self._event_exit = empty
+        self._event_click = empty
+        self._event_scroll = empty
 
         glfw.set_cursor_pos_callback(self._window.glfw_window, self._callback_mouse_move)
         glfw.set_cursor_enter_callback(self._window.glfw_window, self._callback_mouse_enter)
         glfw.set_mouse_button_callback(self._window.glfw_window, self._callback_mouse_button)
         glfw.set_scroll_callback(self._window.glfw_window, self._callback_mouse_scroll)
 
-    def move(self,func):
-        self._event_mouse_move = self._window._snatch_decorated(func)
+    def __call__(self, func):
+        source = inspect.getsource(func).splitlines()[2:]
+        source = [line[4:] for line in source]
 
-    def enter(self,func):
-        self._event_mouse_enter = self._window._snatch_decorated(func)
+        functions = {}
+        add = False
 
-    def exit(self,func):
-        self._event_mouse_exit = self._window._snatch_decorated(func)
-
-    def click(self,func):
-        self._event_mouse_click = self._window._snatch_decorated(func)
-
-    def scroll(self,func):
-        self._event_mouse_scroll = self._window._snatch_decorated(func)
+        for i, line in enumerate(source):
+            if line.find('def') == 0:
+                end = line.find('(')
+                name = line[3:end].strip()
+                functions[name] = line + '\n'
+            elif line[:4] == '    ':
+                functions[name] += line + '\n'
+        signs = ['move', 'enter', 'exit', 'click', 'scroll']
+        for func_name in functions:
+            if func_name in signs:
+                func = functions[func_name]
+                exec(f'self._event_{func_name} = func')
 
     def _callback_mouse_move(self, context, xpos, ypos):
-        self._window.execute(self._window, self._event_mouse_move)
-        pass
+        self._window._context_scope.run(self._event_move)
 
     def _callback_mouse_enter(self, context, entered):
         if entered:
-            self._window.execute(self._window, self._event_mouse_enter)
+            self._window._context_scope.run(self._event_enter)
             self._flag_cursor_onscreen = True
         else:
-            self._window.execute(self._window, self._event_mouse_exit)
+            self._window._context_scope.run(self._event_exit)
             self._flag_cursor_onscreen = False
 
     def _callback_mouse_button(self, context, button, action, mods):
@@ -74,11 +73,11 @@ class _Mouse:
         if action is 0:
             self._button_pressed.remove(button)
 
-        self._window.execute(self._window, self._event_mouse_click)
+        self._window._context_scope.run(self._event_click)
 
     def _callback_mouse_scroll(self, context, xoffset, yoffset):
         self._scroll_offset = xoffset, yoffset
-        self._window.execute(self,self._event_mouse_scroll)
+        self._window._context_scope.run(self._event_scroll)
 
     @property
     def cursor_onscreen(self):
@@ -141,11 +140,6 @@ class _Keyboard:
 
 
 
-class Switch:
-    def __init__(self):
-        self.draw_window = True
-        self.display_window = True
-
 class _Windows:
     windows = OrderedDict()
     iter_count = 0
@@ -182,16 +176,26 @@ class _Windows:
         else:
             self.iter_count = 0
             raise StopIteration
+
     def __len__(self):
         return len(self.windows)
 
+    def __str__(self):
+        return f'collection of {len(self.windows)} window instances'
+
 class Window:
-    _init_global = None
+
+    def _global_init():
+        pass
+
+    _init_global = _global_init
     _windows = _Windows()
+    _current_window = None
 
     _framecount = 0
     _framerate_target = 60
     _print_framerate = False
+
     @classmethod
     def glfw_init(cls,func = None):
         glfw.init()
@@ -260,7 +264,7 @@ class Window:
 
         self.thread = None
 
-        self._renderers = [] # type: List[Renderer]
+        self._renderers = []  # type: List[RenderUnit]
 
         self._draw_func = None
         self._init_func = None
@@ -286,7 +290,7 @@ class Window:
 
     @property
     def renderers(self):
-        return self._context_scope.search_value_bytype(Renderer)
+        return self._context_scope.search_value_bytype(RenderUnit)
 
     def _preset_window_default(self):
         # default setting
@@ -301,12 +305,6 @@ class Window:
     def init_func(self):
         return self._init_func
 
-    @staticmethod
-    def execute(window,_source):
-        window = window
-        windows = window._windows
-        exec(_source)
-
     @property
     def framerate(self):
         return self._framerate_target
@@ -318,9 +316,14 @@ class Window:
     @property
     def mouse(self):
         return self._mouse
+
     @property
     def keyboard(self):
         return self._keyboard
+
+    @property
+    def windows(self):
+        return self.__class__._windows
 
     # def __getattr__(self, item):
     #     # print(item)
@@ -374,9 +377,11 @@ class Window:
 
 
     def init(self = None, func = None):
+        # for global init
         if not isinstance(self, Window):
             # Window.glfw_init()
             Window._init_global = self
+        # for window instance init
         else:
             self._init_func = func
 
@@ -410,7 +415,9 @@ class Window:
     #
     #         timer.set_routine_end()
 
-
+    def initiation_gl_setting(self):
+        gl.glEnable(gl.GL_BLEND)
+        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
     @classmethod
     def run_single_thread(cls, framecount = None):
@@ -422,23 +429,32 @@ class Window:
         # TODO is it good to have this long initiation here?
         #initiation
         for window in cls._windows:
-            glfw.make_context_current(window.glfw_window)
+            window.make_window_current()
+
+            # init setting
+            window.initiation_gl_setting()
 
             # if Window has global init
-            if window.__class__._init_global is not None:
-                func = window.__class__._init_global
-                window._context_scope.append_scope_byfunc(func)
-                # window._context_scope.run_func(func)
+            func = window.__class__._init_global
+            window._context_scope.append_scope_byfunc(func)
+
             # if window has mother window
             if window._mother_window is not None:
                 if window.mother_window.init_func is not None:
                     window._context_scope.append_scope_byscope(window.mother_window._context_scope)
+
                 renderers = window.mother_window.renderers
+
                 for renderer in renderers:
                     renderer[1].rebind()
-            if window.init_func is not None:
 
+            if window.init_func is not None:
                 window._context_scope.append_scope_byfunc(window.init_func)
+
+            # assigned var names
+            # TODO maybe need more assigned variables?
+            window._context_scope.append_scope_byitems(('window', 'windows', 'self'), (window, window.windows, window))
+
 
 
 
@@ -454,10 +470,11 @@ class Window:
                 for window in cls._windows:
                     #drawing
                     # try:
-                    glfw.make_context_current(None)
-                    glfw.make_context_current(window.glfw_window)
+                    # glfw.make_context_current(None)
+                    # glfw.make_context_current(window.glfw_window)
+                    window.make_window_current()
 
-                    window._context_scope.run_func(window.draw_func)
+                    window._context_scope.run(window.draw_func)
 
                     # except Exception as e:
                     #     print(e, window.instance_name, len(cls._windows))
@@ -595,6 +612,17 @@ class Window:
 
         else:
             print_message('Type error. Maintain attribute.')
+
+    def make_window_current(self):
+        self.__class__._current_window = self
+        RenderUnit.push_current_window(self)
+        glfw.make_context_current(None)
+        glfw.make_context_current(self.glfw_window)
+
+    @classmethod
+    def get_current_window(cls):
+        return cls._current_window
+
 
 class Timer:
     def __init__(self,framerate, name):

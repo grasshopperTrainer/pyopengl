@@ -1,6 +1,6 @@
-import glfw
 import inspect
 
+import glfw
 
 
 class _Input_dicts:

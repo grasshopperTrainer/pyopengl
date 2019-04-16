@@ -1,6 +1,3 @@
-import OpenGL.GL as gl
-from gltracker import GLtracker
-
 """
 override gl~ functions to record binding info
 at gltracker.GLtracker
