@@ -13,6 +13,10 @@ window2 = Window(1000,300,'second_screen',None, window)
 # window4 = Window(500,1000,'fourth',None,None)
 # window3.follows_closing(window, window2)
 # window4.follows_closing(window3)
+@Window.init
+def INIT():
+    from renderers.testrenderer import Renderer
+    from BRO.rectangle import Rectangle
 
 @window.init
 def init():
@@ -34,11 +38,9 @@ def init():
     alpha = 0
     increment = 0.05
     beta = alpha + increment
-    print(window.layer)
 
 @window.draw
 def draw():
-
     # print(alpha)
     # gl.glViewport(0,0,100,100)
     window.viewport.open(0)
@@ -56,6 +58,15 @@ def draw():
         increment = -increment
     elif alpha < 0:
         increment = -increment
+
+
+@window2.draw
+def draw():
+    renderer.clear(1, 1, 1, 1)
+    renderer.set_variable('u_color', (1, 0.5, alpha, 0.75))
+    renderer._draw_()
+    a = Rectangle()
+    print('dkdk')
 
 @window2.init
 def init():
@@ -88,12 +99,6 @@ def event():
     def scroll():
         print('scrolling')
         print(window.mouse.scroll_offset)
-
-@window2.draw
-def draw():
-    renderer.clear(1, 1, 1, 1)
-    renderer.set_variable('u_color', (1, 0.5, alpha, 0.75))
-    renderer._draw_()
 
 
 Window.run_single_thread()

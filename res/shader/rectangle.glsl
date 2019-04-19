@@ -1,4 +1,3 @@
-
 #shader vertex
 #version 400 core
 
@@ -12,7 +11,7 @@ void main() {
 }
 
 
-#shader fragment
+    #shader fragment
     #version 400 core
 
 layout(location = 0) out vec4 color;

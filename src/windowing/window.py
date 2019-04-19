@@ -10,7 +10,7 @@ import glfw.GLFW as GLFW
 
 from error_handler import *
 # from renderers.renderUnit.renderunit import RenderUnit
-from virtual_scope import Virtual_scope
+from virtual_scope import *
 
 from .IO_device import *
 from .layers import *
@@ -64,7 +64,6 @@ class Window:
     def _global_init():
         import OpenGL.GL as gl
         import numpy as np
-        from renderers.TestRenderer import Renderer
 
     _init_global = _global_init
     _windows = _Windows()
@@ -262,7 +261,11 @@ class Window:
         # for global init
         if not isinstance(self, Window):
             # Window.glfw_init()
-            Window._init_global = self
+            a = Source_parser.split_func_headbody(Window._init_global, 1, )
+            b = Source_parser.split_func_headbody(self, 1)
+
+            Window._init_global = a + b
+
         # for window instance init
         else:
             self._init_func = func
@@ -323,7 +326,7 @@ class Window:
 
             # if Window has global init
             func = window.__class__._init_global
-            window._context_scope.append_scope_byfunc(func)
+            window._context_scope.append_scope(func)
 
             # if window has mother window
             if window._mother_window is not None:
@@ -336,7 +339,7 @@ class Window:
                 #     renderer[1].rebind()
 
             if window.init_func is not None:
-                window._context_scope.append_scope_byfunc(window.init_func)
+                window._context_scope.append_scope(window.init_func)
 
 
 
