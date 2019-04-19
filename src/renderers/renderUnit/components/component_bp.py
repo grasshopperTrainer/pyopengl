@@ -54,10 +54,10 @@ from OpenGL.GL import *
 #     def vertexbuffer(self):
 #         return self._vbo
 
-class _Buffer:
+class _Component_bp:
     def __new__(cls, *args, **kwargs):
         if len(args) + len(kwargs) == 0:
-            ins = super().__new__(_Buffer)
+            ins = super().__new__(_Component_bp)
             # ins.__init__()
             return ins
         else:

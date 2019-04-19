@@ -3,10 +3,10 @@ from collections import OrderedDict
 from OpenGL.GL import *
 
 from error_handler import print_message
-from .buffer import _Buffer
+from .component_bp import _Component_bp
 
 
-class Shader(_Buffer):
+class Shader(_Component_bp):
     _dic_shaders = OrderedDict()
 
     def __init__(self, file_name: str, name: str = None):

@@ -14,23 +14,13 @@ window2 = Window(1000,300,'second_screen',None, window)
 # window3.follows_closing(window, window2)
 # window4.follows_closing(window3)
 
-# @Window.init
-# def init():
-#     import OpenGL.GL as gl
-#     import numpy as np
-#     from renderers.TestRenderer import Renderer
-#     delta = '100'
-#     pass
-
 @window.init
 def init():
-    a = gl.glGenVertexArrays(3)
-
+    window.viewport.new(100, 200, 0.5, 1.0)
     # glfw.make_context_current(window.glfw_window)
     points = np.zeros(4, [('vertex', np.float32, 2), ('texCoord', np.float32, 2)])
     index = np.array([0, 1, 2, 2, 3, 0], np.int32)
-    points['vertex'] = [-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]
-    # points['vertex'] = [-0.5, 0.5], [-0.5, -0.5], [0.5, -0.5], [0.5, 0.5]
+    points['vertex'] = [-1, -1], [1, -1], [1, 1], [-1, 1]
     points['texCoord'] = [0, 1], [1, 1], [1, 0], [0, 0]
     #
     renderer = Renderer('quad')
@@ -44,21 +34,28 @@ def init():
     alpha = 0
     increment = 0.05
     beta = alpha + increment
-
+    print(window.layer)
 
 @window.draw
 def draw():
+
     # print(alpha)
-    renderer.clear(1, 0, 1, 0.55)
-    renderer.set_variable('u_color',(1,alpha,1,1))
+    # gl.glViewport(0,0,100,100)
+    window.viewport.open(0)
+    renderer.clear(1, 0, 1, 1)
+    renderer.set_variable('u_color', (1, 1, alpha, 0.5))
     renderer.draw()
+    window.viewport.close()
+    renderer.set_variable('u_color', (1, alpha, 0, 0.5))
+    renderer.draw()
+    # window.viewport.close(0)
+
     alpha += increment
 
     if alpha > 1:
         increment = -increment
     elif alpha < 0:
         increment = -increment
-    fromdraw = 'this is from draw'
 
 @window2.init
 def init():
@@ -66,11 +63,12 @@ def init():
     ceta = 'ceta'
 
 
-@window2.keyboard.press
+@window.keyboard.press
 def event():
-    if window.keyboard.key_pressed(GLFW.GLFW_KEY_A, GLFW.GLFW_KEY_E):
-        window.close_window_concequently()
-
+    if window.keyboard.key_pressed('esc'):
+        window.close()
+    if window.keyboard.key_pressed('l'):
+        window.layer[0].hide()
 
 @window2.mouse
 def event():
@@ -84,50 +82,18 @@ def event():
     def exit():
         print('out')
 
-    def click():
-        print('click')
-        print(windows)
-        print(self)
+    def click_press():
+        print(window2.size)
 
     def scroll():
         print('scrolling')
         print(window.mouse.scroll_offset)
 
-
-# @window2.mouse.move
-# def event():
-#     print('mouse moving')
-# @window2.mouse.enter
-# def event():
-#     print('on')
-# @window2.mouse.exit
-# def event():
-#     print('out')
-# @window2.mouse.click
-# def event():
-#     print(window.mouse.button_pressed)
-# @window2.mouse.scroll
-# def event():
-#     print('scrolling')
-#     print(window.mouse.scroll_offset)
-
 @window2.draw
 def draw():
-    renderer.clear(0, 1, 1, 1)
-    renderer.set_variable('u_color',(1,1,alpha,1))
-    renderer.draw()
-    # try:
-    #     # print('this is window 2')
-    #     # print(self.namespace._namespaces)
-    #     print(peta)
-    #
-    # except:
-    #     pass
-
-# @window3.draw
-# def draw():
-#     # print(increment)
-#     pass
+    renderer.clear(1, 1, 1, 1)
+    renderer.set_variable('u_color', (1, 0.5, alpha, 0.75))
+    renderer._draw_()
 
 
 Window.run_single_thread()

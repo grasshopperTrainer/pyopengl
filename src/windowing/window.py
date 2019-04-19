@@ -9,136 +9,12 @@ import glfw as glfw
 import glfw.GLFW as GLFW
 
 from error_handler import *
-from renderers.renderUnit.renderunit import RenderUnit
+# from renderers.renderUnit.renderunit import RenderUnit
 from virtual_scope import Virtual_scope
 
-
-class _Mouse:
-
-    def __init__(self, window):
-        self._window = window
-
-        self._button_pressed = []
-        self._scroll_offset = []
-        self._flag_cursor_onscreen = False
-
-        def empty(*args, **kwargs):
-            pass
-
-        self._event_move = empty
-        self._event_enter = empty
-        self._event_exit = empty
-        self._event_click = empty
-        self._event_scroll = empty
-
-        glfw.set_cursor_pos_callback(self._window.glfw_window, self._callback_mouse_move)
-        glfw.set_cursor_enter_callback(self._window.glfw_window, self._callback_mouse_enter)
-        glfw.set_mouse_button_callback(self._window.glfw_window, self._callback_mouse_button)
-        glfw.set_scroll_callback(self._window.glfw_window, self._callback_mouse_scroll)
-
-    def __call__(self, func):
-        source = inspect.getsource(func).splitlines()[2:]
-        source = [line[4:] for line in source]
-
-        functions = {}
-        add = False
-
-        for i, line in enumerate(source):
-            if line.find('def') == 0:
-                end = line.find('(')
-                name = line[3:end].strip()
-                functions[name] = line + '\n'
-            elif line[:4] == '    ':
-                functions[name] += line + '\n'
-        signs = ['move', 'enter', 'exit', 'click', 'scroll']
-        for func_name in functions:
-            if func_name in signs:
-                func = functions[func_name]
-                exec(f'self._event_{func_name} = func')
-
-    def _callback_mouse_move(self, context, xpos, ypos):
-        self._window._context_scope.run(self._event_move)
-
-    def _callback_mouse_enter(self, context, entered):
-        if entered:
-            self._window._context_scope.run(self._event_enter)
-            self._flag_cursor_onscreen = True
-        else:
-            self._window._context_scope.run(self._event_exit)
-            self._flag_cursor_onscreen = False
-
-    def _callback_mouse_button(self, context, button, action, mods):
-        if action is 1:
-            self._button_pressed.append(button)
-        if action is 0:
-            self._button_pressed.remove(button)
-
-        self._window._context_scope.run(self._event_click)
-
-    def _callback_mouse_scroll(self, context, xoffset, yoffset):
-        self._scroll_offset = xoffset, yoffset
-        self._window._context_scope.run(self._event_scroll)
-
-    @property
-    def cursor_onscreen(self):
-        return self._flag_cursor_onscreen
-
-    @property
-    def mouse_position(self):
-        try:
-            x, y = glfw.get_cursor_pos(self._glfw_window)
-        except:
-            x, y = -1, -1
-        return x, y
-
-    @property
-    def scroll_offset(self):
-        return self._scroll_offset
-
-    @property
-    def button_pressed(self):
-        return self._button_pressed
-
-
-class _Keyboard:
-
-    def __init__(self, window):
-        self._window = window
-
-        self._pressed_keys = []
-        self._event_keyboard = 'pass'
-
-        glfw.set_key_callback(self._window._glfw_window, self._callback_keyboard)
-
-    def press(self, func):
-        self._event_keyboard = self._window._snatch_decorated(func)
-
-    def _callback_keyboard(self,instance, key,scancode,action,mods):
-        if action is 1:
-            self.pressed_keys.append(key)
-        if action is 0:
-            self.pressed_keys.remove(key)
-
-        self._window.execute(self._window,self._event_keyboard)
-
-    @property
-    def pressed_keys(self):
-        return self._pressed_keys
-
-    def key_pressed(self, *keys):
-        pressed = True
-        for key in keys:
-            pressed = pressed and key in self.pressed_keys
-
-        return pressed
-
-
-
-
-
-
-
-
+from .IO_device import *
+from .layers import *
+from .viewport import *
 
 class _Windows:
     windows = OrderedDict()
@@ -229,7 +105,8 @@ class Window:
         try:
             while True:
                 code_context = inspect.getframeinfo(f).code_context[0]
-                if 'Window' in code_context and '=' in code_context:
+
+                if ' Window(' in code_context and '=' in code_context:
                     self.instance_name = code_context.split('=')[0].strip()
                     break
                 else:
@@ -273,8 +150,8 @@ class Window:
         self._context_scope = Virtual_scope()
 
         #enable inputs
-        self._keyboard = _Keyboard(self)
-        self._mouse = _Mouse(self)
+        self._keyboard = Keyboard(self)
+        self._mouse = Mouse(self)
 
         #window to follow when close
         # TODO maybe it has to be reversed? like...
@@ -284,7 +161,10 @@ class Window:
         self._follow_close = []
 
         # drawing layers
-        self._layers = []
+        self._layers = Layers()
+
+        # viewport
+        self._viewport = Viewports(self)
 
     @property
     def mother_window(self):
@@ -436,6 +316,11 @@ class Window:
             # init setting
             window.initiation_gl_setting()
 
+            # assigned var names
+            # TODO maybe need more assigned variables?
+            window._context_scope.set_assigned(
+                {'window': window, 'windows': window.windows, 'self': window, window.instance_name: window})
+
             # if Window has global init
             func = window.__class__._init_global
             window._context_scope.append_scope_byfunc(func)
@@ -445,18 +330,13 @@ class Window:
                 if window.mother_window.init_func is not None:
                     window._context_scope.append_scope_byscope(window.mother_window._context_scope)
 
-                renderers = window.mother_window.renderers
-
-                for renderer in renderers:
-                    renderer[1].rebind()
+                # renderers = window.mother_window.renderers
+                #
+                # for renderer in renderers:
+                #     renderer[1].rebind()
 
             if window.init_func is not None:
                 window._context_scope.append_scope_byfunc(window.init_func)
-
-            # assigned var names
-            # TODO maybe need more assigned variables?
-            window._context_scope.append_scope_byitems(('window', 'windows', 'self'), (window, window.windows, window))
-
 
 
 
@@ -524,10 +404,17 @@ class Window:
     def print_framerate(cls, state: bool = True):
         cls._print_framerate = state
 
-    def close_window_concequently(self):
+    def close(self):
+        """
+        Closes window concequently.
+
+        To close itself, closes all the child windows beforehand
+
+        :return: None
+        """
         for window in self._windows:
             if window.mother_window == self or self in window._follow_close:
-                window.close_window_concequently()
+                window.close()
                 break
         glfw.make_context_current(None)
         glfw.destroy_window(self.glfw_window)
@@ -553,7 +440,7 @@ class Window:
                     pass
 
                 if window.option_close is 0:
-                    window.close_window_concequently()
+                    window.close()
                     pass
 
                 elif window.option_close is 1:
@@ -617,7 +504,7 @@ class Window:
 
     def make_window_current(self):
         self.__class__._current_window = self
-        RenderUnit.push_current_window(self)
+        # RenderUnit.push_current_window(self)
         glfw.make_context_current(None)
         glfw.make_context_current(self.glfw_window)
 
@@ -625,6 +512,28 @@ class Window:
     def get_current_window(cls):
         return cls._current_window
 
+    @property
+    def layer(self):
+        return self._layers
+
+    def set_viewport(self, param, param1, param2, param3):
+        pass
+
+    @property
+    def viewport(self):
+        return self._viewport
+
+    @property
+    def width(self):
+        pass
+
+    @property
+    def height(self):
+        pass
+
+    @property
+    def size(self):
+        return glfw.get_window_size(self.glfw_window)
 
 class Timer:
     def __init__(self,framerate, name):

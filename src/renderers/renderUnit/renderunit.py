@@ -4,7 +4,7 @@ import glfw
 from OpenGL.GL import *
 
 from .components import *
-
+from windowing.window import Window
 
 class RenderUnit:
     """
@@ -26,8 +26,6 @@ class RenderUnit:
         self._indexbuffer = Indexbuffer()
         self._texture = Texture()
 
-        self._flag_firstbuild = True
-
         if name is None:
             name = f'unmarked{len(self.__class__._renderers)}'
         self._name = name
@@ -36,6 +34,12 @@ class RenderUnit:
         self.variables_to_update = {}
         self.context = glfw.get_current_context()
         self._mode = GL_TRIANGLES
+
+        self._flag_draw = True
+        self._flag_run = True
+
+        # default layer setting
+        self.current_window.layer[0].add(self)
 
     @property
     def shader(self):
@@ -98,47 +102,82 @@ class RenderUnit:
     def bind_texture(self, file, slot=None):
         self._texture = Texture(file, slot)
 
-    def firstbuild(self):
-        # stop condition
-        min_req = all(self._shader is not None, self._vertexbuffer is not None)
-        if not min_req:
-            raise ArgumentError('minimum required components(shader and vertexbuffer) not provided')
-            # TODO or should i just ignore or provide default value?
+    def draw(self):
+        self._draw_()
 
-        # if minimum requirement met, continue
-        self._shader
-
-        pass
-
-    def draw(self, func=None):
-        # first call
-        if self._flag_firstbuild:
-            self.build()
-            self._flag_firstbuild = False
-
+    def _draw_(self, func=None):
         # real draw
         if func is None:
-            # load opengl states
-            self.shader.bind()
-            self.vertexarray.bind()
-            # self.vertexbuffer.bind()
-            self.indexbuffer.bind()
-            self.texture.bind()
 
-            # update all variables of shader
-            # self.update_variables()
-            glDrawElements(self.mode, self.indexbuffer.count, GL_UNSIGNED_INT, None)
+            if self.flag_run:
+                # if vertexarray for current context is not built
+                if not isinstance(self.vertexarray, Vertexarray):
+                    self.build()
+
+                # load opengl states
+                self.shader.bind()
+                self.vertexarray.bind()
+                # self.vertexbuffer.bind()
+                self.indexbuffer.bind()
+                self.texture.bind()
+
+                # update all variables of shader
+                self.update_variables()
+
+            if self.flag_draw:
+                glDrawElements(self.mode, self.indexbuffer.count, GL_UNSIGNED_INT, None)
 
         # for decorater
         else:
             func()
 
-    def build(self):
-        if self.shader is not None:
-            self.shader.build()
+    def _hide_(self, set=None):
+        if set is None:
+            self.flag_run = not self.flag_run
+        else:
+            self.flag_run = set
 
-        if self.vertexbuffer is not None:
-            self.vertexarray = Vertexarray()
+    def _stop_(self, set=None):
+        if set is None:
+            self.flag_draw = not self.flag_draw
+        else:
+            self.flag_draw = set
+
+    def _reset_(self):
+        self.flag_run = True
+        self.flag_draw = True
+
+    def _current_window_(self):
+        self._current_window = Window.get_current_window()
+
+    @property
+    def current_window(self):
+        self._current_window_()
+        return self._current_window
+
+    def build(self):
+        if len(self._vertexarray) == 1:
+            if self.shader is not None:
+                self.shader.build()
+
+            if self.vertexbuffer is not None:
+                self.vertexarray = Vertexarray(1)
+                self.vertexarray.build()
+                self.vertexarray.bind()
+
+                self.vertexbuffer.build()
+
+                self.vertexarray.unbind()
+
+            if self.indexbuffer is not None:
+                self.indexbuffer.build()
+
+            if self.texture is not None:
+                self.texture.build()
+        # for a call from another shared glfw context
+        # just build VertexArray and put buffer info into it
+        else:
+            self.vertexarray = Vertexarray(1)
             self.vertexarray.build()
             self.vertexarray.bind()
 
@@ -146,33 +185,9 @@ class RenderUnit:
 
             self.vertexarray.unbind()
 
-        if self.indexbuffer is not None:
-            self.indexbuffer.build()
-
-        if self.texture is not None:
-            self.texture.build()
-
-    def rebind(self):
-        self.vertexarray.build()
-        self.vertexarray.bind()
-
-        self.vertexbuffer.build()
-
-        self.vertexarray.unbind()
-
     @property
     def name(self):
         return self._name
-
-    # @classmethod
-    # def get_instances(cls):
-    #     return cls._renderers
-    #
-    # @classmethod
-    # def drawall(cls):
-    #     for renderer in cls._renderers:
-    #         renderer.draw()
-    #     pass
 
     def update_variables(self):
         dic = self.variables_to_update
@@ -216,11 +231,22 @@ class RenderUnit:
     def print_va_info(self):
         return self._vertexarray
 
-    # port for retriving current info
-    @classmethod
-    def push_current_window(cls, window):
-        cls._current_window = window
+
 
     @property
-    def current_window(self):
-        return self.__class__._current_window
+    def flag_draw(self):
+        return self._flag_draw
+
+    @flag_draw.setter
+    def flag_draw(self, value):
+        if isinstance(value, bool):
+            self._flag_draw = value
+
+    @property
+    def flag_run(self):
+        return self._flag_run
+
+    @flag_run.setter
+    def flag_run(self, value):
+        if isinstance(value, bool):
+            self._flag_run = value

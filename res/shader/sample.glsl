@@ -24,5 +24,5 @@ varying vec2 v_texCoord;
 
 void main() {
     vec4 texColor = texture(texSlot, v_texCoord);
-    color = texColor;
+    color = u_color;
 }

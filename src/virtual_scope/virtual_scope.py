@@ -8,15 +8,20 @@ from error_handler import print_message
 
 class Namespace:
     def __init__(self):
+        self._top_namespace = {}
         self._namespaces = [{}, ]
 
     def __getitem__(self, item):
+
         # return stored value
         if isinstance(item, str):
+            if item in self.top_namespace:
+                return self.top_namespace[item]
+            else:
+                for dic in self._namespaces:
+                    if item in dic:
+                        return dic[item]
 
-            for dic in self._namespaces:
-                if item in dic:
-                    return dic[item]
             raise KeyError('no key in namespace')
 
         # return namespace
@@ -24,7 +29,11 @@ class Namespace:
             return self._namespaces[item]
 
     def __setitem__(self, key, value):
-        # first see if there already is a variable name
+        # first check if key is assigned
+        if key in self.top_namespace:
+            raise KeyError("can't change value of assigned variable name")
+
+        # second see if there already is a variable name
         for dic in self._namespaces:
             if key in dic:
                 dic[key] = value
@@ -97,6 +106,7 @@ class Namespace:
     @property
     def names(self):
         names = []
+        names += list(self.top_namespace.keys())
         for dicts in self._namespaces:
             names += list(dicts.keys())
         return names
@@ -108,6 +118,14 @@ class Namespace:
             flattened_dict.update(dic)
         return flattened_dict
 
+    @property
+    def top_namespace(self):
+        return self._top_namespace
+
+    @top_namespace.setter
+    def top_namespace(self, value):
+        if isinstance(value, dict):
+            self._top_namespace = value
 
 class Virtual_scope:
     def __init__(self):
@@ -122,16 +140,19 @@ class Virtual_scope:
         else:
             self.namespace.append_rear(scope.namespace)
 
-    def append_scope_byitems(self, names, values, position=0):
-        if not isinstance(names, (tuple, list)):
-            names = [names, ]
-            values = [values, ]
-        dic = dict(zip(names, values))
+    # def append_scope_byitems(self, name_value: dict, position=0):
+    #     if not isinstance(name_value, dict):
+    #         raise TypeError('input sould be dict of varname_value')
+    #     if position == 0:
+    #         self.namespace.append_front(name_value)
+    #     else:
+    #         self.namespace.append_rear(name_value)
 
-        if position == 0:
-            self.namespace.append_front(dic)
-        else:
-            self.namespace.append_rear(dic)
+    def set_assigned(self, name_value: dict):
+        if not isinstance(name_value, dict):
+            raise TypeError('input sould be dict of varname_value')
+
+        self.namespace.top_namespace = name_value
 
     @property
     def namespace(self):
@@ -399,49 +420,67 @@ class Virtual_scope:
 
                     while True:
                         start_index = remainder.find(name)
+                        # if name doesn't exist, pass
                         if start_index == -1:
                             if len(processed) is not 0:
                                 remainder = processed + remainder
                             break
 
+                        end_index = start_index + len(name) - 1
+                        front_cond = True
+                        end_cond = True
+
+                        # check if name is function name in a def header
+                        if remainder.strip().find('def') == 0:
+                            break
+
+                        # check if name is a part of quotation
+                        left = reversed(remainder[: start_index])
+                        right = remainder[end_index + 1:]
+                        if '"' in left or "'" in left:
+                            if '"' in right or "'" in right:
+                                mark1 = right[::-1].find("'")
+                                mark2 = right[::-1].find('"')
+                                lastmark = ''
+                                if mark1 < mark2:
+                                    lastmark = "'"
+                                end_i = remainder.find(lastmark)
+                                processed += remainder[:end_i + 1]
+                                remainder = remainder[end_i + 1:]
+                                continue
+
+                        # look if it is a valid variable name
+                        if start_index is not 0:
+                            front = remainder[start_index - 1]
+                            conditions = [
+                                front.isalpha(),
+                                front.isnumeric(),
+                                front is '.',
+                                front is '_'
+                            ]
+                            if sum(conditions) > 0:
+                                front_cond = False
+                        if end_index is not len(remainder) - 1:
+                            end = remainder[end_index + 1]
+                            conditions = [
+                                end.isalpha(),
+                                end.isnumeric(),
+                                end is '_'
+                            ]
+                            if sum(conditions) > 0:
+                                end_cond = False
+
+                        # meaning a substring is a variable name
+                        if front_cond and end_cond:
+                            processed += remainder[:end_index + 1].replace(name, new_format.format(name))
                         else:
-                            end_index = start_index + len(name) - 1
-                            front_cond = True
-                            end_cond = True
+                            processed += remainder[:end_index + 1]
 
-                            if start_index is not 0:
-                                front = remainder[start_index - 1]
-                                conditions = [
-                                    front.isalpha(),
-                                    front.isnumeric(),
-                                    front is '.',
-                                    front is "'",
-                                    front is '"'
-                                ]
-                                if sum(conditions) > 0:
-                                    front_cond = False
-                            if end_index is not len(remainder) - 1:
-                                end = remainder[end_index + 1]
-                                conditions = [
-                                    end.isalpha(),
-                                    end.isnumeric(),
-                                    end is "'",
-                                    end is '"'
-                                ]
-                                if sum(conditions) > 0:
-                                    end_cond = False
-
-                            # meaning a substring is a variable name
-                            if front_cond and end_cond:
-                                processed += remainder[:end_index + 1].replace(name, new_format.format(name))
-                            else:
-                                processed += remainder[:end_index + 1]
-
-                            if end_index is not len(remainder) - 1:
-                                remainder = remainder[end_index + 1:]
-                            else:
-                                remainder = processed
-                                break
+                        if end_index is not len(remainder) - 1:
+                            remainder = remainder[end_index + 1:]
+                        else:
+                            remainder = processed
+                            break
 
                 translated += remainder + '\n'
 
@@ -471,6 +510,7 @@ class Virtual_scope:
 
         # translate with namespace
         translated = self.source_replace_var_name(source, self.namespace.names)
+        # print(translated)
         # compile
         code = compile(translated, filename, 'exec')
         self._code_dict[obj] = code

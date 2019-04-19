@@ -4,10 +4,10 @@ import OpenGL.GL as gl
 import numpy as np
 from PIL import Image
 
-from .buffer import _Buffer
+from .component_bp import _Component_bp
 
 
-class Texture(_Buffer):
+class Texture(_Component_bp):
     _repository = 'res/image/'
 
     def __init__(self, file: str, slot=0):

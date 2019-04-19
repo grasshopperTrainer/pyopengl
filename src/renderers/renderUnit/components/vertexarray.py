@@ -1,9 +1,10 @@
 from OpenGL.GL import *
+from .component_bp import _Component_bp
 
 
-class Vertexarray():
+class Vertexarray(_Component_bp):
 
-    def __init__(self):
+    def __init__(self, init_sign):
         self._glindex = None
 
     def build(self):

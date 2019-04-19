@@ -1,10 +1,10 @@
 import numpy as np
 from OpenGL.GL import *
 
-from .buffer import _Buffer
+from .component_bp import _Component_bp
 
 
-class Vertexbuffer(_Buffer):
+class Vertexbuffer(_Component_bp):
 
     def __init__(self, data: np.ndarray, glusage=GL_DYNAMIC_DRAW):
 
