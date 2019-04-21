@@ -5,8 +5,10 @@ from OpenGL.GL import *
 
 from .components import *
 from windowing.window import Window
+from windowing.layers.layerable import Layerable
 
-class RenderUnit:
+
+class RenderUnit():
     """
     Pattern sould be determined:
     1. Renderer instance contain only one shader
@@ -112,7 +114,7 @@ class RenderUnit:
             if self.flag_run:
                 # if vertexarray for current context is not built
                 if not isinstance(self.vertexarray, Vertexarray):
-                    self.build()
+                    self._build_()
 
                 # load opengl states
                 self.shader.bind()
@@ -155,7 +157,7 @@ class RenderUnit:
         self._current_window_()
         return self._current_window
 
-    def build(self):
+    def _build_(self):
         if len(self._vertexarray) == 1:
             if self.shader is not None:
                 self.shader.build()

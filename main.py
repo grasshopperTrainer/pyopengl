@@ -8,15 +8,14 @@ Window.glfw_init()
 window = Window(640, 480, "Hello World", None, None)
 window2 = Window(1000,300,'second_screen',None, window)
 
-
-# window3 = Window(2000,500,'third', None, None)
+window3 = Window(2000, 500, 'third', None, None)
 # window4 = Window(500,1000,'fourth',None,None)
 # window3.follows_closing(window, window2)
 # window4.follows_closing(window3)
 @Window.init
 def INIT():
     from renderers.testrenderer import Renderer
-    from BRO.rectangle import Rectangle
+    from renderers.BRO.rectangle import Rectangle
 
 @window.init
 def init():
@@ -65,8 +64,6 @@ def draw():
     renderer.clear(1, 1, 1, 1)
     renderer.set_variable('u_color', (1, 0.5, alpha, 0.75))
     renderer._draw_()
-    a = Rectangle()
-    print('dkdk')
 
 @window2.init
 def init():
@@ -100,6 +97,15 @@ def event():
         print('scrolling')
         print(window.mouse.scroll_offset)
 
+
+@window3.init
+def init():
+    rectangle1 = Rectangle()
+
+
+@window3.draw
+def draw():
+    rectangle1.draw()
 
 Window.run_single_thread()
 # Window.run_multi_thread()

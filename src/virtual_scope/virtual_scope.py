@@ -1,6 +1,7 @@
 import inspect
 import sys
 import traceback
+import weakref
 from functools import reduce
 from .source_parser import Source_parser as prs
 
@@ -191,13 +192,13 @@ class Virtual_scope:
         :return: None
         """
         if callable(obj):
-        # variables load
-        vars = obj.__code__.co_varnames
-        headbody = prs.split_func_headbody(obj)
-        source = headbody[1]
-        filename = prs.search_func_name(headbody[0])
+            # variables load
+            vars = obj.__code__.co_varnames
+            headbody = prs.split_func_headbody(obj)
+            source = headbody[1]
+            filename = prs.search_func_name(headbody[0])
         elif isinstance(obj, str):
-            vars = prs.search_imports(obj, 0)
+            vars = prs.search_all_variables(obj)
             source = obj
             filename = 'unknown'
 
@@ -207,347 +208,46 @@ class Virtual_scope:
         else:
             ____.namespace.append_rear(vars)
 
-        translated = ____.source_replace_var_name(source, ____.namespace.names)
+        new_format = '____.namespace["{}"]'
+        new_names = []
+        for name in ____.namespace.names:
+            new_names.append(new_format.format(name))
+        # print('source is ')
+        # print(source)
+        try:
+            translated = prs.replace_names(source, ____.namespace.names, new_names)
+        except:
+            print(source)
+            raise
+
         # TODO filename: what should it be?
         code = compile(translated, filename, 'exec')
         # run to save values
         exec(code)
 
-    @staticmethod
-    def get_content_source(obj, tolines=False):
-        if callable(obj):
-            source = inspect.getsource(obj).splitlines()
-        elif isinstance(obj, str):
-            source = obj.splitlines()
-        elif isinstance(obj, list):
-            source = obj
-
-        indent = 0
-        for line in source:
-            if line.strip()[0] == '\n':
-                continue
-            elif line.strip()[0] == '#':
-                continue
-
-            for i, l in enumerate(line):
-                if l != ' ':
-                    indent = i
-                    break
-            break
-
-        source = [line[indent:] for line in source]
-        head_i = -1
-        # check if source is a definition of function
-        for i, line in enumerate(source):
-            if line.find('def') == 0:
-                head_i = i
-                break
-
-        source = source[head_i + 1:]
-        source = list(map(lambda x: x[4:], source))
-
-        if tolines:
-            return source
-        else:
-            source = reduce(lambda x,y: x + '\n' + y, source)
-            return source
-
-    @staticmethod
-    def clean_source(source):
-        source = source.splitlines()
-
-        # find valid first line
-        first_line = ''
-        first_line_i = 0
-        for i, line in enumerate(source):
-            if line.strip()[0] == '\n':
-                continue
-            if line.strip()[0] == '#':
-                continue
-            else:
-                first_line = line
-                first_line_i = i
-                break
-
-        # look for margin
-        margin = 0
-        for l in first_line:
-            if l == ' ':
-                margin += 1
-            else:
-                break
-
-        # remove margins
-        for i, line in enumerate(source):
-            if line.strip()[0] == '#':
-                i = line.find('#')
-                move = margin - i
-                # if comment is in fron margin push
-                if move > 0:
-                    source[i] = ' ' * move + line
-            else:
-                source[i] = line[margin:]
-
-        return source
-
-    @staticmethod
-    def search_defined_varnames_manually(source):
-        # find valid first line
-        if isinstance(source, str):
-            source = source.splitlines()
-        elif isinstance(source, list):
-            pass
-        else:
-            raise TypeError('source is not a string or list of strings')
-
-        first_line = ''
-        first_line_i = 0
-        for i, line in enumerate(source):
-            if line.strip()[0] == '\n':
-                continue
-            if line.strip()[0] == '#':
-                continue
-            else:
-                first_line = line
-                first_line_i = i
-                break
-
-        # by type of source look for filename and content block
-        # TODO maybe I need to cover class definition too
-        if source[first_line_i][:3] == 'def':
-            filename = source[first_line_i][4:source[first_line_i].find('(')]
-            content = [line[4:] for line in source[first_line_i + 1:]]
-        elif source[0][0] == '@':
-            filename = source[first_line_i + 1][4:source[first_line_i + 1].find('(')]
-            content = [line[4:] for line in source[first_line_i + 2:]]
-        else:
-            content = source
-
-        # search for variable names by looking through each line
-        varnames = []
-        for line in content:
-            # ignore blank and comment line
-            if line.strip()[0] == '\n':
-                continue
-            if line.strip()[0] == '#':
-                continue
-
-            # if a line has a hint of variable name
-            if '=' in line:
-                index = line.find('=')
-                isquot = False
-
-                # check if '=' is inside a quotation
-                quot_pos_start = [line.find("'"), line.find('"')]
-                if max(quot_pos_start) != -1:
-                    mark = ''
-                    if quot_pos_start[0] > quot_pos_start[1]:
-                        mark = "'"
-                        quot_pos_start = quot_pos_start[0]
-                    else:
-                        mark = '"'
-                        quot_pos_start = quot_pos_start[1]
-
-                    quot_pos_end = reversed(line).find(mark)
-                    if quot_pos_end != -1:
-                        quot_pos_end = len(line) - 1 - quot_pos_end
-                        if index > quot_pos_start and index < quot_pos_end:
-                            isquot = True
-                    else:
-                        raise SyntaxError('annotation incorrect')
-
-                # proceed when not a part of a quotation
-                if not isquot:
-                    name_value = line.split('=')
-                    name = name_value[0].strip()
-                    varnames.append(name)
-
-        return varnames
-
-    @staticmethod
-    def source_replace_var_name(source: list, var_names: list, new_format='____.namespace["{}"]') -> str:
-        name_value = prs.search_all_variables(source)
-        print(name_value)
-
-        # if isinstance(source, str):
-        #     source = source.splitlines()
-        # else:
-        #     pass
-        # # gonna check every line for every variable
-        # for line in source:
-        #     parsed = ''
-        #     parsing = ''
-        #     a = prs.search_body_variables(source)
-        #     print(a)
-        #     for name in var_names:
-        #         # print(line, name)
-        #         pass
-        #
-        # translated = ''
-        # for line in source:
-        #
-        #     line = line.rstrip()
-        #     remainder = line
-        #
-        #     # for module import
-        #     # if context is from ~ import
-        #     if line.find('from ') == 0:
-        #
-        #         if 'import' in line:
-        #             mark = 'import'
-        #         else:
-        #             mark = 'as'
-        #
-        #         searching = line
-        #         while True:
-        #
-        #             start_i = searching.find(mark)
-        #             end_i = start_i + len(mark)-1
-        #
-        #             if searching[start_i - 1] is ' ' and searching[end_i + 1] is ' ':
-        #                 name = searching[end_i + 1:].strip()
-        #                 break
-        #             else:
-        #                 searching = searching[end_i + 1 : ]
-        #
-        #         translated += line + '\n'
-        #         translated += f'{new_format.format(name)} = {name}' + '\n'
-        #         continue
-        #
-        #     # else if context is import ~
-        #     elif line.find('import ') == 0:
-        #         translated += line + '\n'
-        #         if 'as' in line:
-        #             while True:
-        #
-        #                 start_i = line.find('as')
-        #                 end_i = start_i + 1
-        #
-        #                 if line[start_i-1] is ' ' and line[end_i + 1] is ' ':
-        #                     name = line[end_i + 1:].strip()
-        #                     break
-        #
-        #             translated += f'{new_format.format(name)} = {name}' + '\n'
-        #         else:
-        #             name = line.split('import')[1].strip()
-        #             translated += f'{new_format.format(name)} = {name}' + '\n'
-        #
-        #         continue
-        #
-        #     # for variable names
-        #     else:
-        #         for name in var_names:
-        #             processed = ''
-        #             print(name, processed)
-        #             print(remainder)
-        #             while True:
-        #                 # if remainder == '()':
-        #                 #     print(processed)
-        #                 #     print(remainder)
-        #                 #     start_index = remainder.find(name)
-        #                 #     print(remainder.find(name))
-        #                 #     print(type(start_index))
-        #                 #     print(start_index, start_index is -1)
-        #                 #     print(len(processed) != 0)
-        #                 #     print(remainder, processed)
-        #                 #     exit()
-        #                 start_index = remainder.find(name)
-        #                 # if name doesn't exist, pass
-        #                 if start_index == -1:
-        #                     if len(processed) != 0:
-        #                         print(f'{processed} and {remainder}')
-        #                         remainder = processed + remainder
-        #                     print('breaking')
-        #                     break
-        #
-        #                 end_index = start_index + len(name) - 1
-        #                 front_cond = True
-        #                 end_cond = True
-        #
-        #                 # check if name is function name in a def header
-        #                 if remainder.strip().find('def') == 0:
-        #                     break
-        #
-        #                 # check if name is a part of quotation
-        #                 left = reversed(remainder[: start_index])
-        #                 right = remainder[end_index + 1:]
-        #                 if '"' in left or "'" in left:
-        #                     if '"' in right or "'" in right:
-        #                         mark1 = right[::-1].find("'")
-        #                         mark2 = right[::-1].find('"')
-        #                         lastmark = ''
-        #                         if mark1 < mark2:
-        #                             lastmark = "'"
-        #                         end_i = remainder.find(lastmark)
-        #                         processed += remainder[:end_i + 1]
-        #                         remainder = remainder[end_i + 1:]
-        #                         continue
-        #                 else:
-        #                 # look if it is a valid variable name
-        #                 if start_index is not 0:
-        #                     front = remainder[start_index - 1]
-        #                     conditions = [
-        #                         front.isalpha(),
-        #                         front.isnumeric(),
-        #                         front is '.',
-        #                         front is '_'
-        #                     ]
-        #                     if sum(conditions) > 0:
-        #                         front_cond = False
-        #                 if end_index is not len(remainder) - 1:
-        #                     end = remainder[end_index + 1]
-        #                     conditions = [
-        #                         end.isalpha(),
-        #                         end.isnumeric(),
-        #                         end is '_'
-        #                     ]
-        #                     if sum(conditions) > 0:
-        #                         end_cond = False
-        #
-        #                 # meaning a substring is a variable name
-        #                 if front_cond and end_cond:
-        #                     processed += remainder[:end_index + 1].replace(name, new_format.format(name))
-        #
-        #                 else:
-        #                     processed += remainder[:end_index + 1]
-        #
-        #                 if end_index is not len(remainder) - 1:
-        #                     remainder = remainder[end_index + 1:]
-        #                 else:
-        #                     remainder = processed
-        #                     break
-        #             print(name)
-        #         print('this is it :', remainder)
-        #         translated += remainder + '\n'
-        #
-        # return translated
-        pass
-
     def compile(self, obj):
-        should_recompile = False
         # compiling object is a function
-        filename = 'arbitrary'
+        source = prs.split_func_headbody(obj, 1)
+
         if callable(obj):
-            # initiation, first call
-            source = self.get_content_source(obj)
             filename = obj.__module__
             varnames = obj.__code__.co_varnames
             self.namespace.add_new_variable(varnames)
 
         # compiling object is a string of source
         elif isinstance(obj, str):
-            source = self.get_content_source(obj)
-            varnames = self.search_defined_varnames_manually(source)
+            varnames = prs.search_all_variables(source)
+            filename = 'unknown'
             # if there is a new varnames
             if self.namespace.add_new_variable(varnames):
                 # recompile stored sources
                 for code in self._code_dict:
-                    compiled = self.compile(code)
-                    # self._code_dict[code] = compiled
-        print(source)
+                    self.compile(code)
+
         # translate with namespace
-        translated = self.source_replace_var_name(source, self.namespace.names)
-        print(translated)
+        new_format = '____.namespace["{}"]'
+        new_names = [new_format.format(name) for name in self.namespace.names]
+        translated = prs.replace_names(source, self.namespace.names, new_names)
         # compile
         code = compile(translated, filename, 'exec')
         self._code_dict[obj] = code

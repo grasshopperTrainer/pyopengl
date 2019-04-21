@@ -124,7 +124,6 @@ class Window:
         })
         self._mother_window = mother_window #type: Window
 
-        self._preset_window_default()
         if self._mother_window is not None:
             share = mother_window.glfw_window
         else:
@@ -172,12 +171,6 @@ class Window:
     @property
     def renderers(self):
         return self._context_scope.search_value_bytype(RenderUnit)
-
-    def _preset_window_default(self):
-        # default setting
-        glfw.window_hint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4)
-        glfw.window_hint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3)
-        glfw.window_hint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE)
 
     @property
     def draw_func(self):
@@ -300,6 +293,12 @@ class Window:
     #
     #         timer.set_routine_end()
 
+    def initiation_glfw_setting(self):
+        # default setting
+        glfw.window_hint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4)
+        glfw.window_hint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3)
+        glfw.window_hint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE)
+
     def initiation_gl_setting(self):
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
@@ -317,6 +316,7 @@ class Window:
             window.make_window_current()
 
             # init setting
+            window.initiation_glfw_setting()
             window.initiation_gl_setting()
 
             # assigned var names

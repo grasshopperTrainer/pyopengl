@@ -26,7 +26,7 @@ class Mouse:
 
         functions = {}
         add = False
-
+        # TODO put inside parser
         for i, line in enumerate(source):
             if line.find('def') == 0:
                 end = line.find('(')

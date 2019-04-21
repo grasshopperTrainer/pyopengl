@@ -130,13 +130,18 @@ class Source_parser:
                 value = line.split('from ')[1].split(mark)[0].strip()
                 name = line.split(mark)[1].strip()
 
+                name_value[name] = value
+
             # else if context is import ~
             elif line.find('import ') == 0:
                 if ' as ' in line:
                     value = line.split('import ')[1].split(' as ')[0].strip()
                     name = line.split(' as ')[1].strip()
+                else:
+                    name = line.split('import ')[1].strip()
+                    value = name
 
-            name_value[name] = value
+                name_value[name] = value
 
         if return_sign is None:
             return name_value
@@ -146,29 +151,194 @@ class Source_parser:
             return tuple(name_value.keys())
 
     @classmethod
-    def search_body_variables(cls, obj):
+    def search_assigned_variables(cls, obj):
         obj = Source(obj)
         source = obj.lines
 
-        name_value = {}
+        names = []
         for line in source:
             if line.find('#') == 0:
                 continue
-            elif line.find('import ') == 0:
+            elif line.find('import ') == 0 or line.find('from ') == 0:
                 continue
-            elif line.find('from ') == 0:
+            elif line.find('def ') == 0:
                 continue
+            elif line.find('class ') == 0:
+                continue
+            else:
+                quot_poses = cls.search_quotation_pos(line)
 
-            print(line)
+                # look for what? 1. = and .(dot)
+                if '=' in line:
+                    quot = False
+                    for pos in quot_poses:
+                        if pos[0] < line.find('=') < pos[1]:
+                            quot = True
+                    if quot:
+                        pass
+                    else:
+                        # = mark is not inside the quot
+                        name = line.split('=')[0].strip()
+                        if name.find('.') == -1 and name not in names:
+                            names.append(name)
 
-        return name_value
+        return names
+
+    @classmethod
+    def search_def(cls, obj):
+        source = Source(obj)
+
+    @classmethod
+    def search_quotation_pos(cls, line):
+
+        poses = []
+        start = 0
+        while True:
+            a = line.find("'", start)
+            b = line.find('"', start)
+            if a != -1 and (a < b or b == -1):
+                start = a
+                mark = "'"
+            elif b != -1 and (b < a or a == -1):
+                start = b
+                mark = '"'
+            else:
+                break
+
+            end = line.find(mark, start + 1)
+            if end == -1:
+                start = end + 1
+            else:
+                poses.append((start, end))
+                if end == len(line) - 1:
+                    break
+                else:
+                    start = end + 1
+
+        if len(poses) == 0:
+            return ((-1, -1),)
+        else:
+            return tuple(poses)
 
     @classmethod
     def search_all_variables(cls, obj):
-        a = cls.search_imports(obj)
-        b = cls.search_body_variables(obj)
-        a.update(b)
-        return a
+        a = cls.search_imports(obj, 0)
+        b = cls.search_assigned_variables(obj)
+
+        r = set(a).union(set(b))
+        return tuple(r)
+
+    @classmethod
+    def replace_names(cls, source, old, new):
+
+        source = Source(source).lines
+        translated = ''
+
+        for line in source:
+            # if empty
+            if len(line.strip()) == 0:
+                translated += line + '\n'
+                continue
+            # if decorator
+            elif line[0] == '@':
+                translated += line + '\n'
+                continue
+            # if comment
+            elif line.strip()[0] == '#':
+                translated += line + '\n'
+                continue
+
+            elif line.find('import ') == 0 or line.find('from ') == 0:
+                name = cls.search_imports(line, 0)[0]
+                i = old.index(name)
+                translated += line + '\n'
+                translated += f'{new[i]} = {name}\n'
+                continue
+
+            left = ''
+            right = line
+            # if not comment
+            for name, replacement in zip(old, new):
+                while len(right) != 0:
+                    # print()
+                    # print('start:')
+                    # print('left;', left)
+                    # print('right:', right)
+                    # print('name:', name)
+                    # if there is a candidate
+                    if name in right:
+                        # print('---------')
+                        # print(name)
+                        # print(left)
+                        # print(right)
+                        # print()
+                        poses = cls.search_quotation_pos(right)
+                        quot = False
+
+                        for i, pos in enumerate(poses):
+                            if pos[0] < right.find(name) < pos[1]:
+                                quot = True
+                                where = i
+                                break
+
+                        if quot:
+                            left += right[:poses[where][1] + 1]
+                            right = right[poses[where][1] + 1:]
+                            continue
+
+                        else:
+                            # need to check if it full name
+                            cond_right = True
+                            cond_left = True
+                            start_i = right.find(name)
+                            end_i = start_i + len(name) - 1
+                            if start_i != 0:
+                                l = right[start_i - 1]
+                                conditions = [
+                                    l.isnumeric(),
+                                    l.isalpha(),
+                                    l == '.',
+                                ]
+                                if sum(conditions) > 0:
+                                    cond_left = False
+
+                            if end_i != len(right) - 1:
+                                r = right[end_i + 1]
+                                conditions = [
+                                    r.isnumeric(),
+                                    r.isalpha(),
+                                    r == '_'
+                                ]
+                                if sum(conditions) > 0:
+                                    cond_right = False
+
+                            # its a name!
+                            if cond_left and cond_right:
+
+                                left += right[:end_i + 1].replace(name, replacement)
+                                right = right[end_i + 1:]
+                            # not a name
+                            else:
+                                left += right[:end_i + 1]
+                                right = right[end_i + 1:]
+
+                    # no candidate
+                    else:
+                        left += right
+                        break
+
+                # all replaced for one name
+                right = left
+                left = ''
+
+            # all names looked through
+            translated += right + '\n'
+        # all lines looked through
+        return translated
+
+    @classmethod
+    def source(cls, obj):
+        return Source(obj).source
 
 
 class Source:
@@ -191,6 +361,44 @@ class Source:
             self._itercount = 0
             del self._temp
             raise StopIteration
+
+    # @staticmethod
+    # def clean_source(source):
+    #     source = source.splitlines()
+    #
+    #     # find valid first line
+    #     first_line = ''
+    #     first_line_i = 0
+    #     for i, line in enumerate(source):
+    #         if line.strip()[0] == '\n':
+    #             continue
+    #         if line.strip()[0] == '#':
+    #             continue
+    #         else:
+    #             first_line = line
+    #             first_line_i = i
+    #             break
+    #
+    #     # look for margin
+    #     margin = 0
+    #     for l in first_line:
+    #         if l == ' ':
+    #             margin += 1
+    #         else:
+    #             break
+    #
+    #     # remove margins
+    #     for i, line in enumerate(source):
+    #         if line.strip()[0] == '#':
+    #             i = line.find('#')
+    #             move = margin - i
+    #             # if comment is in fron margin push
+    #             if move > 0:
+    #                 source[i] = ' ' * move + line
+    #         else:
+    #             source[i] = line[margin:]
+    #
+    #     return source
 
     @property
     def type(self):
@@ -225,11 +433,23 @@ class Source:
     def indent(self):
         if self.type == 0:
             return 0
+
         elif self.type == 1:
             indent = 0
             for l in self._obj:
                 if l == ' ':
                     indent += 1
+                elif l == '#':
+                    if '\n' in self._obj:
+                        splited = self._obj.split('\n')
+                        self._obj = splited[1]
+                        sub_indent = self.indent
+                        to_move = indent - sub_indent
+                        if to_move >= 0:
+                            self._obj = splited[0][to_move:] + '\n' + self._obj
+                        else:
+                            self._obj = ' ' * (-to_move) + splited[0] + '\n' + self._obj
+                        return sub_indent
                 else:
                     break
             return indent
@@ -249,6 +469,6 @@ class Source:
         if self.type == 0:
             return self.source.splitlines()
         elif self.type == 1:
-            return self.source.splitlines()
+            return self._obj.splitlines()
         elif self.type == 2:
             return self._obj
