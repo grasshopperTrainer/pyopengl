@@ -5,7 +5,6 @@ from OpenGL.GL import *
 
 from .components import *
 from windowing.window import Window
-from windowing.layers.layerable import Layerable
 
 
 class RenderUnit():
@@ -95,7 +94,7 @@ class RenderUnit():
     def bind_shader(self, file_name, name=None):
         self._shader = Shader(file_name, name)
 
-    def bind_vertexbuffer(self, data, glusage=None):
+    def bind_vertexbuffer(self, data=None, glusage=None):
         self._vertexbuffer = Vertexbuffer(data, glusage)
 
     def bind_indexbuffer(self, data, glusage=None):
@@ -119,7 +118,7 @@ class RenderUnit():
                 # load opengl states
                 self.shader.bind()
                 self.vertexarray.bind()
-                # self.vertexbuffer.bind()
+                self.vertexbuffer.bind()
                 self.indexbuffer.bind()
                 self.texture.bind()
 
@@ -129,6 +128,7 @@ class RenderUnit():
             if self.flag_draw:
                 glDrawElements(self.mode, self.indexbuffer.count, GL_UNSIGNED_INT, None)
 
+            # TODO is unbinding everytime nessesssary?
         # for decorater
         else:
             func()
@@ -162,7 +162,7 @@ class RenderUnit():
             if self.shader is not None:
                 self.shader.build()
 
-            if self.vertexbuffer is not None:
+            if isinstance(self.vertexbuffer, RenderComponent):
                 self.vertexarray = Vertexarray(1)
                 self.vertexarray.build()
                 self.vertexarray.bind()
@@ -174,7 +174,7 @@ class RenderUnit():
             if self.indexbuffer is not None:
                 self.indexbuffer.build()
 
-            if self.texture is not None:
+            if isinstance(self.texture, RenderComponent):
                 self.texture.build()
         # for a call from another shared glfw context
         # just build VertexArray and put buffer info into it
@@ -192,13 +192,16 @@ class RenderUnit():
         return self._name
 
     def update_variables(self):
-        dic = self.variables_to_update
-        try:
-            for n in dic:
-                self._shader.set_variable(n, dic[n])
-                self._shader.update_variable()
-        except:
-            raise Exception("can't update variable to shader")
+        if self.shader.properties.is_updated:
+            pass
+
+        # dic = self.variables_to_update
+        # try:
+        #     for n in dic:
+        #         self._shader.set_variable(n, dic[n])
+        #         self._shader.update_variable()
+        # except:
+        #     raise Exception("can't update variable to shader")
 
     def set_variable(self, name: str, values: (list, tuple)) -> None:
         if not isinstance(values, (tuple, list)):
@@ -214,6 +217,10 @@ class RenderUnit():
             raise TypeError('input types inconsistent')
 
         self.variables_to_update[name] = values
+
+    @property
+    def glsl_variables(self):
+        return self.shader.variables
 
     def clear(self, *color):
         if len(color) == 0:
@@ -252,3 +259,7 @@ class RenderUnit():
     def flag_run(self, value):
         if isinstance(value, bool):
             self._flag_run = value
+
+    @property
+    def property(self):
+        return self.shader.properties

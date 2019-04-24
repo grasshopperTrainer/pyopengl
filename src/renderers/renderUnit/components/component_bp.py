@@ -54,10 +54,10 @@ from OpenGL.GL import *
 #     def vertexbuffer(self):
 #         return self._vbo
 
-class _Component_bp:
+class RenderComponent:
     def __new__(cls, *args, **kwargs):
         if len(args) + len(kwargs) == 0:
-            ins = super().__new__(_Component_bp)
+            ins = super().__new__(RenderComponent)
             # ins.__init__()
             return ins
         else:
@@ -111,6 +111,8 @@ class _Component_bp:
             return GL_UNSIGNED_SHORT
         elif typeof is np.uint32:
             return GL_UNSIGNED_INT
+        elif typeof is np.int32:
+            return GL_INT
 
         elif None:
             # TODO add more conversion if needed

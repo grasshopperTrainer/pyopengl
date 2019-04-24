@@ -1,8 +1,8 @@
 from OpenGL.GL import *
-from .component_bp import _Component_bp
+from .component_bp import RenderComponent
 
 
-class Vertexarray(_Component_bp):
+class Vertexarray(RenderComponent):
 
     def __init__(self, init_sign):
         self._glindex = None

@@ -1,10 +1,10 @@
 import numpy as np
 from OpenGL.GL import *
 
-from .component_bp import _Component_bp
+from .component_bp import RenderComponent
 
 
-class Indexbuffer(_Component_bp):
+class Indexbuffer(RenderComponent):
     # def __new__(cls, *args, **kwargs):
     #     if len(args) + len(kwargs) == 0:
     #         ins = super().__new__(cls)

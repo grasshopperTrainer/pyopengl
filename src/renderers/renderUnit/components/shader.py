@@ -1,27 +1,26 @@
 from collections import OrderedDict
-
+import numpy as np
 from OpenGL.GL import *
+import ctypes
 
 from error_handler import print_message
-from .component_bp import _Component_bp
+from .component_bp import RenderComponent
+from .properties import Properties
 
 
-class Shader(_Component_bp):
+class Shader(RenderComponent):
     _dic_shaders = OrderedDict()
 
     def __init__(self, file_name: str, name: str = None):
-        # 1. make vertex array
-        # 2. do buffer job
-
-
+        self._glindex = None
+        self._vertex = ''
+        self._fragment = ''
+        self._properties = Properties(self)
         # 1. make program to use
         self._bake_shader(file_name, name)
         # 2. store array buffer to use
 
-
-    def _bake_shader(self, file_name: str, name: str = None):
-
-        self._name = name
+    def _bake_shader(self, file_name: str, name):
 
         # if giving full path
         if '.glsl' in file_name:
@@ -30,10 +29,10 @@ class Shader(_Component_bp):
         else:
             file_path = f'res/shader/{file_name}.glsl'
 
-        self.shader_raw = _Shader_loader(file_path)
-        self._glindex = self._create(self.shader_raw.vertex, self.shader_raw.fragment)
+        self._parse_shader(file_path)
+        self._glindex = self._create(self._vertex, self._fragment)
 
-        self.shader_raw.set_variable_location(self._glindex)
+        self.set_variable_location(self._glindex)
 
         # set name for indexing and store info
         dic = self.__class__._dic_shaders
@@ -41,7 +40,8 @@ class Shader(_Component_bp):
         # if no name given
         if name is None:
             l = len(dic)
-            name = f'undefined{l + 1}'
+            # self._name = f'undefined{l + 1}'
+            self._name = file_name
         else:
             # save index for gl context? and shader info for python internal use
             dic[str(name)] = [self._glindex, self.shader_raw]
@@ -81,29 +81,34 @@ class Shader(_Component_bp):
 
         return id
 
-    def set_variable(self, name ,value):
-        self.shader_raw[name] = value
+    # def set_variable(self, name ,value):
+    #     if name in self.attribute:
+    #         self.attribute[name][1] = value
+    #     if name in self.uniform:
+    #         self.uniform[name][1] = value
 
     def update_variable(self):
-        # update attributes
-        att = self.shader_raw.attribute
 
-        for name in att:
-            item = att[name]
+        for name in self.attribute:
+            item = self.attribute[name]
             loc = item[2]
-            vals = item[1]
 
-            data_type = att[0]
-
-            glUniform4f(loc, vals[0], vals[1], vals[2], vals[3])
+            if loc != -1:
+                vals = item[1]
+                data_type = item[0]
+                points = np.zeros(4, [('vertex', np.float32, 2)])
+                points['vertex'] = [-1, -1], [1, -1], [1, 1], [-1, 1]
+                # glBufferData(GL_ARRAY_BUFFER, 32, points, GL_DYNAMIC_DRAW)
+                b = np.array([-1, -1], dtype=np.float32)
+                # glBufferSubData(GL_ARRAY_BUFFER,0,32,b)
+                glBufferSubData(GL_ARRAY_BUFFER, 0, 8, points['vertex'][0])
+                glBufferSubData(GL_ARRAY_BUFFER, 24, 8, points['vertex'][1])
 
         # update uniform
-        uni = self.shader_raw.uniform
-        for name in uni:
-            item = uni[name]
+        for name in self.uniform:
+            item = self.uniform[name]
             loc = item[2]
             vals = item[1]
-
             data_type = item[0]
             if loc != -1:
                 if 'vec' in data_type:
@@ -179,16 +184,7 @@ class Shader(_Component_bp):
 
         exec(f'glUniform{len(data)}f({l}, {d})')
 
-class _Shader_loader:
-
-    def __init__(self, file_path:str):
-        self._vertex = ''
-        self._fragment = ''
-        self._uniform = {}
-        self._attribute = {}
-        self.parse_shader(file_path)
-
-    def parse_shader(self,filepath):
+    def _parse_shader(self, filepath):
         f = open(filepath, 'r')
         lines = f.readlines()
         save_vertex = False
@@ -216,10 +212,11 @@ class _Shader_loader:
             if 'attribute' in line or 'uniform' in line:
 
                 if 'attribute' in line:
-                    head = self.attribute
+                    head = self.properties.new_attribute
                     l = line.split('attribute')[1]
+
                 else:
-                    head = self.uniform
+                    head = self._properties.new_uniform
                     l = line.split('uniform')[1]
 
                 l = l.replace(';', '')
@@ -237,7 +234,8 @@ class _Shader_loader:
                 elif 'sampler' in type:
                     # if type.split('sampler')[1] == '2D':
                     default_val = (0,)
-
+                elif 'float' in type:
+                    default_val = (0.0,)
                 else:
                     raise TypeError(f"""
                     in glsl code:
@@ -247,83 +245,61 @@ class _Shader_loader:
                     # TODO parse if other types are used for shader 'attribute', or 'uniform'
                     pass
                 # store value
-                head[name] = [type, default_val]
+                head(name, type)
+
             else:
                 continue
 
-    def __getitem__(self, item):
-
-        if item in self.attribute:
-            return self.attribute[item]
-        elif item in self.uniform:
-            return self.uniform[item]
-        else:
-            print(f"[{self.__class__.__name__}]: not such attribute of uniform '{item}'")
-
-    def __setitem__(self, key, value):
-        # print(self.attribute)
-        # print(self.uniform)
-        if key in self.attribute:
-            self.attribute[key][1] = value
-        elif key in self.uniform:
-            self.uniform[key][1] = value
-        else:
-            print(f"[{self.__class__.__name__}]: not such attribute of uniform '{value}'")
-            return None
-
     def set_variable_location(self, glindex):
         # add location info
-        attributes = self.attribute
-        uniforms = self.uniform
+        attributes = self._properties.attribute
+        uniforms = self._properties.uniform
         glUseProgram(glindex)
+        for block in attributes:
+            block.loc = glGetAttribLocation(glindex, block.name)
 
-        for n in attributes:
-            v = attributes[n]
-            loc = glGetAttribLocation(glindex,n)
-            v.append(loc)
+        for block in uniforms:
+            block.loc = glGetUniformLocation(glindex, block.name)
 
-        for n in uniforms:
-            v = uniforms[n]
-            loc = glGetUniformLocation(glindex,n)
-            v.append(loc)
-
-    @property
-    def vertex(self):
-        return self._vertex
-
-    @vertex.setter
-    def vertex(self, value):
-        self._vertex = value
-
-    @property
-    def fragment(self):
-        return self._fragment
-
-    @fragment.setter
-    def fragment(self,value):
-        self._fragment = value
-    @property
-    def variables(self):
-        a = self._attribute.copy()
-        b = self._uniform.copy()
-        a.update(b)
-        return a
-    @property
-    def uniform(self):
-        """
-        description on values by index
-        0 : type of value
-        1 : type
-        2 : location in shader
-        """
-        return self._uniform
-    @property
-    def attribute(self):
-        return self._attribute
     # @property
-    # def text(self):
-    #     return self.fragment+self.vertex
+    # def vertex(self):
+    #     return self._vertex
+    #
+    # @vertex.setter
+    # def vertex(self, value):
+    #     self._vertex = value
+    #
+    # @property
+    # def fragment(self):
+    #     return self._fragment
+    #
+    # @fragment.setter
+    # def fragment(self,value):
+    #     self._fragment = value
 
+    # @property
+    # def variables(self):
+    #     a = self._attribute.copy()
+    #     b = self._uniform.copy()
+    #     a.update(b)
+    #     return a
 
+    # @property
+    # def uniform(self):
+    #     """
+    #     description on values by index
+    #     0 : type of value
+    #     1 : type
+    #     2 : location in shader
+    #     """
+    #     return self._uniform
+    # @property
+    # def attribute(self):
+    #     return self._attribute
 
+    @property
+    def properties(self):
+        return self._properties
 
+    def __str__(self):
+        return self._name

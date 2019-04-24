@@ -1,40 +1,24 @@
 #shader vertex
-#version 400 core
+#version 330 core
 
-attribute vec4 a_position;
-attribute vec4 a_color;
-attribute vec2 a_texCoord;
+layout(location = 0) attribute vec3 a_position;
+layout(location = 1) attribute vec4 a_color;
 
-varying vec4 v_position;
 varying vec4 v_color;
-varying vec2 v_texCoord;
-
-out vec4 position;
 
 void main() {
-    v_position = a_position;
     v_color = a_color;
-    v_texCoord = a_texCoord;
-
-    //transformation here
-
-    position = a_position;
+    gl_Position = vec4(a_position, 1);
 }
 
 
     #shader fragment
-    #version 400 core
+    #version 330 core
+uniform vec4 u_color;
 
-uniform sampler2D texSlot;
-
-varying vec4 v_position;
 varying vec4 v_color;
-varying vec2 v_texCoord;
-
 out vec4 color;
 
 void main() {
-    //vec4 texColor = texture(texSlot, v_texCoord);
-
     color = v_color;
 }
