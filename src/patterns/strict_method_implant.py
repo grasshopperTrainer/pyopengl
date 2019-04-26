@@ -28,5 +28,4 @@ class SMI:
 
         else:
             self = super().__new__(cls)
-            self.__init__(*args, **kwargs)
             return self

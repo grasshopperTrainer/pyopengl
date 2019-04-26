@@ -62,7 +62,6 @@ class RenderComponent:
             return ins
         else:
             ins = super().__new__(cls)
-            ins.__init__(*args, **kwargs)
             return ins
 
     # def __init__(self, data, gltarget, glusage):

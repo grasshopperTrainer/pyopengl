@@ -22,6 +22,7 @@ class RenderUnit():
 
     def __init__(self, name: str = None):
         self._shader = Shader()
+
         self._vertexarray = {}
         self._vertexbuffer = Vertexbuffer()
         self._indexbuffer = Indexbuffer()
@@ -193,7 +194,8 @@ class RenderUnit():
 
     def update_variables(self):
         if self.shader.properties.is_updated:
-            pass
+            print('update loaded')
+            exit()
 
         # dic = self.variables_to_update
         # try:

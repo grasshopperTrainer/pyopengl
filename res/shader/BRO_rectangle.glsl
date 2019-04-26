@@ -11,9 +11,9 @@ void main() {
     gl_Position = vec4(a_position, 1);
 }
 
-
     #shader fragment
     #version 330 core
+
 uniform vec4 u_color;
 
 varying vec4 v_color;
