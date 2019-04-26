@@ -31,6 +31,7 @@ class Indexbuffer(RenderComponent):
         self.bind()
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, datasize, self.data, self._glusage)
         self.unbind()
+        print('-index buffer built')
 
     def bind(self):
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._glindex)

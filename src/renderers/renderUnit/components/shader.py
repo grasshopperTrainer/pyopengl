@@ -20,8 +20,15 @@ class Shader(RenderComponent):
 
         # 1. create program
         self._glindex = glCreateProgram()
-        # 2. load
-        self._load_parse_glsl()
+        # 2. load external glsl
+        # 3. read attributes and unifroms from shaders
+        att_uni = self._load_parse_glsl()
+        # 4. store att_uni
+        for i in att_uni['att']:
+            self._properties.new_attribute(i[0], i[1])
+        for i in att_uni['uni']:
+            self._properties.new_uniform(i[0], i[1])
+
         # 3. bind shaders
         self._bake_shader()
         # 2. store array buffer to use
@@ -30,6 +37,7 @@ class Shader(RenderComponent):
         # self.store_self()
 
     def _load_parse_glsl(self):
+        att_uni = {'att': [], 'uni': []}
         # if giving full path
         if '.glsl' in self._file_name:
             file_path = self._file_name
@@ -44,6 +52,9 @@ class Shader(RenderComponent):
         string_index = -1
 
         for line in lines:
+            # ignore commented
+            if line.strip()[:2] == '//':
+                continue
 
             # raise flag
             if '#shader' in line:
@@ -61,15 +72,15 @@ class Shader(RenderComponent):
                 self._fragment += line
 
             # store variable names
-            if 'attribute' in line or 'uniform' in line:
+            if 'attribute ' in line or ' uniform ' in line:
 
-                if 'attribute' in line:
-                    addto = self.properties.new_attribute
-                    l = line.split('attribute')[1]
+                if 'attribute ' in line:
+                    addto = att_uni['att']
+                    l = line.split('attribute ')[1]
 
                 else:
-                    addto = self._properties.new_uniform
-                    l = line.split('uniform')[1]
+                    addto = att_uni['uni']
+                    l = line.split(' uniform ')[1]
 
                 l = l.replace(';', '')
                 l = l.strip().split(' ')
@@ -97,10 +108,12 @@ class Shader(RenderComponent):
                     # TODO parse if other types are used for shader 'attribute', or 'uniform'
                     pass
                 # store value
-                addto(name, type)
+                addto.append([name, type])
 
             else:
                 continue
+
+        return att_uni
 
     def _bake_shader(self):
         def compile(type, source):
@@ -136,7 +149,7 @@ class Shader(RenderComponent):
     #         self.attribute[name][1] = value
     #     if name in self.uniform:
     #         self.uniform[name][1] = value
-
+    #
     # def update_variable(self):
     #
     #     for name in self.attribute:

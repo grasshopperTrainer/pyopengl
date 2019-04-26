@@ -14,7 +14,7 @@ void main() {
     #shader fragment
     #version 330 core
 
-uniform vec4 u_color;
+//uniform vec4 u_color;
 
 varying vec4 v_color;
 out vec4 color;

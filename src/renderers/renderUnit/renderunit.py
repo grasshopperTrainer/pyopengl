@@ -6,6 +6,7 @@ from OpenGL.GL import *
 from .components import *
 from windowing.window import Window
 
+import numpy as np
 
 class RenderUnit():
     """
@@ -95,8 +96,8 @@ class RenderUnit():
     def bind_shader(self, file_name, name=None):
         self._shader = Shader(file_name, name)
 
-    def bind_vertexbuffer(self, data=None, glusage=None):
-        self._vertexbuffer = Vertexbuffer(data, glusage)
+    def bind_vertexbuffer(self, glusage=None):
+        self._vertexbuffer = Vertexbuffer(glusage)
 
     def bind_indexbuffer(self, data, glusage=None):
         self._indexbuffer = Indexbuffer(data, glusage)
@@ -119,17 +120,23 @@ class RenderUnit():
                 # load opengl states
                 self.shader.bind()
                 self.vertexarray.bind()
-                self.vertexbuffer.bind()
+                # self.vertexbuffer.bind()
                 self.indexbuffer.bind()
-                self.texture.bind()
+                # print(self.vertexbuffer.vbo)
+                # print(self.indexbuffer.ibo)
+                # self.texture.bind()
 
                 # update all variables of shader
                 self.update_variables()
 
+
             if self.flag_draw:
                 glDrawElements(self.mode, self.indexbuffer.count, GL_UNSIGNED_INT, None)
 
-            # TODO is unbinding everytime nessesssary?
+                # TODO is this unnecessary processing? checking?
+                self._unbindall()
+
+            # TODO is unbinding every time necessary?
         # for decorater
         else:
             func()
@@ -159,6 +166,7 @@ class RenderUnit():
         return self._current_window
 
     def _build_(self):
+        print('building render unit')
         if len(self._vertexarray) == 1:
             if self.shader is not None:
                 self.shader.build()
@@ -193,32 +201,55 @@ class RenderUnit():
         return self._name
 
     def update_variables(self):
-        if self.shader.properties.is_updated:
-            print('update loaded')
-            exit()
+        # bind buffer and vertexattribpointer with gl if form of buffer has changed
+        if self.shader.properties.attribute.is_buffer_formchange:
+            self.vertexbuffer.bind()
+            buffer = self.shader.properties.attribute.buffer
+            self.vertexbuffer.set_attribpointer(buffer)
+            self.vertexbuffer.unbind()
 
-        # dic = self.variables_to_update
-        # try:
-        #     for n in dic:
-        #         self._shader.set_variable(n, dic[n])
-        #         self._shader.update_variable()
-        # except:
-        #     raise Exception("can't update variable to shader")
+        # update buffer if change has been made
+        # change whole if all buffer is changed
+        changed_blocks = self.shader.properties.attribute.updated
+        if len(changed_blocks) != 0:
+            self.vertexbuffer.bind()
 
-    def set_variable(self, name: str, values: (list, tuple)) -> None:
-        if not isinstance(values, (tuple, list)):
-            values = (values,)
-            # raise TypeError()
+            if len(changed_blocks) == len(self.shader.properties.attribute.names):
+                buffer = self.shader.properties.attribute.buffer
+                size = buffer.itemsize * buffer.size
+                glBufferData(GL_ARRAY_BUFFER, size, buffer, self.vertexbuffer._glusage)
 
-        if isinstance(values[0], Number):
-            sign = Number
-        else:
-            sign = type(values[0])
+            else:
+                # update part only
+                for block in self.shader.properties.attribute.updated:
 
-        if not all([isinstance(v, sign) for v in values]):
-            raise TypeError('input types inconsistent')
+                    buffer = self.shader.properties.attribute.buffer
+                    start_pos = self.shader.properties.attribute.posof_block(block.name)
 
-        self.variables_to_update[name] = values
+                    # finde starting offset
+                    start_off = 0
+                    for i in range(start_pos):
+                        dtype = buffer.dtype[i]
+                        bytesize = dtype.itemsize
+                        start_off += bytesize
+
+                    data = block.data
+                    for i in range(buffer.size):
+                        off = start_off + buffer.itemsize * i
+                        element = data[i]
+                        size = element.itemsize * element.size
+                        # print(off)
+                        # print(element)
+                        # print(size)
+                        glBufferSubData(GL_ARRAY_BUFFER, off, size, element)
+            self.vertexbuffer.unbind()
+
+    def _unbindall(self):
+        self.shader.unbind()
+        self.vertexarray.unbind()
+        self.vertexbuffer.unbind()
+        self.indexbuffer.unbind()
+        self.texture.unbind()
 
     @property
     def glsl_variables(self):

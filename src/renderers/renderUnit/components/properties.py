@@ -3,84 +3,9 @@ from numpy.lib.recfunctions import merge_arrays, append_fields
 import weakref
 
 
-# class _Block:
-#     def __init__(self, name, typ, val=None, loc=None, dtype=None):
-#         if 'vec' in typ:
-#             n = int(typ.split('vec')[1].strip())
-#         elif 'sampler2D' in typ:
-#             n = 1
-#
-#         if val is None:
-#             val = (0,) * n
-#         if dtype is None:
-#             dtype = np.float32
-#         self._array = np.zeros((1, n), dtype)
-#
-#         self._name = name
-#         self._loc = loc
-#
-#         self._flag_changed = False
-#
-#     def __getitem__(self, item):
-#         return self._array[item]
-#
-#     def __setitem__(self, key, value):
-#         self._flag_changed = True
-#         value = list(value)
-#
-#         if isinstance(key, int):
-#             if not len(self._array) > key:
-#                 self._array.resize((key,self._array.shape[1]))
-#         elif isinstance(key, slice):
-#             self._array.resize((key.stop,self._array.shape[1]))           # end = key.stop
-#
-#         for i, v in enumerate(value):
-#             if self._array.shape[1] - len(v) > 0:
-#                 n = self._array.shape[1] - len(v)
-#                 value[i] += [0, ] * n
-#             else:
-#                 value[i] = v[:self._array.shape[1]]
-#         self._array[key] = value
-#
-#     @property
-#     def flag_chaged(self):
-#         return self._flag_changed
-#
-#     @property
-#     def loc(self):
-#         return self._loc
-#
-#     @loc.setter
-#     def loc(self, value):
-#         if isinstance(value, int):
-#             self._loc = value
-#         else:
-#             raise TypeError('location should be integer')
-#
-#     @property
-#     def name(self):
-#         return self._name
-#
-#     @property
-#     def dtype(self):
-#         return self._array.dtype
-#
-#     @dtype.setter
-#     def dtype(self, value):
-#         try:
-#             self._array = self._array.astype(value)
-#         except:
-#             raise TypeError('incorrect dtype')
-#
-#     def __repr__(self):
-#         return str(self._array)
-#
-#     @property
-#     def flag_changed(self):
-#         return self._flag_changed
-class Block:
-    def __init__(self, buffer, name):
-        self._buffer = buffer  # type: np.ndarray
+class _Block:
+    def __init__(self, property, name):
+        self._property = property
         self._name = name
 
         self._location = None
@@ -88,18 +13,50 @@ class Block:
 
     def __setitem__(self, key, value):
         self._flag_changed = True
-        value = list(value)
-        block = self._buffer[self._name]
+        if not isinstance(value[0], (tuple, list)):
+            value = [list(value)]
+        else:
+            value = list(value)
+
+        block = self.buffer[self._name]
         # add new row if calling out of index
         # for index
         if isinstance(key, int):
             # if indexing out of range add more data
             # to get to the indexed length
             if not len(block) > key:
-                block.resize(key)
+                self._property._flag_new_buffer_formchange = True
+                self.buffer.resize(key, refcheck=False)
+            chunk_len = 1
+
         # for slicing
         elif isinstance(key, slice):
-            self._buffer.resize(key.stop, refcheck=False)
+            stop = 0
+            if key.stop is None:
+                pass
+            else:
+                stop = key.stop
+                if stop > len(block):
+                    self._property._flag_new_buffer_formchange = True
+                    self.buffer.resize(stop, refcheck=False)
+
+            s = 0 if key.start is None else key.start
+            e = self.buffer.size if key.stop is None else key.stop
+            st = 1 if key.step is None else key.step
+            chunk_len = len(range(s, e, st))
+
+        elif key is None:
+            self.buffer[self._name] = value
+            return
+
+        # short long values to match number of chunks
+        # chunk_len = self.buffer.size
+        if chunk_len > len(value):
+            value += [[0, ]] * (chunk_len - len(value))
+        elif chunk_len == len(value):
+            pass
+        else:
+            value = value[:chunk_len]
         # short long values to match element length of the block
         for i, v in enumerate(value):
             val_num = block.shape[1]
@@ -109,42 +66,54 @@ class Block:
             else:
                 value[i] = v[:val_num]
 
+        if len(value) == 1:
+            value = value[0]
+
         # put value
-        self._buffer[self._name][key] = value
+        self.buffer[self._name][key] = value
+        # print(self.buffer[self._name][key].dtype)
+
 
     def __getitem__(self, item):
-        return self._buffer[self._name][item]
+        return self.buffer[self._name][item]
 
+    @property
+    def block(self):
+        return self._property.buffer[self._name]
 
-# class Block_modifier:
-#     def __init__(self,array, name):
-#         self._array = array
-#         self._name = name
-#
-#     def __setitem__(self, key, value):
-#         self._flag_changed = True
-#         value = list(value)
-#
-#         # add new row if calling out of index
-#         if isinstance(key, int):
-#             if not len(self._array[self._name]) > key:
-#                 self._array.resize(key)
-#         elif isinstance(key, slice):
-#             self._array.resize((key.stop,),refcheck = False)  # end = key.stop
-#         # short long values
-#         for i, v in enumerate(value):
-#             val_num = self._array[self._name].shape[1]
-#             if val_num > len(v):
-#                 n = val_num - len(v)
-#                 value[i] += [0,] * n
-#             else:
-#                 value[i] = v[:val_num]
-#
-#         # put value
-#         self._array[self._name][key] = value
-#
-#     def __getitem__(self, item):
-#         return self._array[self._name][item]
+    @property
+    def buffer(self):
+        return self._property.buffer
+
+    @property
+    def data(self):
+        return self._property.buffer[self._name]
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def is_changed(self):
+        if self._flag_changed:
+            self._flag_changed = False
+            return True
+        else:
+            return False
+
+    def __str__(self):
+        d = str(self.data).splitlines()
+
+        string = 'buffer block info:\n'
+        string += f'    name     : {self._name}\n' \
+            f'    location : {self._location}\n' \
+            f'    data     : {d[0]}\n'
+
+        for i in d[1:]:
+            string += f'               {i}\n'
+
+        return string
+
 
 class _Property:
 
@@ -155,16 +124,7 @@ class _Property:
         self._itercount = 0
         self._blocks = {}
 
-    # def __iter__(self):
-    #     return self
-    #
-    # def __next__(self):
-    #     if self._itercount < len(self._blocks):
-    #         self._itercount += 1
-    #         return list(self._blocks.values())[self._itercount - 1]
-    #     else:
-    #         self._itercount = 0
-    #         raise StopIteration
+        self._flag_new_buffer_formchange = False
 
     def __getitem__(self, item):
         return self._blocks[item]
@@ -186,14 +146,16 @@ class _Property:
             self._buffer = merge_arrays([self._buffer, temp], flatten=True)
         # dict of seperate blocks.
         # stores referenced raw array, and other information
+        self._blocks[name] = _Block(self, name)
 
-        self._blocks[name] = Block(self._buffer, name)
+        # TODO for further dynamic shader implementation
+        # set statement saying form of buffer has been changed
+        self._flag_new_buffer_formchange = True
 
     @property
     def blocks(self):
         items = [i[1] for i in list(self._blocks.items())]
         return items
-
 
     def __str__(self):
         return str(self._blocks)
@@ -211,9 +173,32 @@ class _Property:
     def set_location(self, value):
         self._locations = value
 
+    @property
+    def updated(self):
+        result = []
+        for block in self.blocks:
+            if block.is_changed:
+                result.append(block)
+        return result
 
-class _Uniforms:
-    pass
+    @property
+    def is_buffer_formchange(self):
+
+        if not self._flag_new_buffer_formchange:
+            return False
+        else:
+            self._flag_new_buffer_formchange = False
+            return True
+
+    def posof_block(self, name):
+        return self.buffer.dtype.names.index(name)
+
+    @property
+    def locations(self):
+        loc = []
+        for block in self.blocks:
+            loc.append(block._location)
+        return loc
 
 class Properties:
 
@@ -223,7 +208,6 @@ class Properties:
         self._uniform = _Property()
 
     def __getitem__(self, item):
-
         if item in self._attribute.names:
             return self._attribute[item]
 
@@ -232,6 +216,18 @@ class Properties:
 
         else:
             raise KeyError("glsl shader doesn't contain such name of attribute or uniform")
+
+    def __setitem__(self, key, value):
+        if key in self.attribute.names:
+            self.attribute._blocks[key].__setitem__(None, value)
+        elif key in self.uniform.names:
+            self.uniform._blocks[key].__setitem__(None, value)
+
+        else:
+            raise KeyError("glsl shader doesn't contain such name of attribute or uniform")
+
+    # def __setitem__(self, key, value):
+    #     pass
 
     def new_attribute(self, name, typ, val=None, loc=None, dtype=None):
         self._attribute.insert_new_block(name, typ, val, loc)
@@ -249,11 +245,6 @@ class Properties:
     def uniform(self):
         return self._uniform
 
-    @property
-    def is_updated(self):
-        print(self.attribute.buffer, id(self.attribute.buffer))
-        print(self.uniform.buffer)
-        return
 
     def info(self):
         string = f'glsl properties of (Shader){self._shader}:\n'
@@ -277,3 +268,14 @@ class Properties:
         b = self.uniform.blocks
         a += b
         return a
+
+    @property
+    def buffer_formchanged(self):
+        cond_properties = []
+
+        if self.attribute.is_buffer_formchange:
+            cond_properties.append(self.attribute)
+        if self.uniform.is_buffer_formchange:
+            cond_properties.append(self.uniform)
+
+        return cond_properties

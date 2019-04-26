@@ -109,7 +109,7 @@ def draw():
     rectangle1.draw()
 
 
-Window.run_single_thread(1)
+Window.run_single_thread()
 # Window.run_multi_thread()
 
 # print(window,type(window))
