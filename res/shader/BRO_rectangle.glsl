@@ -1,5 +1,5 @@
 #shader vertex
-#version 330 core
+#version 400 core
 
 layout(location = 0) attribute vec3 a_position;
 layout(location = 1) attribute vec4 a_color;
@@ -12,13 +12,13 @@ void main() {
 }
 
     #shader fragment
-    #version 330 core
+    #version 430 core
 
-//uniform vec4 u_color;
+uniform vec4 u_color;
 
 varying vec4 v_color;
-out vec4 color;
+layout(location = 0) out vec4 color;
 
 void main() {
-    color = v_color;
+    color = u_color;
 }

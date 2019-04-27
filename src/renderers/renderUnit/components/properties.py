@@ -4,9 +4,10 @@ import weakref
 
 
 class _Block:
-    def __init__(self, property, name):
+    def __init__(self, property, name, glsltype):
         self._property = property
         self._name = name
+        self._glsltype = glsltype
 
         self._location = None
         self._flag_changed = False
@@ -90,8 +91,15 @@ class _Block:
         return self._property.buffer[self._name]
 
     @property
+    def location(self):
+        return self._location
+    @property
     def name(self):
         return self._name
+
+    @property
+    def glsltype(self):
+        return self._glsltype
 
     @property
     def is_changed(self):
@@ -106,6 +114,7 @@ class _Block:
 
         string = 'buffer block info:\n'
         string += f'    name     : {self._name}\n' \
+            f'    glsltype : {self._glsltype}\n' \
             f'    location : {self._location}\n' \
             f'    data     : {d[0]}\n'
 
@@ -146,7 +155,7 @@ class _Property:
             self._buffer = merge_arrays([self._buffer, temp], flatten=True)
         # dict of seperate blocks.
         # stores referenced raw array, and other information
-        self._blocks[name] = _Block(self, name)
+        self._blocks[name] = _Block(self, name, typ)
 
         # TODO for further dynamic shader implementation
         # set statement saying form of buffer has been changed

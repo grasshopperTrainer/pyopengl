@@ -72,7 +72,7 @@ class Shader(RenderComponent):
                 self._fragment += line
 
             # store variable names
-            if 'attribute ' in line or ' uniform ' in line:
+            if 'attribute ' in line or 'uniform ' in line:
 
                 if 'attribute ' in line:
                     addto = att_uni['att']
@@ -80,7 +80,7 @@ class Shader(RenderComponent):
 
                 else:
                     addto = att_uni['uni']
-                    l = line.split(' uniform ')[1]
+                    l = line.split('uniform ')[1]
 
                 l = l.replace(';', '')
                 l = l.strip().split(' ')
@@ -249,9 +249,10 @@ class Shader(RenderComponent):
     #     exec(f'glUniform{len(data)}f({l}, {d})')
 
     def _set_properties_location(self):
-        for block in self.properties.blocks:
+        for block in self.properties.attribute.blocks:
             block._location = glGetAttribLocation(self.glindex, block._name)
-
+        for block in self.properties.uniform.blocks:
+            block._location = glGetUniformLocation(self.glindex, block._name)
     # @property
     # def vertex(self):
     #     return self._vertex

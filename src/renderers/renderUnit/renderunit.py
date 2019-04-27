@@ -103,7 +103,8 @@ class RenderUnit():
         self._indexbuffer = Indexbuffer(data, glusage)
 
     def bind_texture(self, file, slot=None):
-        self._texture = Texture(file, slot)
+        if file is not None:
+            self._texture = Texture(file, slot)
 
     def draw(self):
         self._draw_()
@@ -122,19 +123,29 @@ class RenderUnit():
                 self.vertexarray.bind()
                 # self.vertexbuffer.bind()
                 self.indexbuffer.bind()
-                # print(self.vertexbuffer.vbo)
-                # print(self.indexbuffer.ibo)
-                # self.texture.bind()
+                self.texture.bind()
 
                 # update all variables of shader
                 self.update_variables()
 
-
-            if self.flag_draw:
-                glDrawElements(self.mode, self.indexbuffer.count, GL_UNSIGNED_INT, None)
+                if self.flag_draw:
+                    glDrawElements(self.mode, self.indexbuffer.count, GL_UNSIGNED_INT, None)
 
                 # TODO is this unnecessary processing? checking?
                 self._unbindall()
+
+            else:
+                if self.flag_draw:
+                    # load opengl states
+                    self.shader.bind()
+                    self.vertexarray.bind()
+                    # self.vertexbuffer.bind()
+                    self.indexbuffer.bind()
+                    self.texture.bind()
+
+                    glDrawElements(self.mode, self.indexbuffer.count, GL_UNSIGNED_INT, None)
+
+                    self._unbindall()
 
             # TODO is unbinding every time necessary?
         # for decorater
@@ -208,6 +219,7 @@ class RenderUnit():
             self.vertexbuffer.set_attribpointer(buffer)
             self.vertexbuffer.unbind()
 
+        # for vertex buffer
         # update buffer if change has been made
         # change whole if all buffer is changed
         changed_blocks = self.shader.properties.attribute.updated
@@ -221,7 +233,7 @@ class RenderUnit():
 
             else:
                 # update part only
-                for block in self.shader.properties.attribute.updated:
+                for block in changed_blocks:
 
                     buffer = self.shader.properties.attribute.buffer
                     start_pos = self.shader.properties.attribute.posof_block(block.name)
@@ -243,6 +255,24 @@ class RenderUnit():
                         # print(size)
                         glBufferSubData(GL_ARRAY_BUFFER, off, size, element)
             self.vertexbuffer.unbind()
+
+        # for uniforms
+        changed_blocks = self.shader.properties.uniform.updated
+        if len(changed_blocks) != 0:
+            # self.vertexbuffer.bind()
+
+            # update part only
+            for block in changed_blocks:
+                print(block)
+                n = block.data[0].size
+                t = block.data.dtype
+                if 'vec' in block.glsltype:
+                    n = block.glsltype.split('vec')[1]
+                    c = 1
+                    t = 'f'
+                else:
+                    raise TypeError('parsing undefined')
+                exec(f'glUniform{n}{t}v({block.location},{c},block.data[{c - 1}])')
 
     def _unbindall(self):
         self.shader.unbind()
