@@ -14,9 +14,11 @@ class _Block:
 
     def __setitem__(self, key, value):
         self._flag_changed = True
-        if not isinstance(value[0], (tuple, list)):
-            value = [list(value)]
-        else:
+        # if not isinstance(value[0], (tuple, list)):
+        #     value = [list(value)]
+        # else:
+        #     value = list(value)
+        if isinstance(value, tuple):
             value = list(value)
 
         block = self.buffer[self._name]
@@ -50,6 +52,8 @@ class _Block:
             self.buffer[self._name] = value
             return
 
+        # else:
+        # print(self.buffer[self._name][key])
         # short long values to match number of chunks
         # chunk_len = self.buffer.size
         if chunk_len > len(value):
@@ -145,8 +149,16 @@ class _Property:
         # number of value
         if 'vec' in typ:
             n = int(typ.split('vec')[1].strip())
-        if 'sampler2D' in typ:
+        elif 'sampler2D' in typ:
             n = 1
+        elif 'mat' in typ:
+            n = int(typ.split('mat')[1].strip())
+            n = (n, n)
+        else:
+            raise TypeError(f"""
+                            in glsl code:
+                            type: '{typ}' is unknown
+                            please define parsing""")
         # first call
         if self._buffer is None:
             self._buffer = np.zeros(1, ([(name, dtype, n)]))

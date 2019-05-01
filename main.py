@@ -102,11 +102,22 @@ def event():
 @window3.init
 def init():
     rectangle1 = Rectangle()
-
+    # window.viewports[0].camera.move(10,0,0,1)
+    # window.viewports[0].camera.rotate(0.5,0,0,1)
+    # window.viewports[0].camera.move(30,0,0,1)
+    # window.viewports[0].camera.rotate(-90,1,0,0)
+    # window.viewports[0].camera.rotate(1,1,0,0)
+    angle = 0
 
 @window3.draw
 def draw():
+    angle += 0.01
+    window.clear()
+    window.viewports.open(0)
+    window.viewports[0].camera.lookat([0, 0, 0], [1 * np.cos(angle), 1 * np.sin(angle), 10])
+
     rectangle1.draw()
+    window.viewports.close()
 
 
 Window.run_single_thread()

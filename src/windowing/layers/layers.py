@@ -23,36 +23,39 @@ class _Layer:
 
     def hide(self):
         for obj in self._objects:
-            if hasattr(obj, '_hide_'):
-                obj._hide_()
+            obj._hide_()
 
-    def stop(self):
+    def stop(self, set: bool = None):
         for obj in self._objects:
-            if hasattr(obj, '_stop_'):
-                obj._stop_()
+            obj._stop_(set)
 
 
 class Layers:
 
-    def __init__(self):
-        self._layers = {}
+    def __init__(self, window):
+        self._layers = {'default': _Layer()}
+        self._window = window
 
     def __getitem__(self, item) -> _Layer:
-        if isinstance(item, (int, str)):
+        if isinstance(item, str):
             item = str(item)
             try:
                 return self._layers[item]
             except:
-                self._layers[item] = _Layer()
-                return self._layers[item]
+                KeyError(f"no such layer named '{item}'")
+
+        if isinstance(item, int):
+            n = list(self._layers.keys())[item]
+            return self._layers[n]
+
 
     def __str__(self):
-        block = '- layers consists of:\n'
+        block = f"(window)'{self._window.name}' has layers:\n"
         if len(self._layers) == 0:
             block += '    None\n'
         else:
             for layer in self._layers:
-                block += f"    (layer) '{layer}':\n"
+                block += f"    (layer)'{layer}':\n"
 
                 if len(self._layers[layer]) == 0:
                     block += '        None\n'
@@ -62,3 +65,6 @@ class Layers:
         block += '- layers end'
 
         return block
+
+    def new(self, name):
+        self._layers[name] = _Layer()

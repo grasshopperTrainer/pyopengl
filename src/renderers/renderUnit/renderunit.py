@@ -5,6 +5,7 @@ from OpenGL.GL import *
 
 from .components import *
 from windowing.window import Window
+# from windowing.layers.layerable import Layerable
 
 import numpy as np
 
@@ -34,7 +35,6 @@ class RenderUnit():
         self._name = name
         self.__class__._renderers[name] = self
 
-        self.variables_to_update = {}
         self.context = glfw.get_current_context()
         self._mode = GL_TRIANGLES
 
@@ -42,7 +42,7 @@ class RenderUnit():
         self._flag_run = True
 
         # default layer setting
-        self.current_window.layer[0].add(self)
+        # self.current_window.layer[0].add(self)
 
     @property
     def shader(self):
@@ -113,10 +113,11 @@ class RenderUnit():
         # real draw
         if func is None:
 
+            # if vertexarray for current context is not built
+            if not isinstance(self.vertexarray, Vertexarray):
+                self._build_()
+
             if self.flag_run:
-                # if vertexarray for current context is not built
-                if not isinstance(self.vertexarray, Vertexarray):
-                    self._build_()
 
                 # load opengl states
                 self.shader.bind()
@@ -127,7 +128,6 @@ class RenderUnit():
 
                 # update all variables of shader
                 self.update_variables()
-
                 if self.flag_draw:
                     glDrawElements(self.mode, self.indexbuffer.count, GL_UNSIGNED_INT, None)
 
@@ -168,13 +168,9 @@ class RenderUnit():
         self.flag_run = True
         self.flag_draw = True
 
-    def _current_window_(self):
-        self._current_window = Window.get_current_window()
-
     @property
     def current_window(self):
-        self._current_window_()
-        return self._current_window
+        return Window.get_current_window()
 
     def _build_(self):
         print('building render unit')
@@ -256,6 +252,14 @@ class RenderUnit():
                         glBufferSubData(GL_ARRAY_BUFFER, off, size, element)
             self.vertexbuffer.unbind()
 
+        # for assigned uniforms
+        vm = self.shader.properties['VM']
+        matrix = self.current_window.viewports.current_viewport.camera.VM
+        glUniformMatrix4fv(vm.location, 1, True, matrix)
+        pm = self.shader.properties['PM']
+        matrix = self.current_window.viewports.current_viewport.camera.PM
+        glUniformMatrix4fv(pm.location, 1, True, matrix)
+
         # for uniforms
         changed_blocks = self.shader.properties.uniform.updated
         if len(changed_blocks) != 0:
@@ -263,17 +267,20 @@ class RenderUnit():
 
             # update part only
             for block in changed_blocks:
-                print(block)
                 n = block.data[0].size
                 t = block.data.dtype
                 if 'vec' in block.glsltype:
                     n = block.glsltype.split('vec')[1]
                     c = 1
                     t = 'f'
+                    exec(f'glUniform{n}{t}v({block.location},{c},block.data[{c - 1}])')
+                elif 'mat' in block.glsltype:
+                    n = block.glsltype.split('mat')[1]
+                    c = 1
+                    t = 'f'
+                    exec(f'glUniformMatrix{n}{t}v({block.location},{c},True,block.data[{c - 1}])')
                 else:
                     raise TypeError('parsing undefined')
-                exec(f'glUniform{n}{t}v({block.location},{c},block.data[{c - 1}])')
-
     def _unbindall(self):
         self.shader.unbind()
         self.vertexarray.unbind()

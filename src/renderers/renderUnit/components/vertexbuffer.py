@@ -27,7 +27,6 @@ class Vertexbuffer(RenderComponent):
         print('-vertex buffer built')
 
     def set_attribpointer(self, buffer):
-
         datasize = buffer.size * buffer.itemsize
 
         # TODO glusage resetting needed?

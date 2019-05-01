@@ -159,10 +159,10 @@ class Window:
         self._follow_close = []
 
         # drawing layers
-        self._layers = Layers()
+        self._layers = Layers(self)
 
         # viewport
-        self._viewport = Viewports(self)
+        self._viewports = Viewports(self)
 
     @property
     def mother_window(self):
@@ -300,8 +300,19 @@ class Window:
         glfw.window_hint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE)
 
     def initiation_gl_setting(self):
+        gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+
+    def initiation_window_setting(self):
+        self._viewports.new(0, 0, 1.0, 1.0, 'default')
+
+    def clear(self, *color):
+        if len(color) == 0:
+            color = (1, 1, 1, 1)
+        gl.glClearColor(0, 0, 0, 0)
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
 
     @classmethod
     def run_single_thread(cls, framecount = None):
@@ -318,6 +329,7 @@ class Window:
             # init setting
             window.initiation_glfw_setting()
             window.initiation_gl_setting()
+            window.initiation_window_setting()
 
             # assigned var names
             # TODO maybe need more assigned variables?
@@ -519,12 +531,9 @@ class Window:
     def layer(self):
         return self._layers
 
-    def set_viewport(self, param, param1, param2, param3):
-        pass
-
     @property
-    def viewport(self):
-        return self._viewport
+    def viewports(self):
+        return self._viewports
 
     @property
     def width(self):

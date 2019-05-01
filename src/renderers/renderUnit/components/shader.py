@@ -33,7 +33,6 @@ class Shader(RenderComponent):
         self._bake_shader()
         # 2. store array buffer to use
         self._set_properties_location()
-
         # self.store_self()
 
     def _load_parse_glsl(self):
@@ -88,25 +87,27 @@ class Shader(RenderComponent):
                 name = l[1]
 
                 # make default value
-                default_val = 0
-                # parse 'vec' value
-                if 'vec' in type:
-                    n = int(type.replace('vec', ''))
-                    default_val = (0.0,) * n
-                    pass
-                elif 'sampler' in type:
-                    # if type.split('sampler')[1] == '2D':
-                    default_val = (0,)
-                elif 'float' in type:
-                    default_val = (0.0,)
-                else:
-                    raise TypeError(f"""
-                            in glsl code:
-                            in line: '{line[:-1]}'
-                            type: '{type}' is unknown
-                            please define parsing""")
-                    # TODO parse if other types are used for shader 'attribute', or 'uniform'
-                    pass
+                # default_val = 0
+                # # # parse 'vec' value
+                # if 'vec' in type:
+                #     n = int(type.replace('vec', ''))
+                #     default_val = (0.0,) * n
+                #     pass
+                # elif 'sampler' in type:
+                #     # if type.split('sampler')[1] == '2D':
+                #     default_val = (0,)
+                # elif 'float' in type:
+                #     default_val = (0.0,)
+                # elif 'mat' in type:
+                #     default_val =
+                # else:
+                #     raise TypeError(f"""
+                #             in glsl code:
+                #             in line: '{line[:-1]}'
+                #             type: '{type}' is unknown
+                #             please define parsing""")
+                #     # TODO parse if other types are used for shader 'attribute', or 'uniform'
+                #     pass
                 # store value
                 addto.append([name, type])
 
@@ -144,53 +145,6 @@ class Shader(RenderComponent):
         glDeleteShader(vs)
         glDeleteShader(fs)
 
-    # def set_variable(self, name ,value):
-    #     if name in self.attribute:
-    #         self.attribute[name][1] = value
-    #     if name in self.uniform:
-    #         self.uniform[name][1] = value
-    #
-    # def update_variable(self):
-    #
-    #     for name in self.attribute:
-    #         item = self.attribute[name]
-    #         loc = item[2]
-    #
-    #         if loc != -1:
-    #             vals = item[1]
-    #             data_type = item[0]
-    #             points = np.zeros(4, [('vertex', np.float32, 2)])
-    #             points['vertex'] = [-1, -1], [1, -1], [1, 1], [-1, 1]
-    #             # glBufferData(GL_ARRAY_BUFFER, 32, points, GL_DYNAMIC_DRAW)
-    #             b = np.array([-1, -1], dtype=np.float32)
-    #             # glBufferSubData(GL_ARRAY_BUFFER,0,32,b)
-    #             glBufferSubData(GL_ARRAY_BUFFER, 0, 8, points['vertex'][0])
-    #             glBufferSubData(GL_ARRAY_BUFFER, 24, 8, points['vertex'][1])
-    #
-    #     # update uniform
-    #     for name in self.uniform:
-    #         item = self.uniform[name]
-    #         loc = item[2]
-    #         vals = item[1]
-    #         data_type = item[0]
-    #         if loc != -1:
-    #             if 'vec' in data_type:
-    #                 n = int(data_type.split('vec')[1])
-    #                 exec_line = f'glUniform{n}f(loc'
-    #                 for i in range(n):
-    #                     exec_line += f',vals[{i}]'
-    #                 exec_line += ')'
-    #                 # print(name,loc, exec_line)
-    #                 # glUniform4f(loc, vals[0], vals[1], vals[2], vals[3])
-    #             elif 'sampler' in data_type:
-    #                 exec_line = f'glUniform1i(loc, vals[0])'
-    #             else:
-    #                 print_message("unknown glsl var type. can't parse", "error", var_info=f'{name},{uni[name]}')
-    #                 # raise Exception("unknown glsl var type. can't parse")
-    #
-    #             exec(exec_line)
-    #         else:
-    #             pass
 
     @classmethod
     def deleteProgram(cls, *index):
@@ -204,11 +158,6 @@ class Shader(RenderComponent):
                 n = list(d.keys())[i]
                 v = d[n][0]
                 glDeleteProgram(v)
-
-    # def bindbuffer(self, buffer):
-    #     self._vao = buffer.print_va_info
-    #     self._vbo = buffer.vbo
-    #     self._ibo = buffer.ibo
 
     def build(self):
         pass
@@ -235,60 +184,15 @@ class Shader(RenderComponent):
     def glindex(self):
         return self._glindex
 
-    # def get_uniform_location(self, name:str):
-    #     return glGetUniformLocation(self.glindex, name)
-    #
-    # def set_uniform(self,name: str, *data):
-    #     l = glGetUniformLocation(self.glindex, name)
-    #     d = ''
-    #     for i in range(len(data)):
-    #         d += f'data[{i}],'
-    #     d = d[:-1]
-    #     # TODO automaite float int check?
-    #
-    #     exec(f'glUniform{len(data)}f({l}, {d})')
-
     def _set_properties_location(self):
-        for block in self.properties.attribute.blocks:
-            block._location = glGetAttribLocation(self.glindex, block._name)
+        for i, block in enumerate(self.properties.attribute.blocks):
+            glBindAttribLocation(self.glindex, i, block._name)
+            block._location = i
+
         for block in self.properties.uniform.blocks:
             block._location = glGetUniformLocation(self.glindex, block._name)
-    # @property
-    # def vertex(self):
-    #     return self._vertex
-    #
-    # @vertex.setter
-    # def vertex(self, value):
-    #     self._vertex = value
-    #
-    # @property
-    # def fragment(self):
-    #     return self._fragment
-    #
-    # @fragment.setter
-    # def fragment(self,value):
-    #     self._fragment = value
 
-    # @property
-    # def variables(self):
-    #     a = self._attribute.copy()
-    #     b = self._uniform.copy()
-    #     a.update(b)
-    #     return a
-
-    # @property
-    # def uniform(self):
-    #     """
-    #     description on values by index
-    #     0 : type of value
-    #     1 : type
-    #     2 : location in shader
-    #     """
-    #     return self._uniform
-    # @property
-    # def attribute(self):
-    #     return self._attribute
-
+        glLinkProgram(self.glindex)
     @property
     def properties(self):
         return self._properties
