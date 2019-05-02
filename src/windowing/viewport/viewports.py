@@ -40,38 +40,60 @@ class _Camera:
 
     def move(self, value, x, y, z):
         if not isinstance(value, (tuple, list)):
-            value = [-value, ] * 3
+            value = [-value, ]
         else:
             value = [-i for i in value]
 
-        matrix = np.eye(4)
-        matrix[:, 3] = bool(x) * value[0], bool(y) * value[1], bool(z) * value[2], 1
+        x, y, z = [bool(i) for i in [x, y, z]]
+        if len(value) < sum([x, y, z]):
+            print(len(value))
+            raise ValueError('insufficient number of input')
 
+        matrix = np.eye(4)
+        vx, vy, vz = 0, 0, 0
+        if x:
+            vx = value.pop(0)
+        if y:
+            vy = value.pop(0)
+        if z:
+            vz = value.pop(0)
+
+        matrix[:, 3] = vx, vy, vz, 1
         self._view_matrix = matrix.dot(self._view_matrix)
 
     def rotate(self, angle, x, y, z, radian=False):
+        if not isinstance(angle, (list, tuple)):
+            angle = [angle, ]
+
         if radian:
-            angle = -angle
+            angle = [-a for a in angle]
         else:
-            angle = np.radians(-angle)
+            angle = [np.radians(-a) for a in angle]
+
+        x, y, z = [bool(i) for i in [x, y, z]]
+        if len(angle) < sum([x, y, z]):
+            raise ValueError('insufficient number of input')
+
         matrix = np.eye(4)
-
-        if bool(x):
+        if x:
             new = np.eye(4)
-            new[1] = 0, np.cos(angle), -np.sin(angle), 0
-            new[2] = 0, np.sin(angle), np.cos(angle), 0
+            a = angle.pop(0)
+            new[1] = 0, np.cos(a), -np.sin(a), 0
+            new[2] = 0, np.sin(a), np.cos(a), 0
             matrix = new.dot(matrix)
 
-        if bool(y):
+        if y:
             new = np.eye(4)
-            new[0] = np.cos(angle), 0, np.sin(angle), 0
-            new[2] = -np.sin(angle), 0, np.cos(angle), 0
+            a = angle.pop(0)
+            new[0] = np.cos(a), 0, np.sin(a), 0
+            new[2] = -np.sin(a), 0, np.cos(a), 0
             matrix = new.dot(matrix)
 
-        if bool(z):
+        if z:
             new = np.eye(4)
-            new[0] = np.cos(angle), -np.sin(angle), 0, 0
-            new[1] = np.sin(angle), np.cos(angle), 0, 0
+            a = angle.pop(0)
+            new[0] = np.cos(a), -np.sin(a), 0, 0
+            new[1] = np.sin(a), np.cos(a), 0, 0
             matrix = new.dot(matrix)
 
         self._view_matrix = matrix.dot(self._view_matrix)
@@ -98,10 +120,10 @@ class _Camera:
             angle = -angle
         self.rotate(angle, 0, 0, 1, True)
 
-        y = np.sqrt(vec[0] * vec[0] + vec[1] * vec[1])
-        z = vec[2]
-        angle = np.arccos(z / np.sqrt(z * z + y * y)) - np.pi
-        if y >= 0:
+        y = -vec[2]
+        z = np.sqrt(vec[0] * vec[0] + vec[1] * vec[1])
+        angle = np.arcsin(z / np.sqrt(z * z + y * y))
+        if z <= 0:
             angle = -angle
         self.rotate(angle, 1, 0, 0, True)
 
