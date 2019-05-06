@@ -64,6 +64,7 @@ class Window:
     def _global_init():
         import OpenGL.GL as gl
         import numpy as np
+        import prohopper as ph
 
     _init_global = _global_init
     _windows = _Windows()
@@ -131,6 +132,7 @@ class Window:
         self._glfw_window = glfw.create_window(width, height, name, monitor, share)
         if not self._glfw_window:
             glfw.terminate()
+        glfw.make_context_current(self.glfw_window)
 
         self._option_close = 0
 
@@ -163,6 +165,8 @@ class Window:
 
         # viewport
         self._viewports = Viewports(self)
+
+        self._flag_need_swap = True
 
     @property
     def mother_window(self):
@@ -293,26 +297,39 @@ class Window:
     #
     #         timer.set_routine_end()
 
+    def framebuffer_size_callback(self, window, width, height):
+        pass
+
+
     def initiation_glfw_setting(self):
         # default setting
         glfw.window_hint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4)
         glfw.window_hint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3)
         glfw.window_hint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE)
 
+        glfw.set_framebuffer_size_callback(self.glfw_window, self.framebuffer_size_callback)
+        # glfw.swap_interval(60)
     def initiation_gl_setting(self):
+        gl.glEnable(gl.GL_SCISSOR_TEST)
         gl.glEnable(gl.GL_DEPTH_TEST)
+
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+
     def initiation_window_setting(self):
-        self._viewports.new(0, 0, 1.0, 1.0, 'default')
+        # self._viewports.new(0, 0, 1.0, 1.0, 'default')
+        pass
 
     def clear(self, *color):
         if len(color) == 0:
             color = (1, 1, 1, 1)
-        gl.glClearColor(0, 0, 0, 0)
+        gl.glClearColor(*color)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
         gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+        self._flag_need_swap = True
 
     @classmethod
     def run_single_thread(cls, framecount = None):
@@ -365,19 +382,23 @@ class Window:
                 # to give access to other windows through keyword 'windows'
                 windows = cls._windows
                 for window in cls._windows:
+
                     #drawing
                     # try:
                     # glfw.make_context_current(None)
                     # glfw.make_context_current(window.glfw_window)
                     window.make_window_current()
 
+
                     window._context_scope.run(window.draw_func)
+
+                    if window._flag_need_swap:
+                        glfw.swap_buffers(window.glfw_window)
+                    window._flag_need_swap = False
 
                     # except Exception as e:
                     #     print(e, window.instance_name, len(cls._windows))
                     #     break
-                    glfw.swap_buffers(window.glfw_window)
-
                 glfw.poll_events()
 
             else:
@@ -537,15 +558,15 @@ class Window:
 
     @property
     def width(self):
-        pass
+        return self.size[0]
 
     @property
     def height(self):
-        pass
+        return self.size[1]
 
     @property
     def size(self):
-        return glfw.get_window_size(self.glfw_window)
+        return glfw.get_framebuffer_size(self.glfw_window)
 
 class Timer:
     def __init__(self,framerate, name):

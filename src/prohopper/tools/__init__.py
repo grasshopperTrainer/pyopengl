@@ -1,13 +1,11 @@
-print('__tools init')
-from primitives import *
-
-import pythonic_utilities as pu
-import point_tools as point
-import vector_tools as vector
-import trans_tools as trans
-import tlist_tools as tlist
-import rect_tools as rect
-import matrix_tools as matrix
-import domain_tools as domain
-import maths_tools as maths
-import line_tools as line
+from ..tools import primitives as primitives
+from ..tools import domain_tools as domain
+from ..tools import line_tools as line
+from ..tools import maths_tools as math
+from ..tools import matrix_tools as matrix
+from ..tools import point_tools as point
+from ..tools import pythonic_utilities as pythonic
+from ..tools import rect_tools as rect
+from ..tools import tlist_tools as tlist
+from ..tools import trans_tools as trans
+from ..tools import vector_tools as vector

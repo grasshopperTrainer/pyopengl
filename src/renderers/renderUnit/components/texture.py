@@ -61,7 +61,7 @@ class Texture(RenderComponent):
             data_type = gl.GL_UNSIGNED_BYTE
 
         gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, internalformat,
-                        self.image.width, self.image.height,
+                        self.image.w, self.image.h,
                         0, format, data_type, self.pixel_data)
 
         self.unbind()

@@ -1,6 +1,6 @@
 import numpy as np
 import copy
-from tools import *
+from .primitives import *
 
 
 def translation(vector: Vector):

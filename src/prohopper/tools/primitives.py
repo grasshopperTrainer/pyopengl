@@ -1008,12 +1008,3 @@ class Transformation(Primitive):
         self.set_data(array)
 
     pass
-
-# a = Point(-1,1)
-# b = Point(-1,-1)
-# c = Point(1,-1)
-# d = Point(1,1)
-# r = Rect(a,b,c,d)
-# print(r.center())
-# print(r)
-# print(r.print_data())

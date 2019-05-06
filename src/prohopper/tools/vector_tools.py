@@ -1,7 +1,7 @@
 import numpy as np
 # from tools import *
-import tlist_tools as tlist
-from primitives import *
+from ..tools import tlist_tools as tlist
+from .primitives import *
 
 
 @tlist.calbranch

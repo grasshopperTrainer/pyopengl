@@ -1,8 +1,8 @@
 import numpy as np
 # from tools import *
-from primitives import *
-import line_tools as line
-import trans_tools as trans
+from .primitives import *
+from ..tools import line_tools as line
+from ..tools import trans_tools as trans
 
 
 def con_center(center: Point, sizex, sizey=None):

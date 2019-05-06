@@ -1,8 +1,7 @@
 import numpy as np
 import copy
 from .primitives import *
-import rect_tools as rect
-
+from ..tools import rect_tools as rect
 
 def remap(value, source: Domain, target: Domain = None):
     if isinstance(value, Point):

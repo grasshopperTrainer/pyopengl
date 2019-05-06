@@ -298,6 +298,7 @@ class Source_parser:
                                     l.isnumeric(),
                                     l.isalpha(),
                                     l == '.',
+                                    l == '_'
                                 ]
                                 if sum(conditions) > 0:
                                     cond_left = False

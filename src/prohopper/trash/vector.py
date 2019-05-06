@@ -25,10 +25,10 @@ print(a)
 for i in a:
     print('그냥', i, type(i))
 
-for i in range(a[1].size):
+for i in range(a[1].abs_size):
     print(i)
     a[1, i] = 10
 
-a[1, range(a[1].size)] = 5
+a[1, range(a[1].abs_size)] = 5
 
 print(a)

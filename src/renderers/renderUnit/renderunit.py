@@ -36,7 +36,7 @@ class RenderUnit():
         self.__class__._renderers[name] = self
 
         self.context = glfw.get_current_context()
-        self._mode = GL_TRIANGLES
+        self._drawmode = GL_TRIANGLES
 
         self._flag_draw = True
         self._flag_run = True
@@ -99,8 +99,8 @@ class RenderUnit():
     def bind_vertexbuffer(self, glusage=None):
         self._vertexbuffer = Vertexbuffer(glusage)
 
-    def bind_indexbuffer(self, data, glusage=None):
-        self._indexbuffer = Indexbuffer(data, glusage)
+    def bind_indexbuffer(self, glusage=None):
+        self._indexbuffer = Indexbuffer(glusage)
 
     def bind_texture(self, file, slot=None):
         if file is not None:
@@ -128,9 +128,8 @@ class RenderUnit():
 
                 # update all variables of shader
                 self.update_variables()
-                if self.flag_draw:
-                    glDrawElements(self.mode, self.indexbuffer.count, GL_UNSIGNED_INT, None)
 
+                self.draw_element()
                 # TODO is this unnecessary processing? checking?
                 self._unbindall()
 
@@ -143,7 +142,7 @@ class RenderUnit():
                     self.indexbuffer.bind()
                     self.texture.bind()
 
-                    glDrawElements(self.mode, self.indexbuffer.count, GL_UNSIGNED_INT, None)
+                    self.draw_element()
 
                     self._unbindall()
 
@@ -151,6 +150,26 @@ class RenderUnit():
         # for decorater
         else:
             func()
+
+    def draw_element(self):
+        window = self.current_window
+        viewport = window.viewports.current_viewport
+
+        # if there is an updated value and
+        # this object need to be redrawn
+        if viewport.is_any_update() or self.shader.properties.is_any_update:
+            # before make any change erase background
+            viewport.fillbackground()
+
+            # draw a thing
+            glDrawElements(self.mode, self.indexbuffer.count, self.indexbuffer.gldtype, None)
+            # tell window change has been made on framebuffer
+            # and should swap it
+            self.current_window._flag_need_swap = True
+
+        # update have been handled so reset update flag
+        self.shader.properties.reset_update()
+        self.current_window.viewports.current_viewport.reset_update()
 
     def _hide_(self, set=None):
         if set is None:
@@ -252,13 +271,22 @@ class RenderUnit():
                         glBufferSubData(GL_ARRAY_BUFFER, off, size, element)
             self.vertexbuffer.unbind()
 
-        # for assigned uniforms
-        vm = self.shader.properties['VM']
-        matrix = self.current_window.viewports.current_viewport.camera.VM
-        glUniformMatrix4fv(vm.location, 1, True, matrix)
-        pm = self.shader.properties['PM']
-        matrix = self.current_window.viewports.current_viewport.camera.PM
-        glUniformMatrix4fv(pm.location, 1, True, matrix)
+            # if size changed
+            if self._drawmode == GL_TRIANGLES:
+                num_tri = buffer.size - 2
+                if num_tri != self.indexbuffer.data.size:
+                    indicies = []
+                    for i in range(num_tri):
+                        if i == 0:
+                            indicies += [0, 1, 2]
+                        elif i == 1:
+                            indicies += [2, 0, 3]
+                        else:
+                            indicies += [i, i - 1, i + 1]
+
+                    self.indexbuffer.data = indicies
+                    self.indexbuffer.build()
+                    self.indexbuffer.bind()
 
         # for uniforms
         changed_blocks = self.shader.properties.uniform.updated
@@ -281,6 +309,22 @@ class RenderUnit():
                     exec(f'glUniformMatrix{n}{t}v({block.location},{c},True,block.data[{c - 1}])')
                 else:
                     raise TypeError('parsing undefined')
+
+        # for assigned uniforms
+        vp = self.current_window.viewports.current_viewport
+        vm = self.shader.properties['VM']
+        matrix = vp.camera.VM
+        glUniformMatrix4fv(vm.location, 1, True, matrix)
+        # print(matrix)
+        pm = self.shader.properties['PM']
+        matrix = vp.camera.PM
+        glUniformMatrix4fv(pm.location, 1, True, matrix)
+        # print(matrix)
+        vpm = self.shader.properties['VPM']
+        matrix = vp.VPM
+        glUniformMatrix4fv(vpm.location, 1, True, matrix)
+
+
     def _unbindall(self):
         self.shader.unbind()
         self.vertexarray.unbind()
@@ -292,20 +336,14 @@ class RenderUnit():
     def glsl_variables(self):
         return self.shader.variables
 
-    def clear(self, *color):
-        if len(color) == 0:
-            color = (1, 1, 1, 1)
-        glClearColor(*color)
-        glClear(GL_COLOR_BUFFER_BIT)
-
     @property
     def mode(self):
-        return self._mode
+        return self._drawmode
 
     @mode.setter
     def mode(self, value):
         if isinstance(value, int):
-            self._mode = value
+            self._drawmode = value
 
     def print_va_info(self):
         return self._vertexarray

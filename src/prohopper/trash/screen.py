@@ -1,5 +1,5 @@
-from glumpy import app
-from doodler import Doodler
+# from glumpy import app
+# from doodler import Doodler
 
 
 class Screen:
@@ -63,11 +63,11 @@ class Screen:
 
     @property
     def width(self):
-        return self.currentwindow.width
+        return self.currentwindow.w
 
     @property
     def height(self):
-        return self.currentwindow.height
+        return self.currentwindow.h
 
     @classmethod
     def event(cls, func):

@@ -1,12 +1,3 @@
-from screen import Screen
-from doodler import Doodler
-import inspect
+from .tools import __init__
 
-
-def thisisinit():
-    print('thisisinit')
-
-
-print('prohopper init')
-draw = Doodler()
-directdraw = Doodler.drawprohopper
+print('prohopper successfully imported')

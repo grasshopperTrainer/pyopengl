@@ -2,239 +2,123 @@ from numbers import Number
 import OpenGL.GL as gl
 import numpy as np
 import weakref
+from .Camera import _Camera
 
-
-class _CameraProperty:
-    def __init__(self):
-        self._dict = weakref.WeakKeyDictionary()
-
-    def __set__(self, instance, value):
-        self._dict[instance] = value
-
-    def __get__(self, instance, owner):
-        return self._dict[instance]
-
-
-class _Camera:
-    near = _CameraProperty()
-    far = _CameraProperty()
-    left = _CameraProperty()
-    right = _CameraProperty()
-    bottom = _CameraProperty()
-    top = _CameraProperty()
-
-    def __init__(self):
-        self._mode = 1
-
-        self.near = 5
-        self.far = 1000
-        self.left = -1
-        self.right = 1
-        self.bottom = -1
-        self.top = 1
-
-        self._view_matrix = np.eye(4)
-        self._projectioin_matrix = np.eye(4)
-
-        self.build_PM()
-
-    def move(self, value, x, y, z):
-        if not isinstance(value, (tuple, list)):
-            value = [-value, ]
-        else:
-            value = [-i for i in value]
-
-        x, y, z = [bool(i) for i in [x, y, z]]
-        if len(value) < sum([x, y, z]):
-            print(len(value))
-            raise ValueError('insufficient number of input')
-
-        matrix = np.eye(4)
-        vx, vy, vz = 0, 0, 0
-        if x:
-            vx = value.pop(0)
-        if y:
-            vy = value.pop(0)
-        if z:
-            vz = value.pop(0)
-
-        matrix[:, 3] = vx, vy, vz, 1
-        self._view_matrix = matrix.dot(self._view_matrix)
-
-    def rotate(self, angle, x, y, z, radian=False):
-        if not isinstance(angle, (list, tuple)):
-            angle = [angle, ]
-
-        if radian:
-            angle = [-a for a in angle]
-        else:
-            angle = [np.radians(-a) for a in angle]
-
-        x, y, z = [bool(i) for i in [x, y, z]]
-        if len(angle) < sum([x, y, z]):
-            raise ValueError('insufficient number of input')
-
-        matrix = np.eye(4)
-        if x:
-            new = np.eye(4)
-            a = angle.pop(0)
-            new[1] = 0, np.cos(a), -np.sin(a), 0
-            new[2] = 0, np.sin(a), np.cos(a), 0
-            matrix = new.dot(matrix)
-
-        if y:
-            new = np.eye(4)
-            a = angle.pop(0)
-            new[0] = np.cos(a), 0, np.sin(a), 0
-            new[2] = -np.sin(a), 0, np.cos(a), 0
-            matrix = new.dot(matrix)
-
-        if z:
-            new = np.eye(4)
-            a = angle.pop(0)
-            new[0] = np.cos(a), -np.sin(a), 0, 0
-            new[1] = np.sin(a), np.cos(a), 0, 0
-            matrix = new.dot(matrix)
-
-        self._view_matrix = matrix.dot(self._view_matrix)
-
-    def scale(self):
-        # ???
-        pass
-
-    def lookat(self, to_point, from_point=None):
-        if from_point is None:
-            from_point = self._view_matrix.dot(np.array([[0, 0, 0, 1]]).T)
-        else:
-            self._view_matrix = np.eye(4)
-            self.move(from_point, 1, 1, 1)
-            from_point = np.array([from_point + [1, ]]).T
-
-        to_point = np.array([to_point + [1, ]]).T
-        vec = to_point - from_point
-
-        x = vec[1]
-        y = -vec[0]
-        angle = np.arccos(x / np.sqrt(x * x + y * y))
-        if y <= 0:
-            angle = -angle
-        self.rotate(angle, 0, 0, 1, True)
-
-        y = -vec[2]
-        z = np.sqrt(vec[0] * vec[0] + vec[1] * vec[1])
-        angle = np.arcsin(z / np.sqrt(z * z + y * y))
-        if z <= 0:
-            angle = -angle
-        self.rotate(angle, 1, 0, 0, True)
-
-    def change_mode(self, mode):
-        if isinstance(mode, str):
-            if 'ortho' in mode:
-                self._mode = 0
-            elif 'proj' in mode:
-                self._mode = 1
-        else:
-            self._mode = mode
-
-    def build_PM(self):
-        if self._mode == 0:
-            if self.right == -self.left and self.top == -self.bottom:
-                self._projectioin_matrix[[0, 1, 2, 2], [0, 1, 2, 3]] = \
-                    [1 / self.right, \
-                     1 / self.top, \
-                     -2 / (self.far - self.near), \
-                     -(self.far + self.near) / (self.far - self.near)]
-
-            else:
-                self._projectioin_matrix[[0, 0, 1, 1, 2, 2], [0, 3, 1, 3, 2, 3]] = \
-                    [2 / (self.r - self.l),
-                     -(self.r + self.l) / (self.r - self.l),
-                     2 / (self.t - self.b),
-                     -(self.t + self.b) / (self.t - self.b),
-                     -2 / (self.f - self.n),
-                     -(self.f + self.n) / (self.f - self.n)]
-
-            self._projectioin_matrix[3] = 0, 0, 0, 1
-
-        elif self._mode == 1:
-            if self.right == -self.left and self.top == -self.bottom:
-                self._projectioin_matrix[[0, 1, 2, 2], [0, 1, 2, 3]] = \
-                    [self.near / self.right,
-                     self.near / self.top,
-                     -(self.far + self.near) / (self.far - self.near),
-                     -2 * self.far * self.near / (self.far - self.near)]
-
-            else:
-                self._projectioin_matrix[[0, 0, 1, 1, 2, 2], [0, 2, 1, 2, 2, 3]] = \
-                    [2 * self.near / (self.right - self.left),
-                     (self.right + self.left) / (self.right - self.left),
-                     2 * self.near / (self.top - self.bottom),
-                     (self.top + self.bottom) / (self.top - self.bottom),
-                     -(self.far + self.near) / (self.far - self.near),
-                     -2 * self.far * self.near / (self.far - self.near)]
-
-            self._projectioin_matrix[3] = 0, 0, -1, 0
-
-    @property
-    def width(self):
-        return self.right - self.left
-
-    @width.setter
-    def width(self, w):
-        self.right = w / 2
-        self.left = -w / 2
-        self.build_PM()
-
-    @property
-    def height(self):
-        return self.top - self.bottom
-
-    @height.setter
-    def height(self, h):
-        self.top = h / 2
-        self.bottom = -h / 2
-        self.build_PM()
-
-    @property
-    def VM(self):
-        return self._view_matrix
-
-    @property
-    def PM(self):
-        return self._projectioin_matrix
-
+from .properties import _Property
 
 class _Viewport:
-    def __init__(self, name, x, y, width, height):
+    DEF_CLEAR_COLOR = 0, 0, 0, 0
+
+    posx = _Property()
+    posy = _Property()
+    width = _Property()
+    height = _Property()
+    VPM = _Property()
+
+    def __init__(self, mother, name, x, y, width, height):
+        self._mother = mother
         self._name = name
-        self._posx = x
-        self._posy = y
-        self._width = width
-        self._height = height
 
-        self._current_viewport = None
+        self.posx = x
+        self.posy = y
+        self.width = width
+        self.height = height
+        self.VPM = np.eye(4)
 
-        self._camera = _Camera()
+        self._camera = _Camera(self)
+
+        gl.glClearColor(*self.DEF_CLEAR_COLOR)
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+
+        self._flag_clear = None
+        self._clear_color = None
+
+    def clear(self, *color):
+        # if clear is called, save clear color
+        if len(color) == 4:
+            self._clear_color = color
+        # not going to clear right now because it may be meaningless
+        # if nothing is drawn on viewport
+        self._flag_clear = True
+
+    def fillbackground(self):
+        # clear window by being called from (class)RenderUnit.draw_element()
+        if self._flag_clear:
+            if self._clear_color is None:
+                color = self.DEF_CLEAR_COLOR
+            else:
+                color = self._clear_color
+
+            gl.glClearColor(*color)
+            gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+            gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+
+            # clear just once
+            # only allowed again if self.clear() is called again
+            self._flag_clear = False
+
+    def open(self):
+        gl.glViewport(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
+        gl.glScissor(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
 
     @property
-    def posx(self):
-        return self._posx
+    def abs_posx(self):
+        if isinstance(self.posx, float):
+            return int(self.posx * self._mother.window.width)
+        else:
+            return self.posx
 
     @property
-    def posy(self):
-        return self._posy
+    def abs_posy(self):
+        if isinstance(self.posy, float):
+            return int(self.posy * self._mother.window.height)
+        else:
+            return self.posy
 
     @property
-    def width(self):
-        return self._width
+    def abs_width(self):
+        if isinstance(self.width, float):
+            return int(self.width * self._mother.window.width)
+        else:
+            return self.width
 
     @property
-    def height(self):
-        return self._height
+    def abs_height(self):
+        if isinstance(self.height, float):
+
+            return int(self.height * self._mother.window.height)
+        else:
+            return self.height
 
     @property
     def camera(self):
         return self._camera
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def abs_size(self):
+        return [self.abs_width, self.abs_height]
+
+    def reset_update(self):
+        viewport_des = _Property.get_instance_descriptors(self)
+        camera_des = _Property.get_instance_descriptors(self.camera)
+
+        for i in viewport_des:
+            i.reset_update()
+        for i in camera_des:
+            i.reset_update()
+
+    def is_any_update(self):
+        if _Property.is_instance_descriptors_any_update(self) or \
+                _Property.is_instance_descriptors_any_update(self.camera):
+            return True
+
+        else:
+            return False
 
 class Viewports:
     _current_viewport = None
@@ -243,17 +127,23 @@ class Viewports:
         self._window = window
         self._viewports = {}
 
+        # make new default viewport
+        # which is whole window 2D space between 0 to width&height
+
+        self.new(0, 0, 1.0, 1.0, 'default')
+        self._viewports['default'].camera.mode = 2
+        self._viewports['default'].camera.move(1, 0, 0, 1)
+
     def new(self, x, y, width, height, name):
         if not all([isinstance(i, Number) for i in (x, y, width, height)]):
             raise TypeError('value should be expressed by float of int')
 
-        self._viewports[name] = _Viewport(name, x, y, width, height)
-
+        new_vp = _Viewport(self, name, x, y, width, height)
+        self._viewports[name] = new_vp
+        # self.make_viewport_current(new_vp)
         # gl.glViewportIndexedf(len(self._viewports) - 1, x, y, width, height)
 
     def open(self, index):
-
-        size = self._window.size
         if isinstance(index, int):
             vp = self._viewports[list(self._viewports.keys())[index]]
         elif isinstance(index, str):
@@ -261,35 +151,15 @@ class Viewports:
 
         self.make_viewport_current(vp)
 
-        if isinstance(vp.posx, float):
-            x = int(vp.posx * size[0])
-        else:
-            x = vp.posx
-
-        if isinstance(vp.posy, float):
-            y = int(vp.posy * size[1])
-        else:
-            y = vp.posy
-
-        if isinstance(vp.width, float):
-            w = int(vp.width * size[0])
-        else:
-            w = vp.width
-
-        if isinstance(vp.height, float):
-            h = int(vp.height * size[1])
-        else:
-            h = vp.height
-
-        gl.glViewport(x, y, w, h)
+        vp.open()
 
     def make_viewport_current(self, viewport):
         self.__class__._current_viewport = viewport
 
     def close(self):
-        wsize = self._window.size
-        gl.glViewport(0, 0, wsize[0], wsize[1])
-        pass
+        vp = self._viewports['default']
+        self.make_viewport_current(vp)
+        vp.open()
 
     def __getitem__(self, item):
         if isinstance(item, str):
@@ -297,11 +167,13 @@ class Viewports:
         elif isinstance(item, int):
             return list(self._viewports.items())[item][1]
 
-
-    def __call__(self, func):
-        print(func)
-        func()
+    @property
+    def window(self):
+        return self._window
 
     @property
     def current_viewport(self):
+        if self.__class__._current_viewport is None:
+            return self._viewports['default']
+
         return self.__class__._current_viewport

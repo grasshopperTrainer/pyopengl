@@ -10,7 +10,7 @@ class _Block:
         self._glsltype = glsltype
 
         self._location = None
-        self._flag_changed = False
+        self._flag_changed = True
 
     def __setitem__(self, key, value):
         self._flag_changed = True
@@ -44,35 +44,13 @@ class _Block:
                     self.buffer.resize(stop, refcheck=False)
 
             s = 0 if key.start is None else key.start
-            e = self.buffer.size if key.stop is None else key.stop
+            e = self.buffer.abs_size if key.stop is None else key.stop
             st = 1 if key.step is None else key.step
             chunk_len = len(range(s, e, st))
 
         elif key is None:
             self.buffer[self._name] = value
             return
-
-        # else:
-        # print(self.buffer[self._name][key])
-        # short long values to match number of chunks
-        # chunk_len = self.buffer.size
-        if chunk_len > len(value):
-            value += [[0, ]] * (chunk_len - len(value))
-        elif chunk_len == len(value):
-            pass
-        else:
-            value = value[:chunk_len]
-        # short long values to match element length of the block
-        for i, v in enumerate(value):
-            val_num = block.shape[1]
-            if val_num > len(v):
-                n = val_num - len(v)
-                value[i] += [0, ] * n
-            else:
-                value[i] = v[:val_num]
-
-        if len(value) == 1:
-            value = value[0]
 
         # put value
         self.buffer[self._name][key] = value
@@ -106,12 +84,13 @@ class _Block:
         return self._glsltype
 
     @property
-    def is_changed(self):
-        if self._flag_changed:
-            self._flag_changed = False
-            return True
-        else:
-            return False
+    def is_updated(self):
+        return self._flag_changed
+        # if self._flag_changed:
+        #     # self._flag_changed = False
+        #     return True
+        # else:
+        #     return False
 
     def __str__(self):
         d = str(self.data).splitlines()
@@ -198,13 +177,12 @@ class _Property:
     def updated(self):
         result = []
         for block in self.blocks:
-            if block.is_changed:
+            if block.is_updated:
                 result.append(block)
         return result
 
     @property
     def is_buffer_formchange(self):
-
         if not self._flag_new_buffer_formchange:
             return False
         else:
@@ -215,11 +193,22 @@ class _Property:
         return self.buffer.dtype.names.index(name)
 
     @property
+    def is_any_change(self):
+        for i in self.blocks:
+            if i._flag_changed:
+                return True
+        return False
+
+    @property
     def locations(self):
         loc = []
         for block in self.blocks:
             loc.append(block._location)
         return loc
+
+    def reset_update(self):
+        for n, b in self._blocks.items():
+            b._flag_changed = False
 
 class Properties:
 
@@ -300,3 +289,14 @@ class Properties:
             cond_properties.append(self.uniform)
 
         return cond_properties
+
+    @property
+    def is_any_update(self):
+        if self.attribute.is_any_change or self.uniform.is_any_change:
+            return True
+        else:
+            return False
+
+    def reset_update(self):
+        self.attribute.reset_update()
+        self.uniform.reset_update()
