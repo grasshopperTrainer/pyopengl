@@ -4,16 +4,16 @@ import numpy as np
 import weakref
 from .Camera import _Camera
 
-from .properties import _Property
+from .update_check_descriptor import UCD
 
 class _Viewport:
     DEF_CLEAR_COLOR = 0, 0, 0, 0
 
-    posx = _Property()
-    posy = _Property()
-    width = _Property()
-    height = _Property()
-    VPM = _Property()
+    posx = UCD()
+    posy = UCD()
+    width = UCD()
+    height = UCD()
+    VPM = UCD()
 
     def __init__(self, mother, name, x, y, width, height):
         self._mother = mother
@@ -23,6 +23,7 @@ class _Viewport:
         self.posy = y
         self.width = width
         self.height = height
+        self.VPM.function_when_get(self.build_VPM)
         self.VPM = np.eye(4)
 
         self._camera = _Camera(self)
@@ -33,6 +34,52 @@ class _Viewport:
 
         self._flag_clear = None
         self._clear_color = None
+
+    def build_VPM(self):
+        if self._mother.window.is_buffer_swap_required():
+            window_size = self._mother.window.size
+
+            move = np.array(
+                [[1, 0, 0, -window_size[0] / 2],
+                 [0, 1, 0, -window_size[1] / 2],
+                 [0, 0, 1, 0],
+                 [0, 0, 0, 1]]
+            )
+            scale = np.array(
+                [[2 / window_size[0], 0, 0, 0],
+                 [0, 2 / window_size[1], 0, 0],
+                 [0, 0, 1, 0],
+                 [0, 0, 0, 1]]
+            )
+            points = np.array(
+                [[self.abs_posx, self.abs_posx + self.abs_width],
+                 [self.abs_posy, self.abs_posy + self.abs_height],
+                 [0, 0],
+                 [1, 1]]
+            )
+            trans = scale.dot(move)
+            normalized_vp = trans.dot(points)
+            l = normalized_vp[0][0]
+            r = normalized_vp[0][1]
+            b = normalized_vp[1][0]
+            t = normalized_vp[1][1]
+            move = np.array(
+                [[1, 0, 0, (r + l) / 2],
+                 [0, 1, 0, (t + b) / 2],
+                 [0, 0, 1, 0],
+                 [0, 0, 0, 1]]
+            )
+            scale = np.array(
+                [[(r - l) / 2, 0, 0, 0],
+                 [0, (t - b) / 2, 0, 0],
+                 [0, 0, 1, 0],
+                 [0, 0, 0, 1]]
+            )
+            trans = scale.dot(move)
+            # print(points)
+            # print(trans)
+
+            self.VPM = trans
 
     def clear(self, *color):
         # if clear is called, save clear color
@@ -59,7 +106,8 @@ class _Viewport:
             self._flag_clear = False
 
     def open(self):
-        gl.glViewport(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
+        self._mother.make_viewport_current(self)
+        # gl.glViewport(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
         gl.glScissor(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
 
     @property
@@ -103,22 +151,6 @@ class _Viewport:
     def abs_size(self):
         return [self.abs_width, self.abs_height]
 
-    def reset_update(self):
-        viewport_des = _Property.get_instance_descriptors(self)
-        camera_des = _Property.get_instance_descriptors(self.camera)
-
-        for i in viewport_des:
-            i.reset_update()
-        for i in camera_des:
-            i.reset_update()
-
-    def is_any_update(self):
-        if _Property.is_instance_descriptors_any_update(self) or \
-                _Property.is_instance_descriptors_any_update(self.camera):
-            return True
-
-        else:
-            return False
 
 class Viewports:
     _current_viewport = None
@@ -140,18 +172,7 @@ class Viewports:
 
         new_vp = _Viewport(self, name, x, y, width, height)
         self._viewports[name] = new_vp
-        # self.make_viewport_current(new_vp)
         # gl.glViewportIndexedf(len(self._viewports) - 1, x, y, width, height)
-
-    def open(self, index):
-        if isinstance(index, int):
-            vp = self._viewports[list(self._viewports.keys())[index]]
-        elif isinstance(index, str):
-            vp = self._viewports[index]
-
-        self.make_viewport_current(vp)
-
-        vp.open()
 
     def make_viewport_current(self, viewport):
         self.__class__._current_viewport = viewport

@@ -2,18 +2,18 @@ import weakref
 
 import numpy as np
 
-from .properties import _Property
+from .update_check_descriptor import UCD
 
 
 class _Camera:
-    near = _Property()
-    far = _Property()
-    left = _Property()
-    right = _Property()
-    bottom = _Property()
-    top = _Property()
-    VM = _Property()
-    PM = _Property()
+    near = UCD()
+    far = UCD()
+    left = UCD()
+    right = UCD()
+    bottom = UCD()
+    top = UCD()
+    VM = UCD()
+    PM = UCD()
 
     def __init__(self, viewport):
         self._viewport = viewport
@@ -28,8 +28,9 @@ class _Camera:
         self.top = 0.5
 
         self.VM = np.eye(4)
+        self.PM.function_when_get(self.build_PM)
         self.PM = np.eye(4)
-
+        # UCD.get_descriptor('PM')
         self._latestviewportsize = [None, None]
 
         self._flag_isupdated = True
@@ -151,63 +152,68 @@ class _Camera:
         self.build_PM()
 
     def build_PM(self, major='v'):
-        vp = self._viewport
+        if self._viewport._mother.window.is_buffer_swap_required():
+            vp = self._viewport
 
-        n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
-        ratio = vp.abs_width / vp.abs_height
-        if major == 'v':
-            r, l = (t - b) * ratio / 2, -(t - b) * ratio / 2
-        elif major == 'h':
-            t, b = (r - l) / ratio / 2, -(r - l) / ratio / 2
-        else:
-            pass
-
-        if self._mode == 0:
-            if r == -l and t == -b:
-                self.PM = np.array(
-                    [[1 / r, 0, 0, 0],
-                     [0, 1 / t, 0, 0],
-                     [0, 0, -2 / (f - n), -(f + n) / (f - n)],
-                     [0, 0, 0, 1]])
-
+            n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
+            ratio = vp.abs_width / vp.abs_height
+            if major == 'v':
+                r, l = (t - b) * ratio / 2, -(t - b) * ratio / 2
+            elif major == 'h':
+                t, b = (r - l) / ratio / 2, -(r - l) / ratio / 2
             else:
+                pass
+
+            if self._mode == 0:
+                if r == -l and t == -b:
+                    self.PM = np.array(
+                        [[1 / r, 0, 0, 0],
+                         [0, 1 / t, 0, 0],
+                         [0, 0, -2 / (f - n), -(f + n) / (f - n)],
+                         [0, 0, 0, 1]])
+
+                else:
+                    self.PM = np.array(
+                        [[2 / (r - l), 0, 0, -(r + l) / (r - l)],
+                         [0, 2 / (t - b), 0, -(t + b) / (t - b)],
+                         [0, 0, -2 / (f - n), -(f + n) / (f - n)],
+                         [0, 0, 0, 1]])
+
+            elif self._mode == 1:
+                if r == -l and t == -b:
+                    self.PM = np.array(
+                        [[n / r, 0, 0, 0],
+                         [0, n / t, 0, 0],
+                         [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
+                         [0, 0, -1, 0]])
+
+                else:
+                    self.PM = np.array(
+                        [[2 * n / (r - l), 0, (r + l) / (r - l), 0],
+                         [0, 2 * n / (t - b), (t + b) / (t - b), 0],
+                         [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
+                         [0, 0, -1, 0]]
+                    )
+
+            if self._mode == 2:
+                self.near = 0
+                self.far = 100
+                self.left = 0
+                self.right = self._viewport.abs_width
+                self.bottom = 0
+                self.top = self._viewport.abs_height
+
+                n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
+                # if self._viewport._mother.window.name == 'third':
+                #     print('windowsize', self._viewport._mother.window.size)
+                #     print(n,f,l,r,b,t)
+                # print()
                 self.PM = np.array(
                     [[2 / (r - l), 0, 0, -(r + l) / (r - l)],
                      [0, 2 / (t - b), 0, -(t + b) / (t - b)],
                      [0, 0, -2 / (f - n), -(f + n) / (f - n)],
-                     [0, 0, 0, 1]])
-
-        elif self._mode == 1:
-            if r == -l and t == -b:
-                self.PM = np.array(
-                    [[n / r, 0, 0, 0],
-                     [0, n / t, 0, 0],
-                     [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
-                     [0, 0, -1, 0]])
-
-            else:
-                self.PM = np.array(
-                    [[2 * n / (r - l), 0, (r + l) / (r - l), 0],
-                     [0, 2 * n / (t - b), (t + b) / (t - b), 0],
-                     [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
-                     [0, 0, -1, 0]]
+                     [0, 0, 0, 1]]
                 )
-
-        if self._mode == 2:
-            self.near = 0
-            self.far = 100
-            self.left = 0
-            self.right = self._viewport.abs_width
-            self.bottom = 0
-            self.top = self._viewport.abs_height
-
-            n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
-            self.PM = np.array(
-                [[2 / (r - l), 0, 0, -(r + l) / (r - l)],
-                 [0, 2 / (t - b), 0, -(t + b) / (t - b)],
-                 [0, 0, -2 / (f - n), -(f + n) / (f - n)],
-                 [0, 0, 0, 1]]
-            )
 
     @property
     def w(self):
@@ -231,14 +237,16 @@ class _Camera:
 
     # @property
     # def VM(self):
-    #     return self.VM
+    #     return self._VM
     #
     # @property
     # def PM(self):
-    #     # if self._latestviewportsize != self._viewport.size:
-    #     #     self.build_PM()
-    #     #     self._latestviewportsize = self._viewport.size
-    #     return self.PM
+    #     window = self._viewport._mother.window
+    #     if window.resized:
+    #         self.build_PM()
+    #         window.resized = False
+    #
+    #     return self._PM
 
     @property
     def is_updated(self):

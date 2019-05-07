@@ -197,7 +197,6 @@ class _Property:
         for i in self.blocks:
             if i._flag_changed:
                 return True
-        return False
 
     @property
     def locations(self):

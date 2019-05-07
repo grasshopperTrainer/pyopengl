@@ -15,6 +15,7 @@ from virtual_scope import *
 from .IO_device import *
 from .layers import *
 from .viewport import *
+from .viewport.update_check_descriptor import UCD
 
 class _Windows:
     windows = OrderedDict()
@@ -60,7 +61,6 @@ class _Windows:
         return f'collection of {len(self.windows)} window instances'
 
 class Window:
-
     def _global_init():
         import OpenGL.GL as gl
         import numpy as np
@@ -163,10 +163,11 @@ class Window:
         # drawing layers
         self._layers = Layers(self)
 
+        self._flag_need_swap = True
+
         # viewport
         self._viewports = Viewports(self)
 
-        self._flag_need_swap = True
 
     @property
     def mother_window(self):
@@ -203,20 +204,6 @@ class Window:
     def windows(self):
         return self.__class__._windows
 
-    # def __getattr__(self, item):
-    #     # print(item)
-    #     if item in Renderer.get_instances():
-    #         renderer = Renderer.get_instances()[item]
-    #         name = renderer.name
-    #         # print(f'self.{name} = renderer')
-    #         self.__setattr__(name,renderer)
-    #         return renderer
-    #     else:
-    #         print_message("can't find attribute")
-    #         raise AttributeError
-
-
-
     def preset_window(self,func = None):
         """
         Decorator. set attribute for this single window.
@@ -252,8 +239,6 @@ class Window:
             merged += line[indent:] + '\n'
         return merged
 
-
-
     def init(self = None, func = None):
         # for global init
         if not isinstance(self, Window):
@@ -270,36 +255,14 @@ class Window:
     def draw(self, func):
         self._draw_func = func
 
-
-    # def thread_run(self):
-    #     # if glfw.get_current_context() is not self.glfw_window:
-    #     glfw.make_context_current(self.glfw_window)
-    #     # glfw.swap_interval(1)
-    #     exec(self.init_source)
-    #
-    #     timer = Timer(self.framerate, self.name)
-    #     timer.set_init_position()
-    #     timer.print_framerate()
-    #     while True:
-    #         timer.set_routine_start()
-    #         # print(self)
-    #         if self._terminate_flag:
-    #             # will mulfunction if not detached before thread is over
-    #             glfw.make_context_current(None)
-    #             break
-    #         # print(self.draw_source)
-    #         for line in self.draw_source:
-    #             exec(line)
-    #         glfw.swap_buffers(self.glfw_window)
-    #         # print(self, self.draw_source)
-    #
-    #         self._framerendered_flag = True
-    #
-    #         timer.set_routine_end()
-
     def framebuffer_size_callback(self, window, width, height):
-        pass
+        self._flag_need_swap = True
 
+    def is_buffer_swap_required(self):
+        return self._flag_need_swap
+
+    def buffer_swap_require(self):
+        self._flag_need_swap = True
 
     def initiation_glfw_setting(self):
         # default setting
@@ -309,6 +272,7 @@ class Window:
 
         glfw.set_framebuffer_size_callback(self.glfw_window, self.framebuffer_size_callback)
         # glfw.swap_interval(60)
+
     def initiation_gl_setting(self):
         gl.glEnable(gl.GL_SCISSOR_TEST)
         gl.glEnable(gl.GL_DEPTH_TEST)
@@ -396,9 +360,6 @@ class Window:
                         glfw.swap_buffers(window.glfw_window)
                     window._flag_need_swap = False
 
-                    # except Exception as e:
-                    #     print(e, window.instance_name, len(cls._windows))
-                    #     break
                 glfw.poll_events()
 
             else:

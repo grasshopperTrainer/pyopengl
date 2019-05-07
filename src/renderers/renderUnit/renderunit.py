@@ -4,6 +4,7 @@ import glfw
 from OpenGL.GL import *
 
 from .components import *
+from windowing.viewport.update_check_descriptor import UCD
 from windowing.window import Window
 # from windowing.layers.layerable import Layerable
 
@@ -157,19 +158,20 @@ class RenderUnit():
 
         # if there is an updated value and
         # this object need to be redrawn
-        if viewport.is_any_update() or self.shader.properties.is_any_update:
+        if UCD.is_instance_descriptors_any_update(viewport,
+                                                  viewport.camera) or window.is_buffer_swap_required() or self.shader.properties.is_any_update:
             # before make any change erase background
             viewport.fillbackground()
-
             # draw a thing
             glDrawElements(self.mode, self.indexbuffer.count, self.indexbuffer.gldtype, None)
             # tell window change has been made on framebuffer
             # and should swap it
-            self.current_window._flag_need_swap = True
+            window.buffer_swap_require = True
 
         # update have been handled so reset update flag
         self.shader.properties.reset_update()
-        self.current_window.viewports.current_viewport.reset_update()
+        UCD.reset_instance_descriptors_update(viewport, viewport.camera)
+        # self.current_window.viewports.current_viewport.reset_update()
 
     def _hide_(self, set=None):
         if set is None:
@@ -322,6 +324,7 @@ class RenderUnit():
         # print(matrix)
         vpm = self.shader.properties['VPM']
         matrix = vp.VPM
+        print(matrix)
         glUniformMatrix4fv(vpm.location, 1, True, matrix)
 
 

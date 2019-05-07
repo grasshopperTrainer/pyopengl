@@ -105,28 +105,19 @@ def event():
 @window3.init
 def init():
     rectangle1 = Rectangle()
-    # window.viewports[0].camera.move(10, 0, 0, 1)
-    # window.viewports[0].camera.rotate(10, 1, 1, 1)
-    # window.viewports[0].camera.lookat([0,0,0])
-    # window.viewports[0].camera.rotate(-90,1,0,0)
-    # window.viewports[0].camera.rotate(1,1,0,0)
-    angle = 0
-    window.viewports.new(0, 0, 0.5, 1.0, 'new')
-    window.viewports['new'].camera.mode = 1
-    window.viewports['new'].camera.move(10, 0, 0, 1)
-    a = 0
+    window.viewports.new(0.5, 0, 0.5, 1.0, 'new')
+    window.viewports['new'].camera.mode = 2
+    # window.viewports['new'].camera.move(10, 0, 0, 1)
 
 @window3.draw
 def draw():
-    # window.clear()
-    window.viewports.open(0)
-    window.viewports[0].clear()
-    # window.clear(0,1,0,1)
+    window.viewports[0].open()
+    window.viewports[0].clear(1, 0, 0, 1)
     rectangle1.draw()
-    # window.viewports.open('new')
-    # window.viewports[0].camera.lookat([0, 0, 0], [1*np.sin(angle), 1*np.cos(angle), 10])
-    # window.clear(1,1,0,1)
-    # window.viewports.close()
+    window.viewports[1].open()
+    window.viewports[1].clear(1, 1, 0, 1)
+    rectangle1.draw()
+    # rectangle1.draw()
 
 Window.run_single_thread()
 # Window.run_multi_thread()
