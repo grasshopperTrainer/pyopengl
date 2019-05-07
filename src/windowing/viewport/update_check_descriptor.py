@@ -61,7 +61,7 @@ class UCD():
             for f in self._get_functions:
                 f()
             return self._DIC[instance.__class__][instance][self]
-        except:
+        except KeyError:
             return self
 
     def is_updated(self):

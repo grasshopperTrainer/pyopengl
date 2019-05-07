@@ -166,7 +166,7 @@ class RenderUnit():
             glDrawElements(self.mode, self.indexbuffer.count, self.indexbuffer.gldtype, None)
             # tell window change has been made on framebuffer
             # and should swap it
-            window.buffer_swap_require = True
+            window.buffer_swap_require()
 
         # update have been handled so reset update flag
         self.shader.properties.reset_update()
@@ -317,15 +317,9 @@ class RenderUnit():
         vm = self.shader.properties['VM']
         matrix = vp.camera.VM
         glUniformMatrix4fv(vm.location, 1, True, matrix)
-        # print(matrix)
         pm = self.shader.properties['PM']
         matrix = vp.camera.PM
         glUniformMatrix4fv(pm.location, 1, True, matrix)
-        # print(matrix)
-        vpm = self.shader.properties['VPM']
-        matrix = vp.VPM
-        print(matrix)
-        glUniformMatrix4fv(vpm.location, 1, True, matrix)
 
 
     def _unbindall(self):

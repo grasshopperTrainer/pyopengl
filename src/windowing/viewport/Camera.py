@@ -21,7 +21,7 @@ class _Camera:
         self._mode = 1
 
         self.near = 1
-        self.far = 10000
+        self.far = 100000
         self.left = -1
         self.right = 1
         self.bottom = -0.5
@@ -154,6 +154,8 @@ class _Camera:
     def build_PM(self, major='v'):
         if self._viewport._mother.window.is_buffer_swap_required():
             vp = self._viewport
+            if vp.abs_height == 0 or vp.abs_height == 0:
+                return
 
             n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
             ratio = vp.abs_width / vp.abs_height

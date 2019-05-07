@@ -106,9 +106,9 @@ def event():
 def init():
     rectangle1 = Rectangle()
     window.viewports.new(0.5, 0, 0.5, 1.0, 'new')
-    window.viewports['new'].camera.mode = 2
+    window.viewports['new'].camera.mode = 1
     # window.viewports['new'].camera.move(10, 0, 0, 1)
-
+    window.viewports['new'].camera.lookat([100, 100, 0], [100, 0, 100])
 @window3.draw
 def draw():
     window.viewports[0].open()

@@ -9,11 +9,10 @@ varying vec4 v_color;
 uniform mat4 MM;
 uniform mat4 PM;
 uniform mat4 VM;
-uniform mat4 VPM;
 
 void main() {
     v_color = a_color;
-    gl_Position = VPM*PM*VM*vec4(a_position, 1);
+    gl_Position = PM*VM*vec4(a_position, 1);
 }
 
     #shader fragment
