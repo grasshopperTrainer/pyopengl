@@ -21,7 +21,7 @@ def INIT():
 @window.init
 def init():
     # window.viewport.new(100, 200, 0.5, 1.0)
-    # glfw.make_context_current(window.glfw_window)
+    # g.make_context_current(window.glfw_window)
     points = np.zeros(4, [('vertex', np.float32, 2), ('texCoord', np.float32, 2)])
     index = np.array([0, 1, 2, 2, 3, 0], np.int32)
     points['vertex'] = [-1, -1], [1, -1], [1, 1], [-1, 1]
@@ -31,7 +31,7 @@ def init():
     renderer.bind_shader('sample')
     renderer.bind_vertexbuffer(points)
     renderer.bind_indexbuffer(index)
-    renderer.bind_texture('sampleImage')
+    renderer.bind_texture('sampleImage2')
 
     # renderer.set_variable('texSlot', 0)
 
