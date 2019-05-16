@@ -27,7 +27,7 @@ class UCD():
 
     def __init__(self):
         self._updated = True
-        self._get_functions = []
+        self._get_functions = {}
 
     def __set__(self, instance, value):
         if instance.__class__ not in self._DIC:
@@ -48,7 +48,6 @@ class UCD():
                 else:
                     if stored == value:
                         replace = False
-
             if replace:
                 self._updated = True
                 dic[self] = value
@@ -58,8 +57,11 @@ class UCD():
         # try:
         # print(instance, owner, self)
         try:
-            for f in self._get_functions:
-                f()
+            if instance in self._get_functions:
+                for f in self._get_functions[instance]:
+                    f()
+            else:
+                pass
             return self._DIC[instance.__class__][instance][self]
         except KeyError:
             return self
@@ -107,7 +109,10 @@ class UCD():
         print('dkdkdkdkdkdk')
 
     def function_when_get(self, function):
-        self._get_functions.append(function)
+        if self in self._get_functions:
+            self._get_functions[function.__self__].append(function)
+        else:
+            self._get_functions[function.__self__] = [function,]
 
-    # def __repr__(self):
-    # return f'descriptor of :{self.INSTANCE_NAME}'
+    def __repr__(self):
+        return f"descriptor of '{self.INSTANCE_NAME}'"

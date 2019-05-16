@@ -255,7 +255,16 @@ class Window:
     def draw(self, func):
         self._draw_func = func
 
+    # def testdraw(self, when):
+    #
+    #     def wrapper(func_to_execute):
+    #         when(func_to_execute)
+    #     return wrapper
+
     def framebuffer_size_callback(self, window, width, height):
+        self.mouse.instant_mouse_onscreen()
+        self.mouse.instant_press_button(button = 0)
+
         self._flag_need_swap = True
 
     def is_buffer_swap_required(self):
@@ -358,7 +367,10 @@ class Window:
 
                     if window._flag_need_swap:
                         glfw.swap_buffers(window.glfw_window)
+                        print('buffer swapped')
                     window._flag_need_swap = False
+
+                    window.mouse.reset()
 
                 glfw.poll_events()
 

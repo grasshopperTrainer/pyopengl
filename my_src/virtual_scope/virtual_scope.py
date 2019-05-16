@@ -258,7 +258,7 @@ class Virtual_scope:
         if obj is None:
             return
 
-        if obj in ____._code_dict:
+        elif obj in ____._code_dict:
             try:
                 exec(____._code_dict[obj])
 

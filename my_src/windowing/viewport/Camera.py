@@ -138,6 +138,7 @@ class _Camera:
 
     @mode.setter
     def mode(self, mode):
+        print('setting mode')
         if isinstance(mode, str):
             if 'ortho' in mode:
                 self._mode = 0
@@ -197,7 +198,7 @@ class _Camera:
                          [0, 0, -1, 0]]
                     )
 
-            if self._mode == 2:
+            elif self._mode == 2:
                 self.near = 0
                 self.far = 100
                 self.left = 0
@@ -209,7 +210,6 @@ class _Camera:
                 # if self._viewport._mother.window.name == 'third':
                 #     print('windowsize', self._viewport._mother.window.size)
                 #     print(n,f,l,r,b,t)
-                # print()
                 self.PM = np.array(
                     [[2 / (r - l), 0, 0, -(r + l) / (r - l)],
                      [0, 2 / (t - b), 0, -(t + b) / (t - b)],

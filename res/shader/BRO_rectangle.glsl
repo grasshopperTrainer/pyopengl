@@ -1,28 +1,47 @@
 #shader vertex
-#version 400 core
+#version 430 core
 
-attribute vec3 a_position;
+attribute vec2 a_position;
 attribute vec4 a_color;
-
-varying vec4 v_color;
 
 uniform mat4 MM;
 uniform mat4 PM;
 uniform mat4 VM;
 
+varying vec2 v_pos;
+
 void main() {
-    v_color = a_color;
-    gl_Position = PM*VM*vec4(a_position, 1);
+    v_pos = a_position;
+
+    gl_Position = PM*VM*vec4(a_position,0, 1);
 }
 
-    #shader fragment
-    #version 430 core
+#shader fragment
+#version 430 core
 
-uniform vec4 u_color;
+uniform vec4 u_fillcol;
+uniform vec4 u_edgecol;
+uniform vec2 u_size;
+uniform float u_edgeweight;
+float half_edgeweight = u_edgeweight/2.0;
 
-varying vec4 v_color;
-layout(location = 0) out vec4 color;
+varying vec2 v_pos;
+
+out vec4 color;
+
+float dist_from_edge(vec2 pos, vec2 size) {
+    float dist_x = min(size.x - pos.x, pos.x);
+    float dist_y = min(size.y - pos.y, pos.y);
+    return min(dist_x, dist_y);
+}
 
 void main() {
-    color = v_color;
+    float d = dist_from_edge(v_pos, u_size);
+
+    if(d <= half_edgeweight) {
+        color = u_edgecol;
+    }
+    else {
+        color = u_fillcol;
+    }
 }
