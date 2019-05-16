@@ -1,6 +1,7 @@
 import inspect
 import sys
 import traceback
+
 import weakref
 from functools import reduce
 from .source_parser import Source_parser as prs
@@ -223,7 +224,10 @@ class Virtual_scope:
         # TODO filename: what should it be?
         code = compile(translated, filename, 'exec')
         # run to save values
-        exec(code)
+        try:
+            exec(code)
+        except Exception as e:
+            print(e)
 
     def compile(self, obj):
         # compiling object is a function

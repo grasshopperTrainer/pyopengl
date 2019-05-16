@@ -6,20 +6,20 @@ Python-friendly API
 
 Overview (from the spec)
 	
-	Fixed-point textures in unextended OpenGL have integer components,
+	Fixed-point textures in unextended OpenGL have integer parts,
 	but those values are taken to represent floating-point values in
-	the range [0,1].  These integer components are considered
+	the range [0,1].  These integer parts are considered
 	"normalized" integers.  When such a texture is accessed by a
 	shader or by fixed-function fragment processing, floating-point
 	values are returned.
 	
 	This extension provides a set of new "unnormalized" integer texture
 	formats.  Formats with both signed and unsigned integers are provided.  In
-	these formats, the components are treated as true integers.  When such
+	these formats, the parts are treated as true integers.  When such
 	textures are accessed by a shader, actual integer values are returned.
 	
 	Pixel operations that read from or write to a texture or color
-	buffer with unnormalized integer components follow a path similar
+	buffer with unnormalized integer parts follow a path similar
 	to that used for color index pixel operations, except that more
 	than one component may be provided at once.  Integer values flow
 	through the pixel processing pipe, and no pixel transfer
@@ -29,7 +29,7 @@ Overview (from the spec)
 	Textures or render buffers with unnormalized integer formats may also be
 	attached to framebuffer objects to receive fragment color values written
 	by a fragment shader.  Per-fragment operations that require floating-point
-	color components, including multisample alpha operations, alpha test,
+	color parts, including multisample alpha operations, alpha test,
 	blending, and dithering, have no effect when the corresponding colors are
 	written to an integer color buffer.  The NV_gpu_program4 and
 	EXT_gpu_shader4 extensions add the capability to fragment programs and
@@ -43,16 +43,16 @@ Overview (from the spec)
 	
 	  * for shader texture accesses expecting floating-point return values.  
 	
-	The color components used for per-fragment operations and written into a
+	The color parts used for per-fragment operations and written into a
 	color buffer are undefined:
 	
 	  * for fixed-function fragment processing with an integer color buffer,
 	
-	  * for fragment shaders that write floating-point color components to an
+	  * for fragment shaders that write floating-point color parts to an
 	    integer color buffer, or
 	
-	  * for fragment shaders that write integer color components to a color
-	    buffer with floating point or normalized integer components.
+	  * for fragment shaders that write integer color parts to a color
+	    buffer with floating point or normalized integer parts.
 	
 
 The official definition of this extension is available here:

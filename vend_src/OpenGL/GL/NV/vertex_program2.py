@@ -53,7 +53,7 @@ Overview (from the spec)
 	    computations.
 	
 	  * FLR, FRC:  Adds support for computing the floor and fractional portion
-	    of floating-point vector components.  Equivalent results could be
+	    of floating-point vector parts.  Equivalent results could be
 	    achieved (less efficiently) in NV_vertex_program using the EXP
 	    instruction to compute the fractional portion of one component at a
 	    time.
@@ -61,7 +61,7 @@ Overview (from the spec)
 	  * EX2, LG2:  Adds support for high-precision exponentiation and
 	    logarithm computations.
 	
-	  * ARA:  Adds pairs of components of an address register; useful for
+	  * ARA:  Adds pairs of parts of an address register; useful for
 	    looping and other operations.
 	
 	  * SEQ, SFL, SGT, SLE, SNE, STR:  Add six new "set on" instructions,
@@ -70,12 +70,12 @@ Overview (from the spec)
 	    NV_vertex_program with multiple SLT, SGE, and arithmetic instructions.
 	
 	  * SSG:  Adds a new "set sign" operation, which produces a vector holding
-	    negative one for negative components, zero for components with a value
-	    of zero, and positive one for positive components.  Equivalent results
+	    negative one for negative parts, zero for parts with a value
+	    of zero, and positive one for positive parts.  Equivalent results
 	    could be achieved (less efficiently) in NV_vertex_program with
 	    multiple SLT, SGE, and arithmetic instructions.
 	
-	  * The ARL instruction is extended to operate on four components instead
+	  * The ARL instruction is extended to operate on four parts instead
 	    of a single component.
 	
 	  * All instructions that produce integer or floating-point result vectors

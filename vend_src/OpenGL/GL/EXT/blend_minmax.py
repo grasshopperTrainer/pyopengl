@@ -12,7 +12,7 @@ Overview (from the spec)
 	extensions to define additional blending equations.
 	
 	The two new equations defined by this extension produce the minimum
-	(or maximum) color components of the source and destination colors.
+	(or maximum) color parts of the source and destination colors.
 	Taking the maximum is useful for applications such as maximum projection
 	in medical imaging.
 

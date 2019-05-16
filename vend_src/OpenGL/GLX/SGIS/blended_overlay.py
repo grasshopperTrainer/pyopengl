@@ -33,10 +33,10 @@ Overview (from the spec)
 	  endif
 	
 	where Cd is the resulting displayed color.  Co is the RGBA
-	quadruplet for the overlay RGBA components of the overlay window
+	quadruplet for the overlay RGBA parts of the overlay window
 	pixel.  Ao is the alpha component for the overlay alpha component
 	of the overlay window pixel.  Cu is the RGBA quadruplet for the
-	RGBA components of the displayed pixel if no overlay where present
+	RGBA parts of the displayed pixel if no overlay where present
 	in the overlay window's layer (or any higher level).  Think of Cu
 	as the displayable color "under" the BLENDED_RGBA_SGIS overlay
 	pixel.

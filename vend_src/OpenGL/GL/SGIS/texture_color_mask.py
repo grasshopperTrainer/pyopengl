@@ -12,7 +12,7 @@ Overview (from the spec)
 	(the analog for glIndexMask) should be supported by a separate extension.
 	
 	The extension allows an application to update a subset of
-	components in an existing texture.	The masks are applied after
+	parts in an existing texture.	The masks are applied after
 	all pixel transfer operations have been performed, immediately
 	prior to writing the texel value into texture memory.  They
 	apply to all texture updates.

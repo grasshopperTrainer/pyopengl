@@ -8,8 +8,8 @@ Overview (from the spec)
 	
 	Many video image formats and compression techniques utilize various
 	component subsamplings, so it is necessary to provide a mechanism to
-	specify the up- and down-sampling of components as pixel data is
-	drawn from and read back to the client. Though subsampled components
+	specify the up- and down-sampling of parts as pixel data is
+	drawn from and read back to the client. Though subsampled parts
 	are normally associated with the video color space, YCrCb, use of
 	subsampling in OpenGL does not imply a specific color space. Color
 	space conversion may be performed using other extensions or core

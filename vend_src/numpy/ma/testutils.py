@@ -42,7 +42,7 @@ __all__ = __all__masked + __some__from_testing
 
 def approx(a, b, fill_value=True, rtol=1e-5, atol=1e-8):
     """
-    Returns true if all components of a and b are equal to given tolerances.
+    Returns true if all parts of a and b are equal to given tolerances.
 
     If fill_value is True, masked values considered equal. Otherwise,
     masked values are considered unequal.  The relative error rtol should

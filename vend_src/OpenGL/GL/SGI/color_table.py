@@ -12,9 +12,9 @@ Overview (from the spec)
 	difference is that the new lookup tables are treated as 1-dimensional images
 	with internal formats, like texture images and convolution filter images.
 	From this follows the fact that the new tables can operate on a subset of
-	the components of passing pixel groups.  For example, a table with internal
+	the parts of passing pixel groups.  For example, a table with internal
 	format ALPHA modifies only the A component of each pixel group, leaving the
-	R, G, and B components unmodified.
+	R, G, and B parts unmodified.
 	
 	If EXT_copy_texture is implemented, this extension also defines methods to
 	initialize the color lookup tables from the framebuffer, in addition to the

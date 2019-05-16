@@ -3,24 +3,28 @@ import weakref
 
 
 class SID:
-    _INSTANCES_DICT = dict()
+    """
+    >for class inheritance<
+    stores instances inside the class.
+    """
+    _INSTANCES_DICT = weakref.WeakKeyDictionary()
 
     def __new__(cls, *args, **kwargs):
         self = super().__new__(cls)
 
+        # to recover name of instance look back
         f = inspect.currentframe().f_back
         instance_name = ''
         while True:
             code_context = inspect.getframeinfo(f).code_context[0]
+            # detection of instance declaration
             if f' {cls.__name__}(' in code_context and '=' in code_context:
                 instance_name = code_context.split('=')[0].strip()
                 break
             else:
                 f = f.f_back
-        name = cls.__name__
-        if name not in cls._INSTANCES_DICT:
-            cls._INSTANCES_DICT[name] = weakref.WeakValueDictionary()
-        cls._INSTANCES_DICT[name][instance_name] = self
+
+        cls._INSTANCES_DICT[self] = instance_name
 
         return self
 

@@ -8,7 +8,7 @@ Overview (from the spec)
 	
 	This extension provides GLSL built-in functions and assembly opcodes
 	allowing shaders to perform atomic read-modify-write operations to buffer
-	or texture memory with floating-point components.  The set of atomic
+	or texture memory with floating-point parts.  The set of atomic
 	operations provided by this extension is limited to adds and exchanges.
 	Providing atomic add support allows shaders to atomically accumulate the
 	sum of floating-point values into buffer or texture memory across multiple

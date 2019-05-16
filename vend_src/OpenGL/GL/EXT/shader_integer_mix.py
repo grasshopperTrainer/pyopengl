@@ -9,7 +9,7 @@ Overview (from the spec)
 	GLSL 1.30 (and GLSL ES 3.00) expanded the mix() built-in function to
 	operate on a boolean third argument that does not interpolate but
 	selects. This extension extends mix() to select between int, uint,
-	and bool components.
+	and bool parts.
 
 The official definition of this extension is available here:
 http://www.opengl.org/registry/specs/EXT/shader_integer_mix.txt

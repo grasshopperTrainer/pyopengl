@@ -57,7 +57,7 @@ Overview (from the spec)
 	
 	         - New texture lookup functions are provided that return integer
 	           values. These functions are to be used in conjunction with new
-	           texture formats whose components are actual integers, rather
+	           texture formats whose parts are actual integers, rather
 	           than integers that encode a floating-point value. To support
 	           these lookup functions, new integer and unsigned-integer
 	           sampler types are introduced.

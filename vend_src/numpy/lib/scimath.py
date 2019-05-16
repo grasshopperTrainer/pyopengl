@@ -97,7 +97,7 @@ def _tocomplex(arr):
 
 
 def _fix_real_lt_zero(x):
-    """Convert `x` to complex if it has real, negative components.
+    """Convert `x` to complex if it has real, negative parts.
 
     Otherwise, output is just the array version of the input (via asarray).
 
@@ -125,7 +125,7 @@ def _fix_real_lt_zero(x):
 
 
 def _fix_int_lt_zero(x):
-    """Convert `x` to double if it has real, negative components.
+    """Convert `x` to double if it has real, negative parts.
 
     Otherwise, output is just the array version of the input (via asarray).
 
@@ -152,7 +152,7 @@ def _fix_int_lt_zero(x):
 
 
 def _fix_real_abs_gt_1(x):
-    """Convert `x` to complex if it has real components x_i with abs(x_i)>1.
+    """Convert `x` to complex if it has real parts x_i with abs(x_i)>1.
 
     Otherwise, output is just the array version of the input (via asarray).
 

@@ -13,13 +13,13 @@ Overview (from the spec)
 	ability to bind buffer objects to a set of numbered binding points and
 	access them in assembly programs as though they were arrays of 32-bit
 	scalars (via the BUFFER variable type) or arrays of four-component vectors
-	with 32-bit scalar components (via the BUFFER4 variable type).  However,
+	with 32-bit scalar parts (via the BUFFER4 variable type).  However,
 	the functionality it provided had some significant limits on flexibility.
 	Since any given buffer binding point could be used either as a BUFFER or
 	BUFFER4, but not both, programs couldn't do both 32- and 128-bit fetches
 	from a single binding point.  Additionally, No support was provided for
 	8-, 16-, or 64-bit fetches, though they could be emulated using a larger
-	loads, with bitfield operations and/or write masking to put components in
+	loads, with bitfield operations and/or write masking to put parts in
 	the right places.  Indexing was supported, but strides were limited to 4-
 	and 16-byte multiples, depending on whether BUFFER or BUFFER4 is used.
 	

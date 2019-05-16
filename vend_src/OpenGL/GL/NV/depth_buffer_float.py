@@ -7,7 +7,7 @@ Python-friendly API
 Overview (from the spec)
 	
 	This extension provides new texture internal formats whose depth
-	components are stored as 32-bit floating-point values, rather than the
+	parts are stored as 32-bit floating-point values, rather than the
 	normalized unsigned integers used in existing depth formats.
 	Floating-point depth textures support all the functionality supported for
 	fixed-point depth textures, including shadow mapping and rendering support

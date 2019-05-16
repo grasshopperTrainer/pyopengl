@@ -204,7 +204,7 @@ def CCompiler_object_filenames(self, source_filenames, strip_dir=0, output_dir='
         base = os.path.splitdrive(base)[1] # Chop off the drive
         base = base[os.path.isabs(base):]  # If abs, chop off leading /
         if base.startswith('..'):
-            # Resolve starting relative path components, middle ones
+            # Resolve starting relative path parts, middle ones
             # (if any) have been handled by os.path.normpath above.
             i = base.rfind('..')+2
             d = base[:i]

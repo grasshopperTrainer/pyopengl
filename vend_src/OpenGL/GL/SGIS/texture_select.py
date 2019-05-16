@@ -7,17 +7,17 @@ Python-friendly API
 Overview (from the spec)
 	
 	This extension introduces several new texture internal formats.  The
-	purpose of these new formats is to reorganize the components of a
-	texture into groups of components.  The currently selected group
+	purpose of these new formats is to reorganize the parts of a
+	texture into groups of parts.  The currently selected group
 	effectively becomes the internal format.
 	
 	Also, two new texture parameters are introduced that control the
-	selection of these groups of components.
+	selection of these groups of parts.
 	
 	For example, assume a texture internal format of DUAL_LUMINANCE4_SGIS is
-	specified.  Now there are two groups of components, where each group has
+	specified.  Now there are two groups of parts, where each group has
 	a format of LUMINANCE4.  One of the two LUMINANCE groups is always
-	selected.  components can be selected and then interpreted as a LUMINANCE
+	selected.  parts can be selected and then interpreted as a LUMINANCE
 	texture.
 	
 	The purpose of this extension is allow better utilization of texture

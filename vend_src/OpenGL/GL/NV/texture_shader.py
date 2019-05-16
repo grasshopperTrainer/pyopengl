@@ -92,14 +92,14 @@ Overview (from the spec)
 	
 	<offset textures>
 	
-	8.   OFFSET_TEXTURE_2D_NV - Transforms the signed (ds,dt) components
+	8.   OFFSET_TEXTURE_2D_NV - Transforms the signed (ds,dt) parts
 	     of a previous texture unit by a 2x2 floating-point matrix and
 	     then uses the result to offset the stage's texture coordinates
 	     for a 2D non-projective texture.
 	
 	9.   OFFSET_TEXTURE_2D_SCALE_NV - Same as above except the magnitude
 	     component of the previous texture unit result scales the red,
-	     green, and blue components of the unsigned RGBA texture 2D
+	     green, and blue parts of the unsigned RGBA texture 2D
 	     access.
 	
 	10.  OFFSET_TEXTURE_RECTANGLE_NV - Similar to OFFSET_TEXTURE_2D_NV
@@ -113,18 +113,18 @@ Overview (from the spec)
 	<dependent textures>
 	
 	12.  DEPENDENT_AR_TEXTURE_2D_NV - Converts the alpha and red
-	     components of a previous shader result into an (s,t) texture
+	     parts of a previous shader result into an (s,t) texture
 	     coordinate set to access a 2D non-projective texture.
 	
 	13.  DEPENDENT_GB_TEXTURE_2D_NV - Converts the green and blue
-	     components of a previous shader result into an (s,t) texture
+	     parts of a previous shader result into an (s,t) texture
 	     coordinate set to access a 2D non-projective texture.
 	
 	<dot product textures>
 	
 	14.  DOT_PRODUCT_NV - Computes the dot product of the texture
 	     shader's texture coordinate set (s,t,r) with some mapping of the
-	     components of a previous texture shader result.  The component
+	     parts of a previous texture shader result.  The component
 	     mapping depends on the type (RGBA or HILO) and signedness of
 	     the stage's previous texture input.  Other dot product texture
 	     programs use the result of this program to compose a texture

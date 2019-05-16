@@ -1,8 +1,8 @@
 import glfw
 import inspect
+from patterns.store_instances_dict import SID
 
-
-class Mouse:
+class Mouse(SID):
 
     def __init__(self, window):
         self._window = window
@@ -154,3 +154,28 @@ class Mouse:
     @property
     def scroll_offset(self):
         return self._scroll_offset
+
+    def global_button_state(self):
+        result = {}
+        for instance in self._INSTANCES_DICT.keys():
+            d = instance._button_state
+            for k,v in d.items():
+                if k in result:
+                    if v is True:
+                        result[k] = True
+                else:
+                    result[k] = v
+        return result
+
+    def global_cursor_state(self):
+        result = {}
+        for instance in self._INSTANCES_DICT.keys():
+            d = instance._cursor_state
+            for k,v in d.items():
+                if k in result:
+                    if v is True:
+                        result[k] = True
+                else:
+                    result[k] = v
+
+        return result

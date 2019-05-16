@@ -1,10 +1,8 @@
 from numbers import Number
 import OpenGL.GL as gl
-import numpy as np
-import weakref
 from .Camera import _Camera
 
-from .update_check_descriptor import UCD
+from patterns.update_check_descriptor import UCD
 
 class _Viewport:
     DEF_CLEAR_COLOR = 0, 0, 0, 0

@@ -19,7 +19,7 @@ Overview (from the spec)
 	existing vertex array and image specification commands to accept the new
 	data type.
 	
-	This storage format is also used to represent 16-bit components in the
+	This storage format is also used to represent 16-bit parts in the
 	floating-point frame buffers, as defined in the NV_float_buffer extension.
 
 The official definition of this extension is available here:

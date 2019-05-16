@@ -55,8 +55,8 @@ Background information
 ----------------------
 
 Fourier analysis is fundamentally a method for expressing a function as a
-sum of periodic components, and for recovering the function from those
-components.  When both the function and its Fourier transform are
+sum of periodic parts, and for recovering the function from those
+parts.  When both the function and its Fourier transform are
 replaced with discretized counterparts, it is called the discrete Fourier
 transform (DFT).  The DFT has become a mainstay of numerical computing in
 part because of a very fast algorithm for computing it, called the Fast
@@ -66,7 +66,7 @@ provide an accessible introduction to Fourier analysis and its
 applications.
 
 Because the discrete Fourier transform separates its input into
-components that contribute at discrete frequencies, it has a great number
+parts that contribute at discrete frequencies, it has a great number
 of applications in digital signal processing, e.g., for filtering, and in
 this context the discretized input to the transform is customarily
 referred to as a *signal*, which exists in the *time domain*.  The output
@@ -102,7 +102,7 @@ frequency, while ``A[(n+1)/2]`` contains the largest negative frequency.
 The routine ``np.fft.fftfreq(n)`` returns an array giving the frequencies
 of corresponding elements in the output.  The routine
 ``np.fft.fftshift(A)`` shifts transforms and their frequencies to put the
-zero-frequency components in the middle, and ``np.fft.ifftshift(A)`` undoes
+zero-frequency parts in the middle, and ``np.fft.ifftshift(A)`` undoes
 that shift.
 
 When the input `a` is a time-domain signal and ``A = fft(a)``, ``np.abs(A)``
@@ -132,11 +132,11 @@ Real and Hermitian transforms
 When the input is purely real, its transform is Hermitian, i.e., the
 component at frequency :math:`f_k` is the complex conjugate of the
 component at frequency :math:`-f_k`, which means that for real
-inputs there is no information in the negative frequency components that
-is not already available from the positive frequency components.
+inputs there is no information in the negative frequency parts that
+is not already available from the positive frequency parts.
 The family of `rfft` functions is
 designed to operate on real inputs, and exploits this symmetry by
-computing only the positive frequency components, up to and including the
+computing only the positive frequency parts, up to and including the
 Nyquist frequency.  Thus, ``n`` input points produce ``n/2+1`` complex
 output points.  The inverses of this family assumes the same symmetry of
 its input, and for an output of ``n`` points uses ``n/2+1`` input points.

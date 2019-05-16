@@ -27,9 +27,9 @@ Overview (from the spec)
 	
 	The '2vuy' or k2vuyPixelFormat pixel format is an 8-bit 4:2:2 Component
 	Y'CbCr format. Each 16 bit pixel is represented by an unsigned eight bit
-	luminance component and two unsigned eight bit chroma components. Each pair
-	of pixels shares a common set of chroma values. The components are ordered
-	in memory; Cb, Y0, Cr, Y1. The luminance components have a range of [16,
+	luminance component and two unsigned eight bit chroma parts. Each pair
+	of pixels shares a common set of chroma values. The parts are ordered
+	in memory; Cb, Y0, Cr, Y1. The luminance parts have a range of [16,
 	235], while the chroma value has a range of [16, 240]. This is consistent
 	with the CCIR601 spec. This format is fairly prevalent on both Mac and Win32
 	platforms. The equivalent Microsoft fourCC is OUYVYO.  This format is

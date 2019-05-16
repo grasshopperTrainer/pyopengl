@@ -49,7 +49,7 @@ Overview (from the spec)
 	that explicitly states program termination is allowed when
 	out-of-bounds vertex buffer object fetches occur. Modern GPUs
 	capable of DirectX 10 enforce the well-defined behavior of always
-	returning zero values for indices or non-fixed components in this
+	returning zero values for indices or non-fixed parts in this
 	case. Older GPUs may require extra checks to enforce well-defined
 	(and termination free) behavior, but this expense is warranted when
 	processing potentially untrusted content.

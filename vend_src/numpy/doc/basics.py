@@ -83,15 +83,15 @@ The primitive types supported are tied closely to those in C:
 
     * - `np.csingle`
       - ``float complex``
-      - Complex number, represented by two single-precision floats (real and imaginary components)
+      - Complex number, represented by two single-precision floats (real and imaginary parts)
 
     * - `np.cdouble`
       - ``double complex``
-      - Complex number, represented by two double-precision floats (real and imaginary components).
+      - Complex number, represented by two double-precision floats (real and imaginary parts).
 
     * - `np.clongdouble`
       - ``long double complex``
-      - Complex number, represented by two extended-precision floats (real and imaginary components).
+      - Complex number, represented by two extended-precision floats (real and imaginary parts).
 
 
 Since many of these have platform-dependent definitions, a set of fixed-size
@@ -154,7 +154,7 @@ aliases are provided:
 
     * - `np.complex64`
       - ``float complex``
-      - Complex number, represented by two 32-bit floats (real and imaginary components)
+      - Complex number, represented by two 32-bit floats (real and imaginary parts)
 
     * - `np.complex128` / `np.complex_`
       - ``double complex``

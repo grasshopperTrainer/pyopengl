@@ -18,7 +18,7 @@ Overview (from the spec)
 	gamma correction.
 	
 	This extension adds a few new uncompressed and compressed color
-	texture formats with sRGB color components.
+	texture formats with sRGB color parts.
 
 The official definition of this extension is available here:
 http://www.opengl.org/registry/specs/EXT/texture_sRGB.txt

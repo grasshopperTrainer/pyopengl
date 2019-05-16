@@ -8,7 +8,7 @@ Internal organization of numpy arrays
 
 It helps to understand a bit about how numpy arrays are handled under the covers to help understand numpy better. This section will not go into great detail. Those wishing to understand the full details are referred to Travis Oliphant's book "Guide to NumPy".
 
-NumPy arrays consist of two major components, the raw array data (from now on,
+NumPy arrays consist of two major parts, the raw array data (from now on,
 referred to as the data buffer), and the information about the raw array data.
 The data buffer is typically what people think of as arrays in C or Fortran,
 a contiguous (and fixed) block of memory containing fixed sized data items.

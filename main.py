@@ -1,6 +1,5 @@
 from windowing.window import Window
 
-
 # Initialize the library
 Window.glfw_init()
 
@@ -15,8 +14,8 @@ window3 = Window(2000, 500, 'third', None, None)
 # window4.follows_closing(window3)
 @Window.init
 def INIT():
-    from renderers.testrenderer import Renderer
-    from renderers.BRO.rectangle import Rectangle
+    pass
+
 
 @window2.draw
 def draw():
@@ -62,17 +61,20 @@ def event():
 
 @window3.init
 def init():
-    rectangle1 = Rectangle(pos = [0,0],size=[300,500],fillcol=[0,1,0,1], edgecol=[0,0,0,1])
+    rectangle1 = BRO.Rectangle(pos = [0,0],size=[300,500],fillcol=[0,1,0,1], edgecol=[0,0,0,1])
     window.viewports.new(0.5, 0, 0.5, 1.0, 'new')
     window.viewports['new'].camera.mode = 1
     # window.viewports['new'].camera.move(10, 0, 0, 1)
     window.viewports['new'].camera.lookat([100, 300, 0], [100, 0, 50])
 
+    gui = mygui.testgui()
+
 @window3.draw
 def draw():
+    gui.run()
     # print(condition)
     condition = any(list(window3.mouse.pressed_button.values()))
-    print(window3.mouse._cursor_state)
+
     if condition:
         window.viewports[0].open()
         window.viewports[0].clear(1, 0, 0, 1)

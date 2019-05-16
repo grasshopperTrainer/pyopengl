@@ -4,9 +4,9 @@ Because OpenGL needs persistent references to the
 objects we're constructing to shadow Python objects,
 we have to store references to the objects somewhere
 
-For any given Python GUI library, we can use a weakref
+For any given Python unnamedGUI library, we can use a weakref
 to the library's representation of the GL context to 
-call the cleanup function.  That means some per-GUI 
+call the cleanup function.  That means some per-unnamedGUI 
 library code in OpenGL (or the library), but it gives 
 us very natural operations within OpenGL.
 
@@ -118,7 +118,7 @@ def cleanupContext( context=None ):
     a protection fault when the GL goes to render the scene!
     
     Normally you will want to get the context ID explicitly and then 
-    register cleanupContext as a weakref callback to your GUI library 
+    register cleanupContext as a weakref callback to your unnamedGUI library 
     Context object with the (now invalid) context ID as parameter.
     """
     if context is None:

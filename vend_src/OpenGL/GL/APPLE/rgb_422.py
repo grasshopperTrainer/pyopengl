@@ -23,7 +23,7 @@ Overview (from the spec)
 	a combination of 422 sampling formats and fragment shader instructions.
 	
 	This extension essentially exposes a "raw" 422 texture format that 
-	allows developers to access the raw pre-converted Y'CbCr components
+	allows developers to access the raw pre-converted Y'CbCr parts
 	so that they have full control over the colorspace conversion.
 	
 	In order to avoid defining entirely new color channels within GL,

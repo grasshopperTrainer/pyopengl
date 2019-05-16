@@ -20,13 +20,13 @@ Overview (from the spec)
 	<offset textures>
 	
 	24.  OFFSET_PROJECTIVE_TEXTURE_2D_NV - Transforms the signed (ds,dt)
-	     components of a previous texture unit by a 2x2 floating-point
+	     parts of a previous texture unit by a 2x2 floating-point
 	     matrix and then uses the result to offset the stage's texture
 	     coordinates for a 2D non-projective texture.
 	
 	25.  OFFSET_PROJECTIVE_TEXTURE_2D_SCALE_NV - Same as above except
 	     the magnitude component of the previous texture unit result
-	     scales the red, green, and blue components of the unsigned RGBA
+	     scales the red, green, and blue parts of the unsigned RGBA
 	     texture 2D access.
 	
 	26.  OFFSET_PROJECTIVE_TEXTURE_RECTANGLE_NV - Similar to
@@ -55,21 +55,21 @@ Overview (from the spec)
 	     DSDT-type base format.
 	
 	     (There are no "offset HILO texture scale" operations because
-	     HILO textures have only two components with no third component
+	     HILO textures have only two parts with no third component
 	     for scaling.)
 	
 	<dependent textures>
 	
-	32.  DEPENDENT_HILO_TEXTURE_2D_NV - Converts the hi and lo components
+	32.  DEPENDENT_HILO_TEXTURE_2D_NV - Converts the hi and lo parts
 	     of a previous shader HILO result into an (s,t) texture coordinate
 	     set to access a 2D non-projective texture.
 	
 	33.  DEPENDENT_RGB_TEXTURE_3D_NV - Converts the red, green, and
-	     blue components of a previous shader RGBA result into an (s,t,r)
+	     blue parts of a previous shader RGBA result into an (s,t,r)
 	     texture coordinate set to access a 3D non-projective texture.
 	
 	34.  DEPENDENT_RGB_TEXTURE_CUBE_MAP_NV - Converts the red, green,
-	     and blue components of a previous shader RGBA result into an
+	     and blue parts of a previous shader RGBA result into an
 	     (s,t,r) texture coordinate set to access a cube map texture.
 	
 	<dot product pass through>

@@ -16,14 +16,14 @@ Overview (from the spec)
 	format for encoding 3-component vectors (typically RGB colors) with
 	a single 5-bit exponent (biased up by 15) and three 9-bit mantissas
 	for each respective component.  There is no sign bit so all three
-	components must be non-negative.  The fractional mantissas are
+	parts must be non-negative.  The fractional mantissas are
 	stored without an implied 1 to the left of the decimal point.
 	Neither infinity nor not-a-number (NaN) are representable in this
 	shared exponent format.
 	
 	This 32 bits/texel shared exponent format is particularly well-suited
 	to high dynamic range (HDR) applications where light intensity is
-	typically stored as non-negative red, green, and blue components
+	typically stored as non-negative red, green, and blue parts
 	with considerable range.
 
 The official definition of this extension is available here:

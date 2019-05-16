@@ -13,7 +13,7 @@ Overview (from the spec)
 	operations take place.  Only 2D texture images are supported (not
 	glDrawPixels, glReadPixels, etc).
 	
-	A YCbCr pixel (texel) is a 16-bit unsigned short with two components.
+	A YCbCr pixel (texel) is a 16-bit unsigned short with two parts.
 	The first component is luminance (Y).  For pixels in even-numbered
 	image columns, the second component is Cb.  For pixels in odd-numbered
 	image columns, the second component is Cr.  If one were to convert the

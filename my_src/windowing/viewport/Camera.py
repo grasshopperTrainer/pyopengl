@@ -1,8 +1,6 @@
-import weakref
-
 import numpy as np
 
-from .update_check_descriptor import UCD
+from patterns.update_check_descriptor import UCD
 
 
 class _Camera:

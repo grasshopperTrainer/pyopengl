@@ -652,7 +652,7 @@ add_newdoc('numpy.core', 'broadcast', ('index',
 
 add_newdoc('numpy.core', 'broadcast', ('iters',
     """
-    tuple of iterators along ``self``'s "components."
+    tuple of iterators along ``self``'s "parts."
 
     Returns a tuple of `numpy.flatiter` objects, one for each "component"
     of ``self``.

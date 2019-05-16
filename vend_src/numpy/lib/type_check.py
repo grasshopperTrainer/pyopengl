@@ -377,7 +377,7 @@ def nan_to_num(x, copy=True):
     point values representable by ``x.dtype``.
 
     For complex dtypes, the above is applied to each of the real and
-    imaginary components of `x` separately.
+    imaginary parts of `x` separately.
 
     If `x` is not inexact, then no replacements are made.
 

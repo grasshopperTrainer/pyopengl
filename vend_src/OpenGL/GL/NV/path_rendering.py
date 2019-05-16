@@ -461,7 +461,7 @@ glStencilStrokePathInstancedNV= wrapper.wrapper(glStencilStrokePathInstancedNV).
 glPathColorGenNV= wrapper.wrapper(glPathColorGenNV).setInputArraySize(
     'coeffs', None
 )
-# INPUT glPathTexGenNV.coeffs size not checked against 'genMode,components'
+# INPUT glPathTexGenNV.coeffs size not checked against 'genMode,parts'
 glPathTexGenNV= wrapper.wrapper(glPathTexGenNV).setInputArraySize(
     'coeffs', None
 )

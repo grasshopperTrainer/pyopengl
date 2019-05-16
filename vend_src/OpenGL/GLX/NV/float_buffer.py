@@ -29,11 +29,11 @@ Overview (from the spec)
 	programs, this extension provides floating-point RGBA color buffers that
 	can be used instead of conventional fixed-point RGBA color buffers.  A
 	floating-point RGBA color buffer consists of one to four floating-point
-	components stored in the 16- or 32-bit floating-point formats (fp16 or
+	parts stored in the 16- or 32-bit floating-point formats (fp16 or
 	fp32) defined in the NV_half_float and NV_fragment_program extensions.
 	
 	When a floating-point color buffer is used, the results of fragment
-	programs, as written to the "x", "y", "z", and "w" components of the
+	programs, as written to the "x", "y", "z", and "w" parts of the
 	o[COLR] or o[COLH] output registers, are written directly to the color
 	buffer without any clamping or modification.  Certain per-fragment
 	operations are bypassed when rendering to floating-point color buffers.

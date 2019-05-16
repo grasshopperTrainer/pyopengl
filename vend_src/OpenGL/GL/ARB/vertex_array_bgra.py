@@ -11,16 +11,16 @@ Overview (from the spec)
 	BGRA component ordering.
 	
 	OpenGL expects vertex arrays containing 4 unsigned bytes per
-	element to be in the RGBA, STRQ, or XYZW order (reading components
+	element to be in the RGBA, STRQ, or XYZW order (reading parts
 	left-to-right in their lower address to higher address order).
-	Essentially the order the components appear in memory is the order
-	the components appear in the resulting vertex attribute vector.
+	Essentially the order the parts appear in memory is the order
+	the parts appear in the resulting vertex attribute vector.
 	
 	However Direct3D has color (diffuse and specular) vertex arrays
 	containing 4 unsigned bytes per element that are in a BGRA order
-	(again reading components left-to-right in their lower address
+	(again reading parts left-to-right in their lower address
 	to higher address order).  Direct3D calls this "ARGB" reading the
-	components in the opposite order (reading components left-to-right
+	parts in the opposite order (reading parts left-to-right
 	in their higher address to lower address order).  This ordering is
 	generalized in the DirectX 10 by the DXGI_FORMAT_B8G8R8A8_UNORM
 	format.
@@ -29,20 +29,20 @@ Overview (from the spec)
 	buffer formatted for Direct3D's color array format conventions,
 	the application is forced to either:
 	
-	1.  Rely on a vertex program or shader to swizzle the color components
+	1.  Rely on a vertex program or shader to swizzle the color parts
 	    from the BGRA to conventional RGBA order.
 	
-	2.  Re-order the color data components in the vertex buffer from
+	2.  Re-order the color data parts in the vertex buffer from
 	    Direct3D's native BGRA order to OpenGL's native RGBA order.
 	
 	Neither option is entirely satisfactory.
 	
 	Option 1 means vertex shaders have to be re-written to source colors
 	differently.  If the same vertex shader is used with vertex arrays
-	configured to source the color as 4 floating-point color components,
+	configured to source the color as 4 floating-point color parts,
 	the swizzle for BGRA colors stored as 4 unsigned bytes is no longer
 	appropriate.  The shader's swizzling of colors becomes dependent on
-	the type and number of color components.  Ideally the vertex shader
+	the type and number of color parts.  Ideally the vertex shader
 	should be independent from the format and component ordering of the
 	data it sources.
 	
@@ -53,7 +53,7 @@ Overview (from the spec)
 	or even interwoven (where multiple arrays overlap with differing
 	strides and formats).
 	
-	Rather than force a re-ordering of either vertex array components
+	Rather than force a re-ordering of either vertex array parts
 	in memory or a vertex array format-dependent re-ordering of vertex
 	shader inputs, OpenGL can simply provide a vertex array format that
 	matches the Direct3D color component ordering.

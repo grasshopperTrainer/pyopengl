@@ -2,46 +2,137 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8845630d-f53b-42f1-9947-fe08a9c9effb" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/my_src/windowing/GUI/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/GUI_builder/builder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/GUI_builder/onscreen/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/GUI_builder/outscreen/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/GUI_builder/parts/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/GUI_builder/parts/box.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/GUI_builder/parts/button.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/GUI_builder/parts/collector.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/GUI_builder/parts/textbox.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/GUI_builder/parts/texturebox.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/GUI_builder/parts/tick.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/GUI_builder/test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/renderer/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/component_bp.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/indexbuffer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/properties.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/shader.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/vertexarray.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/vertexbuffer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/renderer/renderable.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/unnamedGUI/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/unnamedGUI/mygui.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/renderers/BRO/rectangle.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/renderers/BRO/rectangle.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/renderers/BRO/renderobject.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/renderers/BRO/renderobject.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/renderers/renderUnit/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/renderers/renderUnit/components/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/renderers/renderUnit/components/component_bp.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/renderers/renderUnit/components/indexbuffer.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/renderers/renderUnit/components/properties.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/renderers/renderUnit/components/shader.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/renderers/renderUnit/components/texture.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/renderers/renderUnit/components/vertexarray.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/renderers/renderUnit/components/vertexbuffer.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/renderers/renderUnit/renderunit.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/renderers/testrenderer.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/renderers/testrenderer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/patterns/store_instances_dict.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/patterns/store_instances_dict.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/renderers/BRO/rectangle.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/renderers/BRO/renderobject.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/renderers/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/renderers/testrenderer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/trash/doodler.py" beforeDir="false" afterPath="$PROJECT_DIR$/trash/doodler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/trash/gloverride.py" beforeDir="false" afterPath="$PROJECT_DIR$/trash/gloverride.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/trash/gltracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/trash/gltracker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/trash/input_dictionary.py" beforeDir="false" afterPath="$PROJECT_DIR$/trash/input_dictionary.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/trash/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/trash/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/GUI/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/GUI_builder/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/viewport/Camera.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/viewport/Camera.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/viewport/update_check_descriptor.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/viewport/update_check_descriptor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/viewport/update_check_descriptor.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/viewport/viewports.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/viewport/viewports.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/window.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/window.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/res/shader/BRO_rectangle.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/res/shader/BRO_rectangle.glsl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw-0.2.2-py3.6.egg-info/PKG-INFO" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw-0.2.2-py3.6.egg-info/SOURCES.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw-0.2.2-py3.6.egg-info/dependency_links.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw-0.2.2-py3.6.egg-info/installed-files.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw-0.2.2-py3.6.egg-info/top_level.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw/libapi/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw/libapi/c_helper.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw/libapi/constant.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw/libapi/function.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw/pyglfw/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw/pyglfw/_wrapapi.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw/pyglfw/common.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw/pyglfw/errors.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw/pyglfw/hint.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw/pyglfw/inputs.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw/pyglfw/monitor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/pyglfw/pyglfw/window.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/APPLE/float_pixels.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/APPLE/float_pixels.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/APPLE/rgb_422.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/APPLE/rgb_422.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/APPLE/ycbcr_422.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/APPLE/ycbcr_422.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/color_buffer_float.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/color_buffer_float.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/debug_output.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/debug_output.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/depth_buffer_float.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/depth_buffer_float.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/enhanced_layouts.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/enhanced_layouts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/framebuffer_object.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/framebuffer_object.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/framebuffer_sRGB.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/framebuffer_sRGB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/gpu_shader_fp64.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/gpu_shader_fp64.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/robustness.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/robustness.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/shading_language_420pack.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/shading_language_420pack.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/texture_compression_rgtc.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/texture_compression_rgtc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/texture_float.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/texture_float.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/texture_rg.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/texture_rg.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/texture_swizzle.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/texture_swizzle.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/vertex_array_bgra.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/vertex_array_bgra.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/vertex_attrib_64bit.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ARB/vertex_attrib_64bit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ATI/pixel_format_float.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ATI/pixel_format_float.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/ATI/texture_float.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/ATI/texture_float.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/blend_minmax.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/blend_minmax.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/framebuffer_object.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/framebuffer_object.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/framebuffer_sRGB.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/framebuffer_sRGB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/gpu_shader4.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/gpu_shader4.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/packed_float.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/packed_float.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/secondary_color.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/secondary_color.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/shader_integer_mix.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/shader_integer_mix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_compression_latc.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_compression_latc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_compression_rgtc.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_compression_rgtc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_integer.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_integer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_sRGB.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_sRGB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_shared_exponent.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_shared_exponent.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_snorm.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_snorm.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_swizzle.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture_swizzle.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/vertex_array_bgra.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/vertex_array_bgra.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/vertex_attrib_64bit.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/vertex_attrib_64bit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/INGR/color_clamp.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/INGR/color_clamp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/KHR/debug.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/KHR/debug.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/MESA/ycbcr_texture.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/MESA/ycbcr_texture.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/blend_equation_advanced.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/blend_equation_advanced.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/depth_buffer_float.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/depth_buffer_float.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/float_buffer.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/float_buffer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/fragment_program2.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/fragment_program2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/half_float.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/half_float.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/parameter_buffer_object2.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/parameter_buffer_object2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/path_rendering.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/path_rendering.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/shader_atomic_float.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/shader_atomic_float.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/texture_expand_normal.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/texture_expand_normal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/texture_shader.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/texture_shader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/texture_shader3.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/texture_shader3.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/vertex_attrib_integer_64bit.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/vertex_attrib_integer_64bit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/vertex_program2.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/vertex_program2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/vertex_program2_option.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/NV/vertex_program2_option.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/OES/fixed_point.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/OES/fixed_point.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/OML/subsample.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/OML/subsample.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/SGI/color_matrix.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/SGI/color_matrix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/SGI/color_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/SGI/color_table.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/SGIS/texture_color_mask.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/SGIS/texture_color_mask.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/SGIS/texture_select.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/SGIS/texture_select.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/SGIX/blend_alpha_minmax.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/SGIX/blend_alpha_minmax.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GL/SUN/global_alpha.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GL/SUN/global_alpha.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GLES1/OES/fixed_point.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GLES1/OES/fixed_point.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GLUT/special.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GLUT/special.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GLX/ARB/framebuffer_sRGB.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GLX/ARB/framebuffer_sRGB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GLX/EXT/framebuffer_sRGB.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GLX/EXT/framebuffer_sRGB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GLX/NV/float_buffer.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GLX/NV/float_buffer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GLX/SGIS/blended_overlay.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GLX/SGIS/blended_overlay.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/GLX/SGIX/fbconfig.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/GLX/SGIX/fbconfig.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/WGL/ARB/framebuffer_sRGB.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/WGL/ARB/framebuffer_sRGB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/WGL/ATI/pixel_format_float.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/WGL/ATI/pixel_format_float.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/WGL/EXT/framebuffer_sRGB.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/WGL/EXT/framebuffer_sRGB.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/WGL/NV/float_buffer.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/WGL/NV/float_buffer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/contextdata.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/contextdata.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/OpenGL/images.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/OpenGL/images.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/PIL/BmpImagePlugin.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/PIL/BmpImagePlugin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/PIL/Image.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/PIL/Image.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_add_newdocs.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/numpy/core/_add_newdocs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/numeric.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/numpy/core/numeric.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/shape_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/numpy/core/shape_base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/ccompiler.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/numpy/distutils/ccompiler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/misc_util.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/numpy/distutils/misc_util.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/basics.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/numpy/doc/basics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/internals.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/numpy/doc/internals.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/fft/info.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/numpy/fft/info.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/scimath.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/numpy/lib/scimath.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/type_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/numpy/lib/type_check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/numpy/ma/core.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/testutils.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/numpy/ma/testutils.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/src/trash/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -51,23 +142,32 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5471418">
+    <splitter split-orientation="horizontal" split-proportion="0.3511375">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/main.py">
+            <entry file="file://$PROJECT_DIR$/res/shader/BRO_rectangle.glsl">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="148">
-                  <caret line="74" column="38" lean-forward="true" selection-start-line="74" selection-start-column="38" selection-end-line="74" selection-end-column="38" />
+                <state relative-caret-position="112">
+                  <caret line="26" selection-start-line="26" selection-end-line="26" />
                 </state>
               </provider>
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py">
+            <entry file="file://$PROJECT_DIR$/main.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1504">
-                  <caret line="33" column="34" lean-forward="true" selection-start-line="33" selection-start-column="34" selection-end-line="33" selection-end-column="34" />
+                <state relative-caret-position="95">
+                  <caret line="63" column="33" selection-start-line="63" selection-start-column="33" selection-end-line="63" selection-end-column="33" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/__init__.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state>
+                  <caret column="32" selection-start-column="32" selection-end-column="32" />
                 </state>
               </provider>
             </entry>
@@ -75,59 +175,77 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewports.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="91">
-                  <caret line="60" column="54" selection-start-line="60" selection-start-column="54" selection-end-line="60" selection-end-column="54" />
+                <state relative-caret-position="756">
+                  <caret line="58" column="54" selection-start-line="58" selection-start-column="54" selection-end-line="58" selection-end-column="54" />
                 </state>
               </provider>
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/Camera.py">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/renderable.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="225">
-                  <caret line="28" lean-forward="true" selection-start-line="28" selection-end-line="28" />
+                <state relative-caret-position="630">
+                  <caret line="45" column="21" lean-forward="true" selection-start-line="45" selection-start-column="21" selection-end-line="45" selection-end-column="21" />
+                  <folding>
+                    <element signature="e#0#11#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/update_check_descriptor.py">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/basic_render_object.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="127">
-                  <caret line="108" column="13" selection-start-line="108" selection-start-column="13" selection-end-line="108" selection-end-column="13" />
+                <state relative-caret-position="98">
+                  <caret line="7" column="12" selection-start-line="7" selection-start-column="12" selection-end-line="7" selection-end-column="12" />
+                  <folding>
+                    <element signature="e#0#48#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/rectangle.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="179">
+                  <caret line="23" column="21" lean-forward="true" selection-start-line="23" selection-start-column="21" selection-end-line="23" selection-end-column="21" />
+                  <folding>
+                    <element signature="e#0#27#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="14">
+                  <caret line="22" column="17" lean-forward="true" selection-start-line="22" selection-start-column="17" selection-end-line="22" selection-end-column="17" />
+                  <folding>
+                    <element signature="e#0#14#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="56">
+                  <caret line="4" column="45" selection-start-line="4" selection-start-column="45" selection-end-line="4" selection-end-column="45" />
+                  <folding>
+                    <element signature="e#0#14#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
           </file>
           <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderUnit/renderunit.py">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/mygui.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="161">
-                  <caret line="312" column="25" lean-forward="true" selection-start-line="312" selection-start-column="25" selection-end-line="312" selection-end-column="25" />
-                  <folding>
-                    <element signature="e#0#26#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="112">
-                  <caret line="8" selection-start-line="8" selection-end-line="8" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/renderers/BRO/rectangle.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="209">
-                  <caret line="30" lean-forward="true" selection-start-line="30" selection-end-line="30" />
-                  <folding>
-                    <element signature="e#0#27#0" expanded="true" />
-                  </folding>
+                <state relative-caret-position="42">
+                  <caret line="3" column="13" selection-start-line="3" selection-start-column="13" selection-end-line="3" selection-end-column="13" />
                 </state>
               </provider>
             </entry>
@@ -136,25 +254,83 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/res/shader/BRO_rectangle.glsl">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="112">
-                  <caret line="26" lean-forward="true" selection-start-line="26" selection-end-line="26" />
-                </state>
-              </provider>
-            </entry>
-          </file>
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="259">
-                  <caret line="372" column="39" selection-start-line="372" selection-start-column="39" selection-end-line="372" selection-end-column="39" />
+                <state relative-caret-position="120">
+                  <caret line="66" column="22" selection-start-line="66" selection-start-column="22" selection-end-line="66" selection-end-column="22" />
                   <folding>
                     <element signature="e#0#16#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/patterns/store_instances_dict.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="249">
+                  <caret line="26" column="49" selection-start-line="26" selection-start-column="49" selection-end-line="26" selection-end-column="49" />
+                  <folding>
+                    <element signature="e#0#14#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/builder.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="84">
+                  <caret line="6" selection-start-line="6" selection-end-line="6" />
+                  <folding>
+                    <element signature="e#0#41#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/box.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="266">
+                  <caret line="19" column="12" lean-forward="true" selection-start-line="19" selection-start-column="12" selection-end-line="19" selection-end-column="12" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/test.py">
+              <provider selected="true" editor-type-id="text-editor" />
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/collector.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="140">
+                  <caret line="10" selection-start-line="10" selection-end-line="10" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/tick.py">
+              <provider selected="true" editor-type-id="text-editor" />
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/button.py">
+              <provider selected="true" editor-type-id="text-editor" />
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/textbox.py">
+              <provider selected="true" editor-type-id="text-editor" />
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/texturebox.py">
+              <provider selected="true" editor-type-id="text-editor" />
             </entry>
           </file>
         </leaf>
@@ -179,6 +355,13 @@
       <find>setting PM</find>
       <find>inserting</find>
       <find>print</find>
+      <find>SID</find>
+      <find>draw</find>
+      <find>virtual_scope.renderer</find>
+      <find>virtuls</find>
+      <find>No module</find>
+      <find>virtual</find>
+      <find>renderer</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -198,15 +381,31 @@
         <option value="$PROJECT_DIR$/my_src/windowing/renderUnit/components/properties.py" />
         <option value="$PROJECT_DIR$/my_src/renderers/BRO/rectangle.py" />
         <option value="$PROJECT_DIR$/res/shader/BRO_rectangle.glsl" />
-        <option value="$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderUnit/renderunit.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/viewport/viewports.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/viewport/update_check_descriptor.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/viewport/Camera.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/GUI/imgui.py" />
+        <option value="$PROJECT_DIR$/my_src/GUI_builder/ddd.py" />
+        <option value="$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py" />
+        <option value="$PROJECT_DIR$/my_src/patterns/store_instances_dict.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py" />
+        <option value="$PROJECT_DIR$/my_src/GUI_builder/parts/tick.py" />
+        <option value="$PROJECT_DIR$/my_src/GUI_builder/parts/button.py" />
+        <option value="$PROJECT_DIR$/my_src/GUI_builder/parts/textbox.py" />
+        <option value="$PROJECT_DIR$/my_src/GUI_builder/parts/imagebox.py" />
+        <option value="$PROJECT_DIR$/my_src/GUI_builder/parts/collector.py" />
+        <option value="$PROJECT_DIR$/my_src/GUI_builder/builder.py" />
+        <option value="$PROJECT_DIR$/my_src/GUI_builder/test.py" />
+        <option value="$PROJECT_DIR$/my_src/GUI_builder/parts/box.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/renderable.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/BRO/BRO.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/BRO/__init__.py" />
+        <option value="$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/window.py" />
         <option value="$PROJECT_DIR$/main.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/unnamedGUI/mygui.py" />
       </list>
     </option>
   </component>
@@ -215,6 +414,9 @@
     <option name="y" value="40" />
     <option name="width" value="2696" />
     <option name="height" value="1664" />
+  </component>
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -238,7 +440,34 @@
               <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
               <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
               <item name="my_src" type="462c0819:PsiDirectoryNode" />
-              <item name="trash" type="462c0819:PsiDirectoryNode" />
+              <item name="GUI_builder" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
+              <item name="my_src" type="462c0819:PsiDirectoryNode" />
+              <item name="GUI_builder" type="462c0819:PsiDirectoryNode" />
+              <item name="onscreen" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
+              <item name="my_src" type="462c0819:PsiDirectoryNode" />
+              <item name="GUI_builder" type="462c0819:PsiDirectoryNode" />
+              <item name="outscreen" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
+              <item name="my_src" type="462c0819:PsiDirectoryNode" />
+              <item name="GUI_builder" type="462c0819:PsiDirectoryNode" />
+              <item name="parts" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
+              <item name="my_src" type="462c0819:PsiDirectoryNode" />
+              <item name="patterns" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
@@ -251,32 +480,29 @@
               <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
               <item name="my_src" type="462c0819:PsiDirectoryNode" />
               <item name="windowing" type="462c0819:PsiDirectoryNode" />
-              <item name="GUI" type="462c0819:PsiDirectoryNode" />
+              <item name="IO_device" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
               <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
               <item name="my_src" type="462c0819:PsiDirectoryNode" />
               <item name="windowing" type="462c0819:PsiDirectoryNode" />
-              <item name="renderUnit" type="462c0819:PsiDirectoryNode" />
+              <item name="renderer" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
               <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
               <item name="my_src" type="462c0819:PsiDirectoryNode" />
               <item name="windowing" type="462c0819:PsiDirectoryNode" />
-              <item name="viewport" type="462c0819:PsiDirectoryNode" />
+              <item name="renderer" type="462c0819:PsiDirectoryNode" />
+              <item name="BRO" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
               <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
-              <item name="res" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
-              <item name="res" type="462c0819:PsiDirectoryNode" />
-              <item name="shader" type="462c0819:PsiDirectoryNode" />
+              <item name="my_src" type="462c0819:PsiDirectoryNode" />
+              <item name="windowing" type="462c0819:PsiDirectoryNode" />
+              <item name="unnamedGUI" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
@@ -309,11 +535,11 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\dingo\PycharmProjects\pyopengl\my_src\windowing" />
+      <recent name="C:\Users\dingo\PycharmProjects\pyopengl\my_src\windowing\renderer" />
       <recent name="C:\Users\dingo\PycharmProjects\pyopengl" />
+      <recent name="C:\Users\dingo\PycharmProjects\pyopengl\my_src\patterns" />
+      <recent name="C:\Users\dingo\PycharmProjects\pyopengl\my_src\windowing" />
       <recent name="C:\Users\dingo\PycharmProjects\pyopengl\src\vend" />
-      <recent name="C:\Users\dingo\PycharmProjects\pyopengl\src\d" />
-      <recent name="C:\Users\dingo\PycharmProjects\pyopengl\src\vend\glfw" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -329,7 +555,7 @@
     </option>
   </component>
   <component name="RunManager" selected="Python.main">
-    <configuration name="__init__" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="builder" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="pyopengl" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -337,11 +563,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/vend/pyglfw/libapi" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/my_src/GUI_builder" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/vend/pyglfw/libapi/__init__.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/my_src/GUI_builder/builder.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -435,19 +661,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.__init__" />
       <item itemvalue="Python.library" />
       <item itemvalue="Python.main" />
       <item itemvalue="Python.window" />
       <item itemvalue="Python.scratch" />
+      <item itemvalue="Python.builder" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.builder" />
         <item itemvalue="Python.scratch" />
         <item itemvalue="Python.window" />
         <item itemvalue="Python.library" />
-        <item itemvalue="Python.__init__" />
       </list>
     </recent_temporary>
   </component>
@@ -469,7 +695,14 @@
       <option name="project" value="LOCAL" />
       <updated>1557903908007</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="mouse update:&#10;manually setting mouse state -&gt; as 'instant':&#10;when window resizing by dragging the edge of the window, mouse is manually set as left button pressed and mouse onscreen. this setting makes a list of instant mouse state which is handled per every frame by mouse.reset()">
+      <created>1557994657226</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1557994657226</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TodoView">
@@ -485,31 +718,31 @@
     <frame x="-7" y="-7" width="1381" height="885" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.2494432" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2494432" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32980132" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.5152318" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4996288" visible="true" weight="0.34437087" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32980132" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.5536424" />
-      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5003712" side_tool="true" weight="0.5152318" />
       <window_info anchor="bottom" id="Python Console" order="10" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
     </layout>
     <layout-to-restore>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.2494432" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2494432" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32980132" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.51655626" />
+      <window_info anchor="bottom" id="Run" order="2" visible="true" weight="0.5152318" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -525,7 +758,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="included essential vendor packages into dir vend_src:&#10;numpy&#10;pyopengl&#10;glfw&#10;pillow" />
-    <option name="LAST_COMMIT_MESSAGE" value="included essential vendor packages into dir vend_src:&#10;numpy&#10;pyopengl&#10;glfw&#10;pillow" />
+    <MESSAGE value="mouse update:&#10;manually setting mouse state -&gt; as 'instant':&#10;when window resizing by dragging the edge of the window, mouse is manually set as left button pressed and mouse onscreen. this setting makes a list of instant mouse state which is handled per every frame by mouse.reset()" />
+    <option name="LAST_COMMIT_MESSAGE" value="mouse update:&#10;manually setting mouse state -&gt; as 'instant':&#10;when window resizing by dragging the edge of the window, mouse is manually set as left button pressed and mouse onscreen. this setting makes a list of instant mouse state which is handled per every frame by mouse.reset()" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -564,7 +798,7 @@
     <entry file="file://$PROJECT_DIR$/venv/Scripts/python.exe">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderUnit/components/texture.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="320">
           <caret line="38" selection-start-line="38" selection-end-line="38" />
@@ -633,27 +867,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderUnit/components/indexbuffer.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/indexbuffer.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="980">
           <caret line="75" selection-start-line="75" selection-end-line="75" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3542">
-          <caret line="260" column="10" selection-start-line="260" selection-start-column="10" selection-end-line="260" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/renderers/BRO/renderobject.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="84">
-          <caret line="7" column="23" selection-start-line="7" selection-start-column="23" selection-end-line="7" selection-end-column="23" />
-          <folding>
-            <element signature="e#0#48#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -664,7 +881,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderUnit/components/shader.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/shader.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="490">
           <caret line="42" column="31" selection-start-line="42" selection-start-column="31" selection-end-line="42" selection-end-column="31" />
@@ -674,7 +891,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderUnit/components/properties.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/properties.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1372">
           <caret line="100" column="4" selection-start-line="100" selection-start-column="4" selection-end-line="100" selection-end-column="4" />
@@ -685,16 +902,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="144">
           <caret line="54" column="12" selection-start-line="54" selection-start-column="12" selection-end-line="54" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/renderers/BRO/rectangle.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="209">
-          <caret line="30" lean-forward="true" selection-start-line="30" selection-end-line="30" />
-          <folding>
-            <element signature="e#0#27#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -712,13 +919,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewports.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="91">
-          <caret line="60" column="54" selection-start-line="60" selection-start-column="54" selection-end-line="60" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/platform/baseplatform.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="287">
@@ -733,58 +933,181 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/update_check_descriptor.py">
+    <entry file="file://$PROJECT_DIR$/my_src/patterns/store_instances_dict.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="127">
-          <caret line="108" column="13" selection-start-line="108" selection-start-column="13" selection-end-line="108" selection-end-column="13" />
+        <state relative-caret-position="249">
+          <caret line="26" column="49" selection-start-line="26" selection-start-column="49" selection-end-line="26" selection-end-column="49" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2422">
+          <caret line="173" column="19" selection-start-line="173" selection-start-column="19" selection-end-line="173" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/Camera.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="28" lean-forward="true" selection-start-line="28" selection-end-line="28" />
+        <state relative-caret-position="210">
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewports.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="756">
+          <caret line="58" column="54" selection-start-line="58" selection-start-column="54" selection-end-line="58" selection-end-column="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="56">
+          <caret line="4" column="45" selection-start-line="4" selection-start-column="45" selection-end-line="4" selection-end-column="45" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/tick.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/button.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/textbox.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/texturebox.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/collector.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="140">
+          <caret line="10" selection-start-line="10" selection-end-line="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/test.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/builder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="84">
+          <caret line="6" selection-start-line="6" selection-end-line="6" />
+          <folding>
+            <element signature="e#0#41#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/raw/GL/VERSION/GL_1_1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="156">
+          <caret line="514" selection-start-line="514" selection-end-line="514" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/res/shader/BRO_rectangle.glsl">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="112">
-          <caret line="26" lean-forward="true" selection-start-line="26" selection-end-line="26" />
+          <caret line="26" selection-start-line="26" selection-end-line="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/renderable.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="630">
+          <caret line="45" column="21" lean-forward="true" selection-start-line="45" selection-start-column="21" selection-end-line="45" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/renderers/testrenderer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="70">
+          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/box.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="266">
+          <caret line="19" column="12" lean-forward="true" selection-start-line="19" selection-start-column="12" selection-end-line="19" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="32" selection-start-column="32" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="14">
+          <caret line="22" column="17" lean-forward="true" selection-start-line="22" selection-start-column="17" selection-end-line="22" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/basic_render_object.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="98">
+          <caret line="7" column="12" selection-start-line="7" selection-start-column="12" selection-end-line="7" selection-end-column="12" />
+          <folding>
+            <element signature="e#0#48#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="259">
-          <caret line="372" column="39" selection-start-line="372" selection-start-column="39" selection-end-line="372" selection-end-column="39" />
+        <state relative-caret-position="120">
+          <caret line="66" column="22" selection-start-line="66" selection-start-column="22" selection-end-line="66" selection-end-column="22" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/rectangle.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="179">
+          <caret line="23" column="21" lean-forward="true" selection-start-line="23" selection-start-column="21" selection-end-line="23" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#27#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="148">
-          <caret line="74" column="38" lean-forward="true" selection-start-line="74" selection-start-column="38" selection-end-line="74" selection-end-column="38" />
+        <state relative-caret-position="95">
+          <caret line="63" column="33" selection-start-line="63" selection-start-column="33" selection-end-line="63" selection-end-column="33" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/mygui.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1504">
-          <caret line="33" column="34" lean-forward="true" selection-start-line="33" selection-start-column="34" selection-end-line="33" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderUnit/renderunit.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="161">
-          <caret line="312" column="25" lean-forward="true" selection-start-line="312" selection-start-column="25" selection-end-line="312" selection-end-column="25" />
-          <folding>
-            <element signature="e#0#26#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="42">
+          <caret line="3" column="13" selection-start-line="3" selection-start-column="13" selection-end-line="3" selection-end-column="13" />
         </state>
       </provider>
     </entry>

@@ -7,7 +7,7 @@ Python-friendly API
 Overview (from the spec)
 	
 	This extension introduces a new way to describe the capabilities of a 
-	GLX drawable (i.e., to describe the depth of color buffer components 
+	GLX drawable (i.e., to describe the depth of color buffer parts
 	and the type and size of ancillary buffers), removes the "similarity"
 	requirement when making a context current to a drawable, and supports 
 	RGBA rendering to one- and two-component Windows and GLX Pixmaps.
@@ -38,7 +38,7 @@ Overview (from the spec)
 	This extension defines the semantics for doing RGBA rendering to Windows
 	created with visuals of type PseudoColor, StaticColor, GrayScale, and 
 	StaticGray.  In each of these cases, the red component is used to
-	generate the display, and the green and blue components, if present,
+	generate the display, and the green and blue parts, if present,
 	are ignored for display purposes.  
 	
 	The OpenGL RGBA rendering semantics are more powerful than the OpenGL
@@ -47,7 +47,7 @@ Overview (from the spec)
 	RGBA rendering semantics to be used with pseudo color and gray scale
 	displays.  An especially useful application of this extension is
 	support of one- and two-component RGBA drawables; drawables whose green,
-	blue, and sometimes alpha components have no bitplanes.
+	blue, and sometimes alpha parts have no bitplanes.
 	
 
 The official definition of this extension is available here:

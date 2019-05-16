@@ -25,17 +25,17 @@ Overview (from the spec)
 	floating point color buffer.
 	
 	The HALF_APPLE texture type allows clients to use source textures
-	composed of half float color components.  This constant is use in
+	composed of half float color parts.  This constant is use in
 	the type parameter in DrawPixels, ReadPixels and texturing commands
 	with a corresponding GL half data type, which corresponds to a 16
 	bit half float, and has no special interpretation.
 	
 	Clients can use the 12 additional (6 floating point and 6 half
 	float) sized internal texture formats to specify the mapping of R,
-	G, B and A values to texture components, as they would with any
+	G, B and A values to texture parts, as they would with any
 	other sized internal texture format.  Note, as is the standard
 	practice with OpenGL, implementations should map the sized internal
-	texture R, G, B and A values to internal components with memory
+	texture R, G, B and A values to internal parts with memory
 	allocations as close as possible to those specified in the sized
 	internal format.
 	
@@ -43,8 +43,8 @@ Overview (from the spec)
 	appropriate color floating point pixel format attribute for the
 	windowing system API in use by the client.  Both 128 bit and 64 bit
 	floating point color buffers can be supported, the former with full
-	32 bit floating point components and the latter with 16 bit half
-	float components.
+	32 bit floating point parts and the latter with 16 bit half
+	float parts.
 	
 	Additionally, clients can query to see if they have a floating point
 	color buffer using GetBooleanv with COLOR_FLOAT_APPLE as the get

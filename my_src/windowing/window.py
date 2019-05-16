@@ -9,7 +9,7 @@ import glfw as glfw
 import glfw.GLFW as GLFW
 
 from error_handler import *
-# from renderers.renderUnit.renderunit import RenderUnit
+# from renderers.renderer.renderunit import RenderUnit
 from virtual_scope import *
 
 from .IO_device import *
@@ -63,7 +63,8 @@ class _Windows:
 class Window:
     def _global_init():
         import numpy as np
-
+        from windowing.renderer import BRO
+        from windowing.unnamedGUI import mygui
         pass
 
     _init_global = _global_init

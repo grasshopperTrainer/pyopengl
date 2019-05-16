@@ -2769,7 +2769,7 @@ def eval(image, *args):
     in the given image. If the image has more than one band, the same
     function is applied to each band. Note that the function is
     evaluated once for each possible pixel value, so you cannot use
-    random components or other generators.
+    random parts or other generators.
 
     :param image: The input image.
     :param function: A function object, taking one integer argument.

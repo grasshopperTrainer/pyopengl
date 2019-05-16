@@ -175,7 +175,7 @@ def get_path_from_frame(frame, parent_path=None):
     return d or '.'
 
 def njoin(*path):
-    """Join two or more pathname components +
+    """Join two or more pathname parts +
     - convert a /-separated pathname to one using the OS's path separator.
     - resolve `..` and `.` from path.
 

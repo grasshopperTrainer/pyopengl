@@ -25,7 +25,7 @@ Overview (from the spec)
 	
 	  * subroutine calls,
 	
-	  * instructions to perform vector normalization, divide vector components
+	  * instructions to perform vector normalization, divide vector parts
 	    by a scalar, and perform two-component dot products (with or without a
 	    scalar add),
 	

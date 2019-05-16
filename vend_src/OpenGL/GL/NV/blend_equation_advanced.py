@@ -28,7 +28,7 @@ Overview (from the spec)
 	In unextended OpenGL, the set of blending equations is limited, and can be
 	expressed very simply.  The MIN and MAX blend equations simply compute
 	component-wise minimums or maximums of source and destination color
-	components.  The FUNC_ADD, FUNC_SUBTRACT, and FUNC_REVERSE_SUBTRACT
+	parts.  The FUNC_ADD, FUNC_SUBTRACT, and FUNC_REVERSE_SUBTRACT
 	multiply the source and destination colors by source and destination
 	factors and either add the two products together or subtract one from the
 	other.  This limited set of operations supports many common blending
@@ -40,7 +40,7 @@ Overview (from the spec)
 	blending equations do not use source and destination factors specified by
 	BlendFunc.  Instead, each blend equation specifies a complete equation
 	based on the source and destination colors.  These new blend equations are
-	used for both RGB and alpha components; they may not be used to perform
+	used for both RGB and alpha parts; they may not be used to perform
 	separate RGB and alpha blending (via functions like
 	BlendEquationSeparate).
 	
@@ -50,8 +50,8 @@ Overview (from the spec)
 	non-premultiplied, according the BLEND_PREMULTIPLIED_SRC_NV blending
 	parameter (as specified by the new BlendParameteriNV function).  If
 	fragment color is considered non-premultiplied, the (R,G,B) color
-	components are multiplied by the alpha component prior to blending.  For
-	non-premultiplied color components in the range [0,1], the corresponding
+	parts are multiplied by the alpha component prior to blending.  For
+	non-premultiplied color parts in the range [0,1], the corresponding
 	premultiplied color component would have values in the range [0*A,1*A].
 	
 	Many of these advanced blending equations are formulated where the result
@@ -77,8 +77,8 @@ Overview (from the spec)
 	any primitives in this unsupported configuration.  Additionally, blending
 	precision may be limited to 16-bit floating-point, which could result in a
 	loss of precision and dynamic range for framebuffer formats with 32-bit
-	floating-point components, and in a loss of precision for formats with 12-
-	and 16-bit signed or unsigned normalized integer components.
+	floating-point parts, and in a loss of precision for formats with 12-
+	and 16-bit signed or unsigned normalized integer parts.
 
 The official definition of this extension is available here:
 http://www.opengl.org/registry/specs/NV/blend_equation_advanced.txt

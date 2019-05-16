@@ -84,10 +84,10 @@ glBitmapxOES=wrapper.wrapper(glBitmapxOES).setInputArraySize(
     'bitmap', None
 )
 glColor3xvOES=wrapper.wrapper(glColor3xvOES).setInputArraySize(
-    'components', 3
+    'parts', 3
 )
 glColor4xvOES=wrapper.wrapper(glColor4xvOES).setInputArraySize(
-    'components', 4
+    'parts', 4
 )
 # INPUT glConvolutionParameterxvOES.params size not checked against 'pname'
 glConvolutionParameterxvOES=wrapper.wrapper(glConvolutionParameterxvOES).setInputArraySize(

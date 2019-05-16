@@ -3817,7 +3817,7 @@ class MaskedArray(ndarray):
               fill_value=999999)
 
         """
-        # Get the basic components
+        # Get the basic parts
         (_data, _mask) = (self._data, self._mask)
 
         # Force the condition to a regular ndarray and forget the missing

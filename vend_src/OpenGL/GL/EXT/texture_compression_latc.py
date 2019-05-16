@@ -14,7 +14,7 @@ Overview (from the spec)
 	These formats are designed to reduce the storage requirements and
 	memory bandwidth required for luminance and luminance-alpha textures
 	by a factor of 2-to-1 over conventional uncompressed luminance and
-	luminance-alpha textures with 8-bit components (GL_LUMINANCE8 and
+	luminance-alpha textures with 8-bit parts (GL_LUMINANCE8 and
 	GL_LUMINANCE8_ALPHA8).
 	
 	The compressed signed luminance-alpha format is reasonably suited

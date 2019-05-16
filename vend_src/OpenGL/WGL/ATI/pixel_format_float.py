@@ -7,18 +7,18 @@ Python-friendly API
 Overview (from the spec)
 	
 	This extension adds pixel formats with floating-point RGBA color
-	components.
+	parts.
 	
-	The size of each float components is specified using the same
+	The size of each float parts is specified using the same
 	WGL_RED_BITS_ARB, WGL_GREEN_BITS_ARB, WGL_BLUE_BITS_ARB and
 	WGL_ALPHA_BITS_ARB pixel format attributes that are used for
-	defining the size of fixed-point components.  32 bit floating-
-	point components are in the standard IEEE float format.  16 bit
-	floating-point components have 1 sign bit, 5 exponent bits,
+	defining the size of fixed-point parts.  32 bit floating-
+	point parts are in the standard IEEE float format.  16 bit
+	floating-point parts have 1 sign bit, 5 exponent bits,
 	and 10 mantissa bits. 
 	
-	In standard OpenGL RGBA color components are normally clamped to
-	the range [0,1].  The color components of a float buffer are
+	In standard OpenGL RGBA color parts are normally clamped to
+	the range [0,1].  The color parts of a float buffer are
 	clamped to the limits of the range representable by their format.
 	
 

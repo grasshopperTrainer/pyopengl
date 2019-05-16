@@ -24,7 +24,7 @@ Overview (from the spec)
 	    convolution (and the scale, and bias that are associated with
 	    convolution.)
 	
-	    The color matrix can be used to reassign and duplicate color components.
+	    The color matrix can be used to reassign and duplicate color parts.
 	    It can also be used to implement simple color space conversions.
 
 The official definition of this extension is available here:

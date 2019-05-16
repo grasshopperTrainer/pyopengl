@@ -7,7 +7,7 @@ Python-friendly API
 Overview (from the spec)
 	
 	This extension provides a remapping mode where unsigned texture
-	components (in the range [0,1]) can be treated as though they
+	parts (in the range [0,1]) can be treated as though they
 	contained signed data (in the range [-1,+1]).  This allows
 	applications to easily encode signed data into unsigned texture
 	formats.

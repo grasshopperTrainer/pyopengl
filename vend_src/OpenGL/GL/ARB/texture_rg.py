@@ -13,8 +13,8 @@ Overview (from the spec)
 	useful.
 	
 	For example, when sampling from such textures, the luminance values
-	are replicated across the color components, and the intensity values are
-	replicated across both the color and alpha components. This is no
+	are replicated across the color parts, and the intensity values are
+	replicated across both the color and alpha parts. This is no
 	longer necessary with programmable shaders.
 	
 	It is also desirable to be able to render to one- and two-

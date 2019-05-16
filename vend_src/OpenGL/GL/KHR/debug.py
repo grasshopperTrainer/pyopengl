@@ -19,7 +19,7 @@ Overview (from the spec)
 	implementation-dependent ID within the source and type pair.
 	
 	A message's source identifies the origin of the message and can either 
-	describe components of the GL, the window system, third-party external 
+	describe parts of the GL, the window system, third-party external
 	sources such as external debuggers, or even the application itself.
 	
 	The type of the message roughly identifies the nature of the event that 

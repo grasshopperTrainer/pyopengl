@@ -58,7 +58,7 @@ Overview (from the spec)
 	
 	   into the space of 32 vec4 slots using the following code:
 	
-	      // consume X/Y/Z components of 32 vectors
+	      // consume X/Y/Z parts of 32 vectors
 	      layout(location = 0) in vec3 batman[32];
 	
 	      // consumes W component of first vector
@@ -70,7 +70,7 @@ Overview (from the spec)
 	      // consumes W component of 32 vectors
 	      layout(location = 0, component = 3) in float robin[32];
 	
-	      // consume X/Y/Z components of 32 vectors
+	      // consume X/Y/Z parts of 32 vectors
 	      layout(location = 0) in vec3 batman[32];
 	
 	5) Specify transform/feedback buffers, locations, and widths. For example:

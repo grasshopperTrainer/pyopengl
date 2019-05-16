@@ -131,7 +131,7 @@ class BmpImageFile(ImageFile.ImageFile):
                             header_data[36 + idx * 4:40 + idx * 4]
                         )
                 else:
-                    # 40 byte headers only have the three components in the
+                    # 40 byte headers only have the three parts in the
                     # bitfields masks, ref:
                     # https://msdn.microsoft.com/en-us/library/windows/desktop/dd183376(v=vs.85).aspx
                     # See also

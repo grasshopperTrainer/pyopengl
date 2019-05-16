@@ -682,7 +682,7 @@ def block(arrays):
     ``v.ndim == 1``.
 
     When the nested list is two levels deep, this allows block matrices to be
-    constructed from their components.
+    constructed from their parts.
 
     .. versionadded:: 1.13.0
 

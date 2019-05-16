@@ -91,7 +91,7 @@ def createTargetArray( format, dims, type ):
     this case, so that image formats registered as TIGHT_PACK_FORMATS
     only ever return a dims-shaped value.  TIGHT_PACK_FORMATS will raise 
     ValueErrors if they are used with a format that does not have the same 
-    number of components as they define.
+    number of parts as they define.
     
     Note that the base storage type must provide a zeros method.  The zeros
     method relies on their being a registered default array-implementation for 
@@ -108,7 +108,7 @@ def createTargetArray( format, dims, type ):
             dims += (componentCount, )
         elif TIGHT_PACK_FORMATS[ type ] < componentCount:
             raise ValueError(
-                """Image type: %s supports %s components, but format %s requires %s components"""%(
+                """Image type: %s supports %s parts, but format %s requires %s parts"""%(
                     type,
                     TIGHT_PACK_FORMATS[ type ],
                     format,
@@ -119,7 +119,7 @@ def createTargetArray( format, dims, type ):
     return arrayType.zeros( dims )
 
 def formatToComponentCount( format ):
-    """Given an OpenGL image format specification, get components/pixel"""
+    """Given an OpenGL image format specification, get parts/pixel"""
     size = COMPONENT_COUNTS.get( format )
     if size is None:
         raise ValueError( """Unrecognised image format: %r"""%(format,))
@@ -145,7 +145,7 @@ def returnFormat( data, type ):
 
 
 COMPONENT_COUNTS = {
-    # Image-format-constant: number-of-components (integer)
+    # Image-format-constant: number-of-parts (integer)
 }
 TYPE_TO_BITS = { 
     # GL-image-storage-type-constant: number-of-bits (integer)

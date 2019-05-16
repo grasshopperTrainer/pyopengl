@@ -13,7 +13,7 @@ Overview (from the spec)
 	
 	OpenGL defines alpha as a component of the vertex color state.
 	Whenever a color is set, the alpha component is set along with the
-	red, green, and blue components.  This means that transparency
+	red, green, and blue parts.  This means that transparency
 	can't be changed for primitives with per-vertex colors without
 	modifying the color of each vertex, replacing the old alpha
 	component with the new alpha component.  This can be very expensive

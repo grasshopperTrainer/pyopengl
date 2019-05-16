@@ -27,7 +27,7 @@ Overview (from the spec)
 	
 	  * programmable user clip distances,
 	
-	  * address registers with four components (instead of just one),
+	  * address registers with four parts (instead of just one),
 	
 	  * absolute value operator on scalar and swizzled operand loads,
 	

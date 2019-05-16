@@ -7,7 +7,7 @@ Python-friendly API
 Overview (from the spec)
 	
 	The original intention of this extension was simply to support various
-	numeric resolutions of color components in texture images.  While it
+	numeric resolutions of color parts in texture images.  While it
 	accomplishes this, it also accomplishes a larger task, that of
 	formalizing the notion of an internal format for images, corresponding
 	to the external format that already existed for image data in host
@@ -16,7 +16,7 @@ Overview (from the spec)
 	manipulation.
 	
 	The idea of an internal format is simple: rather than treating a
-	retained image as having 1, 2, 3, or 4 components, treat it as though
+	retained image as having 1, 2, 3, or 4 parts, treat it as though
 	it has a specific format, such as LUMINANCE_ALPHA, or just ALPHA.  Then
 	define the semantics of the use of internal images with these formats in
 	a consistent way.  Because texture mapping is already defined in GL, the

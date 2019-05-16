@@ -7,20 +7,20 @@ Python-friendly API
 Overview (from the spec)
 	
 	The standard OpenGL pipeline is based on a fixed-point pipeline.
-	While color components are nominally floating-point values in the
-	pipeline, components are frequently clamped to the range [0,1] to
+	While color parts are nominally floating-point values in the
+	pipeline, parts are frequently clamped to the range [0,1] to
 	accomodate the fixed-point color buffer representation and allow
 	for fixed-point computational hardware.
 	
 	This extension adds pixel formats or visuals with floating-point
-	RGBA color components and controls for clamping of color
-	components within the pipeline.
+	RGBA color parts and controls for clamping of color
+	parts within the pipeline.
 	
 	For a floating-point RGBA pixel format, the size of each float
-	components is specified using the same attributes that are used
-	for defining the size of fixed-point components.  32-bit
-	floating-point components are in the standard IEEE float format.
-	16-bit floating-point components have 1 sign bit, 5 exponent bits,
+	parts is specified using the same attributes that are used
+	for defining the size of fixed-point parts.  32-bit
+	floating-point parts are in the standard IEEE float format.
+	16-bit floating-point parts have 1 sign bit, 5 exponent bits,
 	and 10 mantissa bits.
 	
 	Clamping control provides a way to disable certain color clamps

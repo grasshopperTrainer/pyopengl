@@ -9,7 +9,7 @@ Overview (from the spec)
 	Two additional blending equations are specified using the interface
 	defined by EXT_blend_minmax.  These equations are similar to the
 	MIN_EXT and MAX_EXT blending equations, but the outcome for all four
-	color components is determined by a comparison of just the alpha
+	color parts is determined by a comparison of just the alpha
 	component's source and destination values.  These equations are useful
 	in image processing and advanced shading algorithms.
 

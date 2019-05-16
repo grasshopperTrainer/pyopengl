@@ -6,7 +6,7 @@ Python-friendly API
 
 Overview (from the spec)
 	
-	This extension allows specifying the RGB components of the secondary
+	This extension allows specifying the RGB parts of the secondary
 	color used in the Color Sum stage, instead of using the default
 	(0,0,0,0) color. It applies only in RGBA mode and when LIGHTING is
 	disabled.

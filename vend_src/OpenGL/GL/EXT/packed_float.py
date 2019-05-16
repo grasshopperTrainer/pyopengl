@@ -10,7 +10,7 @@ Overview (from the spec)
 	that fits within a single 32-bit word.  This format stores 5 bits
 	of biased exponent per component in the same manner as 16-bit
 	floating-point formats, but rather than 10 mantissa bits, the red,
-	green, and blue components have 6, 6, and 5 bits respectively.
+	green, and blue parts have 6, 6, and 5 bits respectively.
 	Each mantissa is assumed to have an implied leading one except in the
 	denorm exponent case.  There is no sign bit so only non-negative
 	values can be represented.  Positive infinity, positive denorms,

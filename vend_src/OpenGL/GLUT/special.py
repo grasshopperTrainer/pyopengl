@@ -123,7 +123,7 @@ class GLUTCallback( object ):
     def __call__( self, function, *args ):
         if GLUT_GUARD_CALLBACKS and hasattr( function,'__call__' ):
             def safeCall( *args, **named ):
-                """Safe calling of GUI callbacks, exits on failures"""
+                """Safe calling of unnamedGUI callbacks, exits on failures"""
                 try:
                     if not CurrentContextIsValid():
                         raise RuntimeError( """No valid context!""" )

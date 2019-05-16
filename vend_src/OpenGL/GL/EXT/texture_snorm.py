@@ -6,9 +6,9 @@ Python-friendly API
 
 Overview (from the spec)
 	
-	Fixed-point textures in unextended OpenGL have integer components,
+	Fixed-point textures in unextended OpenGL have integer parts,
 	but those values are taken to represent floating-point values in
-	the range [0.0,1.0]. These integer components are considered
+	the range [0.0,1.0]. These integer parts are considered
 	"unsigned normalized" integers. When such a texture is accessed by
 	a shader or by fixed-function fragment processing, floating-point
 	values are returned in the range [0.0,1.0].

@@ -98,7 +98,7 @@ Overview (from the spec)
 	ARB_framebuffer_object, on the other hand, is both simpler to use
 	and more efficient than ARB_render_texture.  The
 	ARB_framebuffer_object API is contained wholly within the GL API and
-	has no (non-portable) window-system components.  Under
+	has no (non-portable) window-system parts.  Under
 	ARB_framebuffer_object, it is not necessary to create a second GL
 	context when rendering to a texture image whose format differs from
 	that of the window.  Finally, unlike the pbuffers of

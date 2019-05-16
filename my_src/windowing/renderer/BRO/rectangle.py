@@ -1,7 +1,7 @@
-from .renderobject import *
+from .basic_render_object import *
 import numpy as np
 
-class Rectangle(RenderObject):
+class Rectangle(BasicRenderObject):
 
     def __init__(self, pos = [0,0], size = [100,100], fillcol = None, edgecol = None, edgeweight = None):
         self._pos = np.array(pos)

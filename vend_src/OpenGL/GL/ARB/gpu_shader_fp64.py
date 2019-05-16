@@ -54,7 +54,7 @@ Overview (from the spec)
 	This extension does not support interpolation of double-precision values;
 	doubles used as fragment shader inputs must be qualified as "flat".
 	Additionally, this extension does not allow vertex attributes with 64-bit
-	components.  That support is added separately by EXT_vertex_attrib_64bit.
+	parts.  That support is added separately by EXT_vertex_attrib_64bit.
 
 The official definition of this extension is available here:
 http://www.opengl.org/registry/specs/ARB/gpu_shader_fp64.txt

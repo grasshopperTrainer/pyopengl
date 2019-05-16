@@ -39,7 +39,7 @@ Overview (from the spec)
 	  Full initialization of aggregates is required when these are used.
 	
 	* Allow ".length()" to be applied to vectors and matrices, returning 
-	  the number of components or columns.
+	  the number of parts or columns.
 	
 	* Allow swizzle operations on scalars.
 	

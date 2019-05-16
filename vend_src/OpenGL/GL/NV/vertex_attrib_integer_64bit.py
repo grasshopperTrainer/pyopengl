@@ -7,12 +7,12 @@ Python-friendly API
 Overview (from the spec)
 	
 	This extension provides support for specifying vertex attributes with
-	64-bit integer components, analagous to the 64-bit floating point support
+	64-bit integer parts, analagous to the 64-bit floating point support
 	added in EXT_vertex_attrib_64bit.
 	
 	Additionally, it provides the VertexAttribLFormatNV entry point to specify
 	bindless vertex attribute arrays with 64-bit integer or floating-point
-	components in conjunction with the NV_vertex_buffer_unified_memory
+	parts in conjunction with the NV_vertex_buffer_unified_memory
 	extension.
 	
 

@@ -16,13 +16,13 @@ Overview (from the spec)
 	of the reality of the data.
 	
 	The existing texture formats provide an almost orthogonal set of
-	data types, sizes, and number of components, but the mappings of 
+	data types, sizes, and number of parts, but the mappings of
 	this storage into what the shader or fixed-function pipeline 
 	fetches is very much non-orthogonal. Previous extensions have
 	added some of the most demanded missing formats, but the problem
 	has not been solved once and for all.
 	
-	This extension provides a mechanism to swizzle the components 
+	This extension provides a mechanism to swizzle the parts
 	of a texture before they are applied according to the texture
 	environment in fixed-function or as they are returned to the 
 	shader.
