@@ -26,7 +26,7 @@ class _Camera:
         self.top = 0.5
 
         self.VM = np.eye(4)
-        self.PM.function_when_get(self.build_PM)
+        self.PM.set_pre_get_callback(self.build_PM)
         self.PM = np.eye(4)
         # UCD.get_descriptor('PM')
         self._latestviewportsize = [None, None]
@@ -151,7 +151,8 @@ class _Camera:
         self.build_PM()
 
     def build_PM(self, major='v'):
-        if self._viewport._mother.window.is_buffer_swap_required():
+
+        if UCD.is_instance_any_update(self._viewport._mother.window):
             vp = self._viewport
             if vp.abs_height == 0 or vp.abs_height == 0:
                 return

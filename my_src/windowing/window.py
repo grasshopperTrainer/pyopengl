@@ -16,6 +16,7 @@ from .IO_device import *
 from .layers import *
 from .viewport import *
 
+from patterns.update_check_descriptor import UCD
 
 class _Windows:
     windows = OrderedDict()
@@ -74,6 +75,10 @@ class Window:
     _framecount = 0
     _framerate_target = 60
     _print_framerate = False
+
+    _flag_resized = UCD()
+    _flag_something_rendered = UCD()
+    _size = UCD()
 
     @classmethod
     def glfw_init(cls,func = None):
@@ -165,6 +170,8 @@ class Window:
         self._layers = Layers(self)
 
         self._flag_need_swap = True
+        self._flag_resized = True
+        self._flag_something_rendered = False
 
         # viewport
         self._viewports = Viewports(self)
@@ -263,16 +270,10 @@ class Window:
     #     return wrapper
 
     def framebuffer_size_callback(self, window, width, height):
-        self.mouse.instant_mouse_onscreen()
-        self.mouse.instant_press_button(button = 0)
+        # self.mouse.instant_mouse_onscreen()
+        # self.mouse.instant_press_button(button = 0)
+        self._flag_resized = True
 
-        self._flag_need_swap = True
-
-    def is_buffer_swap_required(self):
-        return self._flag_need_swap
-
-    def buffer_swap_require(self):
-        self._flag_need_swap = True
 
     def initiation_glfw_setting(self):
         # default setting
@@ -297,13 +298,13 @@ class Window:
         # self._viewports.new(0, 0, 1.0, 1.0, 'default')
         pass
 
-    def clear(self, *color):
-        if len(color) == 0:
-            color = (1, 1, 1, 1)
-        GL.glClearColor(*color)
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        GL.glClear(GL.GL_DEPTH_BUFFER_BIT)
-        self._flag_need_swap = True
+    # def clear(self, *color):
+    #     if len(color) == 0:
+    #         color = (1, 1, 1, 1)
+    #     GL.glClearColor(*color)
+    #     GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+    #     GL.glClear(GL.GL_DEPTH_BUFFER_BIT)
+    #     self._flag_need_swap = True
 
     @classmethod
     def run_single_thread(cls, framecount = None):
@@ -354,23 +355,17 @@ class Window:
             timer.set_routine_start()
             if cls._display_window():
                 # to give access to other windows through keyword 'windows'
-                windows = cls._windows
                 for window in cls._windows:
 
                     #drawing
-                    # try:
-                    # g.make_context_current(None)
-                    # g.make_context_current(window.glfw_window)
                     window.make_window_current()
-
-
                     window._context_scope.run(window.draw_func)
 
-                    if window._flag_need_swap:
+                    if window._flag_something_rendered:
                         glfw.swap_buffers(window.glfw_window)
-                        print('buffer swapped')
-                    window._flag_need_swap = False
 
+                    window._flag_something_rendered = False
+                    window._flag_resized = False
                     window.mouse.reset()
 
                 glfw.poll_events()
@@ -540,7 +535,8 @@ class Window:
 
     @property
     def size(self):
-        return glfw.get_framebuffer_size(self.glfw_window)
+        self._size = glfw.get_framebuffer_size(self.glfw_window)
+        return self._size
 
 class Timer:
     def __init__(self,framerate, name):

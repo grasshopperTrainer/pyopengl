@@ -6,7 +6,8 @@ from patterns.store_instances_dict import SID
 
 
 class UCD():
-    _DIC = dict()
+    _DIC = weakref.WeakKeyDictionary()
+    latest_call_descriptor = {}
 
     def __new__(cls, *args, **kwargs):
         self = super().__new__(cls)
@@ -26,93 +27,162 @@ class UCD():
         return self
 
     def __init__(self):
-        self._updated = True
-        self._get_functions = {}
+        # self._updated = True
+        self._pre_get_callbacks = {}
 
     def __set__(self, instance, value):
-        if instance.__class__ not in self._DIC:
-            self._DIC[instance.__class__] = dict()
-        if instance not in self._DIC[instance.__class__]:
-            self._DIC[instance.__class__][instance] = dict()
+        replace = True
+        descriptor = self.get_this_properties(instance)
 
-        dic = self._DIC[instance.__class__][instance]
-        if self not in dic:
-            dic[self] = value
+        # for the first set
+        if not descriptor['init']:
+            descriptor['init'] = True
+
+        # value comparison
+        if type(descriptor['value']) == type(value):
+            # if value is the same with stored -> means nothing new
+            # exception for numpy comparison
+            if isinstance(value, np.ndarray):
+                if np.array_equal(descriptor, value):
+                    replace = False
+            else:
+                if descriptor == value:
+                    replace = False
+        # if types are different -> means new value
         else:
-            replace = True
-            stored = dic[self]
-            if type(stored) == type(value):
-                if isinstance(value, np.ndarray):
-                    if np.array_equal(stored, value):
-                        replace = False
-                else:
-                    if stored == value:
-                        replace = False
-            if replace:
-                self._updated = True
-                dic[self] = value
+            pass
+
+        # if value different replace and raise update mark
+        if replace:
+            descriptor['updated'] = True
+            descriptor['value'] = value
+        else:
+            descriptor['updated'] = False
+
+        descriptor['setcount'] += 1
 
     def __get__(self, instance, owner):
-        # print(self._DIC[instance.__class__][instance][self])
-        # try:
-        # print(instance, owner, self)
-        try:
-            if instance in self._get_functions:
-                for f in self._get_functions[instance]:
-                    f()
-            else:
-                pass
-            return self._DIC[instance.__class__][instance][self]
-        except KeyError:
+        descriptor = self.get_this_properties(instance)
+        if not descriptor['init']:
             return self
+        else:
+            self.__class__.latest_call_descriptor[instance] = self
+            self._DIC[instance.__class__][instance][self]['getcount'] += 1
+            for f in self.get_this_properties(instance)['pre_get_callback']:
+                f()
 
-    def is_updated(self):
-        return self._updated
+            return descriptor['value']
 
-    def reset_update(self):
-        self._updated = False
+    def get_this_properties(self, instance):
+        # first call
+        if instance.__class__ not in self.__class__._DIC:
+            self.__class__._DIC[instance.__class__] = weakref.WeakKeyDictionary()
+        if instance not in self._DIC[instance.__class__]:
+            self.__class__._DIC[instance.__class__][instance] = weakref.WeakKeyDictionary()
+
+        descriptors = self._DIC[instance.__class__][instance]
+        # first call of new descriptor name
+        # structure
+        if self not in descriptors:
+            # won't set value yet for initiation identification
+            descriptors[self] = {'value': None,
+                                 'getcount': 0,
+                                 'setcount': 0,
+                                 'updated': True,
+                                 'pre_get_callback': [],
+                                 'post_get_callback': [],
+                                 'pre_set_callback': [],
+                                 'post_set_callback': [],
+                                 'init': False}
+
+        return descriptors[self]
 
     @classmethod
-    def get_class_descriptors(cls, _class):
-        return cls._DIC[_class]
+    def reset_this_descriptor_update(cls, instance, descriptor):
+        property_dicts = cls.get_instance_descriptor_properties(instance)
+
+        for d in property_dicts:
+            d['updated'] = False
+            d['getcount'] = 0
+    @classmethod
+    def reset_descriptor_getcount(cls, instance, attribute):
+        d = cls.latest_call_descriptor[instance]
+        p = d.get_this_properties(instance)
+        p['getcount'] = 0
 
     @classmethod
-    def get_instance_descriptors(cls, _instance):
-        return cls._DIC[_instance.__class__][_instance]
+    def reset_descriptor_update(cls, instance, attribute):
+        d = cls.latest_call_descriptor[instance]
+        p = d.get_this_properties(instance)
+        p['update'] = False
 
     @classmethod
-    def is_instance_descriptors_any_update(cls, *instances):
+    def get_instance_descriptor_properties(cls, instance):
+        ds = cls._DIC[instance.__class__][instance]
+        v_dict = []
+
+        for d in ds.values():
+            v_dict.append(d)
+
+        return v_dict
+
+    @classmethod
+    def get_descriptor_getcount(cls, instance, attribute):
+        d = cls.latest_call_descriptor[instance]
+        p = d.get_this_properties(instance)
+        p['getcount'] -= 1
+        return p['getcount']
+
+    @classmethod
+    def get_descriptor_setgetcount(cls, instance, attribute):
+        d = cls.latest_call_descriptor[instance]
+        p = d.get_this_properties(instance)
+        p['getcount'] -= 1
+
+        return p['getcount'] + p['setcount']
+
+    @classmethod
+    def get_descriptor_update(cls, instance, attribute):
+        d = cls.latest_call_descriptor[instance]
+        p = d.get_this_properties(instance)
+        p['getcount'] -= 1
+        return p['update']
+
+    @classmethod
+    def get_instance_descriptors(cls, instance):
+        return cls._DIC[instance.__class__][instance]
+
+    @classmethod
+    def is_instance_any_update(cls, *instances):
         for ins in instances:
-            des = cls.get_instance_descriptors(ins)
-            for descriptor in des:
-                if descriptor.is_updated():
+            descriptors = cls.get_instance_descriptors(ins)
+            for properties in descriptors.values():
+                if properties['updated']:
                     return True
 
         return False
 
+
     @classmethod
-    def reset_instance_descriptors_update(cls, *instances):
+    def reset_instance_updates(cls, *instances):
         for ins in instances:
-            des = cls.get_instance_descriptors(ins)
-            for descriptor in des:
-                descriptor.reset_update()
+            ps = cls._DIC[ins.__class__][ins].values()
+            for p in ps:
+                p['updated'] = False
 
-    @classmethod
-    def reset_descriptor_update(cls, instance, name):
-        pass
+    def set_pre_get_callback(self, function):
+        if callable(function):
+            p = self.get_this_properties(function.__self__)
+            l = p['pre_get_callback']
+            if function not in l:
+                l.append(function)
 
-    @classmethod
-    def get_descriptor(cls, name):
-        pass
-
-    def test(self):
-        print('dkdkdkdkdkdk')
-
-    def function_when_get(self, function):
-        if self in self._get_functions:
-            self._get_functions[function.__self__].append(function)
         else:
-            self._get_functions[function.__self__] = [function,]
+            raise TypeError('input is not a callable')
 
+    @property
+    def name(self):
+        return self.INSTANCE_NAME
     def __repr__(self):
-        return f"descriptor of '{self.INSTANCE_NAME}'"
+        return f"descriptor named '{self.INSTANCE_NAME}'"
+

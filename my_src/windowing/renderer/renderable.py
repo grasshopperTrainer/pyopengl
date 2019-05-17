@@ -153,10 +153,8 @@ class RenderUnit():
         window = self.current_window
         viewport = window.viewports.current_viewport
 
-        # if there is an updated value and
-        # this object need to be redrawn
-        if UCD.is_instance_descriptors_any_update(viewport,
-                                                  viewport.camera) or window.is_buffer_swap_required() or self.shader.properties.is_any_update:
+        if UCD.is_instance_any_update(viewport,viewport.camera) or self.shader.properties.is_any_update:
+            window._flag_something_rendered = True
             # before make any change erase background
             viewport.fillbackground()
             # draw a thing
@@ -164,11 +162,10 @@ class RenderUnit():
                 gl.glDrawElements(self.mode, self.indexbuffer.count, self.indexbuffer.gldtype, None)
             # tell window change has been made on framebuffer
             # and should swap it
-            window.buffer_swap_require()
 
         # update have been handled so reset update flag
-        self.shader.properties.reset_update()
-        UCD.reset_instance_descriptors_update(viewport, viewport.camera)
+        # self.shader.properties.reset_update()
+        # UCD.reset_instance_updates(viewport, viewport.camera)
         # self.current_window.viewports.current_viewport.reset_update()
 
     def _hide_(self, set=None):

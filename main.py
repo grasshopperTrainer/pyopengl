@@ -1,5 +1,5 @@
 from windowing.window import Window
-
+from patterns.update_check_descriptor import UCD
 # Initialize the library
 Window.glfw_init()
 
@@ -71,9 +71,9 @@ def init():
 
 @window3.draw
 def draw():
-    gui.run()
+    # gui.run()
     # print(condition)
-    condition = any(list(window3.mouse.pressed_button.values()))
+    condition = any([any(list(window3.mouse.pressed_button.values())), window3._flag_resized])
 
     if condition:
         window.viewports[0].open()
