@@ -5,3 +5,4 @@ from .vertexbuffer import Vertexbuffer
 from .vertexarray import Vertexarray
 from .component_bp import RenderComponent
 from .properties import Properties
+from .framebuffer import Framebufer

@@ -1,14 +1,459 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8845630d-f53b-42f1-9947-fe08a9c9effb" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/tester.py" afterDir="false" />
+    <list default="true" id="8845630d-f53b-42f1-9947-fe08a9c9effb" name="Default Changelist" comment="fixed buffer swap, render calculatioin automation">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/GUI_builder/parts/box.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/GUI_builder/parts/box.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/BRO/rectangle.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/BRO/rectangle.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/components/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/components/component_bp.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/component_bp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/components/indexbuffer.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/indexbuffer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/renderable.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/renderable.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/viewport/Camera.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/viewport/Camera.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/window.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/window.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tester.py" beforeDir="false" afterPath="$PROJECT_DIR$/tester.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy-1.16.3.dist-info/INSTALLER" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy-1.16.3.dist-info/LICENSE.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy-1.16.3.dist-info/METADATA" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy-1.16.3.dist-info/RECORD" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy-1.16.3.dist-info/WHEEL" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy-1.16.3.dist-info/entry_points.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy-1.16.3.dist-info/top_level.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/.libs/libopenblas.IPBC74C7KURV7CB2PKT5Z5FNR3SIBV4J.gfortran-win_amd64.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/LICENSE.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/__config__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/_distributor_init.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/_globals.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/_pytesttester.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/compat/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/compat/_inspect.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/compat/py3k.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/compat/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/compat/tests/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/framebuffer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/compat/tests/test_compat.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/conftest.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_add_newdocs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_aliased_types.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_dtype.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_dtype_ctypes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_dummy.cp36-win_amd64.pyd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_internal.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_methods.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_multiarray_tests.cp36-win_amd64.pyd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_multiarray_umath.cp36-win_amd64.pyd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_operand_flag_tests.cp36-win_amd64.pyd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_rational_tests.cp36-win_amd64.pyd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_string_helpers.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_struct_ufunc_tests.cp36-win_amd64.pyd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_type_aliases.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/_umath_tests.cp36-win_amd64.pyd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/arrayprint.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/cversions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/defchararray.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/einsumfunc.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/fromnumeric.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/function_base.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/generate_numpy_api.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/getlimits.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/__multiarray_api.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/__ufunc_api.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/_neighborhood_iterator_imp.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/_numpyconfig.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/arrayobject.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/arrayscalars.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/halffloat.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/multiarray_api.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/ndarrayobject.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/ndarraytypes.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/noprefix.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/npy_1_7_deprecated_api.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/npy_3kcompat.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/npy_common.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/npy_cpu.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/npy_endian.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/npy_interrupt.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/npy_math.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/npy_no_deprecated_api.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/npy_os.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/numpyconfig.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/old_defines.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/oldnumeric.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/ufunc_api.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/ufuncobject.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/include/numpy/utils.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/info.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/lib/npy-pkg-config/mlib.ini" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/lib/npy-pkg-config/npymath.ini" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/lib/npymath.lib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/machar.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/memmap.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/multiarray.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/numeric.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/numerictypes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/overrides.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/records.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/setup_common.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/shape_base.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/_locales.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/data/astype_copy.pkl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/data/recarray_from_file.fits" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_abc.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_api.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_arrayprint.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_datetime.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_defchararray.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_deprecations.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_dtype.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_einsum.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_errstate.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_extint128.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_function_base.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_getlimits.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_half.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_indexerrors.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_indexing.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_item_selection.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_longdouble.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_machar.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_mem_overlap.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_memmap.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_multiarray.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_nditer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_numeric.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_numerictypes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_overrides.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_print.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_records.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_regression.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_scalar_ctors.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_scalarbuffer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_scalarinherit.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_scalarmath.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_scalarprint.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_shape_base.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_ufunc.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_umath.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_umath_complex.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/tests/test_unicode.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/umath.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/core/umath_tests.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ctypeslib.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/__config__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/__version__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/_shell_utils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/ccompiler.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/autodist.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/bdist_rpm.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/build.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/build_clib.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/build_ext.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/build_py.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/build_scripts.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/build_src.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/config.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/config_compiler.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/develop.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/egg_info.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/install.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/install_clib.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/install_data.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/install_headers.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/command/sdist.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/compat.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/conv_template.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/core.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/cpuinfo.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/exec_command.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/extension.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/absoft.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/compaq.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/environment.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/g95.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/gnu.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/hpux.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/ibm.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/intel.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/lahey.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/mips.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/nag.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/none.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/pathf95.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/pg.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/sun.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/fcompiler/vast.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/from_template.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/info.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/intelccompiler.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/lib2def.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/line_endings.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/log.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/mingw/gfortran_vs2003_hack.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/mingw32ccompiler.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/misc_util.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/msvc9compiler.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/msvccompiler.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/npy_pkg_config.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/numpy_distribution.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/pathccompiler.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/system_info.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/tests/test_exec_command.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/tests/test_fcompiler.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/tests/test_fcompiler_gnu.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/tests/test_fcompiler_intel.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/tests/test_fcompiler_nagfor.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/tests/test_from_template.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/tests/test_misc_util.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/tests/test_npy_pkg_config.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/tests/test_shell_utils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/tests/test_system_info.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/distutils/unixccompiler.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/basics.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/broadcasting.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/byteswapping.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/constants.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/creation.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/glossary.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/indexing.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/internals.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/misc.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/structured_arrays.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/subclassing.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/doc/ufuncs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/dual.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/__main__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/__version__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/auxfuncs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/capi_maps.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/cb_rules.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/cfuncs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/common_rules.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/crackfortran.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/diagnose.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/f2py2e.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/f2py_testing.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/f90mod_rules.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/func2subr.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/info.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/rules.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/src/fortranobject.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/src/fortranobject.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/array_from_pyobj/wrapmodule.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/assumed_shape/.f2py_f2cmap" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/assumed_shape/foo_free.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/assumed_shape/foo_mod.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/assumed_shape/foo_use.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/assumed_shape/precision.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/common/block.f" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/kind/foo.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/mixed/foo.f" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/mixed/foo_fixed.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/mixed/foo_free.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/parameter/constant_both.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/parameter/constant_compound.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/parameter/constant_integer.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/parameter/constant_non_compound.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/parameter/constant_real.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/regression/inout.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/size/foo.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/src/string/char.f90" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_array_from_pyobj.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_assumed_shape.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_block_docstring.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_callback.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_common.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_compile_function.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_kind.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_mixed.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_parameter.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_quoted_character.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_regression.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_return_character.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_return_complex.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_return_integer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_return_logical.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_return_real.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_semicolon_split.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_size.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/test_string.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/tests/util.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/f2py/use_rules.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/fft/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/fft/fftpack.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/fft/fftpack_lite.cp36-win_amd64.pyd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/fft/helper.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/fft/info.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/fft/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/fft/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/fft/tests/test_fftpack.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/fft/tests/test_helper.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/_datasource.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/_iotools.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/_version.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/arraypad.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/arraysetops.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/arrayterator.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/financial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/format.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/function_base.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/histograms.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/index_tricks.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/info.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/mixins.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/nanfunctions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/npyio.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/polynomial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/recfunctions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/scimath.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/shape_base.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/stride_tricks.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/data/py2-objarr.npy" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/data/py2-objarr.npz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/data/py3-objarr.npy" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/data/py3-objarr.npz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/data/python3.npy" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/data/win64python2.npy" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test__datasource.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test__iotools.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test__version.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_arraypad.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_arraysetops.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_arrayterator.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_financial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_format.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_function_base.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_histograms.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_index_tricks.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_io.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_mixins.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_nanfunctions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_packbits.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_polynomial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_recfunctions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_regression.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_shape_base.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_stride_tricks.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_twodim_base.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_type_check.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_ufunclike.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/tests/test_utils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/twodim_base.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/type_check.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/ufunclike.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/user_array.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/lib/utils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/linalg/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/linalg/_umath_linalg.cp36-win_amd64.pyd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/linalg/info.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/linalg/lapack_lite.cp36-win_amd64.pyd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/linalg/linalg.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/linalg/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/linalg/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/linalg/tests/test_build.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/linalg/tests/test_deprecations.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/linalg/tests/test_linalg.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/linalg/tests/test_regression.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/bench.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/core.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/extras.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/mrecords.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/tests/test_core.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/tests/test_deprecations.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/tests/test_extras.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/tests/test_mrecords.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/tests/test_old_ma.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/tests/test_regression.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/tests/test_subclassing.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/testutils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/timer_comparison.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/ma/version.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/matlib.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/matrixlib/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/matrixlib/defmatrix.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/matrixlib/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/matrixlib/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/matrixlib/tests/test_defmatrix.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/matrixlib/tests/test_interaction.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/matrixlib/tests/test_masked_matrix.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/matrixlib/tests/test_matrix_linalg.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/matrixlib/tests/test_multiarray.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/matrixlib/tests/test_numeric.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/matrixlib/tests/test_regression.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/_polybase.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/chebyshev.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/hermite.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/hermite_e.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/laguerre.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/legendre.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/polynomial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/polyutils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/tests/test_chebyshev.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/tests/test_classes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/tests/test_hermite.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/tests/test_hermite_e.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/tests/test_laguerre.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/tests/test_legendre.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/tests/test_polynomial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/tests/test_polyutils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/polynomial/tests/test_printing.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/random/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/random/info.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/random/mtrand.cp36-win_amd64.pyd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/random/randomkit.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/random/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/random/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/random/tests/test_random.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/random/tests/test_regression.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/_private/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/_private/decorators.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/_private/noseclasses.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/_private/nosetester.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/_private/parameterized.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/_private/utils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/decorators.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/noseclasses.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/nosetester.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/print_coercion_tables.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/tests/test_decorators.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/tests/test_doctesting.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/tests/test_utils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/testing/utils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/tests/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/tests/test_ctypeslib.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/tests/test_matlib.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/tests/test_numpy_version.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/tests/test_public_api.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/tests/test_reloading.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/tests/test_scripts.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/tests/test_warnings.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/numpy/version.py" beforeDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/src/trash/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -22,22 +467,22 @@
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/main.py">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/rectangle.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="319">
-                  <caret line="76" lean-forward="true" selection-start-line="76" selection-end-line="76" />
+                <state relative-caret-position="308">
+                  <caret line="22" column="27" selection-start-line="22" selection-start-column="27" selection-end-line="22" selection-end-column="27" />
                   <folding>
-                    <element signature="e#0#35#0" expanded="true" />
+                    <element signature="e#0#34#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/renderable.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="162">
-                  <caret line="156" column="45" selection-start-line="156" selection-start-column="45" selection-end-line="156" selection-end-column="45" />
+                <state relative-caret-position="148">
+                  <caret line="103" column="38" selection-start-line="103" selection-start-column="38" selection-end-line="103" selection-end-column="38" />
                   <folding>
                     <element signature="e#0#11#0" expanded="true" />
                   </folding>
@@ -45,20 +490,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewports.py">
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="156">
-                  <caret line="40" column="8" selection-start-line="40" selection-start-column="8" selection-end-line="40" selection-end-column="8" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/rectangle.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="308">
-                  <caret line="23" column="21" selection-start-line="23" selection-start-column="21" selection-end-line="23" selection-end-column="21" />
+                <state relative-caret-position="196">
+                  <caret line="41" column="58" lean-forward="true" selection-start-line="41" selection-start-column="58" selection-end-line="41" selection-end-column="58" />
                 </state>
               </provider>
             </entry>
@@ -76,10 +512,13 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/abstract.py">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/__init__.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="361">
-                  <caret line="52" lean-forward="true" selection-start-line="52" selection-end-line="52" />
+                <state relative-caret-position="98">
+                  <caret line="7" column="35" selection-start-line="7" selection-start-column="35" selection-end-line="7" selection-end-column="35" />
+                  <folding>
+                    <element signature="e#0#36#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -87,8 +526,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/tester.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="162">
-                  <caret line="12" column="21" lean-forward="true" selection-start-line="12" selection-start-column="21" selection-end-line="12" selection-end-column="21" />
+                <state relative-caret-position="249">
+                  <caret line="74" column="12" lean-forward="true" selection-start-line="74" selection-start-column="12" selection-end-line="74" selection-end-column="12" />
                 </state>
               </provider>
             </entry>
@@ -96,8 +535,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/mygui.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="210">
-                  <caret line="16" lean-forward="true" selection-start-line="16" selection-end-line="16" />
+                <state relative-caret-position="84">
+                  <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
                 </state>
               </provider>
             </entry>
@@ -105,8 +544,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="47">
-                  <caret line="141" column="45" lean-forward="true" selection-start-line="141" selection-start-column="45" selection-end-line="141" selection-end-column="45" />
+                <state relative-caret-position="417">
+                  <caret line="141" column="45" selection-start-line="141" selection-start-column="45" selection-end-line="141" selection-end-column="45" />
                   <folding>
                     <element signature="e#0#11#0" expanded="true" />
                   </folding>
@@ -115,13 +554,22 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py">
+            <entry file="file://$PROJECT_DIR$/main.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="302">
-                  <caret line="60" selection-start-line="60" selection-end-line="60" />
+                <state relative-caret-position="179">
+                  <caret line="83" column="25" lean-forward="true" selection-start-line="83" selection-start-column="25" selection-end-line="83" selection-end-column="25" />
                   <folding>
-                    <element signature="e#0#14#0" expanded="true" />
+                    <element signature="e#0#35#0" expanded="true" />
                   </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$APPLICATION_HOME_DIR$/helpers/typeshed/stdlib/3/collections/__init__.pyi">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="392">
+                  <caret line="57" column="8" selection-start-line="57" selection-start-column="8" selection-end-line="57" selection-end-column="8" />
                 </state>
               </provider>
             </entry>
@@ -130,32 +578,38 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/weakref.py">
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/framebuffer.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="156">
-                  <caret line="393" selection-start-line="393" selection-end-line="393" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="70">
-                  <caret line="80" column="5" selection-start-line="80" selection-start-column="5" selection-end-line="80" selection-end-column="5" />
+                <state relative-caret-position="112">
+                  <caret line="8" column="31" selection-start-line="8" selection-start-column="31" selection-end-line="8" selection-end-column="31" />
                   <folding>
-                    <element signature="e#0#16#0" expanded="true" />
+                    <element signature="e#0#26#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/Camera.py">
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/indexbuffer.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="148">
-                  <caret line="154" column="68" selection-start-line="154" selection-start-column="68" selection-end-line="154" selection-end-column="68" />
+                <state relative-caret-position="308">
+                  <caret line="37" column="16" selection-start-line="37" selection-start-column="16" selection-end-line="37" selection-end-column="16" />
+                  <folding>
+                    <element signature="e#0#26#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/component_bp.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="28">
+                  <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
+                  <folding>
+                    <element signature="e#0#18#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -163,8 +617,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/box.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="266">
-                  <caret line="19" column="12" selection-start-line="19" selection-start-column="12" selection-end-line="19" selection-end-column="12" />
+                <state relative-caret-position="319">
+                  <caret line="93" lean-forward="true" selection-start-line="93" selection-end-line="93" />
                 </state>
               </provider>
             </entry>
@@ -218,7 +672,6 @@
     <findStrings>
       <find>py</find>
       <find>glfw</find>
-      <find>np</find>
       <find>property</find>
       <find>Properties</find>
       <find>true</find>
@@ -234,7 +687,12 @@
       <find>callback</find>
       <find>print</find>
       <find>this</find>
+      <find>np</find>
+      <find>gldraw</find>
     </findStrings>
+    <dirStrings>
+      <dir>C:\Users\dingo\PycharmProjects\pyopengl\vend_src\numpy</dir>
+    </dirStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -268,17 +726,23 @@
         <option value="$PROJECT_DIR$/my_src/GUI_builder/parts/collector.py" />
         <option value="$PROJECT_DIR$/my_src/GUI_builder/builder.py" />
         <option value="$PROJECT_DIR$/my_src/GUI_builder/test.py" />
-        <option value="$PROJECT_DIR$/my_src/GUI_builder/parts/box.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/BRO/BRO.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/BRO/__init__.py" />
         <option value="$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/unnamedGUI/mygui.py" />
-        <option value="$PROJECT_DIR$/tester.py" />
-        <option value="$PROJECT_DIR$/main.py" />
-        <option value="$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/renderer/renderable.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/window.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/viewport/Camera.py" />
+        <option value="$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py" />
+        <option value="$PROJECT_DIR$/tester.py" />
+        <option value="$PROJECT_DIR$/my_src/GUI_builder/parts/box.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/component_bp.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/indexbuffer.py" />
+        <option value="$PROJECT_DIR$/main.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/__init__.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/framebuffer.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/BRO/rectangle.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/renderable.py" />
       </list>
     </option>
   </component>
@@ -312,33 +776,6 @@
               <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
               <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
               <item name="my_src" type="462c0819:PsiDirectoryNode" />
-              <item name="GUI_builder" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
-              <item name="my_src" type="462c0819:PsiDirectoryNode" />
-              <item name="GUI_builder" type="462c0819:PsiDirectoryNode" />
-              <item name="onscreen" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
-              <item name="my_src" type="462c0819:PsiDirectoryNode" />
-              <item name="GUI_builder" type="462c0819:PsiDirectoryNode" />
-              <item name="outscreen" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
-              <item name="my_src" type="462c0819:PsiDirectoryNode" />
-              <item name="GUI_builder" type="462c0819:PsiDirectoryNode" />
-              <item name="parts" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
-              <item name="my_src" type="462c0819:PsiDirectoryNode" />
               <item name="patterns" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -366,7 +803,20 @@
               <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
               <item name="my_src" type="462c0819:PsiDirectoryNode" />
               <item name="windowing" type="462c0819:PsiDirectoryNode" />
+              <item name="renderer" type="462c0819:PsiDirectoryNode" />
+              <item name="components" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
+              <item name="my_src" type="462c0819:PsiDirectoryNode" />
+              <item name="windowing" type="462c0819:PsiDirectoryNode" />
               <item name="unnamedGUI" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
+              <item name="trash" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
@@ -420,6 +870,27 @@
     </option>
   </component>
   <component name="RunManager" selected="Python.main">
+    <configuration name="box" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="pyopengl" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/my_src/GUI_builder/parts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/my_src/GUI_builder/parts/box.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="builder" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="pyopengl" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -504,41 +975,20 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="window" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="pyopengl" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/my_src/windowing" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/my_src/windowing/window.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <list>
       <item itemvalue="Python.main" />
-      <item itemvalue="Python.window" />
       <item itemvalue="Python.scratch" />
       <item itemvalue="Python.builder" />
       <item itemvalue="Python.tester" />
+      <item itemvalue="Python.box" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.box" />
         <item itemvalue="Python.tester" />
         <item itemvalue="Python.builder" />
         <item itemvalue="Python.scratch" />
-        <item itemvalue="Python.window" />
       </list>
     </recent_temporary>
   </component>
@@ -574,7 +1024,14 @@
       <option name="project" value="LOCAL" />
       <updated>1558000153970</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="fixed buffer swap, render calculatioin automation">
+      <created>1558087440460</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1558087440460</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TodoView">
@@ -632,7 +1089,8 @@
     <MESSAGE value="included essential vendor packages into dir vend_src:&#10;numpy&#10;pyopengl&#10;glfw&#10;pillow" />
     <MESSAGE value="mouse update:&#10;manually setting mouse state -&gt; as 'instant':&#10;when window resizing by dragging the edge of the window, mouse is manually set as left button pressed and mouse onscreen. this setting makes a list of instant mouse state which is handled per every frame by mouse.reset()" />
     <MESSAGE value="started thinking about gui buillder..." />
-    <option name="LAST_COMMIT_MESSAGE" value="started thinking about gui buillder..." />
+    <MESSAGE value="fixed buffer swap, render calculatioin automation" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed buffer swap, render calculatioin automation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -645,62 +1103,7 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/vend_src/glfw/library.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2156">
-          <caret line="163" column="10" selection-start-line="163" selection-start-column="10" selection-end-line="163" selection-end-column="10" />
-          <folding>
-            <element signature="e#35#72#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/vend_src/pyglfw/__init__.py" />
-    <entry file="file://$PROJECT_DIR$/vend_src/pyglfw/libapi/__init__.py" />
-    <entry file="file://$PROJECT_DIR$/venv/Scripts/python.exe">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="320">
-          <caret line="38" selection-start-line="38" selection-end-line="38" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/vend_src/numpy/core/_dtype.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="160">
-          <caret line="181" column="10" selection-start-line="181" selection-start-column="10" selection-end-line="181" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/res/shader/sample.glsl">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/layers/layerable.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="98">
-          <caret line="8" selection-start-line="8" selection-end-line="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/patterns/strict_method_implant.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="350">
-          <caret line="25" column="18" selection-start-line="25" selection-start-column="18" selection-end-line="25" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/vend_src/numpy/core/_methods.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="27" selection-start-line="27" selection-end-line="27" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/vend_src/numpy/core/_methods.py" />
     <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/error.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="144">
@@ -726,13 +1129,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="840">
           <caret line="60" selection-start-line="60" selection-end-line="60" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/indexbuffer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="980">
-          <caret line="75" selection-start-line="75" selection-end-line="75" />
         </state>
       </provider>
     </entry>
@@ -820,23 +1216,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/basic_render_object.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="84">
-          <caret line="7" column="12" selection-start-line="7" selection-start-column="12" selection-end-line="7" selection-end-column="12" />
-          <folding>
-            <element signature="e#0#48#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/rectangle.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="23" column="21" selection-start-line="23" selection-start-column="21" selection-end-line="23" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/my_src/patterns/store_instances_dict.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="350">
@@ -857,10 +1236,77 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/box.py">
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/numpy/core/multiarray.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="266">
-          <caret line="19" column="12" selection-start-line="19" selection-start-column="12" selection-end-line="19" selection-end-column="12" />
+        <state relative-caret-position="140">
+          <caret line="20" selection-start-line="20" selection-end-line="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vend_src/numpy/lib/mixins.py" />
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewports.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="504">
+          <caret line="40" column="8" selection-start-line="40" selection-start-column="8" selection-end-line="40" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="42">
+          <caret line="3" column="34" lean-forward="true" selection-start-line="3" selection-start-column="34" selection-end-line="3" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/numpy/lib/function_base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="156">
+          <caret line="4693" selection-start-line="4693" selection-end-line="4693" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/abstract.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="417">
+          <caret line="52" selection-start-line="52" selection-end-line="52" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/typeshed/stdlib/3/collections/__init__.pyi">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="392">
+          <caret line="57" column="8" selection-start-line="57" selection-start-column="8" selection-end-line="57" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/weakref.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5306">
+          <caret line="393" selection-start-line="393" selection-end-line="393" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2198">
+          <caret line="175" column="25" selection-start-line="175" selection-start-column="25" selection-end-line="175" selection-end-column="25" />
+          <folding>
+            <element signature="e#0#16#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/Camera.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2450">
+          <caret line="177" column="14" lean-forward="true" selection-start-line="177" selection-start-column="14" selection-end-line="177" selection-end-column="14" />
         </state>
       </provider>
     </entry>
@@ -886,48 +1332,94 @@
     <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/texturebox.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/mygui.py">
+    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/parts/box.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="16" lean-forward="true" selection-start-line="16" selection-end-line="16" />
+        <state relative-caret-position="319">
+          <caret line="93" lean-forward="true" selection-start-line="93" selection-end-line="93" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tester.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="249">
+          <caret line="74" column="12" lean-forward="true" selection-start-line="74" selection-start-column="12" selection-end-line="74" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/component_bp.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="28">
+          <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/indexbuffer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="308">
+          <caret line="37" column="16" selection-start-line="37" selection-start-column="16" selection-end-line="37" selection-end-column="16" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/basic_render_object.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="42">
+          <caret line="3" selection-start-line="3" selection-end-line="3" />
+          <folding>
+            <element signature="e#0#48#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="98">
+          <caret line="7" column="35" selection-start-line="7" selection-start-column="35" selection-end-line="7" selection-end-column="35" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="47">
-          <caret line="141" column="45" lean-forward="true" selection-start-line="141" selection-start-column="45" selection-end-line="141" selection-end-column="45" />
+        <state relative-caret-position="417">
+          <caret line="141" column="45" selection-start-line="141" selection-start-column="45" selection-end-line="141" selection-end-column="45" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tester.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/mygui.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="162">
-          <caret line="12" column="21" lean-forward="true" selection-start-line="12" selection-start-column="21" selection-end-line="12" selection-end-column="21" />
+        <state relative-caret-position="84">
+          <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/weakref.py">
+    <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="156">
-          <caret line="393" selection-start-line="393" selection-end-line="393" />
+        <state relative-caret-position="179">
+          <caret line="83" column="25" lean-forward="true" selection-start-line="83" selection-start-column="25" selection-end-line="83" selection-end-column="25" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/abstract.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/framebuffer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="361">
-          <caret line="52" lean-forward="true" selection-start-line="52" selection-end-line="52" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewports.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="156">
-          <caret line="40" column="8" selection-start-line="40" selection-start-column="8" selection-end-line="40" selection-end-column="8" />
+        <state relative-caret-position="112">
+          <caret line="8" column="31" selection-start-line="8" selection-start-column="31" selection-end-line="8" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -941,50 +1433,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/rectangle.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="319">
-          <caret line="76" lean-forward="true" selection-start-line="76" selection-end-line="76" />
+        <state relative-caret-position="308">
+          <caret line="22" column="27" selection-start-line="22" selection-start-column="27" selection-end-line="22" selection-end-column="27" />
           <folding>
-            <element signature="e#0#35#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="302">
-          <caret line="60" selection-start-line="60" selection-end-line="60" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
+            <element signature="e#0#34#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/renderable.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="162">
-          <caret line="156" column="45" selection-start-line="156" selection-start-column="45" selection-end-line="156" selection-end-column="45" />
+        <state relative-caret-position="148">
+          <caret line="103" column="38" selection-start-line="103" selection-start-column="38" selection-end-line="103" selection-end-column="38" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="70">
-          <caret line="80" column="5" selection-start-line="80" selection-start-column="5" selection-end-line="80" selection-end-column="5" />
-          <folding>
-            <element signature="e#0#16#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/Camera.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="148">
-          <caret line="154" column="68" selection-start-line="154" selection-start-column="68" selection-end-line="154" selection-end-column="68" />
+        <state relative-caret-position="196">
+          <caret line="41" column="58" lean-forward="true" selection-start-line="41" selection-start-column="58" selection-end-line="41" selection-end-column="58" />
         </state>
       </provider>
     </entry>

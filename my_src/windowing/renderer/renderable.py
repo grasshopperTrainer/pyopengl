@@ -27,6 +27,7 @@ class RenderUnit():
         self._vertexbuffer = Vertexbuffer()
         self._indexbuffer = Indexbuffer()
         self._texture = Texture()
+        self._framebuffer = Framebufer()
 
         if name is None:
             name = f'unmarked{len(self.__class__._renderers)}'
@@ -100,9 +101,12 @@ class RenderUnit():
     def bind_indexbuffer(self, glusage=None):
         self._indexbuffer = Indexbuffer(glusage)
 
-    def bind_texture(self, file, slot=None):
+    def bind_texture(self, file = None, slot=None):
         if file is not None:
             self._texture = Texture(file, slot)
+
+    def bind_framebuffer(self):
+        self._framebuffer = Framebufer(None)
 
     def draw(self):
         self._draw_()
@@ -153,7 +157,7 @@ class RenderUnit():
         window = self.current_window
         viewport = window.viewports.current_viewport
 
-        if UCD.is_instance_any_update(viewport,viewport.camera) or self.shader.properties.is_any_update:
+        if UCD.is_any_descriptor_updated(viewport, viewport.camera) or self.shader.properties.is_any_update:
             window._flag_something_rendered = True
             # before make any change erase background
             viewport.fillbackground()

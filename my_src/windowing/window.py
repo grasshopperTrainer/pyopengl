@@ -173,6 +173,7 @@ class Window:
         self._flag_resized = True
         self._flag_something_rendered = False
 
+        self._size = None
         # viewport
         self._viewports = Viewports(self)
 

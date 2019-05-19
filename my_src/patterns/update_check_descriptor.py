@@ -1,14 +1,15 @@
 import weakref
 import numpy as np
 import inspect
-
+from collections import namedtuple
 from patterns.store_instances_dict import SID
 
 
 class UCD():
     _DIC = weakref.WeakKeyDictionary()
-    latest_call_descriptor = {}
-
+    # TODO
+    latest_call_descriptor = weakref.WeakKeyDictionary()
+    _TEST = np.zeros(())
     def __new__(cls, *args, **kwargs):
         self = super().__new__(cls)
 
@@ -59,15 +60,13 @@ class UCD():
         else:
             descriptor['updated'] = False
 
-        descriptor['setcount'] += 1
-
     def __get__(self, instance, owner):
         descriptor = self.get_this_properties(instance)
+
         if not descriptor['init']:
             return self
         else:
             self.__class__.latest_call_descriptor[instance] = self
-            self._DIC[instance.__class__][instance][self]['getcount'] += 1
             for f in self.get_this_properties(instance)['pre_get_callback']:
                 f()
 
@@ -86,89 +85,18 @@ class UCD():
         if self not in descriptors:
             # won't set value yet for initiation identification
             descriptors[self] = {'value': None,
-                                 'getcount': 0,
-                                 'setcount': 0,
                                  'updated': True,
                                  'pre_get_callback': [],
                                  'post_get_callback': [],
                                  'pre_set_callback': [],
                                  'post_set_callback': [],
                                  'init': False}
-
         return descriptors[self]
 
-    @classmethod
-    def reset_this_descriptor_update(cls, instance, descriptor):
-        property_dicts = cls.get_instance_descriptor_properties(instance)
 
-        for d in property_dicts:
-            d['updated'] = False
-            d['getcount'] = 0
-    @classmethod
-    def reset_descriptor_getcount(cls, instance, attribute):
-        d = cls.latest_call_descriptor[instance]
-        p = d.get_this_properties(instance)
-        p['getcount'] = 0
-
-    @classmethod
-    def reset_descriptor_update(cls, instance, attribute):
-        d = cls.latest_call_descriptor[instance]
-        p = d.get_this_properties(instance)
-        p['update'] = False
-
-    @classmethod
-    def get_instance_descriptor_properties(cls, instance):
-        ds = cls._DIC[instance.__class__][instance]
-        v_dict = []
-
-        for d in ds.values():
-            v_dict.append(d)
-
-        return v_dict
-
-    @classmethod
-    def get_descriptor_getcount(cls, instance, attribute):
-        d = cls.latest_call_descriptor[instance]
-        p = d.get_this_properties(instance)
-        p['getcount'] -= 1
-        return p['getcount']
-
-    @classmethod
-    def get_descriptor_setgetcount(cls, instance, attribute):
-        d = cls.latest_call_descriptor[instance]
-        p = d.get_this_properties(instance)
-        p['getcount'] -= 1
-
-        return p['getcount'] + p['setcount']
-
-    @classmethod
-    def get_descriptor_update(cls, instance, attribute):
-        d = cls.latest_call_descriptor[instance]
-        p = d.get_this_properties(instance)
-        p['getcount'] -= 1
-        return p['update']
-
-    @classmethod
-    def get_instance_descriptors(cls, instance):
-        return cls._DIC[instance.__class__][instance]
-
-    @classmethod
-    def is_instance_any_update(cls, *instances):
-        for ins in instances:
-            descriptors = cls.get_instance_descriptors(ins)
-            for properties in descriptors.values():
-                if properties['updated']:
-                    return True
-
-        return False
-
-
-    @classmethod
-    def reset_instance_updates(cls, *instances):
-        for ins in instances:
-            ps = cls._DIC[ins.__class__][ins].values()
-            for p in ps:
-                p['updated'] = False
+    def set_this_property(self, instance, property_key, value):
+        d = self.get_this_properties(instance)
+        d[property_key] = value
 
     def set_pre_get_callback(self, function):
         if callable(function):
@@ -176,9 +104,63 @@ class UCD():
             l = p['pre_get_callback']
             if function not in l:
                 l.append(function)
-
         else:
             raise TypeError('input is not a callable')
+
+    @classmethod
+    def get_instance_descriptor_property(cls, instance, property_key=None):
+        d = cls._DIC[instance.__class__][instance]
+        new_d = {}
+        if property_key is not None:
+            for desc, p_dict in d.items():
+                new_d[desc] = p_dict[property_key]
+
+        return new_d
+
+    @classmethod
+    def get_descriptor_instance_property(cls, instance, descriptor, property_key=None):
+        d = cls._DIC[instance.__class__]
+        new_d = {}
+
+        for ins, desc_dic in d.items():
+            prep_dic = desc_dic[descriptor]
+            if property_key is None:
+                new_d[ins] = prep_dic
+            else:
+                p = prep_dic[property_key]
+                new_d[ins] = p
+
+        return new_d
+
+    @classmethod
+    def reset_descriptor_update(cls, instance, desc_attribute):
+        desc = cls.latest_call_descriptor[instance]
+        desc.set_this_property(instance,'update', False)
+
+    @classmethod
+    def reset_instance_descriptors_property(cls,instance, property_key, value):
+        d = cls.get_instance_descriptor_property(instance)
+        for prop_dic in d.values():
+            prop_dic[property_key] = value
+
+    @classmethod
+    def reset_instance_descriptors_update(cls,instance):
+        cls.reset_instance_descriptors_property(instance,'update', False)
+
+    @classmethod
+    def is_descriptor_updated(cls, instance, desc_attribute):
+        d = cls.latest_call_descriptor[instance]
+        p = d.get_this_properties(instance)
+        return p['updated']
+
+    @classmethod
+    def is_any_descriptor_updated(cls, *instances):
+        for ins in instances:
+            des_prop = cls.get_instance_descriptor_property(ins,'updated')
+            for prop in des_prop.values():
+                if prop:
+                    return True
+        return False
 
     @property
     def name(self):

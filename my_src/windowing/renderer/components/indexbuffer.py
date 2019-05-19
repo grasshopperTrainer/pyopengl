@@ -32,7 +32,6 @@ class Indexbuffer(RenderComponent):
                 self._dtype = np.uint16
             elif 'int' in dtype or 'INT' in dtype:
                 self._dtype = np.uint32
-
         else:
             raise TypeError
 

@@ -10,7 +10,7 @@ from .component_bp import RenderComponent
 class Texture(RenderComponent):
     _repository = 'res/image/'
 
-    def __init__(self, file: str, slot=0):
+    def __init__(self, file: str = None, slot=0):
         self.image = None  # type: Image.Image
         if slot is None:
             slot = 0
@@ -18,25 +18,28 @@ class Texture(RenderComponent):
 
         self._glindex = None
 
-        # in if file is given as a full path
-        if '/' in file:
-            path = file
-        # if file is given as a name
+        if file is None:
+            pass
         else:
-            # TODO how to correctly set address of source directory?
-            source_path = os.path.dirname(__file__).split('\my_src')[0].replace("\\", '/')
-            path = f'{source_path}/{self.__class__._repository}'
-            files = os.listdir(path)
-            file_name = ''
-            for f in files:
-                if file == f.split('.')[0]:
-                    file_name = f
-            path += file_name
+            # in if file is given as a full path
+            if '/' in file:
+                path = file
+            # if file is given as a name
+            else:
+                # TODO how to correctly set address of source directory?
+                source_path = os.path.dirname(__file__).split('\my_src')[0].replace("\\", '/')
+                path = f'{source_path}/{self.__class__._repository}'
+                files = os.listdir(path)
+                file_name = ''
+                for f in files:
+                    if file == f.split('.')[0]:
+                        file_name = f
+                path += file_name
 
-        try:
-            self.image = Image.open(path)
-        except:
-            raise FileNotFoundError("can't load file")
+            try:
+                self.image = Image.open(path)
+            except:
+                raise FileNotFoundError("can't load file")
 
     def build(self):
         self._glindex = np.array(gl.glGenTextures(1), np.uint8)

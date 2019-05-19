@@ -151,8 +151,9 @@ class _Camera:
         self.build_PM()
 
     def build_PM(self, major='v'):
+        window = self._viewport._mother.window
 
-        if UCD.is_instance_any_update(self._viewport._mother.window):
+        if UCD.is_descriptor_updated(window, window._size):
             vp = self._viewport
             if vp.abs_height == 0 or vp.abs_height == 0:
                 return
