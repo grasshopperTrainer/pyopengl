@@ -65,6 +65,7 @@ class Window:
     def _global_init():
         import numpy as np
         from windowing.renderer import BRO
+        from windowing.renderer.renderimage import Renderimage
         from windowing.unnamedGUI import mygui
         pass
 

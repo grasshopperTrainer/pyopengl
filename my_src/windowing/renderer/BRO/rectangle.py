@@ -15,12 +15,9 @@ class Rectangle(BasicRenderObject):
         self._build_()
 
     def _build_(self):
-
         self._rect.bind_shader(file_name='BRO_rectangle')
         self._rect.bind_indexbuffer(glusage=self._rect.GL_DYNAMIC_DRAW)
         self._rect.bind_vertexbuffer(glusage=self._rect.GL_DYNAMIC_DRAW)
-        self._rect.bind_framebuffer()
-        self._rect.bind_texture()
 
     def _draw_(self):
         self._rect.property['u_size'] = self._size

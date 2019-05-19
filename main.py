@@ -1,8 +1,9 @@
 from windowing.window import Window
+
 from patterns.update_check_descriptor import UCD
+
 # Initialize the library
 Window.glfw_init()
-
 
 # Create a windowed mode window and its OpenGL context
 window = Window(640, 480, "Hello World", None, None)
@@ -69,16 +70,21 @@ def init():
 
     gui = mygui.testgui()
 
+    image = Renderimage(500,500)
+
 @window3.draw
 def draw():
     # gui.run()
     # print(condition)
     condition = any([any(list(window3.mouse.pressed_button.values())), window3._flag_resized])
-
     if condition:
+        image.begin()
         window.viewports[0].open()
         window.viewports[0].clear(1, 0, 0, 1)
         rectangle1.draw()
+        image.end()
+
+        # TODO now make glsl read texture and rendder in on rect
         window.viewports[1].open()
         window.viewports[1].clear(1, 1, 0, 1)
         rectangle1.draw()

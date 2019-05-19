@@ -26,8 +26,8 @@ class RenderUnit():
         self._vertexarray = {}
         self._vertexbuffer = Vertexbuffer()
         self._indexbuffer = Indexbuffer()
-        self._texture = Texture()
-        self._framebuffer = Framebufer()
+        self._texture = Texture_load()
+
 
         if name is None:
             name = f'unmarked{len(self.__class__._renderers)}'
@@ -88,8 +88,8 @@ class RenderUnit():
         return self._texture
 
     @texture.setter
-    def texture(self, texture: Texture):
-        if isinstance(texture, Texture):
+    def texture(self, texture: Texture_load):
+        if isinstance(texture, Texture_load):
             self._texture = texture
 
     def bind_shader(self, file_name, name=None):
@@ -101,12 +101,12 @@ class RenderUnit():
     def bind_indexbuffer(self, glusage=None):
         self._indexbuffer = Indexbuffer(glusage)
 
-    def bind_texture(self, file = None, slot=None):
+    def bind_texture(self, file, slot=None):
         if file is not None:
             self._texture = Texture(file, slot)
 
-    def bind_framebuffer(self):
-        self._framebuffer = Framebufer(None)
+    # def bind_framebuffer(self):
+    #     self._framebuffer = Framebuffer(None)
 
     def draw(self):
         self._draw_()

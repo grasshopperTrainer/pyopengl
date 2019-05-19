@@ -228,6 +228,7 @@ class Virtual_scope:
             exec(code)
         except Exception as e:
             print(e)
+            raise
 
     def compile(self, obj):
         # compiling object is a function
