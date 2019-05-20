@@ -1,6 +1,5 @@
 from patterns.strict_method_implant import SMI
 from ..window import Window
-
 class Layerable(SMI):
 
     def __new__(cls, *args, **kwargs):

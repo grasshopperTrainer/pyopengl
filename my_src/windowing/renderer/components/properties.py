@@ -13,6 +13,7 @@ class _Block:
         self._flag_changed = True
 
     def __setitem__(self, key, value):
+
         self._flag_changed = True
         # if not isinstance(value[0], (tuple, list)):
         #     value = [list(value)]
@@ -133,6 +134,8 @@ class _Property:
         elif 'mat' in typ:
             n = int(typ.split('mat')[1].strip())
             n = (n, n)
+        elif 'bool' in typ:
+            n = 1
         else:
             raise TypeError(f"""
                             in glsl code:

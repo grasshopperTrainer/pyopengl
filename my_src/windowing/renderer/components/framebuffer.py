@@ -14,15 +14,14 @@ class Framebuffer(RenderComponent):
     def build(self,texture, renderbuffer):
         self._glindex = gl.glGenFramebuffers(1)
 
-        # texture.bind()
-        # renderbuffer.bind()
-        # bind texture
         self.bind()
-        gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER,
-                                  gl.GL_COLOR_ATTACHMENT0,
-                                  gl.GL_TEXTURE_2D,
-                                  texture._glindex,
-                                  0)
+        # bind texture
+        gl.glFramebufferTexture(gl.GL_FRAMEBUFFER,gl.GL_COLOR_ATTACHMENT0,texture._glindex,0)
+        # gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER,
+        #                           gl.GL_COLOR_ATTACHMENT0,
+        #                           gl.GL_TEXTURE_2D,
+        #                           texture._glindex,
+        #                           0)
         # bind render buffer such as depth buffer
         gl.glFramebufferRenderbuffer(gl.GL_FRAMEBUFFER,
                                      gl.GL_DEPTH_ATTACHMENT,
@@ -32,7 +31,6 @@ class Framebuffer(RenderComponent):
         s = gl.glCheckFramebufferStatus(gl.GL_FRAMEBUFFER)
         if s != gl.GL_FRAMEBUFFER_COMPLETE:
             raise Exception('building frame buffer failed')
-
         self.unbind()
 
     def bind(self):

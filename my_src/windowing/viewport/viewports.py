@@ -1,6 +1,7 @@
 from numbers import Number
 import OpenGL.GL as gl
 from .Camera import _Camera
+from collections import namedtuple
 
 from patterns.update_check_descriptor import UCD
 
@@ -58,6 +59,14 @@ class _Viewport:
         self._mother.make_viewport_current(self)
         gl.glViewport(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
         gl.glScissor(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
+    @property
+    def absolute_values(self):
+        n = namedtuple('pixel_coordinates',['posx','posy','width','height'])
+        return n(self.abs_posx,self.abs_posy,self.abs_width,self.abs_height)
+
+    def close(self):
+        if self._flag_clear:
+            self.fillbackground()
 
     @property
     def abs_posx(self):

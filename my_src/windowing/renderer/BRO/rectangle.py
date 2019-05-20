@@ -1,4 +1,7 @@
 from .basic_render_object import *
+from ..components.texture import Texture_new, Texture_load, Texture
+import OpenGL.GL as gl
+
 import numpy as np
 
 class Rectangle(BasicRenderObject):
@@ -18,6 +21,8 @@ class Rectangle(BasicRenderObject):
         self._rect.bind_shader(file_name='BRO_rectangle')
         self._rect.bind_indexbuffer(glusage=self._rect.GL_DYNAMIC_DRAW)
         self._rect.bind_vertexbuffer(glusage=self._rect.GL_DYNAMIC_DRAW)
+        self._rect.property['a_texCoord'][0:4] = [0,0],[1,0],[1,1],[0,1]
+        self._rect.property['texSlot'] = 0
 
     def _draw_(self):
         self._rect.property['u_size'] = self._size
@@ -60,3 +65,14 @@ class Rectangle(BasicRenderObject):
         if self._edgeweight is None:
             return super().DEF_EDGE_WEIGHT
         return self._edgeweight
+
+    def draw_texture(self, texture):
+        if isinstance(texture, str):
+            self._rect.bind_texture(texture)
+
+        elif isinstance(texture, Texture):
+            self._rect.texture = texture
+            self._rect.property['useTexture'] = True
+
+        else:
+            raise TypeError

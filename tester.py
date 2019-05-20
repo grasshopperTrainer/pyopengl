@@ -1,21 +1,9 @@
+from patterns.update_check_descriptor import UCD
 
 
 class A:
-    def __init__(self,a:int, b:int):
-        pass
+    a = UCD()
+    print(a)
+    a = 10
+    print(a)
     pass
-
-class B:
-    def __init__(self,a:str, b:str):
-        pass
-    pass
-
-
-def C(self, *args, **kwargs):
-    print('dkdkd')
-    if isinstance(args, int):
-        return A
-    else:
-        return B
-K = C()
-c = K()

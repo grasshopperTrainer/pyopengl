@@ -3,8 +3,8 @@ import OpenGL.GL as gl
 
 from .components import *
 from patterns.update_check_descriptor import UCD
-from windowing.window import Window
 # from windowing.layers.layerable import Layerable
+from ..window import Window
 
 class RenderUnit():
     """
@@ -26,7 +26,7 @@ class RenderUnit():
         self._vertexarray = {}
         self._vertexbuffer = Vertexbuffer()
         self._indexbuffer = Indexbuffer()
-        self._texture = Texture_load()
+        self._texture = Texture()
 
 
         if name is None:
@@ -88,8 +88,8 @@ class RenderUnit():
         return self._texture
 
     @texture.setter
-    def texture(self, texture: Texture_load):
-        if isinstance(texture, Texture_load):
+    def texture(self, texture: Texture):
+        if isinstance(texture, Texture):
             self._texture = texture
 
     def bind_shader(self, file_name, name=None):
@@ -103,7 +103,8 @@ class RenderUnit():
 
     def bind_texture(self, file, slot=None):
         if file is not None:
-            self._texture = Texture(file, slot)
+            self._texture = Texture_load(file, slot)
+        self.property['useTexture'] = True
 
     # def bind_framebuffer(self):
     #     self._framebuffer = Framebuffer(None)
@@ -210,8 +211,8 @@ class RenderUnit():
             if self.indexbuffer is not None:
                 self.indexbuffer.build()
 
-            if isinstance(self.texture, RenderComponent):
-                self.texture.build()
+            # if isinstance(self.texture, RenderComponent):
+            self.texture.build()
         # for a call from another shared g context
         # just build VertexArray and put buffer info into it
         else:
@@ -313,12 +314,15 @@ class RenderUnit():
                     t = 'f'
                     exec(f'gl.glUniformMatrix{n}{t}v({block.location},{c},True,block.data[{c - 1}])')
                 elif block.glsltype == 'int':
-                    gl.glUniform1i(block.location,block.data[0])
+                    gl.glUniform1i(block.location, block.data[0])
                 elif block.glsltype == 'float':
-                    gl.glUniform1f(block.location,block.data[0])
+                    gl.glUniform1f(block.location, block.data[0])
+                elif block.glsltype == 'bool':
+                    gl.glUniform1i(block.location, int(block.data[0]))
+                elif block.glsltype == 'sampler2D':
+                    gl.glUniform1i(block.location, block.data[0])
                 else:
-                    print(block.glsltype)
-                    raise TypeError('parsing undefined')
+                    raise TypeError(f"parsing for '{block.glsltype}' undefined")
 
         # for assigned uniforms
         vp = self.current_window.viewports.current_viewport

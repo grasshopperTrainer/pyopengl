@@ -61,12 +61,14 @@ class UCD():
             descriptor['updated'] = False
 
     def __get__(self, instance, owner):
+
         descriptor = self.get_this_properties(instance)
 
         if not descriptor['init']:
             return self
         else:
             self.__class__.latest_call_descriptor[instance] = self
+
             for f in self.get_this_properties(instance)['pre_get_callback']:
                 f()
 

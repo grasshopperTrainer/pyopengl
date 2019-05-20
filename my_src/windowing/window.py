@@ -15,8 +15,13 @@ from virtual_scope import *
 from .IO_device import *
 from .layers import *
 from .viewport import *
+from .renderer.renderimage import Renderimage
+from .current_framebuffer import Current_framebuffer
 
 from patterns.update_check_descriptor import UCD
+
+
+
 
 class _Windows:
     windows = OrderedDict()
@@ -67,6 +72,9 @@ class Window:
         from windowing.renderer import BRO
         from windowing.renderer.renderimage import Renderimage
         from windowing.unnamedGUI import mygui
+        import OpenGL.GL as gl
+        import glfw as glfw
+
         pass
 
     _init_global = _global_init
@@ -511,10 +519,10 @@ class Window:
 
     def make_window_current(self):
         self.__class__._current_window = self
+        Current_framebuffer.set_current(self)
         # RenderUnit.push_current_window(self)
         glfw.make_context_current(None)
         glfw.make_context_current(self.glfw_window)
-
     @classmethod
     def get_current_window(cls):
         return cls._current_window

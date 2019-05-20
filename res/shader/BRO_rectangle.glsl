@@ -3,15 +3,18 @@
 
 attribute vec2 a_position;
 attribute vec4 a_color;
+attribute vec2 a_texCoord;
 
 uniform mat4 MM;
 uniform mat4 PM;
 uniform mat4 VM;
 
 varying vec2 v_pos;
+varying vec2 v_texCoord;
 
 void main() {
     v_pos = a_position;
+    v_texCoord = a_texCoord;
 
     gl_Position = PM*VM*vec4(a_position,0, 1);
 }
@@ -23,9 +26,13 @@ uniform vec4 u_fillcol;
 uniform vec4 u_edgecol;
 uniform vec2 u_size;
 uniform float u_edgeweight;
+uniform sampler2D texSlot;
+uniform bool useTexture;
+
 float half_edgeweight = u_edgeweight/2.0;
 
 varying vec2 v_pos;
+varying vec2 v_texCoord;
 
 out vec4 color;
 
@@ -42,6 +49,12 @@ void main() {
         color = u_edgecol;
     }
     else {
-        color = u_fillcol;
+        if(useTexture) {
+            vec4 texColor = texture(texSlot, v_texCoord);
+            color = texColor;
+        }
+        else {
+            color = u_fillcol;
+        }
     }
 }
