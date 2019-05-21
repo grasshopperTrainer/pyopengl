@@ -61,7 +61,8 @@ class UCD():
             descriptor['updated'] = False
 
     def __get__(self, instance, owner):
-
+        if instance is None:
+            return self
         descriptor = self.get_this_properties(instance)
 
         if not descriptor['init']:

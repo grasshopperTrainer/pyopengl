@@ -70,7 +70,7 @@ def init():
 
     gui = mygui.testgui()
 
-    image = Renderimage(500,1000)
+    image = Renderimage(500,500)
     rectangle2 = BRO.Rectangle(pos = [0,0], size=[1000,1000], fillcol=[1,1,1,1])
     rectangle2.draw_texture(image.texture)
 
@@ -82,20 +82,15 @@ def draw():
     if condition:
 
         image.begin()
-        # image.crop([0,0],[1.,1.],[0,0],[1.,1.])
-        # window.viewports[0].open()
-        print(glfw)
-        # window.viewports[0].clear(1,1,0,1)
-        gl.glClearColor(1,1,0,1)
+        Viewport(100,100,400,1000).open()
+        gl.glClearColor(0,0,1,1)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-        gl.glViewport(0,0,500,500)
         rectangle1.draw()
-        # window.viewports[0].close()
-
         image.end()
+        # exit()
 
         window.viewports[0].open()
-        window.viewports[0].clear()
+        window.viewports[0].clear(1,0,0,1)
         rectangle1.draw()
         # image.begin()
         # # print(glfw.get_framebuffer_size(self.glfw_window))

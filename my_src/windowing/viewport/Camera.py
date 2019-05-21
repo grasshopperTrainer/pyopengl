@@ -1,7 +1,7 @@
 import numpy as np
 
 from patterns.update_check_descriptor import UCD
-from ..renderer.renderimage import Renderimage
+
 class _Camera:
     near = UCD()
     far = UCD()
@@ -15,7 +15,7 @@ class _Camera:
     def __init__(self, viewport):
         self._viewport = viewport
 
-        self._mode = 1
+        self._mode = 2
 
         self.near = 1
         self.far = 100000
@@ -150,8 +150,8 @@ class _Camera:
         self.build_PM()
 
     def build_PM(self, major='v'):
-        window = self._viewport._mother.window
-        condition1 = UCD.is_descriptor_updated(window, window.size)
+        # window = self._viewport._mother.window
+        # condition1 = UCD.is_descriptor_updated(window, window.size)
 
         if True:
             vp = self._viewport

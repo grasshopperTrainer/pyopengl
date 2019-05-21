@@ -19,7 +19,7 @@ from .renderer.renderimage import Renderimage
 from .current_framebuffer import Current_framebuffer
 
 from patterns.update_check_descriptor import UCD
-
+from.frame_buffer_like import FBL
 
 
 
@@ -66,12 +66,13 @@ class _Windows:
     def __str__(self):
         return f'collection of {len(self.windows)} window instances'
 
-class Window:
+class Window(FBL):
     def _global_init():
         import numpy as np
         from windowing.renderer import BRO
         from windowing.renderer.renderimage import Renderimage
         from windowing.unnamedGUI import mygui
+        from windowing.viewport.testviewport import Viewport
         import OpenGL.GL as gl
         import glfw as glfw
 
@@ -105,12 +106,14 @@ class Window:
         :param kwargs:
         :return:
         """
+
         self = super().__new__(cls)
         self.__init__(*args,**kwargs)
         cls._windows + self
         return weakref.proxy(self)
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
+        Current_framebuffer.set_current(self)
         self._windows = self.__class__._windows
         # threading.Thread.__init__(self)
 
@@ -518,8 +521,8 @@ class Window:
             print_message('Type error. Maintain attribute.')
 
     def make_window_current(self):
-        self.__class__._current_window = self
-        Current_framebuffer.set_current(self)
+        # self.__class__._current_window = self
+        FBL._current = self
         # RenderUnit.push_current_window(self)
         glfw.make_context_current(None)
         glfw.make_context_current(self.glfw_window)

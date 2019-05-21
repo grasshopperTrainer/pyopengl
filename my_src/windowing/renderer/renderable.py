@@ -3,8 +3,10 @@ import OpenGL.GL as gl
 
 from .components import *
 from patterns.update_check_descriptor import UCD
-# from windowing.layers.layerable import Layerable
 from ..window import Window
+from ..frame_buffer_like import FBL
+from ..viewport.testviewport import Viewport
+import numpy as np
 
 class RenderUnit():
     """
@@ -155,15 +157,18 @@ class RenderUnit():
             func()
 
     def draw_element(self):
-        window = self.current_window
-        viewport = window.viewports.current_viewport
-
+        window = FBL._current
+        viewport = Viewport.get_current()
+        print(window, viewport.name)
         if UCD.is_any_descriptor_updated(viewport, viewport.camera) or self.shader.properties.is_any_update:
+
             window._flag_something_rendered = True
             # before make any change erase background
             viewport.fillbackground()
             # draw a thing
             if self.indexbuffer.count != 0:
+                print('drawdraw',window,viewport.name)
+                print(viewport.absolute_values)
                 gl.glDrawElements(self.mode, self.indexbuffer.count, self.indexbuffer.gldtype, None)
             # tell window change has been made on framebuffer
             # and should swap it
@@ -325,10 +330,13 @@ class RenderUnit():
                     raise TypeError(f"parsing for '{block.glsltype}' undefined")
 
         # for assigned uniforms
-        vp = self.current_window.viewports.current_viewport
+        # vp = FBL._current
+        vp = Viewport.get_current()
+
         vm = self.shader.properties['VM']
         matrix = vp.camera.VM
         gl.glUniformMatrix4fv(vm.location, 1, True, matrix)
+
         pm = self.shader.properties['PM']
         matrix = vp.camera.PM
         gl.glUniformMatrix4fv(pm.location, 1, True, matrix)

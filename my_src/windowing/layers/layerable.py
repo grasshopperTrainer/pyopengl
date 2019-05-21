@@ -1,12 +1,14 @@
 from patterns.strict_method_implant import SMI
 from ..window import Window
+from ..frame_buffer_like import FBL
+
 class Layerable(SMI):
 
     def __new__(cls, *args, **kwargs):
         # automatically save object into the layer
-        w = Window.get_current_window()
+        fb = FBL._current
         self = super().__new__(cls)
-        w.layer[0].add(self)
+        fb.layer[0].add(self)
         return self
 
     def _stop_(self):

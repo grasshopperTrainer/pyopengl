@@ -11,17 +11,22 @@ class SMI:
             if cla.__name__ == 'SMI':
                 child = tree[i - 1]
 
-        childmethods = dict(inspect.getmembers(child, inspect.isfunction)[1:])
-        mothermethods = dict(inspect.getmembers(cls, inspect.isfunction)[1:])
+        childfunctions = inspect.getmembers(child, inspect.isfunction)[1:]
+        childdescriptors = list(filter(lambda x:x[0][:2] != '__',inspect.getmembers(child, inspect.isdatadescriptor)))
+        childmethods = dict(childfunctions + childdescriptors)
 
-        undefined = list(filter(lambda x: childmethods[x] is mothermethods[x], childmethods))
+        motherfunctions = inspect.getmembers(cls, inspect.isfunction)[1:]
+        motherdescriptors = list(filter(lambda x:x[0][:2] != '__',inspect.getmembers(cls, inspect.isdatadescriptor)))
+        mothermethods = dict(motherfunctions + motherdescriptors)
+
+        undefined = list(filter(lambda x: x[1] is mothermethods[x[0]], childmethods.items()))
 
         if len(undefined) != 0:
-            head = f""" (class){cls.__name__} should have following methods of mother(class){child.__name__}:
+            head = f""" (class) {cls.__name__} should have following methods of mother(class){child.__name__}:
             """
             body = """"""
-            for n in undefined:
-                body += f"""(function){n}
+            for name, method in undefined:
+                body += f"""{method.__class__} {name}
             """
             raise Exception(head + body)
 
