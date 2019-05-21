@@ -82,9 +82,10 @@ def draw():
     if condition:
 
         image.begin()
-        Viewport(100,100,400,1000).open()
         gl.glClearColor(0,0,1,1)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        Viewport(0,0,1000,500).open()
+
         rectangle1.draw()
         image.end()
         # exit()
