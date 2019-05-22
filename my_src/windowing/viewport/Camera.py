@@ -1,40 +1,49 @@
 import numpy as np
 
 from patterns.update_check_descriptor import UCD
+from ..frame_buffer_like import FBL
 
 class _Camera:
+    """
+    Camera for viewport.
+    This object stores properties of Camera position, characteristics
+    to form ViewMatrix(VM) and ProjectionMatrix(PM).
+    VM and PM is referenced by (class) RenderUnit.update_variables and passed to opengl shader.
+    """
     near = UCD()
     far = UCD()
     left = UCD()
     right = UCD()
     bottom = UCD()
     top = UCD()
-    VM = UCD()
-    PM = UCD()
+
+    VM = UCD() # View Matrix
+    PM = UCD() # Projection Matrix
 
     def __init__(self, viewport):
         self._viewport = viewport
 
         self._mode = 2
+        # following is basic setting for mode2 - true 2D projection
+        # render range of z
+        self.near = 0
+        self.far = 100
+        # render range of xy plane
+        self.left = 0
+        self.right = viewport.abs_width
+        self.bottom = 0
+        self.top = viewport.abs_height
 
-        self.near = 1
-        self.far = 100000
-        self.left = -1
-        self.right = 1
-        self.bottom = -0.5
-        self.top = 0.5
+        self.scale_factor = [1,1,1]
 
-        self.VM = np.eye(4)
+        # to make PM just in time set refresh function
         self.PM.set_pre_get_callback(self.build_PM)
         self.PM = np.eye(4)
-        # UCD.get_descriptor('PM')
-        self._latestviewportsize = [None, None]
+        self.VM = np.eye(4)
 
-        self._flag_isupdated = True
-
-        self.build_PM()
 
     def move(self, value, x, y, z):
+        # move camera
         if not isinstance(value, (tuple, list)):
             value = [-value, ] * 3
         else:
@@ -93,9 +102,8 @@ class _Camera:
 
         self.VM = matrix.dot(self.VM)
 
-    def scale(self):
-        # ???
-        pass
+    def scale(self,x=1,y=1,z=1):
+        self.scale_factor = (x,y,z)
 
     def lookat(self, to_point, from_point=None):
         if from_point is None:
@@ -135,7 +143,11 @@ class _Camera:
 
     @mode.setter
     def mode(self, mode):
-        print('setting mode')
+        # three modes are supported
+        # 0. orthonographic
+        # 1. projection
+        # 2. orthonographic true 2D plane
+
         if isinstance(mode, str):
             if 'ortho' in mode:
                 self._mode = 0
@@ -147,64 +159,75 @@ class _Camera:
         elif isinstance(mode, int):
             self._mode = mode
 
+        # set camera properties
+        if self._mode == 2:
+
+            self.near = 0
+            self.far = 100
+            # render range of xy plane
+            self.left = 0
+            self.right = self._viewport.abs_width
+            self.bottom = 0
+            self.top = self._viewport.abs_height
+
         self.build_PM()
 
     def build_PM(self, major='v'):
-        # window = self._viewport._mother.window
-        # condition1 = UCD.is_descriptor_updated(window, window.size)
 
+        # need to find correct filter condition
         if True:
             vp = self._viewport
             if vp.abs_height == 0 or vp.abs_height == 0:
                 return
 
-            n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
-            ratio = vp.abs_width / vp.abs_height
-            if major == 'v':
-                r, l = (t - b) * ratio / 2, -(t - b) * ratio / 2
-            elif major == 'h':
-                t, b = (r - l) / ratio / 2, -(r - l) / ratio / 2
-            else:
-                pass
+            if self._mode == 0 or self._mode == 1:
+                n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
+                ratio = vp.abs_width / vp.abs_height
+                if major == 'v':
+                    r, l = (t - b) * ratio / 2, -(t - b) * ratio / 2
+                elif major == 'h':
+                    t, b = (r - l) / ratio / 2, -(r - l) / ratio / 2
+                else:
+                    pass
 
-            if self._mode == 0:
-                if r == -l and t == -b:
-                    self.PM = np.array(
-                        [[1 / r, 0, 0, 0],
-                         [0, 1 / t, 0, 0],
-                         [0, 0, -2 / (f - n), -(f + n) / (f - n)],
-                         [0, 0, 0, 1]])
+                if self._mode == 0:
+                    if r == -l and t == -b:
+                        self.PM = np.array(
+                            [[1 / r, 0, 0, 0],
+                             [0, 1 / t, 0, 0],
+                             [0, 0, -2 / (f - n), -(f + n) / (f - n)],
+                             [0, 0, 0, 1]])
+
+                    else:
+                        self.PM = np.array(
+                            [[2 / (r - l), 0, 0, -(r + l) / (r - l)],
+                             [0, 2 / (t - b), 0, -(t + b) / (t - b)],
+                             [0, 0, -2 / (f - n), -(f + n) / (f - n)],
+                             [0, 0, 0, 1]])
 
                 else:
-                    self.PM = np.array(
-                        [[2 / (r - l), 0, 0, -(r + l) / (r - l)],
-                         [0, 2 / (t - b), 0, -(t + b) / (t - b)],
-                         [0, 0, -2 / (f - n), -(f + n) / (f - n)],
-                         [0, 0, 0, 1]])
+                    if r == -l and t == -b:
+                        self.PM = np.array(
+                            [[n / r, 0, 0, 0],
+                             [0, n / t, 0, 0],
+                             [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
+                             [0, 0, -1, 0]])
 
-            elif self._mode == 1:
-                if r == -l and t == -b:
-                    self.PM = np.array(
-                        [[n / r, 0, 0, 0],
-                         [0, n / t, 0, 0],
-                         [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
-                         [0, 0, -1, 0]])
-
-                else:
-                    self.PM = np.array(
-                        [[2 * n / (r - l), 0, (r + l) / (r - l), 0],
-                         [0, 2 * n / (t - b), (t + b) / (t - b), 0],
-                         [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
-                         [0, 0, -1, 0]]
-                    )
+                    else:
+                        self.PM = np.array(
+                            [[2 * n / (r - l), 0, (r + l) / (r - l), 0],
+                             [0, 2 * n / (t - b), (t + b) / (t - b), 0],
+                             [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
+                             [0, 0, -1, 0]]
+                        )
 
             elif self._mode == 2:
                 self.near = 0
                 self.far = 100
                 self.left = 0
-                self.right = self._viewport.abs_width
+                self.right = self._viewport.abs_width*self.scale_factor[0]
                 self.bottom = 0
-                self.top = self._viewport.abs_height
+                self.top = self._viewport.abs_height*self.scale_factor[1]
 
                 n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
                 # if self._viewport._mother.window.name == 'third':
@@ -225,7 +248,6 @@ class _Camera:
     def w(self, w):
         self.right = w / 2
         self.left = -w / 2
-        self.build_PM()
 
     @property
     def h(self):
@@ -235,25 +257,3 @@ class _Camera:
     def h(self, h):
         self.top = h / 2
         self.bottom = -h / 2
-        self.build_PM()
-
-    # @property
-    # def VM(self):
-    #     return self._VM
-    #
-    # @property
-    # def PM(self):
-    #     window = self._viewport._mother.window
-    #     if window.resized:
-    #         self.build_PM()
-    #         window.resized = False
-    #
-    #     return self._PM
-
-    @property
-    def is_updated(self):
-        if self._flag_isupdated:
-            self._flag_isupdated = False
-            return True
-        else:
-            return False

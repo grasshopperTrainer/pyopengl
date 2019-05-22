@@ -113,8 +113,7 @@ class Window(FBL):
         return weakref.proxy(self)
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
-        Current_framebuffer.set_current(self)
-        self._windows = self.__class__._windows
+        FBL.set_current(self)
         # threading.Thread.__init__(self)
 
         # save name of instance
@@ -379,6 +378,12 @@ class Window(FBL):
 
                     window._flag_something_rendered = False
                     window._flag_resized = False
+
+                    viewports = window.viewports._viewports
+
+                    # UCD.reset_instance_descriptors_update(window)
+                    # UCD.reset_instance_descriptors_update(*viewports.values())
+                    # UCD.reset_instance_descriptors_update(*[v.camera for v in viewports.values()])
                     window.mouse.reset()
 
                 glfw.poll_events()
@@ -531,7 +536,7 @@ class Window(FBL):
         return cls._current_window
 
     @property
-    def layer(self):
+    def layers(self):
         return self._layers
 
     @property
@@ -621,9 +626,6 @@ class Timer:
             sleep(waiting_time)
         else:
             pass
-    @property
-    def current_framerate(self):
-        return self._current_framerate
     @property
     def framecount(self):
         return self._framecount

@@ -159,7 +159,6 @@ class RenderUnit():
     def draw_element(self):
         window = FBL._current
         viewport = Viewport.get_current()
-        print(window, viewport.name)
         if UCD.is_any_descriptor_updated(viewport, viewport.camera) or self.shader.properties.is_any_update:
 
             window._flag_something_rendered = True
@@ -167,8 +166,6 @@ class RenderUnit():
             viewport.fillbackground()
             # draw a thing
             if self.indexbuffer.count != 0:
-                print('drawdraw',window,viewport.name)
-                print(viewport.absolute_values)
                 gl.glDrawElements(self.mode, self.indexbuffer.count, self.indexbuffer.gldtype, None)
             # tell window change has been made on framebuffer
             # and should swap it

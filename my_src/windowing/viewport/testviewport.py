@@ -13,6 +13,11 @@ class Viewport:
     width = UCD()
     height = UCD()
 
+    abs_posx = UCD()
+    abs_posy = UCD()
+    abs_width = UCD()
+    abs_height = UCD()
+
     def __init__(self, x, y, width, height, fbl=None, name= None):
 
         self._bound_fbl = fbl
@@ -22,6 +27,16 @@ class Viewport:
         self.posy = y
         self.width = width
         self.height = height
+
+        self.abs_posx.set_pre_get_callback(self.cal_abs_posx)
+        self.abs_posy.set_pre_get_callback(self.cal_abs_posy)
+        self.abs_width.set_pre_get_callback(self.cal_abs_width)
+        self.abs_height.set_pre_get_callback(self.cal_abs_height)
+
+        self.abs_posx = self.cal_abs_posx()
+        self.abs_posy = self.cal_abs_posy()
+        self.abs_width = self.cal_abs_width()
+        self.abs_height = self.cal_abs_height()
 
         self._camera = _Camera(self)
 
@@ -58,12 +73,14 @@ class Viewport:
 
     def open(self, do_clip = True):
         if self._bound_fbl is not None:
-            FBL._current = self._bound_fbl
-        self.__class__._current = self
+            FBL.set_current(self._bound_fbl)
+        self.set_current(self)
 
         gl.glViewport(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
         if do_clip:
             gl.glScissor(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
+
+        return self
 
     @property
     def absolute_values(self):
@@ -74,46 +91,45 @@ class Viewport:
         if self._flag_clear:
             self.fillbackground()
 
-    @property
-    def abs_posx(self):
+
+    def cal_abs_posx(self):
         if isinstance(self.posx, float):
             if self._bound_fbl is None:
-                return int(self.posx * FBL._current.width)
+                self.abs_posx = int(self.posx * FBL.get_current().width)
             else:
-                return int(self.posx * self._bound_fbl.width)
+                self.abs_posx = int(self.posx * self._bound_fbl.width)
         else:
-            return self.posx
+            self.abs_posx = self.posx
 
-    @property
-    def abs_posy(self):
+
+    def cal_abs_posy(self):
         if isinstance(self.posy, float):
             if self._bound_fbl is None:
-                return int(self.posy * FBL._current.height)
+                self.abs_posy = int(self.posy * FBL.get_current().height)
             else:
-                return int(self.posy * self._bound_fbl.height)
+                self.abs_posy = int(self.posy * self._bound_fbl.height)
         else:
-            return self.posy
+            self.abs_posy = self.posy
 
-    @property
-    def abs_width(self):
+
+    def cal_abs_width(self):
         if isinstance(self.width, float):
             if self._bound_fbl is None:
-                return int(self.width * FBL._current.width)
+                self.abs_width = int(self.width * FBL.get_current().width)
             else:
-                return int(self.width * self._bound_fbl.width)
+                self.abs_width = int(self.width * self._bound_fbl.width)
         else:
-            return self.width
+            self.abs_width = self.width
 
-    @property
-    def abs_height(self):
+
+    def cal_abs_height(self):
         if isinstance(self.height, float):
-
             if self._bound_fbl is None:
-                return int(self.height * FBL._current.height)
+                self.abs_height = int(self.height * FBL.get_current().height)
             else:
-                return int(self.height * self._bound_fbl.height)
+                self.abs_height = int(self.height * self._bound_fbl.height)
         else:
-            return self.height
+            self.abs_height = self.height
 
     @property
     def camera(self):
@@ -130,3 +146,6 @@ class Viewport:
     @classmethod
     def get_current(cls):
         return cls._current
+    @classmethod
+    def set_current(cls, vp):
+        cls._current = vp

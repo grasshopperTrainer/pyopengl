@@ -4,8 +4,10 @@ from .components.renderbuffer import Renderbuffer
 from .components.texture import Texture_new
 from ..frame_buffer_like import FBL
 from ..viewport.testviewport import Viewport
+from patterns.update_check_descriptor import UCD
 
 class Renderimage(FBL):
+    _size = UCD()
     def __init__(self, width, height):
         self._size = [width, height]
 
@@ -24,7 +26,7 @@ class Renderimage(FBL):
         self._framebuffer.build(self._texture, self._renderbuffer)
 
     def begin(self):
-        FBL._current = self
+        FBL.set_current(self)
 
         self._framebuffer.bind()
 
@@ -36,9 +38,6 @@ class Renderimage(FBL):
 
     def end(self):
         self._framebuffer.unbind()
-        pass
-
-    def crop_from_to(self):
         pass
 
     @property

@@ -6,16 +6,20 @@ class Layerable(SMI):
 
     def __new__(cls, *args, **kwargs):
         # automatically save object into the layer
-        fb = FBL._current
+        fb = FBL.get_current()
         self = super().__new__(cls)
-        fb.layer[0].add(self)
+        # TODO is this convenient?
+        fb.layers[0].add(self)
         return self
 
+    @SMI.must_func
     def _stop_(self):
         pass
 
+    @SMI.must_func
     def _hide_(self):
         pass
 
+    @SMI.must_func
     def _draw_(self):
         pass

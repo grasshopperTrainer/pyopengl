@@ -36,7 +36,7 @@ def event():
     if window.keyboard.key_pressed('esc'):
         window.close()
     if window.keyboard.key_pressed('l'):
-        window.layer[0].hide()
+        window.layers[0].hide()
 
 
 # @window3.mouse
@@ -82,7 +82,7 @@ def draw():
     if condition:
 
         image.begin()
-        Viewport(100,100,400,1000).open()
+        Viewport(-100,-100,500,1000).open().camera.scale(1,1)
         gl.glClearColor(0,0,1,1)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
         rectangle1.draw()

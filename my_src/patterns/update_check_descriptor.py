@@ -33,21 +33,21 @@ class UCD():
 
     def __set__(self, instance, value):
         replace = True
-        descriptor = self.get_this_properties(instance)
+        prop = self.get_this_properties(instance)
 
         # for the first set
-        if not descriptor['init']:
-            descriptor['init'] = True
+        if not prop['init']:
+            prop['init'] = True
 
         # value comparison
-        if type(descriptor['value']) == type(value):
+        if type(prop['value']) == type(value):
             # if value is the same with stored -> means nothing new
             # exception for numpy comparison
             if isinstance(value, np.ndarray):
-                if np.array_equal(descriptor, value):
+                if np.array_equal(prop['value'], value):
                     replace = False
             else:
-                if descriptor == value:
+                if prop['value'] == value:
                     replace = False
         # if types are different -> means new value
         else:
@@ -55,10 +55,10 @@ class UCD():
 
         # if value different replace and raise update mark
         if replace:
-            descriptor['updated'] = True
-            descriptor['value'] = value
+            prop['updated'] = True
+            prop['value'] = value
         else:
-            descriptor['updated'] = False
+            prop['updated'] = False
 
     def __get__(self, instance, owner):
         if instance is None:
@@ -114,8 +114,10 @@ class UCD():
     def get_instance_descriptor_property(cls, instance, property_key=None):
         d = cls._DIC[instance.__class__][instance]
         new_d = {}
-        if property_key is not None:
-            for desc, p_dict in d.items():
+        for desc, p_dict in d.items():
+            if property_key is None:
+                new_d[desc] = p_dict
+            else:
                 new_d[desc] = p_dict[property_key]
 
         return new_d
@@ -138,17 +140,17 @@ class UCD():
     @classmethod
     def reset_descriptor_update(cls, instance, desc_attribute):
         desc = cls.latest_call_descriptor[instance]
-        desc.set_this_property(instance,'update', False)
+        desc.set_this_property(instance,'updated', False)
 
     @classmethod
     def reset_instance_descriptors_property(cls,instance, property_key, value):
         d = cls.get_instance_descriptor_property(instance)
         for prop_dic in d.values():
             prop_dic[property_key] = value
-
     @classmethod
-    def reset_instance_descriptors_update(cls,instance):
-        cls.reset_instance_descriptors_property(instance,'update', False)
+    def reset_instance_descriptors_update(cls,*instances):
+        for ins in instances:
+            cls.reset_instance_descriptors_property(ins,'updated', False)
 
     @classmethod
     def is_descriptor_updated(cls, instance, desc_attribute):

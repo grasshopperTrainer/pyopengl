@@ -229,7 +229,7 @@ def SOF(self, marker):
     for i in range(6, len(s), 3):
         t = s[i:i+3]
         # 4-tuples: id, vsamp, hsamp, qtable
-        self.layer.append((t[0], i8(t[1])//16, i8(t[1]) & 15, i8(t[2])))
+        self.layers.append((t[0], i8(t[1]) // 16, i8(t[1]) & 15, i8(t[2])))
 
 
 def DQT(self, marker):
@@ -610,7 +610,7 @@ def get_sampling(im):
     # to be updated (here and in JpegEncode.c) to deal with 4 layers.
     if not hasattr(im, 'layers') or im.layers in (1, 4):
         return -1
-    sampling = im.layer[0][1:3] + im.layer[1][1:3] + im.layer[2][1:3]
+    sampling = im.layers[0][1:3] + im.layers[1][1:3] + im.layers[2][1:3]
     return samplings.get(sampling, -1)
 
 
