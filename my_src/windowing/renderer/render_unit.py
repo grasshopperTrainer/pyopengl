@@ -118,12 +118,12 @@ class RenderUnit():
     def _draw_(self, func=None):
         # real draw
         if func is None:
+
             # if vertexarray for current context is not built
             if not isinstance(self.vertexarray, Vertexarray):
                 self._build_()
 
             if self.flag_run:
-
                 # load opengl states
                 self.shader.bind()
                 self.vertexarray.bind()
@@ -132,6 +132,12 @@ class RenderUnit():
                 self.texture.bind()
 
                 # update all variables of shader
+                # print('-----------------')
+                # print(self.shader._glindex)
+                # print(self.vertexarray._glindex)
+                # print(self.vertexbuffer._glindex)
+                # print(self.indexbuffer._glindex)
+                # print(self.texture._glindex)
                 self.update_variables()
 
                 self.draw_element()
@@ -159,8 +165,8 @@ class RenderUnit():
     def draw_element(self):
         window = FBL.get_current_fbl()
         viewport = Viewport.get_current_viewport()
-        if UCD.is_any_descriptor_updated(viewport, viewport.camera) or self.shader.properties.is_any_update:
 
+        if UCD.is_any_descriptor_updated(viewport, viewport.camera) or self.shader.properties.is_any_update:
             window._flag_something_rendered = True
             # before make any change erase background
             viewport.fillbackground()
@@ -169,7 +175,6 @@ class RenderUnit():
                 gl.glDrawElements(self.mode, self.indexbuffer.count, self.indexbuffer.gldtype, None)
             # tell window change has been made on framebuffer
             # and should swap it
-
         # update have been handled so reset update flag
         # self.shader.properties.reset_update()
         # UCD.reset_instance_updates(viewport, viewport.camera)
@@ -191,6 +196,10 @@ class RenderUnit():
         self.flag_run = True
         self.flag_draw = True
 
+    # @property
+    # def current_window(self):
+    #     return Window.get_current_window()
+
     def _build_(self):
         print('building render unit')
         if len(self._vertexarray) == 1:
@@ -205,7 +214,6 @@ class RenderUnit():
                 self.vertexbuffer.build()
 
                 self.vertexarray.unbind()
-
 
             if self.indexbuffer is not None:
                 self.indexbuffer.build()
@@ -222,7 +230,6 @@ class RenderUnit():
             self.vertexbuffer.build()
 
             self.vertexarray.unbind()
-
 
     @property
     def name(self):
@@ -267,6 +274,14 @@ class RenderUnit():
                         off = start_off + buffer.itemsize * i
                         element = data[i]
                         size = element.itemsize * element.size
+                        # print(off)
+                        # print(element)
+                        # print(size)
+                        print(FBL.get_current_fbl())
+                        print(self._vertexarray)
+                        for i in self._vertexarray.values():
+                            print(i._glindex)
+                        print(self.vertexarray)
                         gl.glBufferSubData(gl.GL_ARRAY_BUFFER, off, size, element)
             self.vertexbuffer.unbind()
 

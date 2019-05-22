@@ -30,16 +30,16 @@ class _Camera:
         self.far = 100
         # render range of xy plane
         self.left = 0
-        self.right = viewport.width
+        self.right = viewport.abs_width
         self.bottom = 0
-        self.top = viewport.height
+        self.top = viewport.abs_height
 
         # to make PM just in time set refresh function
         self.PM.set_pre_get_callback(self.build_PM)
         self.PM = np.eye(4)
         self.VM = np.eye(4)
 
-        # self.build_PM()
+        self.build_PM()
 
     def move(self, value, x, y, z):
         # move camera
@@ -167,56 +167,59 @@ class _Camera:
         # window = self._viewport._mother.window
         # condition1 = UCD.is_descriptor_updated(window, window.size)
         # only recalculate when viewport or fbl properties has changed
-        print(FBL.get_current_fbl())
-        if UCD.is_any_descriptor_updated(FBL.get_current_fbl(), self._viewport.get_current_viewport()):
+        if True:
             vp = self._viewport
             if vp.abs_height == 0 or vp.abs_height == 0:
                 return
 
-            n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
-            ratio = vp.abs_width / vp.abs_height
-            if major == 'v':
-                r, l = (t - b) * ratio / 2, -(t - b) * ratio / 2
-            elif major == 'h':
-                t, b = (r - l) / ratio / 2, -(r - l) / ratio / 2
-            else:
-                pass
-
-            if self._mode == 0:
-                if r == -l and t == -b:
-                    self.PM = np.array(
-                        [[1 / r, 0, 0, 0],
-                         [0, 1 / t, 0, 0],
-                         [0, 0, -2 / (f - n), -(f + n) / (f - n)],
-                         [0, 0, 0, 1]])
-
+            if self._mode == 0 or self._mode == 1:
+                n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
+                ratio = vp.abs_width / vp.abs_height
+                if major == 'v':
+                    r, l = (t - b) * ratio / 2, -(t - b) * ratio / 2
+                elif major == 'h':
+                    t, b = (r - l) / ratio / 2, -(r - l) / ratio / 2
                 else:
-                    self.PM = np.array(
-                        [[2 / (r - l), 0, 0, -(r + l) / (r - l)],
-                         [0, 2 / (t - b), 0, -(t + b) / (t - b)],
-                         [0, 0, -2 / (f - n), -(f + n) / (f - n)],
-                         [0, 0, 0, 1]])
+                    pass
 
-            elif self._mode == 1:
-                if r == -l and t == -b:
-                    self.PM = np.array(
-                        [[n / r, 0, 0, 0],
-                         [0, n / t, 0, 0],
-                         [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
-                         [0, 0, -1, 0]])
+                if self._mode == 0:
+                    if r == -l and t == -b:
+                        self.PM = np.array(
+                            [[1 / r, 0, 0, 0],
+                             [0, 1 / t, 0, 0],
+                             [0, 0, -2 / (f - n), -(f + n) / (f - n)],
+                             [0, 0, 0, 1]])
 
-                else:
-                    self.PM = np.array(
-                        [[2 * n / (r - l), 0, (r + l) / (r - l), 0],
-                         [0, 2 * n / (t - b), (t + b) / (t - b), 0],
-                         [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
-                         [0, 0, -1, 0]]
-                    )
+                    else:
+                        self.PM = np.array(
+                            [[2 / (r - l), 0, 0, -(r + l) / (r - l)],
+                             [0, 2 / (t - b), 0, -(t + b) / (t - b)],
+                             [0, 0, -2 / (f - n), -(f + n) / (f - n)],
+                             [0, 0, 0, 1]])
+
+                elif self._mode == 1:
+                    if r == -l and t == -b:
+                        self.PM = np.array(
+                            [[n / r, 0, 0, 0],
+                             [0, n / t, 0, 0],
+                             [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
+                             [0, 0, -1, 0]])
+
+                    else:
+                        self.PM = np.array(
+                            [[2 * n / (r - l), 0, (r + l) / (r - l), 0],
+                             [0, 2 * n / (t - b), (t + b) / (t - b), 0],
+                             [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
+                             [0, 0, -1, 0]]
+                        )
 
             elif self._mode == 2:
                 self.near = 0
                 self.far = 100
-
+                self.left = 0
+                self.right = self._viewport.abs_width
+                self.bottom = 0
+                self.top = self._viewport.abs_height
                 n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
                 # if self._viewport._mother.window.name == 'third':
                 #     print('windowsize', self._viewport._mother.window.size)

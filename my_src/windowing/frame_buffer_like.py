@@ -7,12 +7,12 @@ class FBL(SMI):
     from OpenGL
     """
     _current = None
-    def __new__(cls, *args, **kwargs):
-        ins = super().__new__(cls)
-
-        ins.__setattr__('layers',Layers(ins))
-
-        return ins
+    # def __new__(cls, *args, **kwargs):
+    #     ins = super().__new__(cls)
+    #
+    #     # ins.__setattr__('layers',Layers(ins))
+    #
+    #     return ins
 
     @SMI.must_func
     @property

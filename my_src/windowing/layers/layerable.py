@@ -9,7 +9,7 @@ class Layerable(SMI):
         fb = FBL.get_current_fbl()
         self = super().__new__(cls)
 
-        fb.layers[0].add(self)
+        # fb.layers[0].add(self)
         return self
 
     @SMI.must_func

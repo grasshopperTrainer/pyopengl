@@ -47,7 +47,6 @@ class Viewport:
                 color = self.DEF_CLEAR_COLOR
             else:
                 color = self._clear_color
-
             gl.glClearColor(*color)
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
@@ -80,7 +79,7 @@ class Viewport:
     def abs_posx(self):
         if isinstance(self.posx, float):
             if self._bound_fbl is None:
-                return int(self.posx * FBL._current.width)
+                return int(self.posx * FBL.get_current_fbl().width)
             else:
                 return int(self.posx * self._bound_fbl.width)
         else:
@@ -90,7 +89,7 @@ class Viewport:
     def abs_posy(self):
         if isinstance(self.posy, float):
             if self._bound_fbl is None:
-                return int(self.posy * FBL._current.height)
+                return int(self.posy * FBL.get_current_fbl().height)
             else:
                 return int(self.posy * self._bound_fbl.height)
         else:
@@ -100,7 +99,7 @@ class Viewport:
     def abs_width(self):
         if isinstance(self.width, float):
             if self._bound_fbl is None:
-                return int(self.width * FBL._current.width)
+                return int(self.width * FBL.get_current_fbl().width)
             else:
                 return int(self.width * self._bound_fbl.width)
         else:
@@ -111,7 +110,7 @@ class Viewport:
         if isinstance(self.height, float):
 
             if self._bound_fbl is None:
-                return int(self.height * FBL._current.height)
+                return int(self.height * FBL.get_current_fbl().height)
             else:
                 return int(self.height * self._bound_fbl.height)
         else:

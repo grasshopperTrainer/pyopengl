@@ -28,7 +28,7 @@ class Renderimage(FBL):
         self._framebuffer.build(self._texture, self._renderbuffer)
 
     def begin(self):
-        FBL._current = self
+        FBL.set_current_fbl(self)
 
         self._framebuffer.bind()
 

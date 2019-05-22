@@ -90,9 +90,9 @@ def draw():
         # exit()
 
         window.viewports[0].open()
-        window.viewports[0].clear(1,0,0,1)
+        window.viewports[0].clear(0,1,0,1)
         rectangle1.draw()
-        exit()
+        # window.viewports[0].close()
         # image.begin()
         # # print(glfw.get_framebuffer_size(self.glfw_window))
         # # window.viewports[0].open()
