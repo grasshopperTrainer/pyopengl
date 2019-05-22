@@ -32,6 +32,7 @@ class UCD():
         self._pre_get_callbacks = {}
 
     def __set__(self, instance, value):
+        # print(instance, value)
         replace = True
         descriptor = self.get_this_properties(instance)
 

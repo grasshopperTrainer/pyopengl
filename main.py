@@ -84,8 +84,7 @@ def draw():
         image.begin()
         gl.glClearColor(0,0,1,1)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-        Viewport(0,0,1000,500).open()
-
+        Viewport(0,0,500,500).open()
         rectangle1.draw()
         image.end()
         # exit()
@@ -93,6 +92,7 @@ def draw():
         window.viewports[0].open()
         window.viewports[0].clear(1,0,0,1)
         rectangle1.draw()
+        exit()
         # image.begin()
         # # print(glfw.get_framebuffer_size(self.glfw_window))
         # # window.viewports[0].open()

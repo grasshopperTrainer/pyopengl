@@ -5,7 +5,7 @@ from .components import *
 from patterns.update_check_descriptor import UCD
 from ..window import Window
 from ..frame_buffer_like import FBL
-from ..viewport.testviewport import Viewport
+from ..viewport.viewport import Viewport
 import numpy as np
 
 class RenderUnit():
@@ -56,16 +56,17 @@ class RenderUnit():
 
     @property
     def vertexarray(self):
-        if self.current_window in self._vertexarray:
-            return self._vertexarray[self.current_window]
+        win = FBL.get_current_fbl()
+        if win in self._vertexarray:
+            return self._vertexarray[win]
         else:
-            self._vertexarray[self.current_window] = Vertexarray()
-            return self._vertexarray[self.current_window]
+            self._vertexarray[win] = Vertexarray()
+            return self._vertexarray[win]
 
     @vertexarray.setter
     def vertexarray(self, vertexarray: Vertexarray):
         if isinstance(vertexarray, Vertexarray):
-            self._vertexarray[self.current_window] = vertexarray
+            self._vertexarray[FBL.get_current_fbl()] = vertexarray
 
     @property
     def vertexbuffer(self):
@@ -117,7 +118,6 @@ class RenderUnit():
     def _draw_(self, func=None):
         # real draw
         if func is None:
-
             # if vertexarray for current context is not built
             if not isinstance(self.vertexarray, Vertexarray):
                 self._build_()
@@ -157,9 +157,8 @@ class RenderUnit():
             func()
 
     def draw_element(self):
-        window = FBL._current
-        viewport = Viewport.get_current()
-        print(window, viewport.name)
+        window = FBL.get_current_fbl()
+        viewport = Viewport.get_current_viewport()
         if UCD.is_any_descriptor_updated(viewport, viewport.camera) or self.shader.properties.is_any_update:
 
             window._flag_something_rendered = True
@@ -167,8 +166,6 @@ class RenderUnit():
             viewport.fillbackground()
             # draw a thing
             if self.indexbuffer.count != 0:
-                print('drawdraw',window,viewport.name)
-                print(viewport.absolute_values)
                 gl.glDrawElements(self.mode, self.indexbuffer.count, self.indexbuffer.gldtype, None)
             # tell window change has been made on framebuffer
             # and should swap it
@@ -194,10 +191,6 @@ class RenderUnit():
         self.flag_run = True
         self.flag_draw = True
 
-    @property
-    def current_window(self):
-        return Window.get_current_window()
-
     def _build_(self):
         print('building render unit')
         if len(self._vertexarray) == 1:
@@ -212,6 +205,7 @@ class RenderUnit():
                 self.vertexbuffer.build()
 
                 self.vertexarray.unbind()
+
 
             if self.indexbuffer is not None:
                 self.indexbuffer.build()
@@ -228,6 +222,7 @@ class RenderUnit():
             self.vertexbuffer.build()
 
             self.vertexarray.unbind()
+
 
     @property
     def name(self):
@@ -272,9 +267,6 @@ class RenderUnit():
                         off = start_off + buffer.itemsize * i
                         element = data[i]
                         size = element.itemsize * element.size
-                        # print(off)
-                        # print(element)
-                        # print(size)
                         gl.glBufferSubData(gl.GL_ARRAY_BUFFER, off, size, element)
             self.vertexbuffer.unbind()
 
@@ -331,7 +323,7 @@ class RenderUnit():
 
         # for assigned uniforms
         # vp = FBL._current
-        vp = Viewport.get_current()
+        vp = Viewport.get_current_viewport()
 
         vm = self.shader.properties['VM']
         matrix = vp.camera.VM

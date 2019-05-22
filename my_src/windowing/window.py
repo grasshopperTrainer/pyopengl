@@ -16,7 +16,6 @@ from .IO_device import *
 from .layers import *
 from .viewport import *
 from .renderer.renderimage import Renderimage
-from .current_framebuffer import Current_framebuffer
 
 from patterns.update_check_descriptor import UCD
 from.frame_buffer_like import FBL
@@ -72,7 +71,7 @@ class Window(FBL):
         from windowing.renderer import BRO
         from windowing.renderer.renderimage import Renderimage
         from windowing.unnamedGUI import mygui
-        from windowing.viewport.testviewport import Viewport
+        from windowing.viewport.viewport import Viewport
         import OpenGL.GL as gl
         import glfw as glfw
 
@@ -80,7 +79,6 @@ class Window(FBL):
 
     _init_global = _global_init
     _windows = _Windows()
-    _current_window = None
 
     _framecount = 0
     _framerate_target = 60
@@ -113,9 +111,9 @@ class Window(FBL):
         return weakref.proxy(self)
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
-        Current_framebuffer.set_current(self)
         self._windows = self.__class__._windows
         # threading.Thread.__init__(self)
+        FBL.set_current_fbl(self)
 
         # save name of instance
         f = inspect.currentframe().f_back
@@ -526,13 +524,11 @@ class Window(FBL):
         # RenderUnit.push_current_window(self)
         glfw.make_context_current(None)
         glfw.make_context_current(self.glfw_window)
-    @classmethod
-    def get_current_window(cls):
-        return cls._current_window
+        # return cls._current_window
 
-    @property
-    def layer(self):
-        return self._layers
+    # @property
+    # def layer(self):
+    #     return self._layers
 
     @property
     def viewports(self):

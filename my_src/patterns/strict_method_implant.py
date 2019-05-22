@@ -52,6 +52,7 @@ class SMI:
                     child_should_arguments[n] = v
 
         mother_dict = dict(filter(lambda x: x[0][:2] != '__', inspect.getmembers(cls)))
+
         def undefined_method_check(source, pool):
             return_list = []
             for n,v in source.items():
@@ -60,7 +61,8 @@ class SMI:
                     return_list.append((n,v[1]))
                 else:
                     if not callable(target):
-                        return_list.append((n,v[1]))
+                        if v[1] is target:
+                            return_list.append((n,v[1]))
                     elif type(v[1]) != type(target):
                         return_list.append((n,v[1]))
             return return_list
@@ -77,7 +79,6 @@ class SMI:
                         return_list.append((n,target))
                     elif target.__name__ == n:
                         return_list.append((n,target))
-
             return return_list
 
         should_methods_undefined = undefined_method_check(child_should_methods, mother_dict)
@@ -90,12 +91,14 @@ class SMI:
         # print(must_methods_undefined)
         # print(should_arguments_undefined)
         # print(must_arguments_undefined)
-        whole_message = ''
+
         # build warning message
-        # for method
+        whole_message = ''
+        # build should message
         if len(should_methods_undefined + should_arguments_undefined) != 0:
             should_header = f'Warning from SMI: (class) {cls.__name__} should have'
 
+            # for method
             should_method_head = f'following methods of mother (class) {child.__name__} overriden:'
             should_method_body = []
             for name, method in should_methods_undefined:
@@ -166,7 +169,7 @@ class SMI:
 
             raise Exception(whole_message)
 
-        # else
+        # if only should just print and continue
         print(whole_message)
 
         self = super().__new__(cls)

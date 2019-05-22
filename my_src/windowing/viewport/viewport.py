@@ -58,12 +58,14 @@ class Viewport:
 
     def open(self, do_clip = True):
         if self._bound_fbl is not None:
-            FBL._current = self._bound_fbl
-        self.__class__._current = self
+            FBL.set_current_fbl(self._bound_fbl)
+        self.set_current_viewport(self)
 
         gl.glViewport(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
         if do_clip:
             gl.glScissor(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
+
+        return self
 
     @property
     def absolute_values(self):
@@ -128,5 +130,9 @@ class Viewport:
         return [self.abs_width, self.abs_height]
 
     @classmethod
-    def get_current(cls):
+    def get_current_viewport(cls):
         return cls._current
+
+    @classmethod
+    def set_current_viewport(cls, vp):
+        cls._current = vp

@@ -3,11 +3,15 @@ from .components.framebuffer import Framebuffer
 from .components.renderbuffer import Renderbuffer
 from .components.texture import Texture_new
 from ..frame_buffer_like import FBL
-from ..viewport.testviewport import Viewport
+from ..viewport.viewport import Viewport
+from patterns.update_check_descriptor import UCD
 
 class Renderimage(FBL):
+    _size = UCD()
+
     def __init__(self, width, height):
-        self._size = [width, height]
+        FBL.set_current_fbl(self)
+        self._size = (width, height)
 
         self._framebuffer = Framebuffer(True)
         self._renderbuffer = Renderbuffer(size=self._size)
