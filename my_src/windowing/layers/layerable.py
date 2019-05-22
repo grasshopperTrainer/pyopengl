@@ -1,6 +1,6 @@
 from patterns.strict_method_implant import SMI
 from ..window import Window
-from ..frame_buffer_like import FBL
+from ..frame_buffer_like.frame_buffer_like_bp import FBL
 
 class Layerable(SMI):
 

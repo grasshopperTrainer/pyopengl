@@ -70,7 +70,7 @@ def init():
 
     gui = mygui.testgui()
 
-    image = Renderimage(500,500)
+    image = Renderable_image(500,500)
     rectangle2 = BRO.Rectangle(pos = [0,0], size=[1000,1000], fillcol=[1,1,1,1])
     rectangle2.draw_texture(image.texture)
 
@@ -82,7 +82,7 @@ def draw():
     if condition:
 
         image.begin()
-        Viewport(-100,-100,500,1000).open().camera.scale(1,1)
+        Viewport(0,0,500,500).open().camera.scale(2,2)
         gl.glClearColor(0,0,1,1)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
         rectangle1.draw()

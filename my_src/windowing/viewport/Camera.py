@@ -1,7 +1,7 @@
 import numpy as np
 
 from patterns.update_check_descriptor import UCD
-from ..frame_buffer_like import FBL
+from ..frame_buffer_like.frame_buffer_like_bp import FBL
 
 class _Camera:
     """

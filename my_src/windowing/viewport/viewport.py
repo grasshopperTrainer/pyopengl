@@ -2,7 +2,7 @@ from patterns.update_check_descriptor import UCD
 import OpenGL.GL as gl
 from .Camera import _Camera
 from collections import namedtuple
-from ..frame_buffer_like import FBL
+from ..frame_buffer_like.frame_buffer_like_bp import FBL
 
 class Viewport:
     _current = None

@@ -131,10 +131,11 @@ class Namespace:
             self._top_namespace = value
 
 class Virtual_scope:
-    def __init__(self):
+    def __init__(self, where):
 
         self._code_dict = {}
         self._ref_vars = []
+        self._where = where
         self._namespaces = Namespace()
 
     def append_scope_byscope(self, scope, position = 0):
@@ -197,7 +198,8 @@ class Virtual_scope:
             vars = obj.__code__.co_varnames
             headbody = prs.split_func_headbody(obj)
             source = headbody[1]
-            filename = prs.search_func_name(headbody[0])
+            filename = inspect.getfile(obj)
+
         elif isinstance(obj, str):
             vars = prs.search_all_variables(obj)
             source = obj
@@ -227,8 +229,25 @@ class Virtual_scope:
         try:
             exec(code)
         except Exception as e:
-            print(e)
-            raise
+            error_type, error, tb = sys.exc_info()
+            while True:
+                if tb.tb_next is None:
+                    if ____._where == inspect.getfile(tb):
+
+                        lineno_replaced = inspect.getsourcelines(obj)[1] + tb.tb_lineno + 1
+                        errored_line = inspect.getsource(obj).splitlines()[tb.tb_lineno + 1]
+
+                        print('Error from virtual_scope')
+                        print(f'File "{filename}", line {lineno_replaced}')
+                        print(errored_line)
+                        print(e)
+                        exit()
+                    else:
+                        raise
+
+                else:
+                    tb = tb.tb_next
+
 
     def compile(self, obj):
         # compiling object is a function

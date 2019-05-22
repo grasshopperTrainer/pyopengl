@@ -13,7 +13,8 @@ class Texture(RenderComponent):
 
 
 class Texture_new(Texture):
-    def __init__(self, width, height):
+
+    def __init__(self, width, height, slot):
         self._size = (width, height)
         self._flag_built = False
 

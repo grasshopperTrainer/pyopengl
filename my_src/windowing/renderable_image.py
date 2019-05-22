@@ -1,19 +1,19 @@
 import OpenGL.GL as gl
-from .components.framebuffer import Framebuffer
-from .components.renderbuffer import Renderbuffer
-from .components.texture import Texture_new
-from ..frame_buffer_like import FBL
-from ..viewport.viewport import Viewport
+from windowing.renderer.components.framebuffer import Framebuffer
+from windowing.renderer.components.renderbuffer import Renderbuffer
+from windowing.renderer.components.texture import Texture_new
+from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
+from windowing.viewport.viewport import Viewport
 from patterns.update_check_descriptor import UCD
 
-class Renderimage(FBL):
+class Renderable_image(FBL):
     _size = UCD()
     def __init__(self, width, height):
         self._size = [width, height]
 
         self._framebuffer = Framebuffer(True)
         self._renderbuffer = Renderbuffer(size=self._size)
-        self._texture = Texture_new(*self._size)
+        self._texture = Texture_new(*self._size, slot= 0)
 
         self._default_viewport = Viewport(0,0,width,height)
 

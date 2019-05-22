@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8845630d-f53b-42f1-9947-fe08a9c9effb" name="Default Changelist" comment="1. revised patter.UCD&#10;It works but not sure whether this is nescessary or comprehensive.&#10;&#10;2. revised patter.SMI&#10;Think this is useful(temporal thought)&#10;&#10;3. general code cleaning&#10;&#10;&#10;...next&#10;Rendering image is initiated so&#10;&#10;1.go back to GUI building and&#10;&#10;2.implement mouse cursor collision.&#10;&#10;2019/05/22&#10;following commit 2d8d033ffae85ceea355474dae12633eb035df04">
+    <list default="true" id="8845630d-f53b-42f1-9947-fe08a9c9effb" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/patterns/strict_method_implant.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/patterns/strict_method_implant.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/frame_buffer_like.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/frame_buffer_like.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/frame_buffer_like.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/layers/layerable.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/layers/layerable.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/renderable.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/renderable.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/renderimage.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/renderimage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/render_unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/render_unit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/renderimage.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderable_image.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/viewport/Camera.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/viewport/Camera.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/viewport/testviewport.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/viewport/testviewport.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/viewport/viewport.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/viewport/viewport.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/window.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/window.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/PIL/JpegImagePlugin.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/PIL/JpegImagePlugin.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/src/trash/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -26,97 +26,116 @@
     <favorites_list name="pyopengl" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5">
-      <split-first>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/main.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1190">
-                  <caret line="87" column="25" selection-start-line="87" selection-start-column="25" selection-end-line="87" selection-end-column="25" />
-                  <folding>
-                    <element signature="e#0#35#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/my_src/patterns/strict_method_implant.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="59">
-                  <caret line="25" lean-forward="true" selection-start-line="25" selection-end-line="25" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="5012">
-                  <caret line="379" column="48" selection-start-line="379" selection-start-column="48" selection-end-line="379" selection-end-column="48" />
-                  <folding>
-                    <element signature="e#0#16#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/Camera.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="3472">
-                  <caret line="250" selection-start-line="250" selection-end-line="250" />
-                  <folding>
-                    <element signature="e#0#18#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-first>
-      <split-second>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/error.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="3234">
-                  <caret line="231" selection-start-line="231" selection-end-line="231" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/platform/baseplatform.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="157">
-                  <caret line="355" column="18" lean-forward="true" selection-start-line="355" selection-start-column="18" selection-end-line="355" selection-end-column="18" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/latebind.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="616">
-                  <caret line="44" selection-start-line="44" selection-end-line="44" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/vertexbuffer.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="294">
-                  <caret line="24" column="50" selection-start-line="24" selection-start-column="50" selection-end-line="24" selection-end-column="50" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-second>
-    </splitter>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/main.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="126">
+              <caret line="9" column="14" selection-start-line="9" selection-start-column="14" selection-end-line="9" selection-end-column="14" />
+              <folding>
+                <element signature="e#0#35#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewports.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="308">
+              <caret line="25" column="24" lean-forward="true" selection-start-line="25" selection-start-column="24" selection-end-line="25" selection-end-column="24" />
+              <folding>
+                <element signature="e#0#26#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewport.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="56">
+              <caret line="4" column="25" selection-start-line="4" selection-start-column="25" selection-end-line="4" selection-end-column="25" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/render_unit.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="84">
+              <caret line="6" column="25" selection-start-line="6" selection-start-column="25" selection-end-line="6" selection-end-column="25" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="266">
+              <caret line="22" column="35" selection-start-line="22" selection-start-column="35" selection-end-line="22" selection-end-column="35" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/traceback.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="295">
+              <caret line="104" column="38" lean-forward="true" selection-start-line="100" selection-start-column="4" selection-end-line="104" selection-end-column="38" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="29">
+              <caret line="230" column="28" selection-start-line="230" selection-start-column="28" selection-end-line="230" selection-end-column="28" />
+              <folding>
+                <element signature="e#0#14#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/inspect.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="239">
+              <caret line="775" column="31" selection-start-line="775" selection-start-column="31" selection-end-line="775" selection-end-column="31" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/my_src/windowing/renderable_image.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="127">
+              <caret line="15" selection-start-line="15" selection-end-line="15" />
+              <folding>
+                <element signature="e#0#22#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="127">
+              <caret line="356" selection-start-line="356" selection-end-line="356" />
+              <folding>
+                <element signature="e#0#16#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -127,7 +146,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>py</find>
       <find>glfw</find>
       <find>property</find>
       <find>Properties</find>
@@ -155,6 +173,9 @@
       <find>pirnt</find>
       <find>v</find>
       <find>print</find>
+      <find>exc</find>
+      <find>exception</find>
+      <find>file</find>
     </findStrings>
     <dirStrings>
       <dir>C:\Users\dingo\PycharmProjects\pyopengl\vend_src\numpy</dir>
@@ -172,10 +193,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/my_src/windowing/renderUnit/renderunit.py" />
-        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/viewport/update_check_descriptor.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/GUI/imgui.py" />
         <option value="$PROJECT_DIR$/my_src/GUI_builder/ddd.py" />
         <option value="$PROJECT_DIR$/my_src/patterns/store_instances_dict.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py" />
@@ -197,7 +214,6 @@
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/texture_new.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/texture_load.py" />
         <option value="$PROJECT_DIR$/my_src/patterns/multiple_initiation.py" />
-        <option value="$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/__init__.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/renderbuffer.py" />
         <option value="$PROJECT_DIR$/my_src/patterns/multiple_constructors.py" />
@@ -205,24 +221,29 @@
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/properties.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/framebuffer.py" />
         <option value="$PROJECT_DIR$/res/shader/BRO_rectangle.glsl" />
-        <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/current_window.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/viewport/current_viewport.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/current_framebuffer.py" />
         <option value="$PROJECT_DIR$/tester.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/viewport/viewports.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/frame_buffer_like.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/renderer/renderimage.py" />
-        <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/window.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/viewport/testviewport.py" />
         <option value="$PROJECT_DIR$/vend_src/OpenGL/raw/GL/ARB/viewport_array.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/renderable.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/BRO/rectangle.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/layers/layerable.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/viewport/Camera.py" />
         <option value="$PROJECT_DIR$/my_src/patterns/strict_method_implant.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/viewport/Camera.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/viewport/viewport.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/layers/layerable.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/render_unit.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/renderimage.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/renderimage.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/window.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/window.py" />
+        <option value="$PROJECT_DIR$/main.py" />
+        <option value="$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py" />
       </list>
     </option>
   </component>
@@ -267,6 +288,20 @@
             <path>
               <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
               <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
+              <item name="my_src" type="462c0819:PsiDirectoryNode" />
+              <item name="windowing" type="462c0819:PsiDirectoryNode" />
+              <item name="frame_buffer_like" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
+              <item name="my_src" type="462c0819:PsiDirectoryNode" />
+              <item name="windowing" type="462c0819:PsiDirectoryNode" />
+              <item name="renderer" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
               <item name="res" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -295,11 +330,11 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\dingo\PycharmProjects\pyopengl\my_src\windowing" />
+      <recent name="C:\Users\dingo\PycharmProjects\pyopengl\my_src\windowing\frame_buffer_like" />
       <recent name="C:\Users\dingo\PycharmProjects\pyopengl\my_src\windowing\renderer" />
       <recent name="C:\Users\dingo\PycharmProjects\pyopengl" />
       <recent name="C:\Users\dingo\PycharmProjects\pyopengl\my_src\patterns" />
-      <recent name="C:\Users\dingo\PycharmProjects\pyopengl\my_src\windowing" />
-      <recent name="C:\Users\dingo\PycharmProjects\pyopengl\src\vend" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -378,27 +413,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="tester" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="pyopengl" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tester.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="texture" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="pyopengl" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -420,20 +434,41 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="virtual_scope" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="pyopengl" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/my_src/virtual_scope" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python.main" />
-      <item itemvalue="Python.tester" />
       <item itemvalue="Python.box" />
       <item itemvalue="Python.multiple_initiation" />
       <item itemvalue="Python.texture" />
+      <item itemvalue="Python.virtual_scope" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.virtual_scope" />
         <item itemvalue="Python.texture" />
         <item itemvalue="Python.multiple_initiation" />
         <item itemvalue="Python.box" />
-        <item itemvalue="Python.tester" />
       </list>
     </recent_temporary>
   </component>
@@ -504,7 +539,21 @@
       <option name="project" value="LOCAL" />
       <updated>1558513266416</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="1. revised patter.UCD&#10;It works but not sure whether this is nescessary or comprehensive.&#10;&#10;2. revised patter.SMI&#10;Think this is useful(temporal thought)&#10;&#10;3. general code cleaning&#10;&#10;&#10;...next&#10;Rendering image is initiated so&#10;&#10;1.go back to GUI building and&#10;&#10;2.implement mouse cursor collision.&#10;&#10;2019/05/22&#10;following commit 2d8d033ffae85ceea355474dae12633eb035df04">
+      <created>1558513492479</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1558513492479</updated>
+    </task>
+    <task id="LOCAL-00010" summary="1. revised patter.UCD&#10;It works but not sure whether this is nescessary or comprehensive.&#10;&#10;2. revised patter.SMI&#10;Think this is useful(temporal thought)&#10;&#10;3. general code cleaning&#10;&#10;&#10;...next&#10;Rendering image is initiated so&#10;&#10;1.go back to GUI building and&#10;&#10;2.implement mouse cursor collision.&#10;&#10;2019/05/22&#10;following commit 2d8d033ffae85ceea355474dae12633eb035df04">
+      <created>1558514461292</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1558514461292</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TodoView">
@@ -520,19 +569,19 @@
     <frame x="-7" y="-7" width="1381" height="885" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4989899" weight="0.2494432" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4989899" visible="true" weight="0.2494432" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" sideWeight="0.5010101" side_tool="true" weight="0.2494432" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32980132" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4996288" visible="true" weight="0.14172186" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4988864" visible="true" weight="0.42781457" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32980132" />
-      <window_info anchor="bottom" id="Version Control" order="7" weight="0.3231788" />
+      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.4988864" weight="0.3231788" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.5536424" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5003712" side_tool="true" weight="0.5152318" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5011136" side_tool="true" weight="0.42781457" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32980132" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -626,50 +675,10 @@
           <url>file://$PROJECT_DIR$/main.py</url>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main.py</url>
-          <line>84</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/mygui.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="84">
-          <caret line="7" column="13" selection-start-line="7" selection-start-column="13" selection-end-line="7" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/indexbuffer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="37" column="16" selection-start-line="37" selection-start-column="16" selection-end-line="37" selection-end-column="16" />
-          <folding>
-            <element signature="e#0#26#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/wrapper.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="148">
-          <caret line="870" selection-start-line="870" selection-end-line="870" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/texture_new.py" />
-    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/test.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="46" selection-start-column="46" selection-end-column="46" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/raw/EGL/KHR/gl_renderbuffer_image.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -757,16 +766,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="31" column="82" selection-start-line="31" selection-start-column="82" selection-end-line="31" selection-end-column="82" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/res/shader/sample.glsl">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="294">
@@ -805,23 +804,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/inspect.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="148">
-          <caret line="341" selection-start-line="341" selection-end-line="341" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="148">
-          <caret line="267" selection-start-line="267" selection-end-line="267" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/res/shader/BRO_rectangle.glsl">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="441">
@@ -848,50 +830,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/raw/EGL/KHR/image.py">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/renderimage.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="112">
-          <caret line="8" column="12" lean-forward="true" selection-start-line="8" selection-start-column="12" selection-end-line="8" selection-end-column="12" />
-          <folding>
-            <element signature="e#0#22#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/layers/layers.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="34" column="8" selection-start-line="34" selection-start-column="8" selection-end-line="34" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="99" column="19" selection-start-line="99" selection-start-column="19" selection-end-line="99" selection-end-column="19" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewports.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="19" column="49" selection-start-line="19" selection-start-column="49" selection-end-line="19" selection-end-column="49" />
-          <folding>
-            <element signature="e#0#26#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/frame_buffer_like.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="22">
-          <caret line="20" lean-forward="true" selection-start-line="20" selection-end-line="20" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/renderable.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -922,6 +860,73 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/rectangle.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="42">
+          <caret line="3" lean-forward="true" selection-start-line="3" selection-end-line="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/patterns/strict_method_implant.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="672">
+          <caret line="48" column="37" lean-forward="true" selection-start-line="48" selection-start-column="37" selection-end-line="48" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/platform/baseplatform.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2663">
+          <caret line="351" column="9" selection-start-line="351" selection-start-column="9" selection-end-line="351" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/error.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="231" selection-start-line="231" selection-end-line="231" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/latebind.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="133">
+          <caret line="44" selection-start-line="44" selection-end-line="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/vertexbuffer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="24" column="50" selection-start-line="24" selection-start-column="50" selection-end-line="24" selection-end-column="50" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="126">
+          <caret line="9" lean-forward="true" selection-start-line="9" selection-end-line="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/builder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#42#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/patterns/tester.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#48#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/basic_render_object.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="56">
@@ -932,85 +937,125 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/rectangle.py">
+    <entry file="file://$PROJECT_DIR$/my_src/patterns/update_check_descriptor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="42">
-          <caret line="3" lean-forward="true" selection-start-line="3" selection-end-line="3" />
+        <state relative-caret-position="304">
+          <caret line="89" column="63" lean-forward="true" selection-start-line="89" selection-start-column="63" selection-end-line="89" selection-end-column="63" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/layers/layers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="476">
+          <caret line="34" column="8" selection-start-line="34" selection-start-column="8" selection-end-line="34" selection-end-column="8" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/layers/layerable.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="241">
-          <caret line="21" lean-forward="true" selection-start-line="21" selection-end-line="21" />
+        <state relative-caret-position="14">
+          <caret line="2" column="25" selection-start-line="2" selection-start-column="25" selection-end-line="2" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/Camera.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="42">
+          <caret line="3" column="25" selection-start-line="3" selection-start-column="25" selection-end-line="3" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/inspect.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="239">
+          <caret line="775" column="31" selection-start-line="775" selection-start-column="31" selection-end-line="775" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/traceback.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="295">
+          <caret line="104" column="38" lean-forward="true" selection-start-line="100" selection-start-column="4" selection-end-line="104" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/texture.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="266">
+          <caret line="22" column="35" selection-start-line="22" selection-start-column="35" selection-end-line="22" selection-end-column="35" />
           <folding>
-            <element signature="e#0#46#0" expanded="true" />
+            <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
+    <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/GL/EXT/texture.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/render_unit.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1190">
-          <caret line="87" column="25" selection-start-line="87" selection-start-column="25" selection-end-line="87" selection-end-column="25" />
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="84">
+          <caret line="6" column="25" selection-start-line="6" selection-start-column="25" selection-end-line="6" selection-end-column="25" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5012">
-          <caret line="379" column="48" selection-start-line="379" selection-start-column="48" selection-end-line="379" selection-end-column="48" />
+        <state relative-caret-position="127">
+          <caret line="356" selection-start-line="356" selection-end-line="356" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/Camera.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewport.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3472">
-          <caret line="250" selection-start-line="250" selection-end-line="250" />
+        <state relative-caret-position="56">
+          <caret line="4" column="25" selection-start-line="4" selection-start-column="25" selection-end-line="4" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewports.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="308">
+          <caret line="25" column="24" lean-forward="true" selection-start-line="25" selection-start-column="24" selection-end-line="25" selection-end-column="24" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#0#26#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/error.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderable_image.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3234">
-          <caret line="231" selection-start-line="231" selection-end-line="231" />
+        <state relative-caret-position="127">
+          <caret line="15" selection-start-line="15" selection-end-line="15" />
+          <folding>
+            <element signature="e#0#22#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/latebind.py">
+    <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="616">
-          <caret line="44" selection-start-line="44" selection-end-line="44" />
+        <state relative-caret-position="126">
+          <caret line="9" column="14" selection-start-line="9" selection-start-column="14" selection-end-line="9" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/vertexbuffer.py">
+    <entry file="file://$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="294">
-          <caret line="24" column="50" selection-start-line="24" selection-start-column="50" selection-end-line="24" selection-end-column="50" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/patterns/strict_method_implant.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="59">
-          <caret line="25" lean-forward="true" selection-start-line="25" selection-end-line="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/platform/baseplatform.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="157">
-          <caret line="355" column="18" lean-forward="true" selection-start-line="355" selection-start-column="18" selection-end-line="355" selection-end-column="18" />
+        <state relative-caret-position="29">
+          <caret line="230" column="28" selection-start-line="230" selection-start-column="28" selection-end-line="230" selection-end-column="28" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

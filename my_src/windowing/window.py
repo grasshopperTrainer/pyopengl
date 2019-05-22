@@ -17,7 +17,7 @@ from .layers import *
 from .viewport import *
 
 from patterns.update_check_descriptor import UCD
-from.frame_buffer_like import FBL
+from .frame_buffer_like.frame_buffer_like_bp import FBL
 
 
 
@@ -68,7 +68,7 @@ class Window(FBL):
     def _global_init():
         import numpy as np
         from windowing.renderer import BRO
-        from windowing.renderer.renderimage import Renderimage
+        from windowing.renderable_image import Renderable_image
         from windowing.unnamedGUI import mygui
         from windowing.viewport.viewport import Viewport
         import OpenGL.GL as gl
@@ -162,7 +162,8 @@ class Window(FBL):
 
         self._draw_func = None
         self._init_func = None
-        self._context_scope = Virtual_scope()
+
+        self._context_scope = Virtual_scope(inspect.getfile(inspect.currentframe().f_back.f_back))
 
         #enable inputs
         self._keyboard = Keyboard(self)
@@ -354,7 +355,6 @@ class Window(FBL):
 
             if window.init_func is not None:
                 window._context_scope.append_scope(window.init_func)
-
 
 
         timer = Timer(cls._framerate_target,'single thread')
