@@ -32,9 +32,9 @@ class _Layer:
 
 class Layers:
 
-    def __init__(self, window):
+    def __init__(self, fbl):
         self._layers = {'default': _Layer()}
-        self._window = window
+        self._window = fbl
 
     def __getitem__(self, item) -> _Layer:
         if isinstance(item, str):

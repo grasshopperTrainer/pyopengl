@@ -1,5 +1,5 @@
 from windowing.layers.layerable import Layerable
-from windowing.renderer.renderable import RenderUnit
+from windowing.renderer.render_unit import RenderUnit
 
 
 class BasicRenderObject(Layerable, RenderUnit):
