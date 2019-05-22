@@ -15,8 +15,6 @@ from virtual_scope import *
 from .IO_device import *
 from .layers import *
 from .viewport import *
-from .renderer.renderimage import Renderimage
-from .current_framebuffer import Current_framebuffer
 
 from patterns.update_check_descriptor import UCD
 from.frame_buffer_like import FBL
@@ -72,7 +70,7 @@ class Window(FBL):
         from windowing.renderer import BRO
         from windowing.renderer.renderimage import Renderimage
         from windowing.unnamedGUI import mygui
-        from windowing.viewport.testviewport import Viewport
+        from windowing.viewport.viewport import Viewport
         import OpenGL.GL as gl
         import glfw as glfw
 

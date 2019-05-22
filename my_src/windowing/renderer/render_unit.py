@@ -5,7 +5,7 @@ from .components import *
 from patterns.update_check_descriptor import UCD
 from ..window import Window
 from ..frame_buffer_like import FBL
-from ..viewport.testviewport import Viewport
+from ..viewport.viewports import Viewport
 import numpy as np
 
 class RenderUnit():
