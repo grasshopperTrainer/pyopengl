@@ -131,12 +131,13 @@ class Namespace:
             self._top_namespace = value
 
 class Virtual_scope:
-    def __init__(self, where):
+    def __init__(self, executing_filepath):
 
         self._code_dict = {}
         self._ref_vars = []
-        self._where = where
+        self._where = executing_filepath
         self._namespaces = Namespace()
+
 
     def append_scope_byscope(self, scope, position = 0):
         if position == 0:
@@ -232,8 +233,8 @@ class Virtual_scope:
             error_type, error, tb = sys.exc_info()
             while True:
                 if tb.tb_next is None:
-                    if ____._where == inspect.getfile(tb):
-
+                    # if ____._where == inspect.getfile(tb):
+                    try:
                         lineno_replaced = inspect.getsourcelines(obj)[1] + tb.tb_lineno + 1
                         errored_line = inspect.getsource(obj).splitlines()[tb.tb_lineno + 1]
 
@@ -242,8 +243,9 @@ class Virtual_scope:
                         print(errored_line)
                         print(e)
                         exit()
-                    else:
-                        raise
+                    except:
+                        traceback.print_exception(error_type,error, tb)
+                        exit()
 
                 else:
                     tb = tb.tb_next

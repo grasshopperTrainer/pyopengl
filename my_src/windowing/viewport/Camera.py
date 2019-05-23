@@ -42,62 +42,32 @@ class _Camera:
         self.VM = np.eye(4)
 
 
-    def move(self, value, x, y, z):
+    def move(self, x, y, z):
         # move camera
-        if not isinstance(value, (tuple, list)):
-            value = [-value, ] * 3
-        else:
-            value = [-i for i in value]
-
-        x, y, z = [bool(i) for i in [x, y, z]]
-        if len(value) < sum([x, y, z]):
-            raise ValueError('insufficient number of input')
-
         matrix = np.eye(4)
-        vx, vy, vz = 0, 0, 0
-        if x:
-            vx = value.pop(0)
-        if y:
-            vy = value.pop(0)
-        if z:
-            vz = value.pop(0)
-
-        matrix[:, 3] = vx, vy, vz, 1
+        matrix[:, 3] = -x, -y, -z, 1
         self.VM = matrix.dot(self.VM)
 
-    def rotate(self, angle, x, y, z, radian=False):
-        if not isinstance(angle, (list, tuple)):
-            angle = [angle, ] * 3
-
-        if radian:
-            angle = [-a for a in angle]
-        else:
-            angle = [np.radians(-a) for a in angle]
-
-        x, y, z = [bool(i) for i in [x, y, z]]
-        if len(angle) < sum([x, y, z]):
-            raise ValueError('insufficient number of input')
+    def rotate(self, x, y, z, radian=False):
+        if not radian:
+           x, y, z = [np.radians(-i) for i in [x,y,z]]
 
         matrix = np.eye(4)
-        if x:
-            new = np.eye(4)
-            a = angle.pop(0)
-            new[1] = 0, np.cos(a), -np.sin(a), 0
-            new[2] = 0, np.sin(a), np.cos(a), 0
-            matrix = new.dot(matrix)
 
-        if y:
+        if x != 0:
             new = np.eye(4)
-            a = angle.pop(0)
-            new[0] = np.cos(a), 0, np.sin(a), 0
-            new[2] = -np.sin(a), 0, np.cos(a), 0
+            new[1] = 0, np.cos(x), -np.sin(x), 0
+            new[2] = 0, np.sin(x), np.cos(x), 0
             matrix = new.dot(matrix)
-
-        if z:
+        if y != 0:
             new = np.eye(4)
-            a = angle.pop(0)
-            new[0] = np.cos(a), -np.sin(a), 0, 0
-            new[1] = np.sin(a), np.cos(a), 0, 0
+            new[0] = np.cos(y), 0, np.sin(y), 0
+            new[2] = -np.sin(y), 0, np.cos(y), 0
+            matrix = new.dot(matrix)
+        if z != 0:
+            new = np.eye(4)
+            new[0] = np.cos(z), -np.sin(z), 0, 0
+            new[1] = np.sin(z), np.cos(z), 0, 0
             matrix = new.dot(matrix)
 
         self.VM = matrix.dot(self.VM)

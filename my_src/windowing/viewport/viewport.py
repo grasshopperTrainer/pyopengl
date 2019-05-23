@@ -47,6 +47,8 @@ class Viewport:
         self._flag_clear = None
         self._clear_color = None
 
+        self.set_current(self)
+
     def clear(self, *color):
         # if clear is called, save clear color
         if len(color) == 4:

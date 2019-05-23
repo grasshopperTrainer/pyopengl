@@ -6,11 +6,12 @@ from .component_bp import RenderComponent
 
 class Vertexbuffer(RenderComponent):
 
-    def __init__(self, glusage=GL_DYNAMIC_DRAW):
+    def __init__(self, glusage=GL_DYNAMIC_DRAW, data = None):
 
         if glusage is None:
             glusage = GL_DYNAMIC_DRAW
         self._glusage = glusage
+        self._data = data
 
         self.flag_firstbuild = True
 
@@ -26,25 +27,35 @@ class Vertexbuffer(RenderComponent):
         self.unbind()
         print('-vertex buffer built')
 
-    def set_attribpointer(self, buffer):
-        datasize = buffer.size * buffer.itemsize
+    def set_attribpointer(self, buffer_data):
+        """
+        This is called after binding VertexArrayObject to bind layout? with VAO.
+        Thus is not run in self.build stage and separated.
+
+        :param buffer_data: data to insert
+        :return:
+        """
+        if self._data is not None:
+            raise
+
+        datasize = buffer_data.size * buffer_data.itemsize
 
         # TODO glusage resetting needed?
 
-        glBufferData(GL_ARRAY_BUFFER, datasize, buffer, self._glusage)
+        glBufferData(GL_ARRAY_BUFFER, datasize, buffer_data, self._glusage)
 
         # set attribute
         # when not constructed dtype
-        if buffer.dtype.fields is None:
-            type = self._dtype_to_gltype(buffer.dtype)
-            stride = buffer.itemsize
+        if buffer_data.dtype.fields is None:
+            type = self._dtype_to_gltype(buffer_data.dtype)
+            stride = buffer_data.itemsize
             offset = ctypes.c_void_p(0)
             glEnableVertexAttribArray(0)
             glVertexAttribPointer(0, 1, type, GL_FALSE, stride, offset)
 
         # when using constructed dtype
         else:
-            f = buffer.dtype.fields
+            f = buffer_data.dtype.fields
             num_attributes = len(f)
             dtypes = list(f.values())
             offsets = [i[1] for i in dtypes]

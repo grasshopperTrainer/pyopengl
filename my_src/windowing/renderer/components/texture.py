@@ -17,6 +17,7 @@ class Texture_new(Texture):
     def __init__(self, width, height, slot):
         self._size = (width, height)
         self._flag_built = False
+        self._slot = slot
 
     def build(self):
         if not self._flag_built:
@@ -49,7 +50,7 @@ class Texture_new(Texture):
 
     def bind(self):
         print('this is new texture', self._glindex)
-        gl.glActiveTexture(gl.GL_TEXTURE0)
+        gl.glActiveTexture(gl.GL_TEXTURE0 + self._slot)
         gl.glBindTexture(gl.GL_TEXTURE_2D, self._glindex)
 
     def unbind(self):
@@ -78,7 +79,7 @@ class Texture_load(Texture):
         self.image = None  # type: Image.Image
         if slot is None:
             slot = 0
-        self.slot = slot
+        self._slot = slot
 
         self._glindex = None
         self._flag_built = False
@@ -140,7 +141,7 @@ class Texture_load(Texture):
             self.unbind()
 
     def bind(self):
-        gl.glActiveTexture(gl.GL_TEXTURE0 + self.slot)
+        gl.glActiveTexture(gl.GL_TEXTURE0 + self._slot)
         gl.glBindTexture(gl.GL_TEXTURE_2D, self._glindex)
 
     def unbind(self):

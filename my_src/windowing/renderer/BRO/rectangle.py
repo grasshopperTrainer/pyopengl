@@ -13,26 +13,28 @@ class Rectangle(BasicRenderObject):
         self._edgecol = edgecol
         self._edgeweight = edgeweight
 
-        self._rect = RenderUnit()
+        r = RenderUnit()
+        self._renderer = r
+        self._renderer.move(self._pos[0], self._pos[1], 0)
 
-        self._build_()
+        r.use_shader(r.components.Shader('BRO_rectangle', 'a Rectangle object'))
+        r.use_vertexbuffer()
+        r.use_indexbuffer()
+        r.property['a_texCoord'][0:4] = [0, 0], [1, 0], [1, 1], [0, 1]
+        r.property['texSlot'] = 0
 
-    def _build_(self):
-        self._rect.bind_shader(file_name='BRO_rectangle')
-        self._rect.bind_indexbuffer(glusage=self._rect.GL_DYNAMIC_DRAW)
-        self._rect.bind_vertexbuffer(glusage=self._rect.GL_DYNAMIC_DRAW)
-        self._rect.property['a_texCoord'][0:4] = [0,0],[1,0],[1,1],[0,1]
-        self._rect.property['texSlot'] = 0
+    def draw(self):
+        self._draw_()
 
     def _draw_(self):
-        self._rect.property['u_size'] = self._size
-        self._rect.property['a_position'][0:4] = self.vertex
-        self._rect.property['u_edgeweight'] = self.edgeweight
-        self._rect.property['u_fillcol'] = self.fillcol
-        self._rect.property['u_edgecol'] = self.edgecol
+        self._renderer.property['u_size'] = self._size
+        self._renderer.property['a_position'][0:4] = self.vertex
+        self._renderer.property['u_edgeweight'] = self.edgeweight
+        self._renderer.property['u_fillcol'] = self.fillcol
+        self._renderer.property['u_edgecol'] = self.edgecol
         # global updates
 
-        self._rect.draw()
+        self._renderer._draw_()
 
     def _hide_(self):
         pass
@@ -43,8 +45,8 @@ class Rectangle(BasicRenderObject):
     @property
     def vertex(self):
         off = self.edgeweight / 2
-        a = np.array((-off, -off))
 
+        a = np.array((-off, -off))
         b = np.array((self._size[0] + off, -off))
         c = self._size + off
         d = np.array((-off, self._size[1] + off))
@@ -55,6 +57,7 @@ class Rectangle(BasicRenderObject):
         if self._fillcol is None:
             return super().DEF_FILL_COLOR
         return self._fillcol
+
     @property
     def edgecol(self):
         if self._edgecol is None:
@@ -66,13 +69,13 @@ class Rectangle(BasicRenderObject):
             return super().DEF_EDGE_WEIGHT
         return self._edgeweight
 
-    def draw_texture(self, texture):
+    def render_texture(self, texture):
         if isinstance(texture, str):
-            self._rect.bind_texture(texture)
+            self._renderer.bind_texture(texture)
 
         elif isinstance(texture, Texture):
-            self._rect.texture = texture
-            self._rect.property['useTexture'] = True
+            self._renderer.texture = texture
+            self._renderer.property['useTexture'] = True
 
         else:
             raise TypeError

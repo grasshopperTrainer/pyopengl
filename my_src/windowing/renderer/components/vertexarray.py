@@ -4,7 +4,7 @@ from .component_bp import RenderComponent
 
 class Vertexarray(RenderComponent):
 
-    def __init__(self, init_sign):
+    def __init__(self):
         self._glindex = None
 
     def build(self):

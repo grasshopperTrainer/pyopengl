@@ -13,7 +13,7 @@ class Renderable_image(FBL):
 
         self._framebuffer = Framebuffer(True)
         self._renderbuffer = Renderbuffer(size=self._size)
-        self._texture = Texture_new(*self._size, slot= 0)
+        self._texture = Texture_new(*self._size, slot=0)
 
         self._default_viewport = Viewport(0,0,width,height)
 

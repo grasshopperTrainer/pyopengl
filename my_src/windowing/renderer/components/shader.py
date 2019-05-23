@@ -25,6 +25,7 @@ class Shader(RenderComponent):
 
         # 1. create program
         self._glindex = glCreateProgram()
+
         # 2. load external glsl
         # 3. read attributes and unifroms from shaders
         att_uni = self._load_parse_glsl()
@@ -203,4 +204,4 @@ class Shader(RenderComponent):
         return self._properties
 
     def __str__(self):
-        return self._name
+        return f"Shader object named: '{self._name}', glindex: {self._glindex}"

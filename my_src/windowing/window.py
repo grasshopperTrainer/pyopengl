@@ -163,7 +163,8 @@ class Window(FBL):
         self._draw_func = None
         self._init_func = None
 
-        self._context_scope = Virtual_scope(inspect.getfile(inspect.currentframe().f_back.f_back))
+        path = inspect.getfile(inspect.currentframe().f_back.f_back)
+        self._context_scope = Virtual_scope(executing_filepath=path)
 
         #enable inputs
         self._keyboard = Keyboard(self)
@@ -380,8 +381,8 @@ class Window(FBL):
                     viewports = window.viewports._viewports
 
                     # UCD.reset_instance_descriptors_update(window)
-                    # UCD.reset_instance_descriptors_update(*viewports.values())
-                    # UCD.reset_instance_descriptors_update(*[v.camera for v in viewports.values()])
+                    UCD.reset_instance_descriptors_update(*viewports.values())
+                    UCD.reset_instance_descriptors_update(*[v.camera for v in viewports.values()])
                     window.mouse.reset()
 
                 glfw.poll_events()

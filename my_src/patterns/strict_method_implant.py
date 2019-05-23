@@ -56,15 +56,36 @@ class SMI:
         def undefined_method_check(source, pool):
             return_list = []
             for n, v in source.items():
-                target = pool[n]
-                if v is target:
-                    return_list.append((n, v[1]))
-                else:
-                    if not callable(target):
-                        if v[1] is target:
-                            return_list.append((n, v[1]))
-                    elif type(v[1]) != type(target):
+                # target = pool[n]
+                # if overriden is at the vary last of MRO
+
+                # if v is target:
+                #     return_list.append((n, v[1]))
+                # else:
+                # if its not detected gonna look through whole mro
+                for clas in cls.__mro__:
+                    if clas == SMI:
+                        # if searching reached SMI itself means that target is not overriden
+                        # so append to the list and exit searching
                         return_list.append((n, v[1]))
+                        break
+                    else:
+                        if n in clas.__dict__:
+                            # if same name is detected check if its overriden
+                            target = clas.__dict__[n]
+                            if type(target) == type(v[1]):
+                                if v[1] != clas.__dict__[n]:
+                                    # if overriden exit search
+                                    break
+                            else:
+                                return_list.append((n, v[1]))
+                                break
+
+                    # if not callable(target):
+                    #     if v[1] is target:
+                    #         return_list.append((n, v[1]))
+                    # elif type(v[1]) != type(target):
+                    #     return_list.append((n, v[1]))
             return return_list
 
         def undefined_argument_check(source, pool):
@@ -77,8 +98,9 @@ class SMI:
 
                     if isinstance(target, property):
                         return_list.append((n, target))
-                    elif target.__name__ == n:
+                    elif callable(target):
                         return_list.append((n, target))
+
             return return_list
 
         should_methods_undefined = undefined_method_check(child_should_methods, mother_dict)
@@ -96,7 +118,7 @@ class SMI:
         whole_message = ''
         # build should message
         if len(should_methods_undefined + should_arguments_undefined) != 0:
-            should_header = f'Warning from SMI: (class) {cls.__name__} should have'
+            should_header = f'Warning from SMI: (class) {cls.__name__} MRO should have'
 
             # for method
             should_method_head = f'following methods of mother (class) {child.__name__} overriden:'
@@ -133,7 +155,7 @@ class SMI:
 
         # build must message
         if len(must_methods_undefined + must_arguments_undefined) != 0:
-            must_header = f'Error from SMI: (class) {cls.__name__} must have'
+            must_header = f'Error from SMI: (class) {cls.__name__} MRO must have'
 
             must_method_head = f'following methods of mother(class) {child.__name__} overriden:'
             must_method_body = []

@@ -2,14 +2,14 @@ import numpy as np
 from OpenGL.GL import *
 
 class RenderComponent:
-    def __new__(cls, *args, **kwargs):
-        if len(args) + len(kwargs) == 0:
-            ins = super().__new__(RenderComponent)
-            # ins.__init__()
-            return ins
-        else:
-            ins = super().__new__(cls)
-            return ins
+    # def __new__(cls, *args, **kwargs):
+    #     if len(args) + len(kwargs) == 0:
+    #         ins = super().__new__(RenderComponent)
+    #         # ins.__init__()
+    #         return ins
+    #     else:
+    #         ins = super().__new__(cls)
+    #         return ins
 
 
     def build(self):

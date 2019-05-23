@@ -1,14 +1,19 @@
 import glfw
 import OpenGL.GL as gl
+from OpenGL.error import Error
 
 from .components import *
+from ..renderer import components
+components
+
 from patterns.update_check_descriptor import UCD
 from ..window import Window
 from ..frame_buffer_like.frame_buffer_like_bp import FBL
 from ..viewport.viewports import Viewport
+
 import numpy as np
 
-class RenderUnit():
+class RenderUnit:
     """
     Pattern sould be determined:
     1. Renderer instance contain only one shader
@@ -23,13 +28,14 @@ class RenderUnit():
     GL_DYNAMIC_DRAW = gl.GL_DYNAMIC_DRAW
 
     def __init__(self, name: str = None):
-        self._shader = Shader()
+        self._shader = RenderComponent()
 
         self._vertexarray = {}
-        self._vertexbuffer = Vertexbuffer()
-        self._indexbuffer = Indexbuffer()
-        self._texture = Texture()
+        self._vertexbuffer = RenderComponent()
+        self._indexbuffer = RenderComponent()
+        self._texture = RenderComponent()
 
+        self._MM = np.eye(4)
 
         if name is None:
             name = f'unmarked{len(self.__class__._renderers)}'
@@ -42,6 +48,7 @@ class RenderUnit():
         self._flag_draw = True
         self._flag_run = True
 
+        self.components = components
         # default layer setting
         # self.current_window.layer[0].add(self)
 
@@ -56,16 +63,20 @@ class RenderUnit():
 
     @property
     def vertexarray(self):
-        if self.current_window in self._vertexarray:
-            return self._vertexarray[self.current_window]
+        win = FBL.get_current()
+        if win is None:
+            raise Error("can't find frame_buffer_like object")
+
+        if win in self._vertexarray:
+            return self._vertexarray[win]
         else:
-            self._vertexarray[self.current_window] = Vertexarray()
-            return self._vertexarray[self.current_window]
+            self._vertexarray[win] = None
+            return self._vertexarray[win]
 
     @vertexarray.setter
     def vertexarray(self, vertexarray: Vertexarray):
         if isinstance(vertexarray, Vertexarray):
-            self._vertexarray[self.current_window] = vertexarray
+            self._vertexarray[FBL.get_current()] = vertexarray
 
     @property
     def vertexbuffer(self):
@@ -94,36 +105,73 @@ class RenderUnit():
         if isinstance(texture, Texture):
             self._texture = texture
 
-    def bind_shader(self, file_name, name=None):
-        self._shader = Shader(file_name, name)
+    # temp names
+    def use_shader(self, shader=None):
+        if shader is None:
+            # TODO if not given use dynamic shader
+            pass
+        else:
+            if isinstance(shader, Shader):
+                self._shader = shader
+            else:
+                raise TypeError
 
-    def bind_vertexbuffer(self, glusage=None):
-        self._vertexbuffer = Vertexbuffer(glusage)
+    def use_vertexbuffer(self, vertexbuffer=None):
+        if vertexbuffer is None:
+            self._vertexbuffer = Vertexbuffer(gl.GL_STATIC_DRAW)
+        else:
+            self._vertexbuffer = vertexbuffer
 
-    def bind_indexbuffer(self, glusage=None):
-        self._indexbuffer = Indexbuffer(glusage)
+    def use_indexbuffer(self, indexbuffer=None):
+        if indexbuffer is None:
+            self._indexbuffer = Indexbuffer(gl.GL_STATIC_DRAW)
+        else:
+            self._indexbuffer = Indexbuffer
 
-    def bind_texture(self, file, slot=None):
-        if file is not None:
-            self._texture = Texture_load(file, slot)
-        self.property['useTexture'] = True
+
+    def use_texture(self, texture=None):
+        if texture is None:
+            self._texture = Texture()
+        else:
+            self._texture = texture
+
 
     # def bind_framebuffer(self):
     #     self._framebuffer = Framebuffer(None)
 
-    def draw(self):
-        self._draw_()
+    def _check_init(self):
 
-    def _draw_(self, func=None):
+        # check minimum components needed
+        if self._shader != None and self._vertexbuffer != None:
+            pass
+        else:
+            raise Error('Not enough components fed. Minimum requirements are shader and vertexbuffer')
+
+    def _draw_(self):
+
+        self._check_init()
         # real draw
-        if func is None:
+        # if vertexarray for current context is not built
+        self._build_()
 
-            # if vertexarray for current context is not built
-            if not isinstance(self.vertexarray, Vertexarray):
-                self._build_()
+        if self.flag_run:
 
-            if self.flag_run:
+            # load opengl states
+            self.shader.bind()
+            self.vertexarray.bind()
+            # self.vertexbuffer.bind()
+            self.indexbuffer.bind()
+            self.texture.bind()
 
+            # update all variables of shader
+            self.update_variables()
+
+            self.draw_element()
+            # TODO is this unnecessary processing? checking?
+            self._unbindall()
+
+        else:
+            if self.flag_draw:
                 # load opengl states
                 self.shader.bind()
                 self.vertexarray.bind()
@@ -131,30 +179,10 @@ class RenderUnit():
                 self.indexbuffer.bind()
                 self.texture.bind()
 
-                # update all variables of shader
-                self.update_variables()
-
                 self.draw_element()
-                # TODO is this unnecessary processing? checking?
+
                 self._unbindall()
 
-            else:
-                if self.flag_draw:
-                    # load opengl states
-                    self.shader.bind()
-                    self.vertexarray.bind()
-                    # self.vertexbuffer.bind()
-                    self.indexbuffer.bind()
-                    self.texture.bind()
-
-                    self.draw_element()
-
-                    self._unbindall()
-
-            # TODO is unbinding every time necessary?
-        # for decorater
-        else:
-            func()
 
     def draw_element(self):
         window = FBL._current
@@ -191,34 +219,30 @@ class RenderUnit():
         self.flag_run = True
         self.flag_draw = True
 
-    @property
-    def current_window(self):
-        return Window.get_current_window()
 
     def _build_(self):
-        print('building render unit')
-        if len(self._vertexarray) == 1:
-            if self.shader is not None:
-                self.shader.build()
+        # if first time
+        if len(self._vertexarray) == 0:
+            self.shader.build()
 
-            if isinstance(self.vertexbuffer, RenderComponent):
-                self.vertexarray = Vertexarray(1)
-                self.vertexarray.build()
-                self.vertexarray.bind()
+            self.vertexarray = Vertexarray()
 
-                self.vertexbuffer.build()
+            self.vertexarray.build()
+            self.vertexarray.bind()
 
-                self.vertexarray.unbind()
+            self.vertexbuffer.build()
+
+            self.vertexarray.unbind()
 
             if self.indexbuffer is not None:
                 self.indexbuffer.build()
+            if self.texture is not None:
+                self.texture.build()
 
-            # if isinstance(self.texture, RenderComponent):
-            self.texture.build()
-        # for a call from another shared g context
+        # for a call from another shared glfw context
         # just build VertexArray and put buffer info into it
-        else:
-            self.vertexarray = Vertexarray(1)
+        elif self.vertexarray is None:
+            self.vertexarray = Vertexarray()
             self.vertexarray.build()
             self.vertexarray.bind()
 
@@ -326,8 +350,10 @@ class RenderUnit():
                 else:
                     raise TypeError(f"parsing for '{block.glsltype}' undefined")
 
-        # for assigned uniforms
-        # vp = FBL._current
+        # update assigned matrix
+        mm = self.shader.properties['MM']
+        matrix = self.MM
+        gl.glUniformMatrix4fv(mm.location, 1, True, matrix)
         vp = Viewport.get_current()
 
         vm = self.shader.properties['VM']
@@ -337,7 +363,6 @@ class RenderUnit():
         pm = self.shader.properties['PM']
         matrix = vp.camera.PM
         gl.glUniformMatrix4fv(pm.location, 1, True, matrix)
-
 
     def _unbindall(self):
         self.shader.unbind()
@@ -362,8 +387,6 @@ class RenderUnit():
     def print_va_info(self):
         return self._vertexarray
 
-
-
     @property
     def flag_draw(self):
         return self._flag_draw
@@ -381,6 +404,16 @@ class RenderUnit():
     def flag_run(self, value):
         if isinstance(value, bool):
             self._flag_run = value
+
+    @property
+    def MM(self):
+        return self._MM
+
+    def move(self, x, y, z):
+        matrix = np.eye(4)
+        matrix[:, 3] = x, y, z, 1
+
+        self._MM = matrix.dot(self._MM)
 
     @property
     def property(self):
