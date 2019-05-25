@@ -9,7 +9,7 @@ Window.glfw_init()
 window = Window(640, 480, "Hello World", None, None)
 window2 = Window(1000,300,'second_screen',None, window)
 
-window3 = Window(2000, 1000, 'third', None, None)
+window3 = Window(2000, 1000, 'third', None, window2)
 # window4 = Window(500,1000,'fourth',None,None)
 # window3.follows_closing(window, window2)
 # window4.follows_closing(window3)
@@ -21,16 +21,19 @@ def INIT():
 def init():
     tr = BRO.TestBRO()
     # alpha = 'ddd'
+    tr2 = BRO.TestBRO()
+    pass
 
 @window2.draw
 def draw():
     # renderer.clear(1, 1, 1, 1)
     # renderer.set_variable('u_color', (1, 0.5, alpha, 0.75))
     # renderer._draw_()
-    window2.viewports[0].open()
-    window2.viewports[0].clear(1,0,0,1)
-    tr.draw()
-
+    if len(window2.mouse.pressed_button) != 0 or window2.is_resized:
+        window2.viewports[0].open()
+        window2.viewports[0].clear(1,0,0,1)
+        tr.draw()
+        tr2.draw()
     pass
 
 
@@ -67,57 +70,27 @@ def event():
 # @window3.init
 # def init():
 #     rectangle1 = BRO.Rectangle(pos = [0,0],size=[500,500],fillcol=[0,1,1,1], edgecol=[0,0,0,1])
-#     window.viewports.new(0.5, 0, 0.5, 1.0, 'new')
-#     window.viewports['new'].camera.mode = 2
-#     # window.viewports['new'].camera.move(10, 0, 0, 1)
-#     # window.viewports['new'].camera.lookat([100, 300, 0], [100, 0, 50])
-#
-#     gui = mygui.testgui()
-#
-#     image = Renderable_image(500,500)
-#     rectangle2 = BRO.Rectangle(pos = [0,0], size=[1000,1000], fillcol=[1,1,1,1])
-#     rectangle2.render_texture(image.texture)
+#     # window.viewports.new(0.5, 0, 0.5, 1.0, 'new')
+#     # window.viewports['new'].camera.mode = 2
+#     # # window.viewports['new'].camera.move(10, 0, 0, 1)
+#     # # window.viewports['new'].camera.lookat([100, 300, 0], [100, 0, 50])
+#     #
+#     # gui = mygui.testgui()
+#     #
+#     # image = Renderable_image(500,500)
+#     # rectangle2 = BRO.Rectangle(pos = [0,0], size=[1000,1000], fillcol=[1,1,1,1])
+#     # rectangle2.render_texture(image.texture)
 #
 #     rectangle3 = BRO.Rectangle(pos=[500,500], size=[500,500], fillcol=[0,1,0,1])
 #
-#
 # @window3.draw
 # def draw():
-#     # gui.run()
-#     # print(condition)
-#     condition = any([any(list(window3.mouse.pressed_button.values())), window3._flag_resized])
-#     if condition:
-#
-#         image.begin()
-#         Viewport(0,0,500,500).open().camera.scale(2,2)
-#         gl.glClearColor(0,0,1,1)
-#         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-#         rectangle1.draw()
-#         image.end()
-#         # exit()
-#
+#     if len(window3.mouse.pressed_button) != 0 or window3.is_resized:
 #         window.viewports[0].open()
 #         window.viewports[0].clear(1,0,0,1)
-#         rectangle3.draw()
 #         rectangle1.draw()
-#         # image.begin()
-#         # # print(glfw.get_framebuffer_size(self.glfw_window))
-#         # # window.viewports[0].open()
-#         # # window.viewports[0].clear(1, 0, 0, 0.2)
-#         # gl.glViewport(0,0,500,1000)
-#         # rectangle1.draw()
-#         # image.end()
-#         #
-#         # window.viewports[0].open()
-#         # print(window.viewports[1].abs_posx)
-#         # window.viewports[0].clear(1, 0, 0, 1)
-#         # rectangle1.draw()
-#         # # gl.glViewport(0,0,2000,500)
-#         #
-#         window.viewports[1].open()
-#         window.viewports[1].clear(0, 1, 0, 1)
-#         rectangle2.draw()
-#         window.viewports.close()
+#         rectangle3.draw()
+#         print('dkdkdk')
 
 
 

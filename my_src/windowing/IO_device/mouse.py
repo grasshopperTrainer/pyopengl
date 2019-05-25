@@ -136,7 +136,17 @@ class Mouse(SID):
 
     @property
     def pressed_button(self):
+        return_list = []
+        for n,v in self._button_state.items():
+            if v:
+                return_list.append(n)
+
+        return tuple(return_list)
+
+    @property
+    def button_state(self):
         return self._button_state
+
     @property
     def cursor_onscreen(self):
         return self._cursor_state['onscreen']

@@ -1,43 +1,68 @@
-# from .basic_render_object import *
-from ..components.texture import Texture_new, Texture_load, Texture
-import OpenGL.GL as gl
+from ..renderer_builder import Renderer_builder
+from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
+from ..components import *
 
-import numpy as np
-from ...renderer.components import *
-from patterns.store_instances_dict import SID
-from ...viewport.viewport import Viewport
-from ..render_unit import RenderUnit
+class Render_unit:
+    def __init__(self):
+
+        self._vao = Vertexarray()
+        self._vbo = Vertexbuffer()
+        self._flag_built = False
+
+    def _build_(self):
+        if not self._flag_built:
+            self.vao.build()
+            self.vao.bind()
+
+            self.vbo.build()
+
+            self.vao.unbind()
+
+            self._flag_built = True
+
+
+    @property
+    def vao(self):
+        return self._vao
+
+    @property
+    def vbo(self):
+        return self._vbo
 
 class TestBRO():
+    """
+    one renderer should have one shader.
+    but this can be called from several plces...
+    when initiating ... like first_rect = TestBRO()
+    how to make calling free???
+    """
+    shader = None
+    indexbuffer = None
+    render_unit = []
+
 
     def __init__(self):
-        # Render_unit_builder.load_shader(path_or_name='BRO_rectangle')
-        self.a = RenderUnit()
-        self.a.use_shader(self.a.components.Shader('BRO_rectangle', 'a TestBRO'))
-        self.a.use_vertexbuffer()
-        self.a.use_indexbuffer()
-        self.a.use_texture()
+        # if not registered
+        fbl = FBL.get_current()
+        if self.__class__ not in fbl.registered_shaders:
+            fbl.register_shader(self.__class__)
+            self._shader = Shader('BRO_rectangle', 'test_renderer_builder')
+            self._indexbuffer = Indexbuffer()
+            self._render_units = []
 
+            self._shader.build()
+            self._indexbuffer.build()
+        else:
+            self._render_unit.apeend(Render_unit())
 
     def draw(self):
-        self.a.property['a_position'][0:4] = [0,0],[100,0],[100,100],[0,100]
-        self.a.property['u_fillcol'] = [1,0,1,1]
+        fbl = FBL.get_current()
+        print(fbl.registered_shaders)
+        if self in fbl.registered_shaders:
+            print('this renderer is registered insied the window')
+            print(self)
+        else:
+            print(f'mother window:{fbl.mother_window}')
+            print(f'children window:{fbl.children_window}')
 
-        self.a.property['useTexture'] = False
-        self.a.property['texSlot'] = 0
-
-        # print(self.a._vertexbuffer._data)
-        # exit()
-        self.a._draw_()
-
-# class Render_unit_builder(SID):
-#
-#     def __init__(self, path_or_name):
-#         self._glsl_path = path_or_name
-#         self._loaded_shader = Shader(path_or_name)
-
-# class Storage:
-#
-#     def __init__(self, path, shader):
-#         pass
-#
+        pass

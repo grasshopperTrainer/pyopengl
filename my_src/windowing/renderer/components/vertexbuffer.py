@@ -6,7 +6,7 @@ from .component_bp import RenderComponent
 
 class Vertexbuffer(RenderComponent):
 
-    def __init__(self, glusage=GL_DYNAMIC_DRAW, data = None):
+    def __init__(self, glusage = None, data = None):
 
         if glusage is None:
             glusage = GL_DYNAMIC_DRAW
@@ -35,8 +35,9 @@ class Vertexbuffer(RenderComponent):
         :param buffer_data: data to insert
         :return:
         """
-        if self._data is not None:
-            raise
+
+        # if self._data is not None:
+        #     raise
 
         datasize = buffer_data.size * buffer_data.itemsize
 

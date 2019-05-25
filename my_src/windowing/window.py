@@ -65,6 +65,16 @@ class _Windows:
         return f'collection of {len(self.windows)} window instances'
 
 class Window(FBL):
+    """
+    import numpy as np
+    from windowing.renderer import BRO
+    from windowing.renderable_image import Renderable_image
+    from windowing.unnamedGUI import mygui
+    from windowing.viewport.viewport import Viewport
+    import OpenGL.GL as gl
+    import glfw as glfw
+    """
+
     def _global_init():
         import numpy as np
         from windowing.renderer import BRO
@@ -138,15 +148,21 @@ class Window(FBL):
             'monitor': monitor,
             'share': mother_window
         })
-        self._mother_window = mother_window #type: Window
 
-        if self._mother_window is not None:
-            share = mother_window.glfw_window
+        # store relationship between mother and children
+        self._children_window = []
+        self._mother_window = mother_window #type: Window
+        if mother_window is not None:
+            mother_window._children_window.append(self)
+            self._glfw_window = glfw.create_window(width, height, name, monitor, mother_window._glfw_window)
         else:
-            share = None
-        self._glfw_window = glfw.create_window(width, height, name, monitor, share)
+            self._glfw_window = glfw.create_window(width, height, name, monitor, None)
+
+        # glfw window creation error check
         if not self._glfw_window:
             glfw.terminate()
+
+        # set it current for farther settings
         glfw.make_context_current(self.glfw_window)
 
         self._option_close = 0
@@ -188,14 +204,14 @@ class Window(FBL):
         # viewport
         self._viewports = Viewports(self)
 
+        self._shaders = []
 
     @property
     def mother_window(self):
         return self._mother_window
-
     @property
-    def renderers(self):
-        return self._context_scope.search_value_bytype(RenderUnit)
+    def children_window(self):
+        return self._children_window
 
     @property
     def draw_func(self):
@@ -383,6 +399,7 @@ class Window(FBL):
                     # UCD.reset_instance_descriptors_update(window)
                     UCD.reset_instance_descriptors_update(*viewports.values())
                     UCD.reset_instance_descriptors_update(*[v.camera for v in viewports.values()])
+
                     window.mouse.reset()
 
                 glfw.poll_events()
@@ -555,6 +572,18 @@ class Window(FBL):
         self._size = glfw.get_framebuffer_size(self.glfw_window)
         return self._size
 
+    @property
+    def is_resized(self):
+        return self._flag_resized
+
+    @property
+    def registered_shaders(self):
+        return self._shaders
+
+    def register_shader(self, shader):
+        self._shaders.append(shader)
+
+
 class Timer:
     def __init__(self,framerate, name):
         self._framecount = 0
@@ -628,4 +657,5 @@ class Timer:
     @property
     def framecount(self):
         return self._framecount
+
 

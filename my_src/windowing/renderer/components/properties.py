@@ -87,7 +87,7 @@ class _Block:
     @property
     def is_updated(self):
         if self._flag_changed:
-            self._flag_changed = False
+            # self._flag_changed = False
             return True
         else:
             return False
