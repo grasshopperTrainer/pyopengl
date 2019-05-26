@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.scalebias_hint
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.scalebias_hint to provide a more 
+OpenGL.raw.GL.SGIX.scalebias_hint to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.multisample
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.multisample to provide a more 
+OpenGL.raw.GL.EXT.multisample to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

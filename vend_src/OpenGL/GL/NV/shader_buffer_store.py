@@ -1,7 +1,7 @@
 '''OpenGL extension NV.shader_buffer_store
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.shader_buffer_store to provide a more 
+OpenGL.raw.GL.NV.shader_buffer_store to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension SGIS.texture_filter4
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIS.texture_filter4 to provide a more 
+OpenGL.raw.GL.SGIS.texture_filter4 to provide a more
 Python-friendly API
 
 Overview (from the spec)

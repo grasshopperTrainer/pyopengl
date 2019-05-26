@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.texture_scale_bias
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.texture_scale_bias to provide a more 
+OpenGL.raw.GL.SGIX.texture_scale_bias to provide a more
 Python-friendly API
 
 Overview (from the spec)

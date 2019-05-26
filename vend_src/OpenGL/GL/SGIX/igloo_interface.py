@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.igloo_interface
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.igloo_interface to provide a more 
+OpenGL.raw.GL.SGIX.igloo_interface to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

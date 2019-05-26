@@ -1,7 +1,7 @@
 '''OpenGL extension HP.texture_lighting
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.HP.texture_lighting to provide a more 
+OpenGL.raw.GL.HP.texture_lighting to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension NV.shader_thread_group
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.shader_thread_group to provide a more 
+OpenGL.raw.GL.NV.shader_thread_group to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

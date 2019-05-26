@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.swap_group
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.SGIX.swap_group to provide a more 
+OpenGL.raw.GLX.SGIX.swap_group to provide a more
 Python-friendly API
 
 Overview (from the spec)

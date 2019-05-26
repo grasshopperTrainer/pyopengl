@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.texture_storage
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.EXT.texture_storage to provide a more 
+OpenGL.raw.GLES2.EXT.texture_storage to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

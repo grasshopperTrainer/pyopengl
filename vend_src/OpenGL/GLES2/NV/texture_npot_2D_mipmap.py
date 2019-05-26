@@ -1,7 +1,7 @@
 '''OpenGL extension NV.texture_npot_2D_mipmap
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.NV.texture_npot_2D_mipmap to provide a more 
+OpenGL.raw.GLES2.NV.texture_npot_2D_mipmap to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

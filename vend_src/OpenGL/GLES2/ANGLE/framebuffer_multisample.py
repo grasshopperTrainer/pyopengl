@@ -1,7 +1,7 @@
 '''OpenGL extension ANGLE.framebuffer_multisample
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.ANGLE.framebuffer_multisample to provide a more 
+OpenGL.raw.GLES2.ANGLE.framebuffer_multisample to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.shader_precision
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.shader_precision to provide a more 
+OpenGL.raw.GL.ARB.shader_precision to provide a more
 Python-friendly API
 
 Overview (from the spec)

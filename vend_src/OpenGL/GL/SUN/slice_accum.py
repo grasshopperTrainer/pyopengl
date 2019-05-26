@@ -1,7 +1,7 @@
 '''OpenGL extension SUN.slice_accum
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SUN.slice_accum to provide a more 
+OpenGL.raw.GL.SUN.slice_accum to provide a more
 Python-friendly API
 
 Overview (from the spec)

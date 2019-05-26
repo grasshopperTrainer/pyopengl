@@ -1,7 +1,7 @@
 '''OpenGL extension NV.non_square_matrices
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.NV.non_square_matrices to provide a more 
+OpenGL.raw.GLES2.NV.non_square_matrices to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

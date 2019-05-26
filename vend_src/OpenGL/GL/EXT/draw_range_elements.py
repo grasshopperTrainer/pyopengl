@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.draw_range_elements
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.draw_range_elements to provide a more 
+OpenGL.raw.GL.EXT.draw_range_elements to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

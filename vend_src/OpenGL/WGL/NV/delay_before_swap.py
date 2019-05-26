@@ -1,7 +1,7 @@
 '''OpenGL extension NV.delay_before_swap
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.NV.delay_before_swap to provide a more 
+OpenGL.raw.WGL.NV.delay_before_swap to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

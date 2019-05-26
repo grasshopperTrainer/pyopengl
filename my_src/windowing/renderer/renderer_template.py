@@ -1,6 +1,5 @@
 import glfw
-import OpenGL.GL as gl
-from OpenGL.error import Error
+from ..gl_tracker import GL_tracker as gl
 
 from ..renderer import components as comp
 
@@ -21,16 +20,72 @@ class Layout_container:
     MULTI_VBO = VBO_layout(0)
     SINGLE_VBO = VBO_layout(1)
 
-
 class Render_unit:
-    def __init__(self, bound_builder):
-        self._bound_builder = bound_builder
-        self._vao = comp.Vertexarray()
-        self._Vbo = comp.Vertexbuffer()
-        self._flag_built = False
+    reg_count = 0
+    def __new__(cls, *args, **kwargs):
+        new_cls = type(f'Render_unit{cls.reg_count}', (Render_unit_temp, ), {})
+        cls.reg_count += 1
+        return new_cls
+
+
+class Render_unit_temp:
+    _vao = comp.RenderComponent
+    _vbo = comp.RenderComponent
+    _ibo = comp.RenderComponent
+    _tex = comp.RenderComponent
+
+    @classmethod
+    def use_vao(cls):
+        cls._vao = comp.Vertexarray
+
+    @classmethod
+    def use_vbo(cls):
+        cls._vbo = comp.Vertexbuffer
+
+    @classmethod
+    def use_index(cls):
+        cls._ibo = comp.Indexbuffer
+
+    @classmethod
+    def use_texture(cls):
+        cls._tex = comp.Texture
+
+    @property
+    def vao(self):
+        if hasattr(self, '_vao'):
+            return self._vao
+        else:
+            return comp.RenderComponent
+
+    @property
+    def vbo(self):
+        if hasattr(self, '_vbo'):
+            return self._vbo
+        else:
+            return comp.RenderComponent
+
+    @property
+    def ibo(self):
+        if hasattr(self, '_ibo'):
+            return self._ibo
+        else:
+            return comp.RenderComponent
+
+    @property
+    def tex(self):
+        if hasattr(self, '_tex'):
+            return self._tex
+        else:
+            return comp.RenderComponent
+
+    def __init__(self):
+        cls = self.__class__
+        self._vao = cls._vao()
+        self._vbo = cls._vbo()
+        self._ibo = cls._ibo()
+        self._tex = cls._tex()
 
     def _build_(self):
-        if not self._flag_built:
             self.vao.build()
             self.vao.bind()
 
@@ -38,19 +93,14 @@ class Render_unit:
 
             self.vao.unbind()
 
-            self._flag_built = True
+            self.ibo.build()
 
+            self.tex.build()
 
-    @property
-    def vao(self):
-        return self._vao
+    def _update_variables_(self):
+        pass
 
-    @property
-    def vbo(self):
-        return self._vbo
-
-
-class Renderer_builder:
+class Renderer_template:
     """
     Pattern sould be determined:
     1. Renderer instance contain only one shader
@@ -69,8 +119,6 @@ class Renderer_builder:
     -no texture
     
     """
-    _renderers = {}
-    _current_window = None
     GL_DYNAMIC_DRAW = gl.GL_DYNAMIC_DRAW
 
     class Shader:
@@ -89,19 +137,53 @@ class Renderer_builder:
     Vertexbuffer = comp.Vertexbuffer
     Indexbuffer = comp.Indexbuffer
     Texture = comp.Texture
-
     layout = Layout_container
 
 
+    @classmethod
+    def use_shader(cls, shader):
+        cls._shader = shader
+
+
+    @classmethod
+    def use_index_buffer(cls):
+        cls._index_buffer = comp.Indexbuffer()
+
+    @classmethod
+    def use_texture_buffer(cls):
+        cls._texture_buffer = comp.Texture()
+
+    @classmethod
+    def use_render_unit(cls, vao=True, vbo=True,index=False,texture=False):
+        ru = Render_unit()
+        if vao:
+            ru.use_vao()
+        if vbo:
+            ru.use_vbo()
+        if index:
+            ru.use_index()
+        if texture:
+            ru.use_texture()
+
+        cls._render_unit_class = ru
+
+
+    @classmethod
+    def new_render_unit(cls):
+        ru = cls._render_unit_class()
+        cls._render_units.append(ru)
+        return ru
+
+    _render_units = []
+    _fbl_register= []
+
     def __init__(self, name: str = None):
-        self._context = FBL.get_current()
+        # check shader-context-existence
+        if not hasattr(self, '_shader'):
+            raise Error('Not enough comp fed.')
 
-        self._shader = comp.RenderComponent()
 
-        self._indexbuffer = comp.RenderComponent()
-        self._texture = comp.RenderComponent()
-
-        self._vbo_layout = Layout_container.MULTI_VBO
+        # self._vbo_layout = Layout_container.MULTI_VBO
         # multiple...pairs... what for shared glfw...
         # if called in a shared glfw... should it be handled here or outside?
         # if called from shared glfw just rebind vao-vbo
@@ -111,12 +193,6 @@ class Renderer_builder:
 
         self._MM = np.eye(4)
 
-        if name is None:
-            name = f'unmarked{len(self.__class__._renderers)}'
-        self._name = name
-        self.__class__._renderers[name] = self
-
-        self.context = glfw.get_current_context()
         self._drawmode = gl.GL_TRIANGLE_STRIP
 
         self._flag_draw = True
@@ -131,190 +207,69 @@ class Renderer_builder:
         else:
             raise TypeError("should use instance's.const.(CORRECT_TYPE_CONST)")
 
-    def add_new_unit(self):
-        """
-        single multi multi single....
-        if i divide vertex array + vertex buffer under the name of 'unit'
-        if single VAO + single VBO pair is a single 'unit'
-        this Renderer_builder will contain a list of multiple units and
-        function for appending new, deleting, copying etc - list control functions.
-
-        :return:
-        """
-
-        # there can be three types of fbl
-        # 1. original glfw window
-        # 2. child of original glfw window - meaning shared glfw context
-        # 3. frame buffer like Renderable_image
-        # #1 stores original - only one
-        # #2 has to have newly build Vertexarray but vbo will be the same - can be multiple
-        # #3 has same copy of #1 has - can be multiple
-        # how to form data structure?
-
-        # know from where it is called
-        fbl = FBL.get_current()
-
-        # if its a glfw window
-        # TODO Window and Renderable_image better be inside fbl
-
-        ru = Render_unit(fbl)
-
-        if isinstance(fbl, Window):
-            if not fbl in self._vertexunit:
-                self._vertexunit[fbl] = []
-
-            self._vertexunit[fbl].append(ru)
-
-        elif isinstance(fbl, Renderable_image):
-            pass
-        # need to return something...
-        return ru
-
     @property
     def shader(self):
-        return self._shader
-
-    @shader.setter
-    def shader(self, shader: comp.Shader):
-        if isinstance(shader, comp.Shader):
-            self._shader = shader
-
-    @property
-    def vertexarray(self):
-        win = FBL.get_current()
-        if win is None:
-            raise Error("can't find frame_buffer_like object")
-
-        if win in self._vertexarray:
-            return self._vertexarray[win]
+        if hasattr(self, '_shader'):
+            return self._shader
         else:
-            self._vertexarray[win] = None
-            return self._vertexarray[win]
-
-    @vertexarray.setter
-    def vertexarray(self, vertexarray: comp.Vertexarray):
-        if isinstance(vertexarray, comp.Vertexarray):
-            self._vertexarray[FBL.get_current()] = vertexarray
+            return comp.RenderComponent
 
     @property
     def vertexbuffer(self):
-        return self._vertexbuffer
-
-    @vertexbuffer.setter
-    def vertexbuffer(self, vertexbuffer: comp.Vertexbuffer):
-        if isinstance(vertexbuffer, comp.Vertexbuffer):
-            self._vertexbuffer = vertexbuffer
+        if hasattr(self, '_vertex_buffer'):
+            return self._vertex_buffer
+        else:
+            return comp.RenderComponent
 
     @property
     def indexbuffer(self):
-        return self._indexbuffer
-
-    @indexbuffer.setter
-    def indexbuffer(self, indexbuffer: comp.Indexbuffer):
-        if isinstance(indexbuffer, comp.Indexbuffer):
-            self._indexbuffer = indexbuffer
+        if hasattr(self, '_index_buffer'):
+            return self._index_buffer
+        else:
+            return comp.RenderComponent
 
     @property
     def texture(self):
-        return self._texture
-
-    @texture.setter
-    def texture(self, texture: comp.Texture):
-        if isinstance(texture, comp.Texture):
-            self._texture = texture
-
-    # temp names
-    def set_shader(self, shader=None):
-        if shader is None:
-            # TODO if not given use dynamic shader
-            pass
+        if hasattr(self, '_texture'):
+            return self._texture
         else:
-            if isinstance(shader, comp.Shader):
-                self._shader = shader
+            return comp.RenderComponent
+
+    def _build_(self):
+        fbl = FBL.get_current()
+        if fbl not in self.__class__._fbl_register:
+            if fbl.mother_window in self.__class__._fbl_register:
+                # exception for shared context
+                raise
             else:
-                raise TypeError
+                # generate class_singular gl components for the first call
+                self.shader.build()
+                self.indexbuffer.build()
+                self.texture.build()
 
 
-    def use_indexbuffer(self, indexbuffer=None):
-        if indexbuffer is None:
-            self._indexbuffer = comp.Indexbuffer(gl.GL_STATIC_DRAW)
-        else:
-            self._indexbuffer = comp.Indexbuffer
 
 
-    def use_texture(self, texture=None):
-        if texture is None:
-            self._texture = comp.Texture()
-        else:
-            self._texture = texture
+    def _draw_(self, render_unit, fbl = None):
+        self._build_()
 
-
-    # def bind_framebuffer(self):
-    #     self._framebuffer = Framebuffer(None)
-
-    def _check_shader_existence(self):
-        # check minimum comp needed
-        if self._shader != None:
-            pass
-        else:
-            raise Error('Not enough comp fed.')
-
-    def _build_(self, render_unit):
-
-        self.shader.build()
-
-        render_unit._build_()
-
-        if self.indexbuffer is not None:
-            self.indexbuffer.build()
-        if self.texture is not None:
-            self.texture.build()
-
-        # for a call from another shared glfw context
-        # just build VertexArray and put buffer info into it
-        elif self.vertexarray is None:
-            self.vertexarray = comp.Vertexarray()
-            self.vertexarray.build()
-            self.vertexarray.bind()
-
-            self.vertexbuffer.build()
-
-            self.vertexarray.unbind()
-
-    def _draw_(self, render_unit):
-        self._check_shader_existence()
-        # real draw
-        # if vertexarray for current context is not built
-        self._build_(render_unit)
-
-        if self.flag_run:
-
+        if self.flag_draw or self.flag_run:
             # load opengl states
             self.shader.bind()
-            self.vertexarray.bind()
-            # self.vertexbuffer.bind()
+
             self.indexbuffer.bind()
             self.texture.bind()
 
-            # update all variables of shader
-            self.update_variables()
+            # if set to run
+            if self.flag_run:
+                # update all variables of shader
+                self.update_global_variables(render_unit)
 
-            self.draw_element()
-            # TODO is this unnecessary processing? checking?
-            self._unbindall()
-
-        else:
             if self.flag_draw:
-                # load opengl states
-                self.shader.bind()
-                self.vertexarray.bind()
-                # self.vertexbuffer.bind()
-                self.indexbuffer.bind()
-                self.texture.bind()
-
                 self.draw_element()
 
-                self._unbindall()
+            # TODO is this unnecessary processing? checking?
+            self._unbindall()
 
     def _unbindall(self):
         self.shader.unbind()
@@ -369,8 +324,9 @@ class Renderer_builder:
     def name(self):
         return self._name
 
-    def update_variables(self):
-        # bind buffer and vertexattribpointer with gl if form of buffer has changed
+    def update_global_variables(self):
+
+        # bind buffer and vertex_attrib_pointer with gl if form of buffer has changed
         if self.shader.properties.attribute.is_buffer_formchange:
             self.vertexbuffer.bind()
             buffer = self.shader.properties.attribute.buffer
@@ -527,3 +483,14 @@ class Renderer_builder:
     @property
     def property(self):
         return self.shader.properties
+
+
+
+class Renderer_builder:
+    reg = 0
+    def __new__(cls, *args, **kwargs):
+        if cls is Renderer_builder:
+            new_cls = type(f'Renderer_builder{cls.reg}', (Renderer_template,), {})
+            cls.reg += 1
+            return new_cls
+

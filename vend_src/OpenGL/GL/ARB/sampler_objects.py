@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.sampler_objects
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.sampler_objects to provide a more 
+OpenGL.raw.GL.ARB.sampler_objects to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.sparse_texture
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.sparse_texture to provide a more 
+OpenGL.raw.GL.AMD.sparse_texture to provide a more
 Python-friendly API
 
 Overview (from the spec)

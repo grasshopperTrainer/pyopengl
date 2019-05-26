@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.texture_compression_dxt1
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.EXT.texture_compression_dxt1 to provide a more 
+OpenGL.raw.GLES1.EXT.texture_compression_dxt1 to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

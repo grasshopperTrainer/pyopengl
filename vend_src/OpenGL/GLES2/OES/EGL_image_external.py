@@ -1,7 +1,7 @@
 '''OpenGL extension OES.EGL_image_external
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.OES.EGL_image_external to provide a more 
+OpenGL.raw.GLES2.OES.EGL_image_external to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

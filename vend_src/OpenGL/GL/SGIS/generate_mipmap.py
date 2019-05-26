@@ -1,7 +1,7 @@
 '''OpenGL extension SGIS.generate_mipmap
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIS.generate_mipmap to provide a more 
+OpenGL.raw.GL.SGIS.generate_mipmap to provide a more
 Python-friendly API
 
 Overview (from the spec)

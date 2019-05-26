@@ -1,7 +1,7 @@
 '''OpenGL extension QCOM.writeonly_rendering
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.QCOM.writeonly_rendering to provide a more 
+OpenGL.raw.GLES1.QCOM.writeonly_rendering to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

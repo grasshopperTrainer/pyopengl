@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.texture_type_2_10_10_10_REV
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.EXT.texture_type_2_10_10_10_REV to provide a more 
+OpenGL.raw.GLES2.EXT.texture_type_2_10_10_10_REV to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

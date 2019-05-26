@@ -4,7 +4,7 @@ from collections import OrderedDict
 from time import sleep
 from time import time
 
-import OpenGL.GL as GL
+from .gl_tracker import GL_tracker as gl
 import glfw as glfw
 import glfw.GLFW as GLFW
 
@@ -19,6 +19,7 @@ from .viewport import *
 from patterns.update_check_descriptor import UCD
 from .frame_buffer_like.frame_buffer_like_bp import FBL
 
+from .gl_tracker import GL_tracker
 
 
 class _Windows:
@@ -122,6 +123,9 @@ class Window(FBL):
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
         FBL.set_current(self)
+
+        self._gltracker = GL_tracker(self)
+
         # threading.Thread.__init__(self)
 
         # save name of instance
@@ -313,14 +317,14 @@ class Window(FBL):
         # g.swap_interval(60)
 
     def initiation_gl_setting(self):
-        GL.glEnable(GL.GL_SCISSOR_TEST)
-        GL.glEnable(GL.GL_DEPTH_TEST)
+        gl.glEnable(gl.GL_SCISSOR_TEST)
+        gl.glEnable(gl.GL_DEPTH_TEST)
 
-        GL.glEnable(GL.GL_BLEND)
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        gl.glEnable(gl.GL_BLEND)
+        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        GL.glClear(GL.GL_DEPTH_BUFFER_BIT)
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
 
     def initiation_window_setting(self):
         # self._viewports.new(0, 0, 1.0, 1.0, 'default')

@@ -1,7 +1,7 @@
 '''OpenGL extension ANGLE.translated_shader_source
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.ANGLE.translated_shader_source to provide a more 
+OpenGL.raw.GLES2.ANGLE.translated_shader_source to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

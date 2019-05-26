@@ -1,7 +1,7 @@
 '''OpenGL extension NV.shader_atomic_counters
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.shader_atomic_counters to provide a more 
+OpenGL.raw.GL.NV.shader_atomic_counters to provide a more
 Python-friendly API
 
 Overview (from the spec)

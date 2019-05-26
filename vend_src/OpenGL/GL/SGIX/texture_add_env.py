@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.texture_add_env
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.texture_add_env to provide a more 
+OpenGL.raw.GL.SGIX.texture_add_env to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

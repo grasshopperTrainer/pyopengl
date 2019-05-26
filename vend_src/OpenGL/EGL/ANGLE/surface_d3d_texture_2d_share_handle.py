@@ -1,7 +1,7 @@
 '''OpenGL extension ANGLE.surface_d3d_texture_2d_share_handle
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.ANGLE.surface_d3d_texture_2d_share_handle to provide a more 
+OpenGL.raw.EGL.ANGLE.surface_d3d_texture_2d_share_handle to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

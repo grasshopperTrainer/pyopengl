@@ -1,7 +1,7 @@
 '''OpenGL extension OES.byte_coordinates
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.OES.byte_coordinates to provide a more 
+OpenGL.raw.GLES1.OES.byte_coordinates to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

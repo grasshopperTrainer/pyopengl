@@ -1,7 +1,7 @@
 '''OpenGL extension OES.texture_npot
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.OES.texture_npot to provide a more 
+OpenGL.raw.GLES2.OES.texture_npot to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

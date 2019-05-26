@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.shader_draw_parameters
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.shader_draw_parameters to provide a more 
+OpenGL.raw.GL.ARB.shader_draw_parameters to provide a more
 Python-friendly API
 
 Overview (from the spec)

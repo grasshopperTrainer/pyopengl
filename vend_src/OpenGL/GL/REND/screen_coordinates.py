@@ -1,7 +1,7 @@
 '''OpenGL extension REND.screen_coordinates
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.REND.screen_coordinates to provide a more 
+OpenGL.raw.GL.REND.screen_coordinates to provide a more
 Python-friendly API
 
 Overview (from the spec)

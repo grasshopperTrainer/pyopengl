@@ -1,7 +1,7 @@
 '''OpenGL extension ATI.pn_triangles
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ATI.pn_triangles to provide a more 
+OpenGL.raw.GL.ATI.pn_triangles to provide a more
 Python-friendly API
 
 Overview (from the spec)

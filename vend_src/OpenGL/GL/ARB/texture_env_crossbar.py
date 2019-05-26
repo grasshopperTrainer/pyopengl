@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.texture_env_crossbar
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.texture_env_crossbar to provide a more 
+OpenGL.raw.GL.ARB.texture_env_crossbar to provide a more
 Python-friendly API
 
 Overview (from the spec)

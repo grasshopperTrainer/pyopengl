@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.async_pixel
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.async_pixel to provide a more 
+OpenGL.raw.GL.SGIX.async_pixel to provide a more
 Python-friendly API
 
 Overview (from the spec)

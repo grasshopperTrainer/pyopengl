@@ -1,7 +1,7 @@
 '''OpenGL extension OES.depth32
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.OES.depth32 to provide a more 
+OpenGL.raw.GLES1.OES.depth32 to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

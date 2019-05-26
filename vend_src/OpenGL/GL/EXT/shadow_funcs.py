@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.shadow_funcs
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.shadow_funcs to provide a more 
+OpenGL.raw.GL.EXT.shadow_funcs to provide a more
 Python-friendly API
 
 Overview (from the spec)

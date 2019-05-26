@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.buffer_storage
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.buffer_storage to provide a more 
+OpenGL.raw.GL.ARB.buffer_storage to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension OES.required_internalformat
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.OES.required_internalformat to provide a more 
+OpenGL.raw.GLES2.OES.required_internalformat to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension ANGLE.pack_reverse_row_order
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.ANGLE.pack_reverse_row_order to provide a more 
+OpenGL.raw.GLES2.ANGLE.pack_reverse_row_order to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

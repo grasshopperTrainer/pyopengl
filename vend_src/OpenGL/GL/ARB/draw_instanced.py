@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.draw_instanced
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.draw_instanced to provide a more 
+OpenGL.raw.GL.ARB.draw_instanced to provide a more
 Python-friendly API
 
 Overview (from the spec)

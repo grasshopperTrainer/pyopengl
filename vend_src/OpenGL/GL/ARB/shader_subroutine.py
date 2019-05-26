@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.shader_subroutine
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.shader_subroutine to provide a more 
+OpenGL.raw.GL.ARB.shader_subroutine to provide a more
 Python-friendly API
 
 Overview (from the spec)

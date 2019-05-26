@@ -1,6 +1,5 @@
 import numpy as np
-from OpenGL.GL import *
-
+from ...gl_tracker import GL_tracker as gl
 from .component_bp import RenderComponent
 
 
@@ -9,7 +8,7 @@ class Vertexbuffer(RenderComponent):
     def __init__(self, glusage = None, data = None):
 
         if glusage is None:
-            glusage = GL_DYNAMIC_DRAW
+            glusage = gl.GL_DYNAMIC_DRAW
         self._glusage = glusage
         self._data = data
 
@@ -19,11 +18,11 @@ class Vertexbuffer(RenderComponent):
 
     def build(self):
         if self.flag_firstbuild:
-            self._glindex = glGenBuffers(1)
+            self._glindex = gl.glGenBuffers(1)
             self.flag_firstbuild = False
 
         self.bind()
-        glBufferData(GL_ARRAY_BUFFER, 0, None, self._glusage)
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, 0, None, self._glusage)
         self.unbind()
         print('-vertex buffer built')
 
@@ -43,7 +42,7 @@ class Vertexbuffer(RenderComponent):
 
         # TODO glusage resetting needed?
 
-        glBufferData(GL_ARRAY_BUFFER, datasize, buffer_data, self._glusage)
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, datasize, buffer_data, self._glusage)
 
         # set attribute
         # when not constructed dtype
@@ -51,8 +50,8 @@ class Vertexbuffer(RenderComponent):
             type = self._dtype_to_gltype(buffer_data.dtype)
             stride = buffer_data.itemsize
             offset = ctypes.c_void_p(0)
-            glEnableVertexAttribArray(0)
-            glVertexAttribPointer(0, 1, type, GL_FALSE, stride, offset)
+            gl.glEnableVertexAttribArray(0)
+            gl.glVertexAttribPointer(0, 1, type, gl.GL_FALSE, stride, offset)
 
         # when using constructed dtype
         else:
@@ -71,21 +70,21 @@ class Vertexbuffer(RenderComponent):
                 #     size = 1
                 gltype = self._dtype_to_gltype(d)
                 offset = ctypes.c_void_p(offsets[i])
-                glEnableVertexAttribArray(i)
+                gl.glEnableVertexAttribArray(i)
                 # print()
                 # print('index:',i)
                 # print('size:',size)
                 # print('gltype:',gltype)
                 # print('stride:',stride)
-                glVertexAttribPointer(i, size, gltype, GL_FALSE, stride, offset)
-        # m = glGetBufferSubData(GL_ARRAY_BUFFER,0,24)
+                gl.glVertexAttribPointer(i, size, gltype, gl.GL_FALSE, stride, offset)
+        # m = glGetBufferSubData(gl.GL_ARRAY_BUFFER,0,24)
         # print(m)
 
     def bind(self):
-        glBindBuffer(GL_ARRAY_BUFFER, self._glindex)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self._glindex)
 
     def unbind(self):
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
 
     @property
     def data(self):

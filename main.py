@@ -19,9 +19,9 @@ def INIT():
 
 @window2.init
 def init():
-    tr = BRO.TestBRO()
+    tr = BRO.TestBRO(0,0,100,100)
     # alpha = 'ddd'
-    tr2 = BRO.TestBRO()
+    tr2 = BRO.TestBRO(100,100,100,200)
     pass
 
 @window2.draw

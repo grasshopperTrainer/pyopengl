@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.light_texture
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.light_texture to provide a more 
+OpenGL.raw.GL.EXT.light_texture to provide a more
 Python-friendly API
 
 Overview (from the spec)

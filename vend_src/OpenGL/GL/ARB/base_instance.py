@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.base_instance
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.base_instance to provide a more 
+OpenGL.raw.GL.ARB.base_instance to provide a more
 Python-friendly API
 
 Overview (from the spec)

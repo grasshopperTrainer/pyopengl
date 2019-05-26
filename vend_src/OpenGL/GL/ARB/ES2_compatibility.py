@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.ES2_compatibility
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.ES2_compatibility to provide a more 
+OpenGL.raw.GL.ARB.ES2_compatibility to provide a more
 Python-friendly API
 
 Overview (from the spec)

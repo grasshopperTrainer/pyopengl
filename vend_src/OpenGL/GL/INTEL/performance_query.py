@@ -1,7 +1,7 @@
 '''OpenGL extension INTEL.performance_query
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.INTEL.performance_query to provide a more 
+OpenGL.raw.GL.INTEL.performance_query to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

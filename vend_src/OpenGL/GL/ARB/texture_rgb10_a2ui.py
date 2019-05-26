@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.texture_rgb10_a2ui
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.texture_rgb10_a2ui to provide a more 
+OpenGL.raw.GL.ARB.texture_rgb10_a2ui to provide a more
 Python-friendly API
 
 Overview (from the spec)
@@ -10,7 +10,7 @@ Overview (from the spec)
 	
 	A new texturing format for unsigned 10.10.10.2 integer textures. 
 	
-	OpenGL has supported RGB10 and RGB10_A2 formats for a very long time.  
+	OpenGL has supported RGB10 and RGB10_A2 formats for a very long time.
 	This extension provides a variant of RGB10_A2 which supports unsigned 
 	integer data (in contrast to the above "unsigned normalized integer" 
 	formats).

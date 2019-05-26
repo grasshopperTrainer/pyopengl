@@ -71,7 +71,7 @@ class UCD():
         else:
             self.__class__.latest_call_descriptor[instance] = self
 
-            for f in self.get_this_properties(instance)['pre_get_callback']:
+            for f,input in self.get_this_properties(instance)['pre_get_callback']:
                 f()
 
             return descriptor['value']
@@ -102,12 +102,12 @@ class UCD():
         d = self.get_this_properties(instance)
         d[property_key] = value
 
-    def set_pre_get_callback(self, function):
+    def set_pre_get_callback(self, function, *input):
         if callable(function):
             p = self.get_this_properties(function.__self__)
             l = p['pre_get_callback']
             if function not in l:
-                l.append(function)
+                l.append((function,input))
         else:
             raise TypeError('input is not a callable')
 

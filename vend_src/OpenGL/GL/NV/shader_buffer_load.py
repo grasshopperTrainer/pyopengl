@@ -1,7 +1,7 @@
 '''OpenGL extension NV.shader_buffer_load
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.shader_buffer_load to provide a more 
+OpenGL.raw.GL.NV.shader_buffer_load to provide a more
 Python-friendly API
 
 Overview (from the spec)

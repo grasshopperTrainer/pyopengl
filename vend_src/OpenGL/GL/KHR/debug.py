@@ -1,7 +1,7 @@
 '''OpenGL extension KHR.debug
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.KHR.debug to provide a more 
+OpenGL.raw.GL.KHR.debug to provide a more
 Python-friendly API
 
 Overview (from the spec)
@@ -58,11 +58,11 @@ Overview (from the spec)
 	only section of the code encapsulated in debug groups. A debug group may 
 	also be used to annotate the command stream using descriptive texts. 
 	
-	This extension also defines debug markers, a mechanism for the OpenGL 
+	This extension also defines debug markers, a mechanism for the OpenGL
 	application to annotate the command stream with markers for discrete 
 	events.
 	
-	When profiling or debugging an OpenGL application with a built-in or an 
+	When profiling or debugging an OpenGL application with a built-in or an
 	external debugger or profiler, it is difficult to relate the commands 
 	within the command stream to the elements of the scene or parts of the 
 	program code to which they correspond. Debug markers and debug groups help 
@@ -94,11 +94,11 @@ Overview (from the spec)
 	query bit added to the existing GL_CONTEXT_FLAGS state to specify whether 
 	the context was created with debug enabled.
 	
-	Finally, this extension defines a mechanism for OpenGL applications to 
+	Finally, this extension defines a mechanism for OpenGL applications to
 	label their objects (textures, buffers, shaders, etc.) with a descriptive 
 	string. 
 	
-	When profiling or debugging an OpenGL application within an external or 
+	When profiling or debugging an OpenGL application within an external or
 	built-in (debut output API) debugger or profiler it is difficult to 
 	identify objects from their object names (integers). 
 	
@@ -107,8 +107,8 @@ Overview (from the spec)
 	label, to an object obviates this difficulty.
 	
 	The intended purpose of this extension is purely to improve the user 
-	experience within OpenGL development tools and application built-in 
-	profilers and debuggers. This extension typically improves OpenGL 
+	experience within OpenGL development tools and application built-in
+	profilers and debuggers. This extension typically improves OpenGL
 	programmers efficiency by allowing them to instantly detect issues and the 
 	reason for these issues giving him more time to focus on adding new 
 	features to an OpenGL application.

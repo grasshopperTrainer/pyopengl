@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.sample_positions
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.sample_positions to provide a more 
+OpenGL.raw.GL.AMD.sample_positions to provide a more
 Python-friendly API
 
 Overview (from the spec)

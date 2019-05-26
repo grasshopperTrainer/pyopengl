@@ -1,7 +1,7 @@
 '''OpenGL extension OES.shader_image_atomic
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.OES.shader_image_atomic to provide a more 
+OpenGL.raw.GLES2.OES.shader_image_atomic to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.occlusion_query_boolean
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.EXT.occlusion_query_boolean to provide a more 
+OpenGL.raw.GLES2.EXT.occlusion_query_boolean to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

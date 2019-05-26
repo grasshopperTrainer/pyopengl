@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.copy_texture
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.copy_texture to provide a more 
+OpenGL.raw.GL.EXT.copy_texture to provide a more
 Python-friendly API
 
 Overview (from the spec)

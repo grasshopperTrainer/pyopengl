@@ -1,7 +1,7 @@
 """Abstraction for the platform-specific code in PyOpenGL
 
 Each supported platform has a module which provides the
-specific functionality required to support the base OpenGL 
+specific functionality required to support the base OpenGL
 functionality on that platform.  These modules are 
 registered using plugins in the:
 
@@ -9,7 +9,7 @@ registered using plugins in the:
 
 objects.  To support a new platform you'll need to create
 a new PlatformPlugin instance *before* you import 
-OpenGL.platform .  Once you have a working platform 
+OpenGL.platform .  Once you have a working platform
 module, please consider contributing it back to the project.
 
 See baseplatform.BasePlatform for the core functionality 

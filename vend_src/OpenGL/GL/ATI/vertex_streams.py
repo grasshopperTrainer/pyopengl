@@ -1,7 +1,7 @@
 '''OpenGL extension ATI.vertex_streams
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ATI.vertex_streams to provide a more 
+OpenGL.raw.GL.ATI.vertex_streams to provide a more
 Python-friendly API
 
 Overview (from the spec)

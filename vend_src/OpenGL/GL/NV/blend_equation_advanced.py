@@ -1,7 +1,7 @@
 '''OpenGL extension NV.blend_equation_advanced
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.blend_equation_advanced to provide a more 
+OpenGL.raw.GL.NV.blend_equation_advanced to provide a more
 Python-friendly API
 
 Overview (from the spec)

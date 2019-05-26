@@ -1,7 +1,7 @@
 '''OpenGL extension S3.s3tc
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.S3.s3tc to provide a more 
+OpenGL.raw.GL.S3.s3tc to provide a more
 Python-friendly API
 
 Overview (from the spec)

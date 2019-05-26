@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.gpu_shader_int64
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.gpu_shader_int64 to provide a more 
+OpenGL.raw.GL.AMD.gpu_shader_int64 to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.pixel_format_packed_float
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.EXT.pixel_format_packed_float to provide a more 
+OpenGL.raw.WGL.EXT.pixel_format_packed_float to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

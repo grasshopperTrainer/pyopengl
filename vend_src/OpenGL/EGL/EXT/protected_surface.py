@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.protected_surface
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.EXT.protected_surface to provide a more 
+OpenGL.raw.EGL.EXT.protected_surface to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

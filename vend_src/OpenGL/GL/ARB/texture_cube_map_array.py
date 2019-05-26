@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.texture_cube_map_array
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.texture_cube_map_array to provide a more 
+OpenGL.raw.GL.ARB.texture_cube_map_array to provide a more
 Python-friendly API
 
 Overview (from the spec)

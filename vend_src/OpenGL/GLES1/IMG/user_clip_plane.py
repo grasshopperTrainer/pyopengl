@@ -1,7 +1,7 @@
 '''OpenGL extension IMG.user_clip_plane
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.IMG.user_clip_plane to provide a more 
+OpenGL.raw.GLES1.IMG.user_clip_plane to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

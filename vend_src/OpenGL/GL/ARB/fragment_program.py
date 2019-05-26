@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.fragment_program
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.fragment_program to provide a more 
+OpenGL.raw.GL.ARB.fragment_program to provide a more
 Python-friendly API
 
 Overview (from the spec)
@@ -9,7 +9,7 @@ Overview (from the spec)
 	Unextended OpenGL mandates a certain set of configurable per-
 	fragment computations defining texture application, texture 
 	environment, color sum, and fog operations.  Several extensions have 
-	added further per-fragment computations to OpenGL.  For example, 
+	added further per-fragment computations to OpenGL.  For example,
 	extensions have defined new texture environment capabilities 
 	(ARB_texture_env_add, ARB_texture_env_combine, ARB_texture_env_dot3,
 	ARB_texture_env_crossbar), per-fragment depth comparisons 
@@ -24,8 +24,8 @@ Overview (from the spec)
 	This inflexibility is in contrast to the typical flexibility 
 	provided by the underlying programmable floating point engines 
 	(whether micro-coded fragment engines, DSPs, or CPUs) that are 
-	traditionally used to implement OpenGL's texturing computations.  
-	The purpose of this extension is to expose to the OpenGL application 
+	traditionally used to implement OpenGL's texturing computations.
+	The purpose of this extension is to expose to the OpenGL application
 	writer a significant degree of per-fragment programmability for 
 	computing fragment parameters.
 	
@@ -35,11 +35,11 @@ Overview (from the spec)
 	individual fragment) and an input set of per-fragment parameters are 
 	transformed to a set of per-fragment result parameters.
 	
-	The per-fragment computations for standard OpenGL given a particular 
+	The per-fragment computations for standard OpenGL given a particular
 	set of texture and fog application modes (along with any state for 
 	extensions defining per-fragment computations) is, in essence, a 
 	fragment program.  However, the sequence of operations is defined 
-	implicitly by the current OpenGL state settings rather than defined 
+	implicitly by the current OpenGL state settings rather than defined
 	explicitly as a sequence of instructions.
 	
 	This extension provides an explicit mechanism for defining fragment 
@@ -52,7 +52,7 @@ Overview (from the spec)
 	The extension's fragment programming model is designed for efficient
 	hardware implementation and to support a wide variety of fragment 
 	programs.  By design, the entire set of existing fragment programs 
-	defined by existing OpenGL per-fragment computation extensions can 
+	defined by existing OpenGL per-fragment computation extensions can
 	be implemented using the extension's fragment programming model.
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension ATI.meminfo
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ATI.meminfo to provide a more 
+OpenGL.raw.GL.ATI.meminfo to provide a more
 Python-friendly API
 
 Overview (from the spec)

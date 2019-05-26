@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.pinned_memory
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.pinned_memory to provide a more 
+OpenGL.raw.GL.AMD.pinned_memory to provide a more
 Python-friendly API
 
 Overview (from the spec)

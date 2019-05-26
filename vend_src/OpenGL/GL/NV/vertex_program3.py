@@ -1,7 +1,7 @@
 '''OpenGL extension NV.vertex_program3
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.vertex_program3 to provide a more 
+OpenGL.raw.GL.NV.vertex_program3 to provide a more
 Python-friendly API
 
 Overview (from the spec)

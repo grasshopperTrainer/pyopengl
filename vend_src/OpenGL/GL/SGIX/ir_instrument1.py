@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.ir_instrument1
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.ir_instrument1 to provide a more 
+OpenGL.raw.GL.SGIX.ir_instrument1 to provide a more
 Python-friendly API
 
 Overview (from the spec)

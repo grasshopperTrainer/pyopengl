@@ -1,7 +1,7 @@
 '''OpenGL extension NV.point_sprite
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.point_sprite to provide a more 
+OpenGL.raw.GL.NV.point_sprite to provide a more
 Python-friendly API
 
 Overview (from the spec)

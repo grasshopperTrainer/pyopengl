@@ -1,7 +1,7 @@
 '''OpenGL extension APPLE.rgb_422
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.APPLE.rgb_422 to provide a more 
+OpenGL.raw.GL.APPLE.rgb_422 to provide a more
 Python-friendly API
 
 Overview (from the spec)

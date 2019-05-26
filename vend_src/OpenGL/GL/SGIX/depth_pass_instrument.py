@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.depth_pass_instrument
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.depth_pass_instrument to provide a more 
+OpenGL.raw.GL.SGIX.depth_pass_instrument to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension SGIS.multisample
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.SGIS.multisample to provide a more 
+OpenGL.raw.GLX.SGIS.multisample to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension NOK.texture_from_pixmap
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.NOK.texture_from_pixmap to provide a more 
+OpenGL.raw.EGL.NOK.texture_from_pixmap to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.index_func
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.index_func to provide a more 
+OpenGL.raw.GL.EXT.index_func to provide a more
 Python-friendly API
 
 Overview (from the spec)

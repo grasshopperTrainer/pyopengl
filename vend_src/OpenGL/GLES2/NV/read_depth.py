@@ -1,7 +1,7 @@
 '''OpenGL extension NV.read_depth
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.NV.read_depth to provide a more 
+OpenGL.raw.GLES2.NV.read_depth to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

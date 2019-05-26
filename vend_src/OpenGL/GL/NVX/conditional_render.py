@@ -1,7 +1,7 @@
 '''OpenGL extension NVX.conditional_render
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NVX.conditional_render to provide a more 
+OpenGL.raw.GL.NVX.conditional_render to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

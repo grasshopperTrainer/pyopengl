@@ -1,7 +1,7 @@
 '''OpenGL extension KHR.platform_x11
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.KHR.platform_x11 to provide a more 
+OpenGL.raw.EGL.KHR.platform_x11 to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

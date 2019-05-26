@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.transpose_matrix
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.transpose_matrix to provide a more 
+OpenGL.raw.GL.ARB.transpose_matrix to provide a more
 Python-friendly API
 
 Overview (from the spec)

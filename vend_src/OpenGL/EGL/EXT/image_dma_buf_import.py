@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.image_dma_buf_import
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.EXT.image_dma_buf_import to provide a more 
+OpenGL.raw.EGL.EXT.image_dma_buf_import to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.compiled_vertex_array
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.compiled_vertex_array to provide a more 
+OpenGL.raw.GL.EXT.compiled_vertex_array to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension SGI.cushion
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.SGI.cushion to provide a more 
+OpenGL.raw.GLX.SGI.cushion to provide a more
 Python-friendly API
 
 Overview (from the spec)

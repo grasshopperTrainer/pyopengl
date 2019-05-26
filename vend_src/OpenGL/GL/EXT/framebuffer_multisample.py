@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.framebuffer_multisample
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.framebuffer_multisample to provide a more 
+OpenGL.raw.GL.EXT.framebuffer_multisample to provide a more
 Python-friendly API
 
 Overview (from the spec)

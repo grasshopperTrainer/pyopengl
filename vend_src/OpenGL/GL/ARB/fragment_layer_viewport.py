@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.fragment_layer_viewport
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.fragment_layer_viewport to provide a more 
+OpenGL.raw.GL.ARB.fragment_layer_viewport to provide a more
 Python-friendly API
 
 Overview (from the spec)

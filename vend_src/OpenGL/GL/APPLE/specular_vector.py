@@ -1,7 +1,7 @@
 '''OpenGL extension APPLE.specular_vector
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.APPLE.specular_vector to provide a more 
+OpenGL.raw.GL.APPLE.specular_vector to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension DL.stereo_control
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.DL.stereo_control to provide a more 
+OpenGL.raw.WGL.DL.stereo_control to provide a more
 Python-friendly API
 
 Overview (from the spec)

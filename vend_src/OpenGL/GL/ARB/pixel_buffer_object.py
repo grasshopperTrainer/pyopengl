@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.pixel_buffer_object
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.pixel_buffer_object to provide a more 
+OpenGL.raw.GL.ARB.pixel_buffer_object to provide a more
 Python-friendly API
 
 Overview (from the spec)

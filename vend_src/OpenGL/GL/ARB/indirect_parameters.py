@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.indirect_parameters
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.indirect_parameters to provide a more 
+OpenGL.raw.GL.ARB.indirect_parameters to provide a more
 Python-friendly API
 
 Overview (from the spec)

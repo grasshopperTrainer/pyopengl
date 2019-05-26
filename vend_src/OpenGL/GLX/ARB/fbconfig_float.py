@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.fbconfig_float
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.ARB.fbconfig_float to provide a more 
+OpenGL.raw.GLX.ARB.fbconfig_float to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

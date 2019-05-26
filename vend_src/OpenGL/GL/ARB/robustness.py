@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.robustness
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.robustness to provide a more 
+OpenGL.raw.GL.ARB.robustness to provide a more
 Python-friendly API
 
 Overview (from the spec)
@@ -57,7 +57,7 @@ Overview (from the spec)
 	The intent of this extension is to address some specific robustness
 	goals:
 	
-	*   For all existing OpenGL queries, provide additional "safe" APIs 
+	*   For all existing OpenGL queries, provide additional "safe" APIs
 	    that limit data written to user pointers to a buffer size in 
 	    bytes that is an explicit additional parameter of the query.
 	

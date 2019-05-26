@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.texture_integer
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.texture_integer to provide a more 
+OpenGL.raw.GL.EXT.texture_integer to provide a more
 Python-friendly API
 
 Overview (from the spec)

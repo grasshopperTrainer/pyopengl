@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.texture_perturb_normal
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.texture_perturb_normal to provide a more 
+OpenGL.raw.GL.EXT.texture_perturb_normal to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.stencil_clear_tag
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.stencil_clear_tag to provide a more 
+OpenGL.raw.GL.EXT.stencil_clear_tag to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.internalformat_query2
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.internalformat_query2 to provide a more 
+OpenGL.raw.GL.ARB.internalformat_query2 to provide a more
 Python-friendly API
 
 Overview (from the spec)
@@ -38,7 +38,7 @@ Overview (from the spec)
 	specifications built up into either the code or tables, or it must do
 	a number of tests on startup to determine which capabilities are present.
 	
-	In OpenGL, other than the course-grained extension mechanism, many 
+	In OpenGL, other than the course-grained extension mechanism, many
 	limitations of, or limited support for, an internalformat can only 
 	be signaled by failing an operation or by operating at reduced
 	performance.  Thus, such tests often involve attempts to create resources,

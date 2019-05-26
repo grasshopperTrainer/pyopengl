@@ -16,7 +16,7 @@ able to work with any of the valid configurations available
 with these sets of flags.
 
 Further, once any entry point has been loaded, the variables 
-can no longer be updated.  The OpenGL._confligflags module 
+can no longer be updated.  The OpenGL._confligflags module
 imports the variables from this location, and once that 
 import occurs the flags should no longer be changed.
 

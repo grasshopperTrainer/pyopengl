@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.multi_draw_arrays
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.EXT.multi_draw_arrays to provide a more 
+OpenGL.raw.GLES1.EXT.multi_draw_arrays to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

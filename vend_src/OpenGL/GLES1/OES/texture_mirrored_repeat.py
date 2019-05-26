@@ -1,7 +1,7 @@
 '''OpenGL extension OES.texture_mirrored_repeat
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.OES.texture_mirrored_repeat to provide a more 
+OpenGL.raw.GLES1.OES.texture_mirrored_repeat to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

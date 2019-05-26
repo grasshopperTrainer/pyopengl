@@ -1,7 +1,7 @@
 '''OpenGL extension OES.compressed_ETC1_RGB8_texture
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.OES.compressed_ETC1_RGB8_texture to provide a more 
+OpenGL.raw.GLES2.OES.compressed_ETC1_RGB8_texture to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

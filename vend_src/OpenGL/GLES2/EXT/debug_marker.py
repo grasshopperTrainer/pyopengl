@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.debug_marker
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.EXT.debug_marker to provide a more 
+OpenGL.raw.GLES2.EXT.debug_marker to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

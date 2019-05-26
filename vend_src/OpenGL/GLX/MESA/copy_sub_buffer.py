@@ -1,7 +1,7 @@
 '''OpenGL extension MESA.copy_sub_buffer
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.MESA.copy_sub_buffer to provide a more 
+OpenGL.raw.GLX.MESA.copy_sub_buffer to provide a more
 Python-friendly API
 
 Overview (from the spec)

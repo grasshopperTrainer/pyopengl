@@ -1,7 +1,7 @@
 '''OpenGL extension MESA.pixmap_colormap
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.MESA.pixmap_colormap to provide a more 
+OpenGL.raw.GLX.MESA.pixmap_colormap to provide a more
 Python-friendly API
 
 Overview (from the spec)

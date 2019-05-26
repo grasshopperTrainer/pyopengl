@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.cl_event
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.cl_event to provide a more 
+OpenGL.raw.GL.ARB.cl_event to provide a more
 Python-friendly API
 
 Overview (from the spec)

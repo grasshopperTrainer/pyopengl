@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.fog_coord
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.fog_coord to provide a more 
+OpenGL.raw.GL.EXT.fog_coord to provide a more
 Python-friendly API
 
 Overview (from the spec)

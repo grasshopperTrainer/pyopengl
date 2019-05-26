@@ -1,7 +1,7 @@
 '''OpenGL extension NV.present_video
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.NV.present_video to provide a more 
+OpenGL.raw.WGL.NV.present_video to provide a more
 Python-friendly API
 
 Overview (from the spec)

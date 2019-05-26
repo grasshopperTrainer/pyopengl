@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.fbconfig_packed_float
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.EXT.fbconfig_packed_float to provide a more 
+OpenGL.raw.GLX.EXT.fbconfig_packed_float to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

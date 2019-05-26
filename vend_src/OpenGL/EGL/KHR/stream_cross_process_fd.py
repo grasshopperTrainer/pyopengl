@@ -1,7 +1,7 @@
 '''OpenGL extension KHR.stream_cross_process_fd
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.KHR.stream_cross_process_fd to provide a more 
+OpenGL.raw.EGL.KHR.stream_cross_process_fd to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

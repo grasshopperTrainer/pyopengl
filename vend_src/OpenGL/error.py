@@ -21,8 +21,8 @@ class Error( Exception ):
 class NoContext( Error ):
     """Raised to indicate that there is no currently active context
     
-    Technically almost *any* OpenGL call can segfault if there is 
-    no active context.  The OpenGL.CHECK_CONTEXT flag, if enabled 
+    Technically almost *any* OpenGL call can segfault if there is
+    no active context.  The OpenGL.CHECK_CONTEXT flag, if enabled
     will cause this error to be raised whenever a GL or GLU call is 
     issued (via PyOpenGL) if there is no currently valid context.
     """
@@ -30,9 +30,9 @@ class CopyError( Error ):
     """Raised to indicate that operation requires data-copying
     
     if you set:
-        OpenGL.ERROR_ON_COPY = True 
+        OpenGL.ERROR_ON_COPY = True
     
-    before importing OpenGL.GL, this error will be raised when 
+    before importing OpenGL.GL, this error will be raised when
     a passed argument would require a copy to be made.
     """
 
@@ -49,7 +49,7 @@ class GLError( Error ):
     
     Attributes:
     
-        err -- the OpenGL error code for the error 
+        err -- the OpenGL error code for the error
         result -- the OpenGL result code for the operation
         baseOperation -- the "function" being called
         pyArgs -- the translated set of Python arguments

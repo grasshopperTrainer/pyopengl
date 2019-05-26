@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.draw_instanced
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.EXT.draw_instanced to provide a more 
+OpenGL.raw.GLES2.EXT.draw_instanced to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.swap_control
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.EXT.swap_control to provide a more 
+OpenGL.raw.GLX.EXT.swap_control to provide a more
 Python-friendly API
 
 Overview (from the spec)

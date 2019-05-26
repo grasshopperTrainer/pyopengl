@@ -1,7 +1,7 @@
 '''OpenGL extension ARM.shader_framebuffer_fetch
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.ARM.shader_framebuffer_fetch to provide a more 
+OpenGL.raw.GLES2.ARM.shader_framebuffer_fetch to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

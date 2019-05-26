@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.swap_control_tear
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.EXT.swap_control_tear to provide a more 
+OpenGL.raw.WGL.EXT.swap_control_tear to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

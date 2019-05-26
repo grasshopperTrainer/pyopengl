@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.multi_draw_indirect
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.multi_draw_indirect to provide a more 
+OpenGL.raw.GL.AMD.multi_draw_indirect to provide a more
 Python-friendly API
 
 Overview (from the spec)

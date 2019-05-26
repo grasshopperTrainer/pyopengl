@@ -1,7 +1,7 @@
 '''OpenGL extension SGI.color_matrix
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGI.color_matrix to provide a more 
+OpenGL.raw.GL.SGI.color_matrix to provide a more
 Python-friendly API
 
 Overview (from the spec)

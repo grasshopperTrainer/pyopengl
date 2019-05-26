@@ -1,7 +1,7 @@
 '''OpenGL extension APPLE.vertex_array_range
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.APPLE.vertex_array_range to provide a more 
+OpenGL.raw.GL.APPLE.vertex_array_range to provide a more
 Python-friendly API
 
 Overview (from the spec)

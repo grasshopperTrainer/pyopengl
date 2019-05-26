@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.robustness_share_group_isolation
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.ARB.robustness_share_group_isolation to provide a more 
+OpenGL.raw.GLX.ARB.robustness_share_group_isolation to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

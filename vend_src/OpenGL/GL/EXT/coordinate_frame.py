@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.coordinate_frame
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.coordinate_frame to provide a more 
+OpenGL.raw.GL.EXT.coordinate_frame to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.window_pos
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.window_pos to provide a more 
+OpenGL.raw.GL.ARB.window_pos to provide a more
 Python-friendly API
 
 Overview (from the spec)

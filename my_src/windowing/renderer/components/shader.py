@@ -1,11 +1,12 @@
 from collections import OrderedDict
 import numpy as np
-from OpenGL.GL import *
 import ctypes
 
 from error_handler import print_message
 from .component_bp import RenderComponent
 from .properties import Properties
+
+from windowing.gl_tracker import GL_tracker as gl
 
 
 class Shader(RenderComponent):
@@ -15,6 +16,7 @@ class Shader(RenderComponent):
         self._vertex = ''
         self._fragment = ''
         self._file_name = file_name
+        self._glindex = None
 
         if name is None:
             self._name = 'Unknown'
@@ -23,8 +25,18 @@ class Shader(RenderComponent):
 
         self._properties = Properties(self)
 
+
+        self._flag_built = False
+
+
+
+    @property
+    def _is_built(self):
+        return self._flag_built
+
+    def build(self):
         # 1. create program
-        self._glindex = glCreateProgram()
+        self._glindex = gl.glCreateProgram()
 
         # 2. load external glsl
         # 3. read attributes and unifroms from shaders
@@ -40,6 +52,8 @@ class Shader(RenderComponent):
         # 2. store array buffer to use
         self._set_properties_location()
         # self.store_self()
+
+        self._flag_built = True
 
     def _load_parse_glsl(self):
         att_uni = {'att': [], 'uni': []}
@@ -123,33 +137,34 @@ class Shader(RenderComponent):
         return att_uni
 
     def _bake_shader(self):
-        def compile(type, source):
-            id = glCreateShader(type)
-            glShaderSource(id, source)
-            glCompileShader(id)
 
-            success = glGetShaderiv(id, GL_COMPILE_STATUS)
+        def compile(type, source):
+            id = gl.glCreateShader(type)
+            gl.glShaderSource(id, source)
+            gl.glCompileShader(id)
+
+            success = gl.glGetShaderiv(id, gl.GL_COMPILE_STATUS)
 
             if not success:
-                messege = glGetShaderInfoLog(id)
+                messege = gl.glGetShaderInfoLog(id)
                 print(f'[{self.__class__.__name__}]: failed compile shader')
                 print(messege)
-                glDeleteShader(id)
+                gl.glDeleteShader(id)
 
                 return 0
 
             return id
 
-        vs = compile(GL_VERTEX_SHADER, self._vertex)
-        fs = compile(GL_FRAGMENT_SHADER, self._fragment)
+        vs = compile(gl.GL_VERTEX_SHADER, self._vertex)
+        fs = compile(gl.GL_FRAGMENT_SHADER, self._fragment)
 
-        glAttachShader(self.glindex, vs)
-        glAttachShader(self.glindex, fs)
-        glLinkProgram(self.glindex)
-        glValidateProgram(self.glindex)
+        gl.glAttachShader(self.glindex, vs)
+        gl.glAttachShader(self.glindex, fs)
+        gl.glLinkProgram(self.glindex)
+        gl.glValidateProgram(self.glindex)
 
-        glDeleteShader(vs)
-        glDeleteShader(fs)
+        gl.glDeleteShader(vs)
+        gl.glDeleteShader(fs)
 
 
     @classmethod
@@ -158,21 +173,19 @@ class Shader(RenderComponent):
         if len(index) is 0:
             for n in d:
                 i = d[n][0]
-                glDeleteProgram(i)
+                gl.glDeleteProgram(i)
         else:
             for i in index:
                 n = list(d.keys())[i]
                 v = d[n][0]
-                glDeleteProgram(v)
+                gl.glDeleteProgram(v)
 
-    def build(self):
-        pass
 
     def bind(self):
-        glUseProgram(self.glindex)
+        gl.glUseProgram(self.glindex)
 
     def unbind(self):
-        glUseProgram(0)
+        gl.glUseProgram(0)
 
     @property
     def vertexarray(self):
@@ -192,12 +205,12 @@ class Shader(RenderComponent):
 
     def _set_properties_location(self):
         for i, block in enumerate(self.properties.attribute.blocks):
-            glBindAttribLocation(self.glindex, i, block._name)
+            gl.glBindAttribLocation(self.glindex, i, block._name)
             block._location = i
 
         for block in self.properties.uniform.blocks:
-            block._location = glGetUniformLocation(self.glindex, block._name)
-        glLinkProgram(self.glindex)
+            block._location = gl.glGetUniformLocation(self.glindex, block._name)
+        gl.glLinkProgram(self.glindex)
 
     @property
     def properties(self):

@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.video_resize
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.SGIX.video_resize to provide a more 
+OpenGL.raw.GLX.SGIX.video_resize to provide a more
 Python-friendly API
 
 Overview (from the spec)

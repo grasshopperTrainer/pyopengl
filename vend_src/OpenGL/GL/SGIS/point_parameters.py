@@ -1,7 +1,7 @@
 '''OpenGL extension SGIS.point_parameters
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIS.point_parameters to provide a more 
+OpenGL.raw.GL.SGIS.point_parameters to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

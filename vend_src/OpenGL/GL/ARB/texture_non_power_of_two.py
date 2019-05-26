@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.texture_non_power_of_two
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.texture_non_power_of_two to provide a more 
+OpenGL.raw.GL.ARB.texture_non_power_of_two to provide a more
 Python-friendly API
 
 Overview (from the spec)

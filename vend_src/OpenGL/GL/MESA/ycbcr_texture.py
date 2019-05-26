@@ -1,7 +1,7 @@
 '''OpenGL extension MESA.ycbcr_texture
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.MESA.ycbcr_texture to provide a more 
+OpenGL.raw.GL.MESA.ycbcr_texture to provide a more
 Python-friendly API
 
 Overview (from the spec)

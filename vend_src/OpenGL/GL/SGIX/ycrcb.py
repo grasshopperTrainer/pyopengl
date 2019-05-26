@@ -1,12 +1,12 @@
 '''OpenGL extension SGIX.ycrcb
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.ycrcb to provide a more 
+OpenGL.raw.GL.SGIX.ycrcb to provide a more
 Python-friendly API
 
 Overview (from the spec)
 	
-	This extension provides a method for OpenGL to read and store 
+	This extension provides a method for OpenGL to read and store
 	images that are defined in standard YCRCB 422 and 444 video formats.
 	As with the CYMK extension, conversion to RGBA takes place immediately 
 	following the unpack pixel store, and preceding the pack pixel store 

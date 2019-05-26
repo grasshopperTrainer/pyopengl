@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.texture_query_levels
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.texture_query_levels to provide a more 
+OpenGL.raw.GL.ARB.texture_query_levels to provide a more
 Python-friendly API
 
 Overview (from the spec)

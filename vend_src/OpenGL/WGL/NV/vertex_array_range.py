@@ -1,7 +1,7 @@
 '''OpenGL extension NV.vertex_array_range
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.NV.vertex_array_range to provide a more 
+OpenGL.raw.WGL.NV.vertex_array_range to provide a more
 Python-friendly API
 
 Overview (from the spec)

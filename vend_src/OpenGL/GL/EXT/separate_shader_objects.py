@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.separate_shader_objects
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.separate_shader_objects to provide a more 
+OpenGL.raw.GL.EXT.separate_shader_objects to provide a more
 Python-friendly API
 
 Overview (from the spec)

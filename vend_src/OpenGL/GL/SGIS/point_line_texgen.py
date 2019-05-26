@@ -1,7 +1,7 @@
 '''OpenGL extension SGIS.point_line_texgen
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIS.point_line_texgen to provide a more 
+OpenGL.raw.GL.SGIS.point_line_texgen to provide a more
 Python-friendly API
 
 Overview (from the spec)

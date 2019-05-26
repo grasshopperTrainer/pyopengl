@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.flush_raster
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.flush_raster to provide a more 
+OpenGL.raw.GL.SGIX.flush_raster to provide a more
 Python-friendly API
 
 Overview (from the spec)

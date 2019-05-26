@@ -1,7 +1,7 @@
 '''OpenGL extension MESA.query_renderer
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.MESA.query_renderer to provide a more 
+OpenGL.raw.GLX.MESA.query_renderer to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

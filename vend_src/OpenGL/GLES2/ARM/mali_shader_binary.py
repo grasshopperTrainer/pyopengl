@@ -1,7 +1,7 @@
 '''OpenGL extension ARM.mali_shader_binary
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.ARM.mali_shader_binary to provide a more 
+OpenGL.raw.GLES2.ARM.mali_shader_binary to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

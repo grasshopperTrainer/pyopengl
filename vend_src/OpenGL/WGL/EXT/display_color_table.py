@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.display_color_table
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.EXT.display_color_table to provide a more 
+OpenGL.raw.WGL.EXT.display_color_table to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

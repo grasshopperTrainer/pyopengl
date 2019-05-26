@@ -1,12 +1,12 @@
 '''OpenGL extension ARB.vertex_attrib_binding
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.vertex_attrib_binding to provide a more 
+OpenGL.raw.GL.ARB.vertex_attrib_binding to provide a more
 Python-friendly API
 
 Overview (from the spec)
 	
-	OpenGL currently supports (at least) 16 vertex attributes and 16 vertex 
+	OpenGL currently supports (at least) 16 vertex attributes and 16 vertex
 	buffer bindings, with a fixed mapping between vertex attributes and 
 	vertex buffer bindings. This extension allows the application to change
 	the mapping between attributes and bindings, which can make it more 

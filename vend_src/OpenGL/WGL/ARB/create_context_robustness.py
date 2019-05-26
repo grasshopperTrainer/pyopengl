@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.create_context_robustness
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.ARB.create_context_robustness to provide a more 
+OpenGL.raw.WGL.ARB.create_context_robustness to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

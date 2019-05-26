@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.timer_query
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.timer_query to provide a more 
+OpenGL.raw.GL.EXT.timer_query to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.transform_feedback4
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.transform_feedback4 to provide a more 
+OpenGL.raw.GL.AMD.transform_feedback4 to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

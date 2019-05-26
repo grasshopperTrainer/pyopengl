@@ -1,7 +1,7 @@
 '''OpenGL extension OES.texture_cube_map
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.OES.texture_cube_map to provide a more 
+OpenGL.raw.GLES1.OES.texture_cube_map to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

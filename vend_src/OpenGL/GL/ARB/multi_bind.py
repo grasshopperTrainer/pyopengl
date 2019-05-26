@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.multi_bind
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.multi_bind to provide a more 
+OpenGL.raw.GL.ARB.multi_bind to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.cull_vertex
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.cull_vertex to provide a more 
+OpenGL.raw.GL.EXT.cull_vertex to provide a more
 Python-friendly API
 
 Overview (from the spec)

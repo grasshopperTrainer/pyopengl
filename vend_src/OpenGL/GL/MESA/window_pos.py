@@ -1,7 +1,7 @@
 '''OpenGL extension MESA.window_pos
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.MESA.window_pos to provide a more 
+OpenGL.raw.GL.MESA.window_pos to provide a more
 Python-friendly API
 
 Overview (from the spec)

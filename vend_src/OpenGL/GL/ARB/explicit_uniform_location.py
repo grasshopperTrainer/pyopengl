@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.explicit_uniform_location
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.explicit_uniform_location to provide a more 
+OpenGL.raw.GL.ARB.explicit_uniform_location to provide a more
 Python-friendly API
 
 Overview (from the spec)

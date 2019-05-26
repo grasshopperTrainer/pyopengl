@@ -1,7 +1,7 @@
 '''OpenGL extension APPLE.texture_2D_limited_npot
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.APPLE.texture_2D_limited_npot to provide a more 
+OpenGL.raw.GLES1.APPLE.texture_2D_limited_npot to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

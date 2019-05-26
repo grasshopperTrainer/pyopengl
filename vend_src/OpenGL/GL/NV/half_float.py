@@ -1,7 +1,7 @@
 '''OpenGL extension NV.half_float
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.half_float to provide a more 
+OpenGL.raw.GL.NV.half_float to provide a more
 Python-friendly API
 
 Overview (from the spec)

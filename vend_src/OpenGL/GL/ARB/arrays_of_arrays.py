@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.arrays_of_arrays
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.arrays_of_arrays to provide a more 
+OpenGL.raw.GL.ARB.arrays_of_arrays to provide a more
 Python-friendly API
 
 Overview (from the spec)

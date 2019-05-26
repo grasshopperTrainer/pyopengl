@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.name_gen_delete
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.name_gen_delete to provide a more 
+OpenGL.raw.GL.AMD.name_gen_delete to provide a more
 Python-friendly API
 
 Overview (from the spec)

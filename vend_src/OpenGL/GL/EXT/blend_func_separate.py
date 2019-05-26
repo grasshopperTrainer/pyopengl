@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.blend_func_separate
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.blend_func_separate to provide a more 
+OpenGL.raw.GL.EXT.blend_func_separate to provide a more
 Python-friendly API
 
 Overview (from the spec)

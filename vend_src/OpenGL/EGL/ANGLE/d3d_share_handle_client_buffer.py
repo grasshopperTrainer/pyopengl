@@ -1,7 +1,7 @@
 '''OpenGL extension ANGLE.d3d_share_handle_client_buffer
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.ANGLE.d3d_share_handle_client_buffer to provide a more 
+OpenGL.raw.EGL.ANGLE.d3d_share_handle_client_buffer to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

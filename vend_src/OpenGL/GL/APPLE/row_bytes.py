@@ -1,7 +1,7 @@
 '''OpenGL extension APPLE.row_bytes
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.APPLE.row_bytes to provide a more 
+OpenGL.raw.GL.APPLE.row_bytes to provide a more
 Python-friendly API
 
 Overview (from the spec)

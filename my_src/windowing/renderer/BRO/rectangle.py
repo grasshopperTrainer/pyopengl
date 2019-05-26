@@ -13,7 +13,7 @@ class Rectangle(BasicRenderObject):
         self._edgecol = edgecol
         self._edgeweight = edgeweight
 
-        r = Renderer_builder()
+        r = Renderer_template()
         self._renderer = r
         self._renderer.move(self._pos[0], self._pos[1], 0)
 

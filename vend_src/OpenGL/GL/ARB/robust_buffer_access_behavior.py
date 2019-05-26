@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.robust_buffer_access_behavior
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.robust_buffer_access_behavior to provide a more 
+OpenGL.raw.GL.ARB.robust_buffer_access_behavior to provide a more
 Python-friendly API
 
 Overview (from the spec)

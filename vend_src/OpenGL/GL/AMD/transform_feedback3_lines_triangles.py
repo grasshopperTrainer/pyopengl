@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.transform_feedback3_lines_triangles
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.transform_feedback3_lines_triangles to provide a more 
+OpenGL.raw.GL.AMD.transform_feedback3_lines_triangles to provide a more
 Python-friendly API
 
 Overview (from the spec)

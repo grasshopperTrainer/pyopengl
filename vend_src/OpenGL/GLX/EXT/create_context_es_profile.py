@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.create_context_es_profile
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.EXT.create_context_es_profile to provide a more 
+OpenGL.raw.GLX.EXT.create_context_es_profile to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

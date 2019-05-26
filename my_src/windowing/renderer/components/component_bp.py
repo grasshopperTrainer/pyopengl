@@ -1,6 +1,6 @@
 import numpy as np
-from OpenGL.GL import *
-
+# from OpenGL.GL import *
+from ...gl_tracker import GL_tracker as gl
 class RenderComponent:
     # def __new__(cls, *args, **kwargs):
     #     if len(args) + len(kwargs) == 0:
@@ -11,14 +11,14 @@ class RenderComponent:
     #         ins = super().__new__(cls)
     #         return ins
 
-
-    def build(self):
+    @classmethod
+    def build(cls):
         pass
-
-    def bind(self):
+    @classmethod
+    def bind(cls):
         pass
-
-    def unbind(self):
+    @classmethod
+    def unbind(cls):
         pass
 
     @staticmethod
@@ -29,15 +29,15 @@ class RenderComponent:
             typeof = dtype.subdtype[0].type
 
         if typeof is np.float32:
-            return GL_FLOAT
+            return gl.GL_FLOAT
         elif typeof is np.uint8:
-            return GL_UNSIGNED_BYTE
+            return gl.GL_UNSIGNED_BYTE
         elif typeof is np.uint16:
-            return GL_UNSIGNED_SHORT
+            return gl.GL_UNSIGNED_SHORT
         elif typeof is np.uint32:
-            return GL_UNSIGNED_INT
+            return gl.GL_UNSIGNED_INT
         elif typeof is np.int32:
-            return GL_INT
+            return gl.GL_INT
 
         elif None:
             # TODO add more conversion if needed

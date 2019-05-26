@@ -1,7 +1,7 @@
 '''OpenGL extension NV.shader_storage_buffer_object
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.shader_storage_buffer_object to provide a more 
+OpenGL.raw.GL.NV.shader_storage_buffer_object to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension NV.blend_square
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.blend_square to provide a more 
+OpenGL.raw.GL.NV.blend_square to provide a more
 Python-friendly API
 
 Overview (from the spec)

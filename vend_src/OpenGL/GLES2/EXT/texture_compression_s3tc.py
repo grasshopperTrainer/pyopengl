@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.texture_compression_s3tc
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.EXT.texture_compression_s3tc to provide a more 
+OpenGL.raw.GLES2.EXT.texture_compression_s3tc to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

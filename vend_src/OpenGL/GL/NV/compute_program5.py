@@ -1,7 +1,7 @@
 '''OpenGL extension NV.compute_program5
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.compute_program5 to provide a more 
+OpenGL.raw.GL.NV.compute_program5 to provide a more
 Python-friendly API
 
 Overview (from the spec)

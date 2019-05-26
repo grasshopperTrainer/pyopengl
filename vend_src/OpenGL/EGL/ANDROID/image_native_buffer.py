@@ -1,7 +1,7 @@
 '''OpenGL extension ANDROID.image_native_buffer
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.ANDROID.image_native_buffer to provide a more 
+OpenGL.raw.EGL.ANDROID.image_native_buffer to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

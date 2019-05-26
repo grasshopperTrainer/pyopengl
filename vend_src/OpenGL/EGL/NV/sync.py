@@ -1,7 +1,7 @@
 '''OpenGL extension NV.sync
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.NV.sync to provide a more 
+OpenGL.raw.EGL.NV.sync to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:
