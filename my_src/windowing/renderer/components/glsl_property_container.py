@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.lib.recfunctions import merge_arrays, append_fields
 import weakref
+import copy
 
 
 class _Block:
@@ -9,7 +10,7 @@ class _Block:
         self._name = name
         self._glsltype = glsltype
 
-        self._location = None
+        self._location = [None,]
         self._flag_changed = True
 
     def __setitem__(self, key, value):
@@ -75,7 +76,11 @@ class _Block:
 
     @property
     def location(self):
-        return self._location
+        return self._location[0]
+    @location.setter
+    def location(self,v):
+        self._location[0] = v
+
     @property
     def name(self):
         return self._name
@@ -87,7 +92,7 @@ class _Block:
     @property
     def is_updated(self):
         if self._flag_changed:
-            # self._flag_changed = False
+            self._flag_changed = False
             return True
         else:
             return False
@@ -176,9 +181,6 @@ class _Property:
     def buffer(self):
         return self._buffer
 
-    def set_location(self, value):
-        self._locations = value
-
     @property
     def updated(self):
         result = []
@@ -215,7 +217,7 @@ class _Property:
         for n, b in self._blocks.items():
             b._flag_changed = False
 
-class Properties:
+class Glsl_property_container:
 
     def __init__(self, shader):
         self._shader = shader
@@ -276,7 +278,7 @@ class Properties:
         return string
 
     def __str__(self):
-        return f'glsl properties of (Shader){self._shader}'
+        return f'<glsl properties of {self._shader}>'
 
     @property
     def blocks(self):
@@ -306,3 +308,19 @@ class Properties:
     def reset_update(self):
         self.attribute.reset_update()
         self.uniform.reset_update()
+
+    def copy_with_location(self):
+        """
+        Returns deep copied property to store unique buffer.
+        Yet new Properties object's block location is set to reference this mother objects'
+        to secure consistency.
+        :return: deep copied Properties object
+        """
+        new = copy.deepcopy(self)
+
+        for n,o in zip(new.attribute.blocks, self.attribute.blocks):
+            n._location = o._location
+        for n,o in zip(new.uniform.blocks, self.uniform.blocks):
+            n._location = o._location
+
+        return new

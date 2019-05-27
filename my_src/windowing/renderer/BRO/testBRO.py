@@ -13,8 +13,9 @@ class TestBRO():
     """
     c = Renderer_builder()
     c.use_shader(c.Shader('BRO_rectangle'))
-    c.use_index_buffer()
-    c.use_render_unit('vao','vbo')
+    c.use_triangle_strip_draw()
+    c.use_index_buffer(c.Indexbuffer((0,1,3,3,1,2)))
+    c.use_render_unit()
 
     renderer = c()
 
@@ -41,10 +42,19 @@ class TestBRO():
         self._abs_width = None
         self._abs_height = None
 
+        self.unit.properties['u_fillcol'] = 1,0,0,1
+        self.unit.properties['a_position'][0:4] = self.vertex
+
     def draw(self):
         self.renderer._draw_(self.unit)
 
-
+    @property
+    def vertex(self):
+        a = self.abs_posx, self.abs_posy
+        b = self.abs_posx+self.abs_width, self.abs_posy
+        c = self.abs_posx+self.abs_width, self.abs_posy+self.abs_height
+        d = self.abs_posx, self.abs_posy+self.abs_height
+        return a,b,c,d
     @property
     def abs_posx(self):
         if isinstance(self._posx, float):

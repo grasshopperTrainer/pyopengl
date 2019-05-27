@@ -1,14 +1,21 @@
 from numbers import Number
 
 import numpy as np
-from ...gl_tracker import GL_tracker as gl
+from ...gl_tracker import Trackable_openGL as gl
 
 from .component_bp import RenderComponent
 
 
 class Indexbuffer(RenderComponent):
-    def __init__(self, glusage=gl.GL_DYNAMIC_DRAW, dtype=None):
-        self._data = np.array([])
+    def __init__(self, data=None, glusage=gl.GL_DYNAMIC_DRAW, dtype=None):
+        self._data = None
+        self._dtype = None
+        self._glusage = None
+
+        if data is None:
+            self._data = np.array([])
+        else:
+            self.data = data
 
         if glusage is None:
             glusage = gl.GL_DYNAMIC_DRAW
@@ -43,6 +50,7 @@ class Indexbuffer(RenderComponent):
         if self._flag_firstbuild:
             self._glindex = gl.glGenBuffers(1)
             self._flag_firstbuild = False
+
         datasize = self.data.size * self.data.itemsize
         self.bind()
         gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, datasize, self.data, self._glusage)

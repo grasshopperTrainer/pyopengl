@@ -4,31 +4,28 @@ import ctypes
 
 from error_handler import print_message
 from .component_bp import RenderComponent
-from .properties import Properties
+from .glsl_property_container import Glsl_property_container
 
-from windowing.gl_tracker import GL_tracker as gl
+from windowing.gl_tracker import Trackable_openGL as gl
 
 
 class Shader(RenderComponent):
     _dic_shaders = OrderedDict()
 
     def __init__(self, file_name: str, name: str = None):
-        self._vertex = ''
-        self._fragment = ''
         self._file_name = file_name
+        self._vertex, self._fragment, self._attribute, self._uniform = self._load_parse_glsl(file_name)
+
         self._glindex = None
+        self._name = name
 
-        if name is None:
-            self._name = 'Unknown'
-        else:
-            self._name = name
-
-        self._properties = Properties(self)
-
+        self._properties = Glsl_property_container(self)
+        for i in self._attribute:
+            self._properties.new_attribute(i[0], i[1])
+        for i in self._uniform:
+            self._properties.new_uniform(i[0], i[1])
 
         self._flag_built = False
-
-
 
     @property
     def _is_built(self):
@@ -37,16 +34,6 @@ class Shader(RenderComponent):
     def build(self):
         # 1. create program
         self._glindex = gl.glCreateProgram()
-
-        # 2. load external glsl
-        # 3. read attributes and unifroms from shaders
-        att_uni = self._load_parse_glsl()
-        # 4. store att_uni
-        for i in att_uni['att']:
-            self._properties.new_attribute(i[0], i[1])
-        for i in att_uni['uni']:
-            self._properties.new_uniform(i[0], i[1])
-
         # 3. bind shaders
         self._bake_shader()
         # 2. store array buffer to use
@@ -55,14 +42,18 @@ class Shader(RenderComponent):
 
         self._flag_built = True
 
-    def _load_parse_glsl(self):
-        att_uni = {'att': [], 'uni': []}
+    def _load_parse_glsl(self, file_name):
+        att = []
+        uni = []
+        vertex_string = ''
+        fragment_string = ''
+
         # if giving full path
-        if '.glsl' in self._file_name:
-            file_path = self._file_name
+        if '.glsl' in file_name:
+            file_path = file_name
         # if using signed directory
         else:
-            file_path = f'res/shader/{self._file_name}.glsl'
+            file_path = f'res/shader/{file_name}.glsl'
 
         f = open(file_path, 'r')
         lines = f.readlines()
@@ -86,19 +77,19 @@ class Shader(RenderComponent):
 
             # add lines
             if save_vertex is True:
-                self._vertex += line
+                vertex_string += line
             elif save_fragment is True:
-                self._fragment += line
+                fragment_string += line
 
             # store variable names
             if 'attribute ' in line or 'uniform ' in line:
 
                 if 'attribute ' in line:
-                    addto = att_uni['att']
+                    addto = att
                     l = line.split('attribute ')[1]
 
                 else:
-                    addto = att_uni['uni']
+                    addto = uni
                     l = line.split('uniform ')[1]
 
                 l = l.replace(';', '')
@@ -129,12 +120,12 @@ class Shader(RenderComponent):
                 #     # TODO parse if other types are used for shader 'attribute', or 'uniform'
                 #     pass
                 # store value
-                addto.append([name, type])
+                addto.append((name, type))
 
             else:
                 continue
 
-        return att_uni
+        return vertex_string, fragment_string, tuple(att), tuple(uni)
 
     def _bake_shader(self):
 
@@ -206,10 +197,11 @@ class Shader(RenderComponent):
     def _set_properties_location(self):
         for i, block in enumerate(self.properties.attribute.blocks):
             gl.glBindAttribLocation(self.glindex, i, block._name)
-            block._location = i
+            block.location = i
 
         for block in self.properties.uniform.blocks:
-            block._location = gl.glGetUniformLocation(self.glindex, block._name)
+            block.location = gl.glGetUniformLocation(self.glindex, block._name)
+            print(block)
         gl.glLinkProgram(self.glindex)
 
     @property
@@ -217,4 +209,4 @@ class Shader(RenderComponent):
         return self._properties
 
     def __str__(self):
-        return f"Shader object named: '{self._name}', glindex: {self._glindex}"
+        return f"<Shader object named: '{self._name}', glindex: {self._glindex}>"

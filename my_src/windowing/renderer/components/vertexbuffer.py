@@ -1,5 +1,6 @@
 import numpy as np
-from ...gl_tracker import GL_tracker as gl
+import ctypes
+from ...gl_tracker import Trackable_openGL as gl
 from .component_bp import RenderComponent
 
 
@@ -90,6 +91,5 @@ class Vertexbuffer(RenderComponent):
     def data(self):
         return self._data
 
-    @property
-    def vbo(self):
-        return self._glindex
+    def __str__(self):
+        return f'<Vertex buffer object with opengl index: {self._glindex}>'

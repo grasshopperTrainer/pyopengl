@@ -10,9 +10,7 @@ window = Window(640, 480, "Hello World", None, None)
 window2 = Window(1000,300,'second_screen',None, window)
 
 window3 = Window(2000, 1000, 'third', None, window2)
-# window4 = Window(500,1000,'fourth',None,None)
-# window3.follows_closing(window, window2)
-# window4.follows_closing(window3)
+
 @Window.init
 def INIT():
     pass
@@ -29,13 +27,15 @@ def draw():
     # renderer.clear(1, 1, 1, 1)
     # renderer.set_variable('u_color', (1, 0.5, alpha, 0.75))
     # renderer._draw_()
-    if len(window2.mouse.pressed_button) != 0 or window2.is_resized:
-        window2.viewports[0].open()
-        window2.viewports[0].clear(1,0,0,1)
-        tr.draw()
-        tr2.draw()
+    # if len(window2.mouse.pressed_button) != 0 or window2.is_resized:
+    window2.viewports[0].open()
+    window2.viewports[0].clear(0,0,1,1)
+    tr.draw()
     pass
 
+@window3.draw
+def draw():
+    tr2.draw()
 
 
 @window.keyboard.press

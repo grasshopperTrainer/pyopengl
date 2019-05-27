@@ -1,6 +1,6 @@
 import os
 
-import OpenGL.GL as gl
+from ...gl_tracker import Trackable_openGL as gl
 import numpy as np
 from PIL import Image
 

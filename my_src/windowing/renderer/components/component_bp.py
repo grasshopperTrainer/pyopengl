@@ -1,6 +1,5 @@
 import numpy as np
-# from OpenGL.GL import *
-from ...gl_tracker import GL_tracker as gl
+from ...gl_tracker import Trackable_openGL as gl
 class RenderComponent:
     # def __new__(cls, *args, **kwargs):
     #     if len(args) + len(kwargs) == 0:

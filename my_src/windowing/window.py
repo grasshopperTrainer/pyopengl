@@ -4,7 +4,9 @@ from collections import OrderedDict
 from time import sleep
 from time import time
 
-from .gl_tracker import GL_tracker as gl
+from .gl_tracker import Trackable_openGL as gl
+from .gl_tracker import GL_tracker
+
 import glfw as glfw
 import glfw.GLFW as GLFW
 
@@ -19,7 +21,6 @@ from .viewport import *
 from patterns.update_check_descriptor import UCD
 from .frame_buffer_like.frame_buffer_like_bp import FBL
 
-from .gl_tracker import GL_tracker
 
 
 class _Windows:
@@ -124,8 +125,10 @@ class Window(FBL):
     def __init__(self, width, height, name, monitor = None, mother_window = None):
         FBL.set_current(self)
 
-        self._gltracker = GL_tracker(self)
-
+        if mother_window != None:
+            self._unique_glfw_context = mother_window.unique_glfw_context.follow(self)
+        else:
+            self._unique_glfw_context = GL_tracker(self)
         # threading.Thread.__init__(self)
 
         # save name of instance
@@ -551,6 +554,7 @@ class Window(FBL):
         # RenderUnit.push_current_window(self)
         glfw.make_context_current(None)
         glfw.make_context_current(self.glfw_window)
+
     @classmethod
     def get_current_window(cls):
         return cls._current_window
@@ -586,6 +590,39 @@ class Window(FBL):
 
     def register_shader(self, shader):
         self._shaders.append(shader)
+
+    @property
+    def master_window(self):
+        master = None
+        if self.mother_window is None:
+            return self
+        else:
+            master = self.mother_window.master_window
+        return master
+
+    @property
+    def offspring_windows(self, _count=0):
+        children = []
+        if len(self.children_window) != 0:
+            children += self.children_window
+            for c in self.children_window:
+                children += c.offspring_windows
+        return children
+
+    @property
+    def shared_windows(self):
+        m = self.master_window
+        o = m.offspring_windows
+
+        o.insert(0,m)
+        o.remove(self)
+
+        return o
+
+    @property
+    def unique_glfw_context(self):
+        return self._unique_glfw_context
+
 
 
 class Timer:
