@@ -201,7 +201,6 @@ class Shader(RenderComponent):
 
         for block in self.properties.uniform.blocks:
             block.location = gl.glGetUniformLocation(self.glindex, block._name)
-            print(block)
         gl.glLinkProgram(self.glindex)
 
     @property

@@ -20,22 +20,41 @@ def init():
     tr = BRO.TestBRO(0,0,100,100)
     # alpha = 'ddd'
     tr2 = BRO.TestBRO(100,100,100,200)
+    window2.mouse.instant_press_button(1)
     pass
-
+@window3.init
+def init():
+    # window3.mouse.instant_press_button(1)
+    pass
 @window2.draw
 def draw():
     # renderer.clear(1, 1, 1, 1)
     # renderer.set_variable('u_color', (1, 0.5, alpha, 0.75))
     # renderer._draw_()
-    # if len(window2.mouse.pressed_button) != 0 or window2.is_resized:
-    window2.viewports[0].open()
-    window2.viewports[0].clear(0,0,1,1)
-    tr.draw()
+    if len(window2.mouse.pressed_button) != 0:
+        window2.viewports[0].open()
+        window2.viewports[0].clear()
+        tr.draw()
+        # tr.draw()
+        # tr.draw()
+        # tr.draw()
+    # if len(window2.mouse.pressed_button) != 0:
+    #     tr.draw()
+        print('dkdkdk')
     pass
 
 @window3.draw
 def draw():
-    tr2.draw()
+    # window3.viewports[0].open()
+    # window3.viewports[0].clear(0,0,1,1)
+
+    if len(window3.mouse.pressed_button) != 0:
+        window3.viewports[0].open()
+        window3.viewports[0].clear()
+        tr.draw()
+        # tr2.draw()
+        print('window3 draw')
+    pass
 
 
 @window.keyboard.press

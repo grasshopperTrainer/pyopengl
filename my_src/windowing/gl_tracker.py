@@ -1,5 +1,9 @@
 import weakref
 import inspect
+import numpy as np
+import ctypes
+
+import glfw.GLFW as glfw
 import OpenGL.GL as gl
 from .frame_buffer_like.frame_buffer_like_bp import FBL
 
@@ -50,7 +54,7 @@ class GL_tracker:
         self._FBLs[window] = self
         return self
 
-class myclassmethod:
+class context_check:
     """
     Pre function execution operator.
     """
@@ -62,7 +66,32 @@ class myclassmethod:
         if FBL.get_current() not in GL_tracker._FBLs:
             raise Exception('Frame_buffer_like object not bound with trackable_GL')
 
-        return lambda *args,**kwargs: self.func(owner, *args, **kwargs)
+        if isinstance(self.func, vao_related):
+            return self.func
+        else:
+            return lambda *args,**kwargs: self.func(Trackable_openGL, *args, **kwargs)
+
+class vao_related:
+    """
+    Decorator for vao_related functions.
+    if glfw context doesn't support vertex array sharing this function will triger
+    to make all shared windows have same vertex array shape, operations.
+    """
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args, **kwargs):
+        if not Trackable_openGL._gen_vertex_array_shared:
+            fbl = FBL.get_current()
+            windows = fbl.shared_windows + [fbl, ]
+            for win in windows:
+                win.make_window_current()
+                return_v = self.func(Trackable_openGL,*args, **kwargs)
+            return return_v
+
+        else:
+            return self.func(*args, **kwargs)
+
 
 class Trackable_openGL:
     """
@@ -116,13 +145,67 @@ class Trackable_openGL:
     for i in range(32):
         exec(f'GL_TEXTURE{i} = gl.GL_TEXTURE{i}')
 
-    @myclassmethod
+    @classmethod
+    def context_sharing_check(cls):
+        glfw.glfwWindowHint(glfw.GLFW_VISIBLE, glfw.GLFW_FALSE)
+        first_win = glfw.glfwCreateWindow(10, 10, 'first', None, None)
+        second_win = glfw.glfwCreateWindow(10, 10, 'second', None, first_win)
+        glfw.glfwWindowHint(glfw.GLFW_VISIBLE, glfw.GLFW_TRUE)
+
+        glfw.glfwMakeContextCurrent(first_win)
+
+        first_bo = gl.glGenBuffers(1)
+        first_vao = gl.glGenVertexArrays(1)
+        first_program = gl.glCreateProgram()
+        first_shader = gl.glCreateShader(gl.GL_VERTEX_SHADER)
+        first_texture = gl.glGenTextures(1)
+        # first_shader = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
+
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, first_bo)
+        gl.glBindVertexArray(first_vao)
+        first_bound_vao = ctypes.c_int()
+        gl.glGetIntegerv(gl.GL_VERTEX_ARRAY_BINDING, first_bound_vao)
+        first_bound_bo = ctypes.c_int()
+        gl.glGetIntegerv(gl.GL_ARRAY_BUFFER_BINDING, first_bound_bo)
+
+        glfw.glfwMakeContextCurrent(second_win)
+
+        second_bound_vao = ctypes.c_int()
+        gl.glGetIntegerv(gl.GL_VERTEX_ARRAY_BINDING, second_bound_vao)
+        second_bound_bo = ctypes.c_int()
+        gl.glGetIntegerv(gl.GL_ARRAY_BUFFER_BINDING, second_bound_bo)
+
+        second_buffer = gl.glGenBuffers(1)
+        second_vertexarray = gl.glGenVertexArrays(1)
+        second_shader = gl.glCreateShader(gl.GL_VERTEX_SHADER)
+        second_program = gl.glCreateProgram()
+        second_texture = gl.glGenTextures(1)
+        # comparison
+
+        cls._gen_buffer_shared = True if first_bo != second_buffer else False
+        cls._gen_vertex_array_shared = True if first_vao != second_vertexarray else False
+        cls._gen_shader_shared = True if first_shader != second_shader else False
+        cls._gen_program_shared = True if first_program != second_program else False
+        cls._gen_texture_shared = True if first_texture != second_texture else False
+
+        print(cls._gen_buffer_shared)
+        print(cls._gen_vertex_array_shared)
+        print(cls._gen_shader_shared)
+        print(cls._gen_program_shared)
+        print(cls._gen_texture_shared)
+
+        glfw.glfwDestroyWindow(first_win)
+        glfw.glfwDestroyWindow(second_win)
+
+
+    @context_check
     def glGenBuffers(cls,n,buffers=None):
         index = gl.glGenBuffers(n, buffers)
         cls.ins()._buffers[index] = {}
         return index
 
-    @myclassmethod
+    @context_check
+    @vao_related
     def glBindBuffer(cls, target, buffer):
         buffer_d = cls.ins()._bound_buffer
         if target == cls.GL_ARRAY_BUFFER:
@@ -131,97 +214,98 @@ class Trackable_openGL:
             buffer_d['GL_ELEMENT_ARRAY_BUFFER'] = buffer
         else:
             raise
-
         gl.glBindBuffer(target, buffer)
 
-    @myclassmethod
+    @context_check
     def glBufferData(cls, target, size, data, usage):
         # TODO is automated size calculation good?
         gl.glBufferData(target, size, data, usage)
 
-    @myclassmethod
+    @context_check
     def glCreateProgram(cls):
         index = gl.glCreateProgram()
         cls.ins()._programs[index] = {'linked': False}
         return index
 
-    @myclassmethod
+    @context_check
     def glUseProgram(cls, program):
         cls.ins()._bound_program = program
         gl.glUseProgram(program)
 
-    @myclassmethod
+    @context_check
     def glCreateShader(cls, type):
         index = gl.glCreateShader(type)
         cls.ins()._shaders[index] = {}
 
         return index
 
-    @myclassmethod
+    @context_check
     def glClearColor(cls,r,g,b,a):
         gl.glClearColor(r,g,b,a)
 
-    @myclassmethod
+    @context_check
     def glClear(cls, mask):
         gl.glClear(mask)
 
-    @myclassmethod
+    @context_check
     def glEnable(cls, cap):
         gl.glEnable(cap)
 
-    @myclassmethod
+    @context_check
     def glBlendFunc(cls, sfactor,dfactor):
         gl.glBlendFunc(sfactor,dfactor)
 
-    @myclassmethod
+    @context_check
     def glViewport(cls,x,y,width,height):
         gl.glViewport(x,y,width,height)
 
-    @myclassmethod
+    @context_check
     def glScissor(cls,x,y,width,height):
         gl.glScissor(x,y,width,height)
 
-    @myclassmethod
+    @context_check
     def glShaderSource(cls, shader, count, string=None, length=None):
         gl.glShaderSource(shader, count, string, length)
 
-    @myclassmethod
+    @context_check
     def glCompileShader(cls, shader):
         gl.glCompileShader(shader)
 
-    @myclassmethod
+    @context_check
     def glGetShaderiv(cls, shader, pname, param=None):
         return gl.glGetShaderiv(shader,pname)
 
-    @myclassmethod
+    @context_check
     def glAttachShader(cls, program, shader):
         gl.glAttachShader(program, shader)
 
-    @myclassmethod
+    @context_check
     def glLinkProgram(cls, program):
         cls.ins()._programs[program]['linked'] = True
         gl.glLinkProgram(program)
 
-    @myclassmethod
+    @context_check
     def glValidateProgram(cls, program):
         gl.glValidateProgram(program)
 
-    @myclassmethod
+    @context_check
     def glDeleteShader(cls, shader):
         gl.glDeleteShader(shader)
         del cls.ins()._shaders[shader]
 
-    @myclassmethod
+    @context_check
     def glBindAttribLocation(cls, program, index, name):
         gl.glBindAttribLocation(program, index, name)
 
-    @myclassmethod
+    @context_check
     def glGetUniformLocation(cls, program, name):
         index = gl.glGetUniformLocation(program, name)
         return index
 
-    @myclassmethod
-    def glGenVertexArrays(cls, n, arrays = None):
+
+    @context_check
+    @vao_related
+    def glGenVertexArrays(cls, n, arrays=None):
         """
         Generate vertex arrays.
         Additional procedure to generate arrays in each shared glfw context.
@@ -232,27 +316,23 @@ class Trackable_openGL:
         :param arrays: ignored
         :return:
         """
-        windows =  cls.fbl().shared_windows + [cls.fbl(),]
-        index = None
-        for win in windows:
-            win.make_window_current()
-            index = gl.glGenVertexArrays(n, arrays)
+        index = gl.glGenVertexArrays(n, arrays)
         cls.ins()._vertex_arrays[index] = {}
 
         return index
 
-    @myclassmethod
+    @context_check
+    @vao_related
     def glBindVertexArray(cls, array):
         gl.glBindVertexArray(array)
-        cls.ins()._bound_vertex_array = array
 
-    @myclassmethod
+    @context_check
     def glGenTextures(cls, n, textures=None):
         index = gl.glGenTextures(n, textures)
         cls.ins()._textures[index] = {}
         return index
 
-    @myclassmethod
+    @context_check
     def glTexParameter(cls, target, pname, parameter):
         gl.glTexParameter(target, pname, parameter)
         if target == gl.GL_TEXTURE_2D:
@@ -277,14 +357,14 @@ class Trackable_openGL:
 
         cls.ins()._param_texture[tname][name] = value
 
-    @myclassmethod
+    @context_check
     def glActiveTexture(cls, texture):
         gl.glActiveTexture(texture)
         base = gl.GL_TEXTURE0
         n = texture - base
         cls.ins()._active_texture = f'GL_TEXTURE{n}'
 
-    @myclassmethod
+    @context_check
     def glBindTexture(cls, target, texture):
         gl.glBindTexture(target, texture)
 
@@ -293,27 +373,31 @@ class Trackable_openGL:
 
         cls.ins()._bound_texture[name] = texture
 
-    @myclassmethod
+    @context_check
     def glBufferSubData(cls,target,offset,size,data):
         gl.glBufferSubData(target,offset,size,data)
 
-    @myclassmethod
+    @context_check
     def glUniformMatrix4fv(cls, location, count, transpose, value):
         gl.glUniformMatrix4fv(location, count, transpose, value)
-    @myclassmethod
+    @context_check
     def glUniform4fv(cls, location, count, value):
         gl.glUniform4fv(location, count, value)
-    @myclassmethod
+    @context_check
     def glUniform1i(cls, location, v0):
         gl.glUniform1i(location, v0)
 
-    @myclassmethod
+    @context_check
+    @vao_related
     def glEnableVertexAttribArray(cls, index):
         gl.glEnableVertexAttribArray(index)
-    @myclassmethod
+
+    @context_check
+    @vao_related
     def glVertexAttribPointer(cls,index, type, size, normalized, stride, pointer):
         gl.glVertexAttribPointer(index, type, size, normalized, stride, pointer)
-    @myclassmethod
+
+    @context_check
     def glDrawElements(cls,mode,count,type,indices):
         gl.glDrawElements(mode,count,type,indices)
 

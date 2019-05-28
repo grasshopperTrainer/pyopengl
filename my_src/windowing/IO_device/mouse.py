@@ -116,12 +116,15 @@ class Mouse(SID):
         for event in self._event[when]:
             self._window._context_scope.run(event)
 
-    def instant_press_button(self, button):
-        if button not in self._button_state:
-            self._button_state[button] = None
-
+    def instant_press_button(self, button: int):
+        """
+        Triger one-time mouse button click action.
+        :param button: button index number
+        :return:
+        """
         self._button_state[button] = True
-        self.instant_mouse_states.append([self._button_state,button, False])
+        # reset action
+        self.instant_mouse_states.append([self._button_state, button, False])
 
     def instant_mouse_onscreen(self):
         self._flag_cursor_onscreen = True

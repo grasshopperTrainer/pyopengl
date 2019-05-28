@@ -37,6 +37,7 @@ class _Windows:
     def __get__(self, instance, owner):
         # return self.__class__.windows
         return _Windows()
+
     def __getattr__(self, item):
         if item is 'remove':
             return self.__delattr__
@@ -103,6 +104,7 @@ class Window(FBL):
     @classmethod
     def glfw_init(cls,func = None):
         glfw.init()
+        gl.context_sharing_check()
 
     def __new__(cls,*args,**kwargs):
         """
@@ -157,10 +159,10 @@ class Window(FBL):
         })
 
         # store relationship between mother and children
-        self._children_window = []
+        self._children_windows = []
         self._mother_window = mother_window #type: Window
         if mother_window is not None:
-            mother_window._children_window.append(self)
+            mother_window._children_windows.append(weakref.proxy(self))
             self._glfw_window = glfw.create_window(width, height, name, monitor, mother_window._glfw_window)
         else:
             self._glfw_window = glfw.create_window(width, height, name, monitor, None)
@@ -203,7 +205,6 @@ class Window(FBL):
         # drawing layers
         self._layers = Layers(self)
 
-        self._flag_need_swap = True
         self._flag_resized = True
         self._flag_something_rendered = False
 
@@ -213,12 +214,14 @@ class Window(FBL):
 
         self._shaders = []
 
+        self._count = 0
+
     @property
     def mother_window(self):
         return self._mother_window
     @property
-    def children_window(self):
-        return self._children_window
+    def children_windows(self):
+        return self._children_windows
 
     @property
     def draw_func(self):
@@ -393,19 +396,22 @@ class Window(FBL):
 
                     #drawing
                     window.make_window_current()
-                    window._context_scope.run(window.draw_func)
 
+                    window._context_scope.run(window.draw_func)
                     if window._flag_something_rendered:
+                        print(window.mouse.pressed_button)
                         glfw.swap_buffers(window.glfw_window)
+                        print('swap')
+
 
                     window._flag_something_rendered = False
                     window._flag_resized = False
 
-                    viewports = window.viewports._viewports
-
-                    # UCD.reset_instance_descriptors_update(window)
-                    UCD.reset_instance_descriptors_update(*viewports.values())
-                    UCD.reset_instance_descriptors_update(*[v.camera for v in viewports.values()])
+                    # viewports = window.viewports._viewports
+                    #
+                    # # UCD.reset_instance_descriptors_update(window)
+                    # UCD.reset_instance_descriptors_update(*viewports.values())
+                    # UCD.reset_instance_descriptors_update(*[v.camera for v in viewports.values()])
 
                     window.mouse.reset()
 
@@ -462,6 +468,10 @@ class Window(FBL):
             if window.mother_window == self or self in window._follow_close:
                 window.close()
                 break
+
+            if self in window.children_windows:
+                window.children_windows.remove(self)
+
         glfw.make_context_current(None)
         glfw.destroy_window(self.glfw_window)
         self._windows - self
@@ -510,8 +520,8 @@ class Window(FBL):
     def name(self):
         return self._init_info['name']
 
-    def __str__(self):
-        return f"window: '{self.name}'"
+    # def __str__(self):
+    #     return f"window: '{self.name}'"
 
     @property
     def option_close(self):
@@ -550,7 +560,7 @@ class Window(FBL):
 
     def make_window_current(self):
         # self.__class__._current_window = self
-        FBL._current = self
+        FBL.set_current(self)
         # RenderUnit.push_current_window(self)
         glfw.make_context_current(None)
         glfw.make_context_current(self.glfw_window)
@@ -603,9 +613,9 @@ class Window(FBL):
     @property
     def offspring_windows(self, _count=0):
         children = []
-        if len(self.children_window) != 0:
-            children += self.children_window
-            for c in self.children_window:
+        if len(self.children_windows) != 0:
+            children += self.children_windows
+            for c in self.children_windows:
                 children += c.offspring_windows
         return children
 
@@ -613,10 +623,8 @@ class Window(FBL):
     def shared_windows(self):
         m = self.master_window
         o = m.offspring_windows
-
-        o.insert(0,m)
+        o.insert(0,weakref.proxy(m))
         o.remove(self)
-
         return o
 
     @property

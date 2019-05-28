@@ -9,7 +9,6 @@ class Vertexarray(RenderComponent):
 
     def build(self):
         self._glindex = gl.glGenVertexArrays(1)
-        print('-vertex array generated')
 
     def bind(self):
         gl.glBindVertexArray(self._glindex)

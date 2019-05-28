@@ -22,7 +22,7 @@ import weakref
 #     MULTI_VBO = VBO_layout(0)
 #     SINGLE_VBO = VBO_layout(1)
 
-class Render_unit:
+class Render_unit_builder:
     reg_count = 0
     def __new__(cls, *args, **kwargs):
         new_cls = type(f'Render_unit{cls.reg_count}', (Render_unit_temp, ), {})
@@ -92,7 +92,6 @@ class Render_unit_temp:
         self._flag_built = False
 
     def _build_(self):
-
         self.vertex_array.build()
         self.vertex_array.bind()
 
@@ -101,15 +100,14 @@ class Render_unit_temp:
         self.vertex_array.unbind()
 
         self.index_buffer.build()
-
         self.texture.build()
+
     def update_variables(self):
         # for attribute
         # bind buffer and vertex_attrib_pointer with gl if form of buffer has changed
         if self.properties.attribute.is_buffer_formchange:
             self.vertex_buffer.bind()
             buffer = self.properties.attribute.buffer
-            print(buffer)
             self.vertex_buffer.set_attribpointer(buffer)
             self.vertex_buffer.unbind()
 
@@ -118,13 +116,13 @@ class Render_unit_temp:
         # change whole if all buffer is changed
         changed_blocks = self.properties.attribute.updated
         if len(changed_blocks) != 0:
-
             self.vertex_buffer.bind()
 
             if len(changed_blocks) == len(self.properties.attribute.names):
                 buffer = self.properties.attribute.buffer
-                size = buffer.itemsize * buffer.size
-                gl.glBufferData(gl.GL_ARRAY_BUFFER, size, buffer, self.vertex_buffer._glusage)
+                self.vertex_buffer.set_attribpointer(buffer)
+                # size = buffer.itemsize * buffer.size
+                # gl.glBufferData(gl.GL_ARRAY_BUFFER, size, buffer, self.vertex_buffer._glusage)
 
             else:
                 # update part only
@@ -145,10 +143,8 @@ class Render_unit_temp:
                         off = start_off + buffer.itemsize * i
                         element = data[i]
                         size = element.itemsize * element.size
-                        # print(off)
-                        # print(element)
-                        # print(size)
                         gl.glBufferSubData(gl.GL_ARRAY_BUFFER, off, size, element)
+
             self.vertex_buffer.unbind()
 
             if isinstance(self.index_buffer, comp.Indexbuffer):
@@ -177,7 +173,6 @@ class Render_unit_temp:
         # for uniforms
         changed_blocks = self.properties.uniform.updated
         if len(changed_blocks) != 0:
-
             # update part only
             for block in changed_blocks:
                 n = block.data[0].size
@@ -191,7 +186,6 @@ class Render_unit_temp:
                     n = block.glsltype.split('mat')[1]
                     c = 1
                     t = 'f'
-                    print(block)
                     exec(f'gl.glUniformMatrix{n}{t}v({block.location},{c},True,block.data[{c - 1}])')
                 elif block.glsltype == 'int':
                     gl.glUniform1i(block.location, block.data[0])
@@ -222,6 +216,7 @@ class Render_unit_temp:
         if not self._flag_built:
             self._build_()
             self._flag_built = True
+
         if isinstance(self.vertex_array, comp.Vertexarray):
             self.vertex_array.bind()
         else:
@@ -295,7 +290,7 @@ class Renderer_template:
 
     @classmethod
     def use_render_unit(cls, vao=True, vbo=True,index=False,texture=False):
-        ru = Render_unit()
+        ru = Render_unit_builder()
         if vao:
             ru.use_vao()
         if vbo:
@@ -396,6 +391,7 @@ class Renderer_template:
             return comp.RenderComponent
 
     def _draw_(self, render_unit, fbl = None):
+        print(f'______________________drawing under {FBL.get_current().name}')
 
         # check initiated context
         context = FBL.get_current().unique_glfw_context
@@ -405,6 +401,7 @@ class Renderer_template:
         if self.flag_draw or self.flag_run:
             # load opengl states
             self.shader.bind()
+
             self.index_buffer.bind()
             self.texture.bind()
 
@@ -412,9 +409,9 @@ class Renderer_template:
 
             # if set to run
             if self.flag_run:
+                # self.update_global_variables(render_unit)
 
                 # update all variables of shader
-                # self.update_global_variables(render_unit)
                 render_unit.update_variables()
                 pass
 
@@ -438,7 +435,7 @@ class Renderer_template:
         self.texture.unbind()
 
     def draw_element(self, index_buffer):
-        window = FBL._current
+        window = FBL.get_current()
         viewport = Viewport.get_current()
 
         # Automated condition can't be set
@@ -458,11 +455,12 @@ class Renderer_template:
             viewport.fillbackground()
             # draw a thing
             if index_buffer.count != 0:
-                # print('--------------------')
-                # print(window._unique_glfw_context._bound_program)
-                # print(window._unique_glfw_context._bound_buffer)
-                # print(window._unique_glfw_context._bound_vertex_array)
-
+                print('--------------------')
+                print(window._unique_glfw_context._bound_program)
+                print(window._unique_glfw_context._bound_buffer)
+                print(window._unique_glfw_context._bound_vertex_array)
+                print(index_buffer.data)
+                print('element draw')
                 gl.glDrawElements(self.drawmode, index_buffer.count, index_buffer.gldtype, None)
 
     def _hide_(self, set=None):

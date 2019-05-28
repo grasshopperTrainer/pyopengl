@@ -1,4 +1,4 @@
-from ..renderer_template import Renderer_builder, Render_unit
+from ..renderer_template import Renderer_builder, Render_unit_builder
 from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
 # from ..components import *
 from patterns.update_check_descriptor import UCD
@@ -30,7 +30,7 @@ class TestBRO():
     _abs_height = UCD()
 
     def __init__(self,posx, posy, width, height):
-        self.unit  = self.renderer.new_render_unit()
+        self.unit = self.renderer.new_render_unit()
 
         self._posx = posx
         self._posy = posy
@@ -43,9 +43,9 @@ class TestBRO():
         self._abs_height = None
 
         self.unit.properties['u_fillcol'] = 1,0,0,1
-        self.unit.properties['a_position'][0:4] = self.vertex
 
     def draw(self):
+        self.unit.properties['a_position'][0:4] = self.vertex
         self.renderer._draw_(self.unit)
 
     @property
@@ -55,6 +55,7 @@ class TestBRO():
         c = self.abs_posx+self.abs_width, self.abs_posy+self.abs_height
         d = self.abs_posx, self.abs_posy+self.abs_height
         return a,b,c,d
+
     @property
     def abs_posx(self):
         if isinstance(self._posx, float):

@@ -14,6 +14,8 @@ class Viewports:
         self.new(0, 0, 1.0, 1.0, 'default')
         self._viewports['default'].camera.mode = 2
         self._viewports['default'].camera.move(0, 0, 1)
+        # have it as base
+        self._viewports['default'].open()
 
     def new(self, x, y, width, height, name):
         if not all([isinstance(i, Number) for i in (x, y, width, height)]):
