@@ -132,8 +132,19 @@ class Trackable_openGL:
 
     # array buffer
     GL_ARRAY_BUFFER = gl.GL_ARRAY_BUFFER
+    GL_ARRAY_BUFFER_BINDING = gl.GL_ARRAY_BUFFER_BINDING
     GL_ELEMENT_ARRAY_BUFFER = gl.GL_ELEMENT_ARRAY_BUFFER
+    GL_ELEMENT_ARRAY_BUFFER_BINDING = gl.GL_ELEMENT_ARRAY_BUFFER_BINDING
 
+    #
+    GL_VERSION = gl.GL_VERSION
+    GL_VENDOR = gl.GL_VENDOR
+    GL_RENDERER = gl.GL_RENDERER
+    #
+    GL_RGBA = gl.GL_RGBA
+    GL_RGB = gl.GL_RGB
+    GL_R = gl.GL_R
+    # texture
     GL_TEXTURE_2D = gl.GL_TEXTURE_2D
     GL_TEXTURE_MIN_FILTER = gl.GL_TEXTURE_MIN_FILTER
     GL_TEXTURE_MAG_FILTER = gl.GL_TEXTURE_MAG_FILTER
@@ -188,11 +199,40 @@ class Trackable_openGL:
         cls._gen_program_shared = True if first_program != second_program else False
         cls._gen_texture_shared = True if first_texture != second_texture else False
 
-        print(cls._gen_buffer_shared)
-        print(cls._gen_vertex_array_shared)
-        print(cls._gen_shader_shared)
-        print(cls._gen_program_shared)
-        print(cls._gen_texture_shared)
+        # print(cls._gen_buffer_shared)
+        # print(cls._gen_vertex_array_shared)
+        # print(cls._gen_shader_shared)
+        # print(cls._gen_program_shared)
+        # print(cls._gen_texture_shared)
+
+        cls.version = gl.glGetString(gl.GL_VERSION)
+        cls.renderer = gl.glGetString(gl.GL_RENDERER)
+        cls.vendor = gl.glGetString(gl.GL_VENDOR)
+
+        cls.vao_stores_ibo = False
+        # TODO write down test to varify whether glelementarraybuffer can be
+        #   bound with VAO
+        # vao = gl.glGenVertexArrays(1)
+        # vbo = gl.glGenBuffers(1)
+        # ibo = gl.glGenBuffers(1)
+        #
+        # gl.glBindVertexArray(vao)
+        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER,vbo)
+        # gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER,ibo)
+        #
+        # v = np.array((0,0),np.float32)
+        # # gl.glBufferData(gl.GL_ARRAY_BUFFER, 64,v,gl.GL_DYNAMIC_DRAW)
+        # v = np.array((0),np.uint)
+        # gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, 4, v, gl.GL_DYNAMIC_DRAW)
+        #
+        # gl.glColor(1,1,0,1)
+        # gl.glDrawElements(gl.GL_POINTS,1,gl.GL_UNSIGNED_INT,None)
+        #
+        # p = gl.glReadPixels(0, 0, 10, 10, gl.GL_RGBA, gl.GL_UNSIGNED_INT)
+        #
+        # gl.glDeleteBuffers(1, [vbo])
+        # gl.glDeleteVertexArrays(1, [vao])
+
 
         glfw.glfwDestroyWindow(first_win)
         glfw.glfwDestroyWindow(second_win)
@@ -401,6 +441,16 @@ class Trackable_openGL:
     def glDrawElements(cls,mode,count,type,indices):
         gl.glDrawElements(mode,count,type,indices)
 
+    @context_check
+    def glReadPixels(cls,x,y,width,height,format,type,pixels=None):
+        return gl.glReadPixels(x,y,width,height,format,type,pixels)
+
+    @context_check
+    def glGetIntegerv(cls,pname,data):
+        return gl.glGetIntegerv(pname,data)
+    @context_check
+    def glGetString(cls, name):
+        return gl.glGetString(name)
     @classmethod
     def fbl(cls):
         return FBL.get_current()

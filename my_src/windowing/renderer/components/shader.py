@@ -28,7 +28,7 @@ class Shader(RenderComponent):
         self._flag_built = False
 
     @property
-    def _is_built(self):
+    def is_built(self):
         return self._flag_built
 
     def build(self):

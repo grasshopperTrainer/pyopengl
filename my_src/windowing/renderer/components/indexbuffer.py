@@ -54,6 +54,7 @@ class Indexbuffer(RenderComponent):
         datasize = self.data.size * self.data.itemsize
         self.bind()
         gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, datasize, self.data, self._glusage)
+
         self.unbind()
         # print('-index buffer built')
 

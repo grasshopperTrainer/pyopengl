@@ -15,7 +15,8 @@ class TestBRO():
     c.use_shader(c.Shader('BRO_rectangle'))
     c.use_triangle_strip_draw()
     c.use_index_buffer(c.Indexbuffer((0,1,3,3,1,2)))
-    c.use_render_unit()
+
+    c.use_render_unit(vao=True, vbo=True)
 
     renderer = c()
 

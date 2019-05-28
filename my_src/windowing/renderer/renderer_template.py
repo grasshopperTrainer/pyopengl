@@ -2,6 +2,7 @@ import glfw
 from ..gl_tracker import Trackable_openGL as gl
 
 from ..renderer import components as comp
+import ctypes
 
 from patterns.update_check_descriptor import UCD
 from ..window import Window
@@ -31,75 +32,114 @@ class Render_unit_builder:
 
 
 class Render_unit_temp:
+
     _init_list = []
-    @classmethod
-    def use_vao(cls):
-        cls._init_list.append(comp.Vertexarray)
+
+    _shader = None
+    _vertex_array = None
+    _vertex_buffer = None
+    _index_buffer = None
+    _texture = None
+    _hollow_comp = comp.RenderComponent()
 
     @classmethod
-    def use_vbo(cls):
-        cls._init_list.append(comp.Vertexbuffer)
+    def use_shader(cls, shader=None):
+        if shader is None:
+            cls._shader = comp.Shader()
+        else:
+            cls._shader = shader
 
     @classmethod
-    def use_index(cls):
-        cls._init_list.append(comp.Indexbuffer)
+    def use_vertex_array(cls,vao=None):
+        if vao is None:
+            cls._vertex_array = comp.Vertexarray
+        else:
+            cls._vertex_array = vao
 
     @classmethod
-    def use_texture(cls):
-        cls._init_list.append(comp.Texture)
+    def use_vertex_buffer(cls,vbo=None):
+        if vbo is None:
+            cls._vertex_buffer = comp.Vertexbuffer
+        else:
+            cls._vertex_buffer = vbo
+
+    @classmethod
+    def use_index_buffer(cls,ibo=None):
+        if ibo is None:
+            cls._index_buffer = comp.Indexbuffer
+        else:
+            cls._index_buffer = ibo
+
+    @classmethod
+    def use_texture(cls,texture=None):
+        if texture is None:
+            cls._texture = comp.Texture
+        else:
+            cls._texture = texture
+
+    @property
+    def shader(self):
+        if self._shader is None:
+            return self.__class__._hollow_comp
+        else:
+            return self._shader
 
     @property
     def vertex_array(self):
-        if hasattr(self, '_vertex_array'):
-            return self._vertex_array
+        if self._vertex_array is None:
+            return self.__class__._hollow_comp
         else:
-            return comp.RenderComponent
+            return self._vertex_array
 
     @property
     def vertex_buffer(self):
-        if hasattr(self, '_vertex_buffer'):
-            return self._vertex_buffer
+        if self._vertex_buffer is None:
+            return self.__class__._hollow_comp
         else:
-            return comp.RenderComponent
+            return self._vertex_buffer
 
     @property
     def index_buffer(self):
-        if hasattr(self, '_index_array_buffer'):
-            return self._index_buffer
+        if self._index_buffer is None:
+            return self.__class__._hollow_comp
         else:
-            return comp.RenderComponent
+            return self._index_buffer
 
     @property
     def texture(self):
-        if hasattr(self, '_texture'):
-            return self._texture
+        if self._texture is None:
+            return self.__class__._hollow_comp
         else:
-            return comp.RenderComponent
+            return self._texture
 
-    def __init__(self, shader):
-        self._shader = shader
+    def __init__(self):
+        self._shader = self.__class__._shader
         self._properties = self._shader.properties.copy_with_location()
+
         cls = self.__class__
-        if comp.Vertexarray in cls._init_list:
-            self._vertex_array = comp.Vertexarray()
-        if comp.Vertexbuffer in cls._init_list:
-            self._vertex_buffer = comp.Vertexbuffer()
-        if comp.Indexbuffer in cls._init_list:
-            self._index_buffer = comp.Indexbuffer()
-        if comp.Texture in cls._init_list:
-            self._texture = comp.Texture()
+        if isinstance(cls._vertex_array, type):
+            self._vertex_array = cls._vertex_array()
+        if isinstance(cls._vertex_buffer, type):
+            self._vertex_buffer = cls._vertex_buffer()
+        if isinstance(cls._index_buffer, type):
+            self._index_buffer = cls._index_buffer()
+        if isinstance(cls._texture, type):
+            self._texture = cls._texture()
 
         self._flag_built = False
 
     def _build_(self):
+        if not self.shader.is_built:
+            self.shader.build()
+
         self.vertex_array.build()
         self.vertex_array.bind()
 
+        self.index_buffer.build()
         self.vertex_buffer.build()
 
         self.vertex_array.unbind()
 
-        self.index_buffer.build()
         self.texture.build()
 
     def update_variables(self):
@@ -147,28 +187,28 @@ class Render_unit_temp:
 
             self.vertex_buffer.unbind()
 
-            if isinstance(self.index_buffer, comp.Indexbuffer):
-                # automated index setting
-                # if size changed
-                if self._drawmode == gl.GL_TRIANGLE_STRIP:
-                    num_tri = buffer.size - 2
-                    if num_tri != self.index_buffer.data.size:
-                        indicies = []
-                        for i in range(num_tri):
-                            if i == 0:
-                                indicies += [0, 1, 2]
-                            elif i == 1:
-                                indicies += [2, 0, 3]
-                            else:
-                                indicies += [i, i - 1, i + 1]
-                        if len(indicies) != 0:
-                            self.index_buffer.data = indicies
-                            self.index_buffer.build()
-                            self.index_buffer.bind()
-                        else:
-                            pass
-                else:
-                    raise Exception(f"please define handler of other draw mode '{self.mode}'")
+            # if isinstance(self.index_buffer, comp.Indexbuffer):
+            #     # automated index setting
+            #     # if size changed
+            #     if self._drawmode == gl.GL_TRIANGLE_STRIP:
+            #         num_tri = buffer.size - 2
+            #         if num_tri != self.index_buffer.data.size:
+            #             indicies = []
+            #             for i in range(num_tri):
+            #                 if i == 0:
+            #                     indicies += [0, 1, 2]
+            #                 elif i == 1:
+            #                     indicies += [2, 0, 3]
+            #                 else:
+            #                     indicies += [i, i - 1, i + 1]
+            #             if len(indicies) != 0:
+            #                 self.index_buffer.data = indicies
+            #                 self.index_buffer.build()
+            #                 self.index_buffer.bind()
+            #             else:
+            #                 pass
+            #     else:
+            #         raise Exception(f"please define handler of other draw mode '{self.mode}'")
 
         # for uniforms
         changed_blocks = self.properties.uniform.updated
@@ -217,12 +257,16 @@ class Render_unit_temp:
             self._build_()
             self._flag_built = True
 
+        self.shader.bind()
+
         if isinstance(self.vertex_array, comp.Vertexarray):
             self.vertex_array.bind()
+            if not gl.vao_stores_ibo:
+                self.index_buffer.bind()
         else:
             self.vertex_buffer.bind()
+            self.index_buffer.bind()
 
-        self.index_buffer.bind()
         self.texture.bind()
 
     @property
@@ -232,7 +276,7 @@ class Render_unit_temp:
 class Renderer_template:
     """
     Pattern sould be determined:
-    1. Renderer instance contain only one shader
+    1. Renderer instance contain only one shadern
     Problem is the renderers. Should Renderer contain one renderers for each kinds
     or could it contain multiple renderers and switch between them while rendering?
 
@@ -267,7 +311,10 @@ class Renderer_template:
     Indexbuffer = comp.Indexbuffer
     Texture = comp.Texture
     # layout = Layout_container
-
+    _vertex_array = comp.RenderComponent()
+    _vertex_buffer = comp.RenderComponent()
+    _index_buffer = comp.RenderComponent()
+    _texture = comp.RenderComponent()
 
     @classmethod
     def use_shader(cls, shader):
@@ -285,20 +332,19 @@ class Renderer_template:
             raise TypeError
 
     @classmethod
-    def use_texture_buffer(cls):
-        cls._texture_buffer = comp.Texture()
+    def use_texture(cls):
+        cls._texture = comp.Texture()
 
     @classmethod
-    def use_render_unit(cls, vao=True, vbo=True,index=False,texture=False):
+    def use_render_unit(cls, vao=True, vbo=True, index=False, texture=False):
+
         ru = Render_unit_builder()
-        if vao:
-            ru.use_vao()
-        if vbo:
-            ru.use_vbo()
-        if index:
-            ru.use_index()
-        if texture:
-            ru.use_texture()
+
+        ru.use_shader(cls._shader)
+        ru.use_vertex_array() if vao else ru.use_vertex_array(cls._vertex_array)
+        ru.use_vertex_buffer() if vbo else ru.use_vertex_buffer(cls._vertex_buffer)
+        ru.use_index_buffer() if index else ru.use_index_buffer(cls._index_buffer)
+        ru.use_texture() if texture else ru.use_texture(cls._texture)
 
         cls._render_unit_class = ru
 
@@ -321,7 +367,7 @@ class Renderer_template:
             reg.append(fbl.unique_glfw_context)
 
         # make new unit
-        ru = cls._render_unit_class(cls._shader)
+        ru = cls._render_unit_class()
         if glfw_context not in cls._render_units:
             cls._render_units[glfw_context] = []
         cls._render_units[glfw_context].append(ru)
@@ -391,8 +437,6 @@ class Renderer_template:
             return comp.RenderComponent
 
     def _draw_(self, render_unit, fbl = None):
-        print(f'______________________drawing under {FBL.get_current().name}')
-
         # check initiated context
         context = FBL.get_current().unique_glfw_context
         if render_unit not in self._render_units[context]:
@@ -400,29 +444,13 @@ class Renderer_template:
 
         if self.flag_draw or self.flag_run:
             # load opengl states
-            self.shader.bind()
-
-            self.index_buffer.bind()
-            self.texture.bind()
-
             render_unit.bind()
 
-            # if set to run
             if self.flag_run:
-                # self.update_global_variables(render_unit)
-
-                # update all variables of shader
                 render_unit.update_variables()
-                pass
 
             if self.flag_draw:
-                if hasattr(render_unit, '_index_buffer'):
-                    index_buffer = render_unit._index_buffer
-                elif hasattr(self, '_index_buffer'):
-                    index_buffer = self._index_buffer
-                else:
-                    raise AttributeError("can't find index buffer")
-                self.draw_element(index_buffer)
+                self.draw_element(render_unit.index_buffer)
 
             # TODO is this unnecessary processing? checking?
             self._unbind_global()
@@ -451,17 +479,12 @@ class Renderer_template:
         #      Implement this.
         if True:
             window._flag_something_rendered = True
-            # before make any change erase background
-            viewport.fillbackground()
-            # draw a thing
-            if index_buffer.count != 0:
-                print('--------------------')
-                print(window._unique_glfw_context._bound_program)
-                print(window._unique_glfw_context._bound_buffer)
-                print(window._unique_glfw_context._bound_vertex_array)
-                print(index_buffer.data)
-                print('element draw')
+            viewport.fillbackground() # before make any change erase background
+            if index_buffer.count != 0: # draw a thing
+
                 gl.glDrawElements(self.drawmode, index_buffer.count, index_buffer.gldtype, None)
+
+
 
     def _hide_(self, set=None):
         if set is None:

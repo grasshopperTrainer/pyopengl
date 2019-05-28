@@ -132,7 +132,6 @@ class Window(FBL):
         else:
             self._unique_glfw_context = GL_tracker(self)
         # threading.Thread.__init__(self)
-
         # save name of instance
         f = inspect.currentframe().f_back
         self.instance_name = ''
@@ -399,9 +398,7 @@ class Window(FBL):
 
                     window._context_scope.run(window.draw_func)
                     if window._flag_something_rendered:
-                        print(window.mouse.pressed_button)
                         glfw.swap_buffers(window.glfw_window)
-                        print('swap')
 
 
                     window._flag_something_rendered = False
