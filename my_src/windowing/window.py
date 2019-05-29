@@ -4,11 +4,11 @@ from collections import OrderedDict
 from time import sleep
 from time import time
 
-from .gl_tracker import Trackable_openGL as gl
-from .gl_tracker import GL_tracker
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
 
 import glfw as glfw
-import glfw.GLFW as GLFW
+# import glfw.GLFW as GLFW
 
 from error_handler import *
 # from renderers.renderer.renderunit import RenderUnit
@@ -86,7 +86,6 @@ class Window(FBL):
         from windowing.viewport.viewport import Viewport
         import OpenGL.GL as gl
         import glfw as glfw
-
         pass
 
     _init_global = _global_init
@@ -104,7 +103,7 @@ class Window(FBL):
     @classmethod
     def glfw_init(cls,func = None):
         glfw.init()
-        gl.context_sharing_check()
+        gl.context_specification_check()
 
     def __new__(cls,*args,**kwargs):
         """
@@ -127,10 +126,24 @@ class Window(FBL):
     def __init__(self, width, height, name, monitor = None, mother_window = None):
         FBL.set_current(self)
 
-        if mother_window != None:
-            self._unique_glfw_context = mother_window.unique_glfw_context.follow(self)
+        # store relationship between mother and children
+        self._mother_window = mother_window  # type: Window
+        if mother_window is not None:
+            mother_window._children_windows.append(weakref.proxy(self))
+            self._glfw_window = glfw.create_window(width, height, name, monitor, mother_window._glfw_window)
         else:
-            self._unique_glfw_context = GL_tracker(self)
+            self._glfw_window = glfw.create_window(width, height, name, monitor, None)
+
+        # glfw window creation error check
+        if not self._glfw_window:
+            glfw.terminate()
+
+        self._children_windows = []
+
+        if mother_window != None:
+            self._unique_glfw_context = mother_window.unique_glfw_context.give_tracker_to(self)
+        else:
+            self._unique_glfw_context = GLFW_GL_tracker(self)
         # threading.Thread.__init__(self)
         # save name of instance
         f = inspect.currentframe().f_back
@@ -157,18 +170,7 @@ class Window(FBL):
             'share': mother_window
         })
 
-        # store relationship between mother and children
-        self._children_windows = []
-        self._mother_window = mother_window #type: Window
-        if mother_window is not None:
-            mother_window._children_windows.append(weakref.proxy(self))
-            self._glfw_window = glfw.create_window(width, height, name, monitor, mother_window._glfw_window)
-        else:
-            self._glfw_window = glfw.create_window(width, height, name, monitor, None)
 
-        # glfw window creation error check
-        if not self._glfw_window:
-            glfw.terminate()
 
         # set it current for farther settings
         glfw.make_context_current(self.glfw_window)
@@ -314,9 +316,9 @@ class Window(FBL):
 
     def initiation_glfw_setting(self):
         # default setting
-        glfw.window_hint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4)
-        glfw.window_hint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3)
-        glfw.window_hint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE)
+        glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 4)
+        glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
+        glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
         glfw.set_framebuffer_size_callback(self.glfw_window, self.framebuffer_size_callback)
         # g.swap_interval(60)
@@ -416,6 +418,7 @@ class Window(FBL):
 
             else:
                 break
+
             timer.set_routine_end()
             if timer.framecount == framecount:
                 break
@@ -424,9 +427,9 @@ class Window(FBL):
         # Shader.deleteProgram()
         glfw.terminate()
 
-
     @classmethod
     def run_multi_thread(cls):
+        raise DeprecationWarning('multi threading for windwing deprecated')
         for window in cls._windows:
             t = threading.Thread(target= window.thread_run)
             window.thread = t
@@ -486,6 +489,7 @@ class Window(FBL):
         for i,window in enumerate(cls._windows):
             if glfw.window_should_close(window.glfw_window):
                 glfw.make_context_current(None)
+
                 if multi_thread:
                     window._terminate_flag = True
                     window.thread.join()
@@ -503,10 +507,14 @@ class Window(FBL):
                     glfw.destroy_window(window.glfw_window)
 
         for window in cls._windows:
-            if glfw.get_window_attrib(window.glfw_window, GLFW.GLFW_VISIBLE):
+            if glfw.get_window_attrib(window.glfw_window, glfw.VISIBLE):
                 return True
             else:
                 continue
+
+        print('TERMINATING GLFW')
+        print('first possible cause is : all windows closed')
+        print('second possible cause is : all windows hidden')
         return False
 
     @property

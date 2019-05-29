@@ -21,6 +21,7 @@ def init():
     # alpha = 'ddd'
     tr2 = BRO.TestBRO(100,100,100,200)
     window2.mouse.instant_press_button(1)
+    # image1 = Renderable_image(500,500)
     pass
 @window3.init
 def init():

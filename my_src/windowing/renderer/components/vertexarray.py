@@ -1,4 +1,4 @@
-from ...gl_tracker import Trackable_openGL as gl
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 from .component_bp import RenderComponent
 
 

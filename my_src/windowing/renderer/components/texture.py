@@ -1,11 +1,11 @@
 import os
 
-from ...gl_tracker import Trackable_openGL as gl
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 import numpy as np
 from PIL import Image
 
 from .component_bp import RenderComponent
-from patterns.multiple_constructors import MC
+
 
 class Texture(RenderComponent):
     pass

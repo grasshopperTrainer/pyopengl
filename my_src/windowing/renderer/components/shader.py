@@ -1,12 +1,9 @@
 from collections import OrderedDict
-import numpy as np
-import ctypes
 
-from error_handler import print_message
 from .component_bp import RenderComponent
 from .glsl_property_container import Glsl_property_container
 
-from windowing.gl_tracker import Trackable_openGL as gl
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
 
 class Shader(RenderComponent):

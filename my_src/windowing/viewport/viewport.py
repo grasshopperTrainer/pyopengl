@@ -1,5 +1,5 @@
 from patterns.update_check_descriptor import UCD
-from ..gl_tracker import Trackable_openGL as gl
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 from .Camera import _Camera
 from collections import namedtuple
 from ..frame_buffer_like.frame_buffer_like_bp import FBL

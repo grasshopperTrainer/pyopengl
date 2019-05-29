@@ -1,19 +1,12 @@
-import glfw
-from ..gl_tracker import Trackable_openGL as gl
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
 from ..renderer import components as comp
-import ctypes
 
-from patterns.update_check_descriptor import UCD
-from ..window import Window
-from ..renderable_image import Renderable_image
 from ..frame_buffer_like.frame_buffer_like_bp import FBL
 from ..viewport.viewports import Viewport
-from .components.glsl_property_container import Glsl_property_container
 
-from collections import namedtuple
 import numpy as np
-import weakref
+
 
 # class VBO_layout:
 #     def __init__(self, ident):
