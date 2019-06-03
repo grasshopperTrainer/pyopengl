@@ -17,10 +17,15 @@ class Shader(RenderComponent):
         self._name = name
 
         self._properties = Glsl_property_container(self)
-        for i in self._attribute:
-            self._properties.new_attribute(i[0], i[1])
-        for i in self._uniform:
-            self._properties.new_uniform(i[0], i[1])
+        for n,t,l in self._attribute:
+            self._properties.new_attribute(n,t,l)
+        for n,t,l in self._uniform:
+            self._properties.new_uniform(n,t,l)
+
+        # for i in self._properties.uniform.blocks:
+        #     print(i)
+        # exit()
+
 
         self._flag_built = False
 
@@ -34,7 +39,7 @@ class Shader(RenderComponent):
         # 3. bind shaders
         self._bake_shader()
         # 2. store array buffer to use
-        self._set_properties_location()
+        self.properties.validate_uniform_location()
         # self.store_self()
 
         self._flag_built = True
@@ -80,6 +85,13 @@ class Shader(RenderComponent):
 
             # store variable names
             if 'attribute ' in line or 'uniform ' in line:
+                #find layout
+                if line.find('layout') == -1 or line.find('location') == -1:
+                    raise SyntaxError("please set location by syntax 'layout(location = #) <attibute, uniform> <type> <param_name>'")
+                else:
+                    location = int(line.split('location')[1].split('=')[1].split(')')[0].strip())
+
+
 
                 if 'attribute ' in line:
                     addto = att
@@ -117,7 +129,7 @@ class Shader(RenderComponent):
                 #     # TODO parse if other types are used for shader 'attribute', or 'uniform'
                 #     pass
                 # store value
-                addto.append((name, type))
+                addto.append((name, type, location))
 
             else:
                 continue
@@ -191,14 +203,15 @@ class Shader(RenderComponent):
     def glindex(self):
         return self._glindex
 
-    def _set_properties_location(self):
-        for i, block in enumerate(self.properties.attribute.blocks):
-            gl.glBindAttribLocation(self.glindex, i, block._name)
-            block.location = i
+    def _validate_uniform_location(self):
+        # for i, block in enumerate(self.properties.attribute.blocks):
+        #     gl.glBindAttribLocation(self.glindex, i, block._name)
+        #     block.location = i
 
         for block in self.properties.uniform.blocks:
-            block.location = gl.glGetUniformLocation(self.glindex, block._name)
-        gl.glLinkProgram(self.glindex)
+            block.location = gl.glGetUniformLocation(self.glindex, block.name)
+        # exit()
+        # gl.glLinkProgram(self.glindex)
 
     @property
     def properties(self):

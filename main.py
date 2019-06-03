@@ -9,7 +9,7 @@ Window.glfw_init()
 window = Window(640, 480, "Hello World", None, None)
 window2 = Window(1000,300,'second_screen',None, window)
 
-window3 = Window(2000, 1000, 'third', None, window2)
+# window3 = Window(2000, 1000, 'third', None, window2)
 
 @Window.init
 def INIT():
@@ -17,16 +17,16 @@ def INIT():
 
 @window2.init
 def init():
-    tr = BRO.TestBRO(0,0,100,100)
+    tr = BRO.TestBRO(0,0,200,200)
     # alpha = 'ddd'
     tr2 = BRO.TestBRO(100,100,100,200)
     window2.mouse.instant_press_button(1)
     # image1 = Renderable_image(500,500)
     pass
-@window3.init
-def init():
-    # window3.mouse.instant_press_button(1)
-    pass
+# @window3.init
+# def init():
+#     # window3.mouse.instant_press_button(1)
+#     pass
 @window2.draw
 def draw():
     # renderer.clear(1, 1, 1, 1)
@@ -36,6 +36,9 @@ def draw():
         window2.viewports[0].open()
         window2.viewports[0].clear()
         tr.draw()
+        tr2.draw()
+        window2.unique_glfw_context.print_full_info()
+        print(window2.mouse.object_id)
         # tr.draw()
         # tr.draw()
         # tr.draw()
@@ -44,18 +47,18 @@ def draw():
         print('dkdkdk')
     pass
 
-@window3.draw
-def draw():
-    # window3.viewports[0].open()
-    # window3.viewports[0].clear(0,0,1,1)
-
-    if len(window3.mouse.pressed_button) != 0:
-        window3.viewports[0].open()
-        window3.viewports[0].clear()
-        tr.draw()
-        # tr2.draw()
-        print('window3 draw')
-    pass
+# @window3.draw
+# def draw():
+#     # window3.viewports[0].open()
+#     # window3.viewports[0].clear(0,0,1,1)
+#
+#     if len(window3.mouse.pressed_button) != 0:
+#         window3.viewports[0].open()
+#         window3.viewports[0].clear()
+#         tr.draw()
+#         # tr2.draw()
+#         print('window3 draw')
+#     pass
 
 
 @window.keyboard.press

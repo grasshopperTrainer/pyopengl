@@ -1,12 +1,12 @@
 #shader vertex
 #version 430 core
 
-attribute vec2 a_position;
-attribute vec2 a_texCoord;
+layout(location = 0) attribute vec2 a_position;
+layout(location = 1) attribute vec2 a_texCoord;
 
-uniform mat4 MM;
-uniform mat4 PM;
-uniform mat4 VM;
+layout(location = 0) uniform mat4 MM;
+layout(location = 1) uniform mat4 PM;
+layout(location = 2) uniform mat4 VM;
 
 varying vec2 v_texCoord;
 
@@ -19,22 +19,24 @@ void main() {
 #shader fragment
 #version 430 core
 
-uniform vec4 u_fillcol;
-uniform sampler2D texSlot;
-uniform bool useTexture;
-
+layout(location = 3) uniform vec4 u_fillcol;
+layout(location = 4) uniform vec4 u_id_color;
+layout(location = 5) uniform sampler2D texSlot;
+layout(location = 6) uniform bool useTexture;
 
 varying vec2 v_pos;
 varying vec2 v_texCoord;
 
-out vec4 color;
+layout(location = 0) out vec4 diffuse_color;
+layout(location = 1) out vec4 id_color;
 
 void main() {
     if(useTexture) {
         vec4 texColor = texture(texSlot, v_texCoord);
-        color = texColor;
+        diffuse_color = texColor;
     }
     else {
-        color = u_fillcol;
+        diffuse_color = u_fillcol;
+        id_color = u_id_color;
     }
 }

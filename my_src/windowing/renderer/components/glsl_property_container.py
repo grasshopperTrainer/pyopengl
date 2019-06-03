@@ -3,14 +3,16 @@ from numpy.lib.recfunctions import merge_arrays, append_fields
 import weakref
 import copy
 
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+
 
 class _Block:
-    def __init__(self, property, name, glsltype):
+    def __init__(self, property, name, glsltype, loc):
         self._property = property
         self._name = name
         self._glsltype = glsltype
 
-        self._location = [None,]
+        self._location = loc
         self._flag_changed = True
 
     def __setitem__(self, key, value):
@@ -76,10 +78,13 @@ class _Block:
 
     @property
     def location(self):
-        return self._location[0]
+        return self._location
     @location.setter
     def location(self,v):
-        self._location[0] = v
+        if v == -1 or self._location == v:
+            self._location = v
+        else:
+            raise Exception("location is set while creating components.Shader object by reading glsl 'layout' syntax")
 
     @property
     def name(self):
@@ -123,10 +128,11 @@ class _Property:
 
         self._flag_new_buffer_formchange = False
 
-    def insert_new_block(self, name, typ, val=None, loc=None, dtype=None):
+    def insert_new_block(self, name, typ, loc=None, val=None, dtype=None):
         # default dtype
         if dtype is None:
             dtype = np.float32
+
         # number of value
         if 'vec' in typ:
             n = int(typ.split('vec')[1].strip())
@@ -154,7 +160,7 @@ class _Property:
             self._buffer = merge_arrays([self._buffer, temp], flatten=True)
         # dict of seperate blocks.
         # stores referenced raw array, and other information
-        self._blocks[name] = _Block(self, name, typ)
+        self._blocks[name] = _Block(self, name, typ, loc)
 
         # TODO for further dynamic shader implementation
         # set statement saying form of buffer has been changed
@@ -177,6 +183,7 @@ class _Property:
             return self._buffer.dtype.names
         except:
             return []
+
     @property
     def buffer(self):
         return self._buffer
@@ -224,34 +231,47 @@ class Glsl_property_container:
         self._attribute = _Property()
         self._uniform = _Property()
 
+        self._flag_uniform_location_validated = False
+
     def __getitem__(self, item):
-        if item in self._attribute.names:
-            return self._attribute[item]
+        if self._flag_uniform_location_validated:
+            if item in self._attribute.names:
+                return self._attribute[item]
 
-        elif item in self._uniform.names:
-            return self._uniform[item]
+            elif item in self._uniform.names:
+                return self._uniform[item]
 
+            else:
+                raise KeyError("glsl shader doesn't contain such name of attribute or uniform")
         else:
-            raise KeyError("glsl shader doesn't contain such name of attribute or uniform")
-
+            raise Exception('please validate uniform locations first by calling validate_uniform_location() first, after '
+                            'program is linked, validated')
     def __setitem__(self, key, value):
-        if key in self.attribute.names:
-            self.attribute._blocks[key].__setitem__(None, value)
-        elif key in self.uniform.names:
-            self.uniform._blocks[key].__setitem__(None, value)
+        if self ._flag_uniform_location_validated:
+            if key in self.attribute.names:
+                self.attribute._blocks[key].__setitem__(None, value)
+            elif key in self.uniform.names:
+                self.uniform._blocks[key].__setitem__(None, value)
 
+            else:
+                raise KeyError("glsl shader doesn't contain such name of attribute or uniform")
         else:
-            raise KeyError("glsl shader doesn't contain such name of attribute or uniform")
-
+            raise Exception('please validate uniform locations first by calling validate_uniform_location() first, after '
+                                    'program is linked, validated')
+    def has_property(self, key):
+        if key in self._attribute.names or key in self._uniform.names:
+            return True
+        else:
+            return False
     # def __setitem__(self, key, value):
     #     pass
 
-    def new_attribute(self, name, typ, val=None, loc=None, dtype=None):
-        self._attribute.insert_new_block(name, typ, val, loc)
+    def new_attribute(self, name, typ, loc=None, val=None, dtype=None):
+        self._attribute.insert_new_block(name, typ, loc, val)
         pass
 
-    def new_uniform(self, name, typ, val=None, loc=None, dtype=None):
-        self._uniform.insert_new_block(name, typ, val, loc)
+    def new_uniform(self, name, typ, loc=None, val=None, dtype=None):
+        self._uniform.insert_new_block(name, typ, loc, val)
         pass
 
     @property
@@ -308,8 +328,12 @@ class Glsl_property_container:
     def reset_update(self):
         self.attribute.reset_update()
         self.uniform.reset_update()
+    def validate_uniform_location(self):
+        for block in self.uniform.blocks:
+            block.location = gl.glGetUniformLocation(self._shader.glindex, block.name)
+        self._flag_uniform_location_validated = True
 
-    def copy_with_location(self):
+    def copy(self):
         """
         Returns deep copied property to store unique buffer.
         Yet new Properties object's block location is set to reference this mother objects'
@@ -317,10 +341,5 @@ class Glsl_property_container:
         :return: deep copied Properties object
         """
         new = copy.deepcopy(self)
-
-        for n,o in zip(new.attribute.blocks, self.attribute.blocks):
-            n._location = o._location
-        for n,o in zip(new.uniform.blocks, self.uniform.blocks):
-            n._location = o._location
 
         return new

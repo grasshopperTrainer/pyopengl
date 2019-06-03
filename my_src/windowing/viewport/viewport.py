@@ -68,6 +68,7 @@ class Viewport:
             gl.glClearColor(*color)
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+            gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
 
             # clear just once
             # only allowed again if self.clear() is called again

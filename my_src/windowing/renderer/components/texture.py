@@ -8,8 +8,9 @@ from .component_bp import RenderComponent
 
 
 class Texture(RenderComponent):
-    pass
-
+    _default_internalformat = gl.GL_RGBA8
+    _default_format = gl.GL_RGBA
+    _default_type = gl.GL_UNSIGNED_BYTE
 
 
 class Texture_new(Texture):
@@ -19,11 +20,15 @@ class Texture_new(Texture):
         self._flag_built = False
         self._slot = slot
 
+        self._internalformat = None
+        self._format = None
+        self._type = None
+
     def build(self):
         if not self._flag_built:
             self._flag_built = True
 
-            self._glindex = np.array(gl.glGenTextures(1), np.uint8)
+            self._glindex = gl.glGenTextures(1)
 
             self.bind()
 
@@ -38,12 +43,12 @@ class Texture_new(Texture):
 
             gl.glTexImage2D(gl.GL_TEXTURE_2D,
                             0,
-                            gl.GL_RGBA8,
+                            self.internalformat,
                             self._size[0],
                             self._size[1],
                             0,
-                            gl.GL_RGBA,
-                            gl.GL_UNSIGNED_BYTE,
+                            self.format,
+                            self.type,
                             None)
 
             self.unbind()
@@ -70,6 +75,38 @@ class Texture_new(Texture):
         if isinstance(value, str):
             self.__class__._repository = value
 
+    def delete(self):
+        gl.glDeleteTextures(1, self._glindex)
+
+    @property
+    def internalformat(self):
+        if self._internalformat is None:
+            return self.__class__._default_internalformat
+        else:
+            return self._internalformat
+    @internalformat.setter
+    def internalformat(self, v):
+        self._internalformat = v
+
+    @property
+    def format(self):
+        if self._format is None:
+            return self.__class__._default_format
+        else:
+            return self._format
+    @format.setter
+    def format(self, v):
+        self._format = v
+
+    @property
+    def type(self):
+        if self._type is None:
+            return self.__class__._default_type
+        else:
+            return self._type
+    @format.setter
+    def format(self, v):
+        self._type = v
 
 
 class Texture_load(Texture):
@@ -146,6 +183,9 @@ class Texture_load(Texture):
 
     def unbind(self):
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+
+    def delete(self):
+        gl.glDeleteTextures(self._glindex)
 
     @property
     def pixel_data(self):

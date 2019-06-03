@@ -77,8 +77,7 @@ class Vertexbuffer(RenderComponent):
                 # print('gltype:',gltype)
                 # print('stride:',stride)
                 gl.glVertexAttribPointer(i, size, gltype, gl.GL_FALSE, stride, offset)
-        # m = glGetBufferSubData(gl.GL_ARRAY_BUFFER,0,24)
-        # print(m)
+        pass
 
     def bind(self):
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self._glindex)

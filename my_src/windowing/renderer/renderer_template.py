@@ -15,11 +15,13 @@ import numpy as np
 # class Layout_container:
 #     MULTI_VBO = VBO_layout(0)
 #     SINGLE_VBO = VBO_layout(1)
+class Render_unit:
+    pass
 
 class Render_unit_builder:
     reg_count = 0
     def __new__(cls, *args, **kwargs):
-        new_cls = type(f'Render_unit{cls.reg_count}', (Render_unit_temp, ), {})
+        new_cls = type(f'Render_unit{cls.reg_count}', (Render_unit, Render_unit_temp, ), {})
         cls.reg_count += 1
         return new_cls
 
@@ -107,7 +109,7 @@ class Render_unit_temp:
 
     def __init__(self):
         self._shader = self.__class__._shader
-        self._properties = self._shader.properties.copy_with_location()
+        self._properties = self._shader.properties.copy()
 
         cls = self.__class__
         if isinstance(cls._vertex_array, type):
@@ -375,16 +377,7 @@ class Renderer_template:
             raise Exception('Not enough comp fed.')
 
 
-        # self._vbo_layout = Layout_container.MULTI_VBO
-        # multiple...pairs... what for shared glfw...
-        # if called in a shared glfw... should it be handled here or outside?
-        # if called from shared glfw just rebind vao-vbo
-        # if called from unshared glfw if will have different vbo and crash or work strangely
-        # is there a way to check if a window is shared?
-        self._vertexunit = {}
-
         self._MM = np.eye(4)
-
 
         self._flag_draw = True
         self._flag_run = True
@@ -430,8 +423,11 @@ class Renderer_template:
             return comp.RenderComponent
 
     def _draw_(self, render_unit, fbl = None):
+        win = FBL.get_current()
+        win.render_unit_reg.reg(render_unit)
         # check initiated context
         context = FBL.get_current().unique_glfw_context
+
         if render_unit not in self._render_units[context]:
             raise
 
@@ -443,10 +439,9 @@ class Renderer_template:
                 render_unit.update_variables()
 
             if self.flag_draw:
-                self.draw_element(render_unit.index_buffer)
-
+                self.draw_element(render_unit)
             # TODO is this unnecessary processing? checking?
-            self._unbind_global()
+            # self._unbind_global()
 
     def _unbind_global(self):
         self.shader.unbind()
@@ -455,7 +450,7 @@ class Renderer_template:
         self.index_buffer.unbind()
         self.texture.unbind()
 
-    def draw_element(self, index_buffer):
+    def draw_element(self, render_unit):
         window = FBL.get_current()
         viewport = Viewport.get_current()
 
@@ -473,11 +468,22 @@ class Renderer_template:
         if True:
             window._flag_something_rendered = True
             viewport.fillbackground() # before make any change erase background
-            if index_buffer.count != 0: # draw a thing
+            ibo = render_unit.index_buffer
+            if ibo.count != 0: # draw a thing
 
-                gl.glDrawElements(self.drawmode, index_buffer.count, index_buffer.gldtype, None)
+                # get id color
+                if render_unit.properties.has_property('u_id_color'):
+                    id = window.render_unit_reg.id_color(render_unit)
+                    uni = render_unit.properties['u_id_color']
+                    gl.glUniform4fv(uni.location,1,id+[1,]) # push color
 
+                window.myframe.begin()
+                gl.glDrawElements(self.drawmode, ibo.count, ibo.gldtype, None)
 
+                window.myframe.end()
+
+                # window.mouse.id_buffer.begin()
+                # print('ddddddd',gl.glGetIntegerv(gl.GL_MAX_DRAW_BUFFERS))
 
     def _hide_(self, set=None):
         if set is None:
@@ -668,4 +674,3 @@ class Renderer_builder:
             new_cls = type(f'Renderer_builder{cls.reg}', (Renderer_template,), {})
             cls.reg += 1
             return new_cls
-

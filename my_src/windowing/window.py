@@ -1,6 +1,6 @@
 import threading
 import weakref
-from collections import OrderedDict
+from collections import OrderedDict,namedtuple
 from time import sleep
 from time import time
 
@@ -21,6 +21,9 @@ from .viewport import *
 from patterns.update_check_descriptor import UCD
 from .frame_buffer_like.frame_buffer_like_bp import FBL
 
+from .renderable_image import Renderable_image
+from .renderer.renderer_template import Render_unit
+from .frame import Frame
 
 
 class _Windows:
@@ -217,6 +220,16 @@ class Window(FBL):
 
         self._count = 0
 
+
+        self._myframe = Frame(self.width, self.height) #type: Renderable_image
+        self._myframe.use_color_attachment(0)
+        self._myframe.use_color_attachment(1)
+        self._myframe.use_depth_attachment(bitdepth=32)
+        self._myframe.use_stencil_attachment(bitdepth=16)
+        self._myframe.build()
+
+        self._render_unit_reg = Render_object_register(self)
+
     @property
     def mother_window(self):
         return self._mother_window
@@ -311,8 +324,11 @@ class Window(FBL):
     def framebuffer_size_callback(self, window, width, height):
         # self.mouse.instant_mouse_onscreen()
         # self.mouse.instant_press_button(button = 0)
+        self._myframe.rebuild(width, height)
         self._flag_resized = True
 
+    def window_refresh_callback(self,a):
+        pass
 
     def initiation_glfw_setting(self):
         # default setting
@@ -321,16 +337,24 @@ class Window(FBL):
         glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
         glfw.set_framebuffer_size_callback(self.glfw_window, self.framebuffer_size_callback)
+        glfw.set_window_refresh_callback(self.glfw_window, self.window_refresh_callback)
         # g.swap_interval(60)
 
     def initiation_gl_setting(self):
         gl.glEnable(gl.GL_SCISSOR_TEST)
         gl.glEnable(gl.GL_DEPTH_TEST)
+        gl.glEnable(gl.GL_STENCIL_TEST)
+        a = gl.glGetIntegerv(gl.GL_SCISSOR_TEST)
+        b = gl.glGetIntegerv(gl.GL_DEPTH_TEST)
+        c = gl.glGetIntegerv(gl.GL_STENCIL_TEST)
+        if a.value + b.value + c.value != 3:
+            raise Exception('enabling test problem')
 
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
         gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
 
     def initiation_window_setting(self):
@@ -393,13 +417,22 @@ class Window(FBL):
             timer.set_routine_start()
             if cls._display_window():
                 # to give access to other windows through keyword 'windows'
-                for window in cls._windows:
+                for window in cls._windows: #type: Window
 
                     #drawing
                     window.make_window_current()
 
                     window._context_scope.run(window.draw_func)
                     if window._flag_something_rendered:
+                        # copy from custom myframebuffer and draw it on window
+                        gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER,window.myframe._frame_buffer._glindex)
+                        gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0) # set source
+                        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER,0)
+                        gl.glBlitFramebuffer(0,0,window.width,window.height,
+                                             0,0,window.width,window.height,
+                                             gl.GL_COLOR_BUFFER_BIT,
+                                             gl.GL_LINEAR)
+
                         glfw.swap_buffers(window.glfw_window)
 
 
@@ -525,8 +558,8 @@ class Window(FBL):
     def name(self):
         return self._init_info['name']
 
-    # def __str__(self):
-    #     return f"window: '{self.name}'"
+    def __str__(self):
+        return f"window: '{self.name}'"
 
     @property
     def option_close(self):
@@ -635,8 +668,56 @@ class Window(FBL):
     @property
     def unique_glfw_context(self):
         return self._unique_glfw_context
+    @property
+    def render_unit_reg(self):
+        return self._render_unit_reg
+    @property
+    def myframe(self):
+        return self._myframe
 
+class Render_object_register:
 
+    def __init__(self, window):
+        self._window = window
+        self._collections = weakref.WeakKeyDictionary()
+        self._candidate = []
+        self._structure = namedtuple('registered',['id','used'])
+        # RGBA 8bit each
+        self._counter = 0x000001
+        self._counter_max = 0xffffff
+        # set mode
+        # removes uncalled in every
+        self._mode = 0
+
+    def reg(self, object):
+        if self._counter ^ self._counter_max == 0  and len(self._candidate) == 0:
+            raise IndexError('register is fully filled')
+
+        if isinstance(object, Render_unit):
+            if object not in self._collections:
+                if len(self._candidate) == 0:
+                    id = self._counter
+                    self._counter += 0x1
+                else:
+                    id = self._candidate.pop(0)
+                self._collections[object] = self._structure(id, False)
+
+        else:
+            raise TypeError
+
+    def id(self, object):
+        return self._collections[object].id
+
+    def id_color(self, object):
+        inte = self._collections[object].id
+        inte = format(inte,'06x')
+        color= [int(f'0x{inte[i*2:i*2+2]}',16)/255 for i in range(3)]
+        return color
+
+    def color_id(self, color):
+        hex = bytearray(color).hex()
+        inte = int(hex, 16)
+        return inte
 
 class Timer:
     def __init__(self,framerate, name):

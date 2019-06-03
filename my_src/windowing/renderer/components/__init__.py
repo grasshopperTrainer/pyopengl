@@ -6,3 +6,4 @@ from .vertexarray import Vertexarray
 from .component_bp import RenderComponent
 from .glsl_property_container import Glsl_property_container
 from .framebuffer import Framebuffer
+from .renderbuffer import Renderbuffer

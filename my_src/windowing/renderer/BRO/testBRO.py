@@ -1,7 +1,6 @@
-from ..renderer_template import Renderer_builder, Render_unit_builder
-from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
-# from ..components import *
+from ..renderer_template import Renderer_builder
 from patterns.update_check_descriptor import UCD
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
 
 class TestBRO():
@@ -43,7 +42,7 @@ class TestBRO():
         self._abs_width = None
         self._abs_height = None
 
-        self.unit.properties['u_fillcol'] = 1,0,0,1
+        self.unit.properties['u_fillcol'] = 1,0,1,1
 
     def draw(self):
         self.unit.properties['a_position'][0:4] = self.vertex

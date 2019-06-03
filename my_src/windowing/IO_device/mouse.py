@@ -1,6 +1,9 @@
+import sys
 import glfw
 import inspect
+from ..renderable_image import Renderable_image
 from patterns.store_instances_dict import SID
+from ..my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
 class Mouse(SID):
 
@@ -192,3 +195,14 @@ class Mouse(SID):
                     result[k] = v
 
         return result
+
+    @property
+    def object_id(self):
+        x,y = self.mouse_position
+        y = self._window.height - y
+
+        self._window.myframe.begin()
+        gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
+        color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
+        self._window.myframe.end()
+        print('mouse picking =',self._window._render_unit_reg.color_id(color))
