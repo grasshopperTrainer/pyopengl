@@ -1,7 +1,7 @@
 '''OpenGL extension NV.framebuffer_multisample_coverage
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.framebuffer_multisample_coverage to provide a more 
+OpenGL.raw.GL.NV.framebuffer_multisample_coverage to provide a more
 Python-friendly API
 
 Overview (from the spec)

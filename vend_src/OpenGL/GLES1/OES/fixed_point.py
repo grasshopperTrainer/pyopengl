@@ -1,7 +1,7 @@
 '''OpenGL extension OES.fixed_point
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.OES.fixed_point to provide a more 
+OpenGL.raw.GLES1.OES.fixed_point to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

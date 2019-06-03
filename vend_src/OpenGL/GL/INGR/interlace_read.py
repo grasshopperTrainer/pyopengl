@@ -1,7 +1,7 @@
 '''OpenGL extension INGR.interlace_read
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.INGR.interlace_read to provide a more 
+OpenGL.raw.GL.INGR.interlace_read to provide a more
 Python-friendly API
 
 Overview (from the spec)

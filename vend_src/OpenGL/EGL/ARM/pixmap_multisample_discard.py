@@ -1,7 +1,7 @@
 '''OpenGL extension ARM.pixmap_multisample_discard
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.ARM.pixmap_multisample_discard to provide a more 
+OpenGL.raw.EGL.ARM.pixmap_multisample_discard to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

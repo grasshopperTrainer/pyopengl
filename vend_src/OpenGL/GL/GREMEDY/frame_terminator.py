@@ -1,7 +1,7 @@
 '''OpenGL extension GREMEDY.frame_terminator
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.GREMEDY.frame_terminator to provide a more 
+OpenGL.raw.GL.GREMEDY.frame_terminator to provide a more
 Python-friendly API
 
 Overview (from the spec)

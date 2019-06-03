@@ -1,7 +1,7 @@
 '''OpenGL extension NV.EGL_3dvision_surface
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.NV.EGL_3dvision_surface to provide a more 
+OpenGL.raw.EGL.NV.EGL_3dvision_surface to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.create_context_profile
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.ARB.create_context_profile to provide a more 
+OpenGL.raw.GLX.ARB.create_context_profile to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

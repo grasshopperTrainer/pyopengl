@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.gpu_association
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.AMD.gpu_association to provide a more 
+OpenGL.raw.WGL.AMD.gpu_association to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

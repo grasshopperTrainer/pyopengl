@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.map_buffer_range
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.map_buffer_range to provide a more 
+OpenGL.raw.GL.ARB.map_buffer_range to provide a more
 Python-friendly API
 
 Overview (from the spec)

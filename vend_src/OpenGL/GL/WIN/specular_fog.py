@@ -1,13 +1,13 @@
 '''OpenGL extension WIN.specular_fog
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.WIN.specular_fog to provide a more 
+OpenGL.raw.GL.WIN.specular_fog to provide a more
 Python-friendly API
 
 Overview (from the spec)
 	
 	Specularly lit textures enhance the realism of a scene greatly.
-	Using the current OpenGL lighting model, one cannot obtain specularly lit 
+	Using the current OpenGL lighting model, one cannot obtain specularly lit
 	textures. This is because in the current OpenGL lighting model lighting
 	is done ahead of texturing and texture-functions such as modulate are 
 	inadequate for such a simulation. What needs to be addressed is that, 

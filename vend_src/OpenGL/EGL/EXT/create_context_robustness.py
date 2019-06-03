@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.create_context_robustness
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.EXT.create_context_robustness to provide a more 
+OpenGL.raw.EGL.EXT.create_context_robustness to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

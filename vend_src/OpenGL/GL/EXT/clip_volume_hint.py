@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.clip_volume_hint
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.clip_volume_hint to provide a more 
+OpenGL.raw.GL.EXT.clip_volume_hint to provide a more
 Python-friendly API
 
 Overview (from the spec)

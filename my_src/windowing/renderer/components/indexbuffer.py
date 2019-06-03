@@ -1,17 +1,24 @@
 from numbers import Number
 
 import numpy as np
-from OpenGL.GL import *
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
 from .component_bp import RenderComponent
 
 
 class Indexbuffer(RenderComponent):
-    def __init__(self, glusage=GL_DYNAMIC_DRAW, dtype=None):
-        self._data = np.array([])
+    def __init__(self, data=None, glusage=gl.GL_DYNAMIC_DRAW, dtype=None):
+        self._data = None
+        self._dtype = None
+        self._glusage = None
+
+        if data is None:
+            self._data = np.array([])
+        else:
+            self.data = data
 
         if glusage is None:
-            glusage = GL_DYNAMIC_DRAW
+            glusage = gl.GL_DYNAMIC_DRAW
         self._glusage = glusage
 
         # save dtype for glDrawElement()
@@ -41,19 +48,21 @@ class Indexbuffer(RenderComponent):
 
     def build(self):
         if self._flag_firstbuild:
-            self._glindex = glGenBuffers(1)
+            self._glindex = gl.glGenBuffers(1)
             self._flag_firstbuild = False
+
         datasize = self.data.size * self.data.itemsize
         self.bind()
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, datasize, self.data, self._glusage)
+        gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, datasize, self.data, self._glusage)
+
         self.unbind()
         # print('-index buffer built')
 
     def bind(self):
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self._glindex)
+        gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self._glindex)
 
     def unbind(self):
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+        gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, 0)
 
     @property
     def data(self):
@@ -95,8 +104,8 @@ class Indexbuffer(RenderComponent):
     def gldtype(self):
         npdtype = self._data.dtype
         if npdtype == np.uint8:
-            return GL_UNSIGNED_BYTE
+            return gl.GL_UNSIGNED_BYTE
         elif np.dtype == np.uint16:
-            return GL_UNSIGNED_SHORT
+            return gl.GL_UNSIGNED_SHORT
         elif np.dtype == np.uint32:
-            return GL_UNSIGNED_INT
+            return gl.GL_UNSIGNED_INT

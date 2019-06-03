@@ -1,7 +1,7 @@
 '''OpenGL extension IBM.static_data
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.IBM.static_data to provide a more 
+OpenGL.raw.GL.IBM.static_data to provide a more
 Python-friendly API
 
 Overview (from the spec)

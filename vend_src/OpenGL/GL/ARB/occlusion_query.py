@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.occlusion_query
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.occlusion_query to provide a more 
+OpenGL.raw.GL.ARB.occlusion_query to provide a more
 Python-friendly API
 
 Overview (from the spec)

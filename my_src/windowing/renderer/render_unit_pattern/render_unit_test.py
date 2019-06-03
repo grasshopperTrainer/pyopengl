@@ -11,7 +11,7 @@
 #
 #
 #     some rules... thinking....
-#     1. openGL shader is backed just once per Render_unit.
+#     1. OpenGL shader is backed just once per Render_unit.
 #     2. shader can be given as external glsl or backed dynamically
 #     by collecting some info...
 #

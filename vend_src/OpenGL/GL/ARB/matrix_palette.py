@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.matrix_palette
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.matrix_palette to provide a more 
+OpenGL.raw.GL.ARB.matrix_palette to provide a more
 Python-friendly API
 
 Overview (from the spec)

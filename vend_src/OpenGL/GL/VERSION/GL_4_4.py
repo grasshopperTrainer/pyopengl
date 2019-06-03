@@ -1,7 +1,7 @@
 '''OpenGL extension VERSION.GL_4_4
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.VERSION.GL_4_4 to provide a more 
+OpenGL.raw.GL.VERSION.GL_4_4 to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

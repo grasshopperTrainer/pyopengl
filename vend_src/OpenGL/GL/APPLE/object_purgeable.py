@@ -1,7 +1,7 @@
 '''OpenGL extension APPLE.object_purgeable
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.APPLE.object_purgeable to provide a more 
+OpenGL.raw.GL.APPLE.object_purgeable to provide a more
 Python-friendly API
 
 Overview (from the spec)

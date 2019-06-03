@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.shader_image_load_formatted
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.shader_image_load_formatted to provide a more 
+OpenGL.raw.GL.EXT.shader_image_load_formatted to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension KHR.image_base
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.KHR.image_base to provide a more 
+OpenGL.raw.EGL.KHR.image_base to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

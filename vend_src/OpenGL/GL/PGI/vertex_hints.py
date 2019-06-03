@@ -1,7 +1,7 @@
 '''OpenGL extension PGI.vertex_hints
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.PGI.vertex_hints to provide a more 
+OpenGL.raw.GL.PGI.vertex_hints to provide a more
 Python-friendly API
 
 Overview (from the spec)

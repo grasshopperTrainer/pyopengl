@@ -1,7 +1,7 @@
 '''OpenGL extension IBM.vertex_array_lists
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.IBM.vertex_array_lists to provide a more 
+OpenGL.raw.GL.IBM.vertex_array_lists to provide a more
 Python-friendly API
 
 Overview (from the spec)

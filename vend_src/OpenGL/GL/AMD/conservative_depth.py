@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.conservative_depth
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.conservative_depth to provide a more 
+OpenGL.raw.GL.AMD.conservative_depth to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension I3D.image_buffer
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.I3D.image_buffer to provide a more 
+OpenGL.raw.WGL.I3D.image_buffer to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

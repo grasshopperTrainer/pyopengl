@@ -1,12 +1,14 @@
 import threading
 import weakref
-from collections import OrderedDict
+from collections import OrderedDict,namedtuple
 from time import sleep
 from time import time
 
-import OpenGL.GL as GL
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
+
 import glfw as glfw
-import glfw.GLFW as GLFW
+# import glfw.GLFW as GLFW
 
 from error_handler import *
 # from renderers.renderer.renderunit import RenderUnit
@@ -19,6 +21,9 @@ from .viewport import *
 from patterns.update_check_descriptor import UCD
 from .frame_buffer_like.frame_buffer_like_bp import FBL
 
+from .renderable_image import Renderable_image
+from .renderer.renderer_template import Render_unit
+from .frame import Frame
 
 
 class _Windows:
@@ -35,6 +40,7 @@ class _Windows:
     def __get__(self, instance, owner):
         # return self.__class__.windows
         return _Windows()
+
     def __getattr__(self, item):
         if item is 'remove':
             return self.__delattr__
@@ -65,6 +71,16 @@ class _Windows:
         return f'collection of {len(self.windows)} window instances'
 
 class Window(FBL):
+    """
+    import numpy as np
+    from windowing.renderer import BRO
+    from windowing.renderable_image import Renderable_image
+    from windowing.unnamedGUI import mygui
+    from windowing.viewport.viewport import Viewport
+    import OpenGL.GL as gl
+    import glfw as glfw
+    """
+
     def _global_init():
         import numpy as np
         from windowing.renderer import BRO
@@ -73,7 +89,6 @@ class Window(FBL):
         from windowing.viewport.viewport import Viewport
         import OpenGL.GL as gl
         import glfw as glfw
-
         pass
 
     _init_global = _global_init
@@ -91,6 +106,7 @@ class Window(FBL):
     @classmethod
     def glfw_init(cls,func = None):
         glfw.init()
+        gl.context_specification_check()
 
     def __new__(cls,*args,**kwargs):
         """
@@ -112,8 +128,26 @@ class Window(FBL):
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
         FBL.set_current(self)
-        # threading.Thread.__init__(self)
 
+        # store relationship between mother and children
+        self._mother_window = mother_window  # type: Window
+        if mother_window is not None:
+            mother_window._children_windows.append(weakref.proxy(self))
+            self._glfw_window = glfw.create_window(width, height, name, monitor, mother_window._glfw_window)
+        else:
+            self._glfw_window = glfw.create_window(width, height, name, monitor, None)
+
+        # glfw window creation error check
+        if not self._glfw_window:
+            glfw.terminate()
+
+        self._children_windows = []
+
+        if mother_window != None:
+            self._unique_glfw_context = mother_window.unique_glfw_context.give_tracker_to(self)
+        else:
+            self._unique_glfw_context = GLFW_GL_tracker(self)
+        # threading.Thread.__init__(self)
         # save name of instance
         f = inspect.currentframe().f_back
         self.instance_name = ''
@@ -138,15 +172,10 @@ class Window(FBL):
             'monitor': monitor,
             'share': mother_window
         })
-        self._mother_window = mother_window #type: Window
 
-        if self._mother_window is not None:
-            share = mother_window.glfw_window
-        else:
-            share = None
-        self._glfw_window = glfw.create_window(width, height, name, monitor, share)
-        if not self._glfw_window:
-            glfw.terminate()
+
+
+        # set it current for farther settings
         glfw.make_context_current(self.glfw_window)
 
         self._option_close = 0
@@ -180,7 +209,6 @@ class Window(FBL):
         # drawing layers
         self._layers = Layers(self)
 
-        self._flag_need_swap = True
         self._flag_resized = True
         self._flag_something_rendered = False
 
@@ -188,14 +216,26 @@ class Window(FBL):
         # viewport
         self._viewports = Viewports(self)
 
+        self._shaders = []
+
+        self._count = 0
+
+
+        self._myframe = Frame(self.width, self.height) #type: Renderable_image
+        self._myframe.use_color_attachment(0)
+        self._myframe.use_color_attachment(1)
+        self._myframe.use_depth_attachment(bitdepth=32)
+        self._myframe.use_stencil_attachment(bitdepth=16)
+        self._myframe.build()
+
+        self._render_unit_reg = Render_object_register(self)
 
     @property
     def mother_window(self):
         return self._mother_window
-
     @property
-    def renderers(self):
-        return self._context_scope.search_value_bytype(RenderUnit)
+    def children_windows(self):
+        return self._children_windows
 
     @property
     def draw_func(self):
@@ -284,27 +324,38 @@ class Window(FBL):
     def framebuffer_size_callback(self, window, width, height):
         # self.mouse.instant_mouse_onscreen()
         # self.mouse.instant_press_button(button = 0)
+        self._myframe.rebuild(width, height)
         self._flag_resized = True
 
+    def window_refresh_callback(self,a):
+        pass
 
     def initiation_glfw_setting(self):
         # default setting
-        glfw.window_hint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 4)
-        glfw.window_hint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3)
-        glfw.window_hint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE)
+        glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 4)
+        glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
+        glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
         glfw.set_framebuffer_size_callback(self.glfw_window, self.framebuffer_size_callback)
+        glfw.set_window_refresh_callback(self.glfw_window, self.window_refresh_callback)
         # g.swap_interval(60)
 
     def initiation_gl_setting(self):
-        GL.glEnable(GL.GL_SCISSOR_TEST)
-        GL.glEnable(GL.GL_DEPTH_TEST)
+        gl.glEnable(gl.GL_SCISSOR_TEST)
+        gl.glEnable(gl.GL_DEPTH_TEST)
+        gl.glEnable(gl.GL_STENCIL_TEST)
+        a = gl.glGetIntegerv(gl.GL_SCISSOR_TEST)
+        b = gl.glGetIntegerv(gl.GL_DEPTH_TEST)
+        c = gl.glGetIntegerv(gl.GL_STENCIL_TEST)
+        if a.value + b.value + c.value != 3:
+            raise Exception('enabling test problem')
 
-        GL.glEnable(GL.GL_BLEND)
-        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+        gl.glEnable(gl.GL_BLEND)
+        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        GL.glClear(GL.GL_DEPTH_BUFFER_BIT)
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
+        gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
 
     def initiation_window_setting(self):
         # self._viewports.new(0, 0, 1.0, 1.0, 'default')
@@ -366,29 +417,41 @@ class Window(FBL):
             timer.set_routine_start()
             if cls._display_window():
                 # to give access to other windows through keyword 'windows'
-                for window in cls._windows:
+                for window in cls._windows: #type: Window
 
                     #drawing
                     window.make_window_current()
-                    window._context_scope.run(window.draw_func)
 
+                    window._context_scope.run(window.draw_func)
                     if window._flag_something_rendered:
+                        # copy from custom myframebuffer and draw it on window
+                        gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER,window.myframe._frame_buffer._glindex)
+                        gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0) # set source
+                        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER,0)
+                        gl.glBlitFramebuffer(0,0,window.width,window.height,
+                                             0,0,window.width,window.height,
+                                             gl.GL_COLOR_BUFFER_BIT,
+                                             gl.GL_LINEAR)
+
                         glfw.swap_buffers(window.glfw_window)
+
 
                     window._flag_something_rendered = False
                     window._flag_resized = False
 
-                    viewports = window.viewports._viewports
+                    # viewports = window.viewports._viewports
+                    #
+                    # # UCD.reset_instance_descriptors_update(window)
+                    # UCD.reset_instance_descriptors_update(*viewports.values())
+                    # UCD.reset_instance_descriptors_update(*[v.camera for v in viewports.values()])
 
-                    # UCD.reset_instance_descriptors_update(window)
-                    UCD.reset_instance_descriptors_update(*viewports.values())
-                    UCD.reset_instance_descriptors_update(*[v.camera for v in viewports.values()])
                     window.mouse.reset()
 
                 glfw.poll_events()
 
             else:
                 break
+
             timer.set_routine_end()
             if timer.framecount == framecount:
                 break
@@ -397,9 +460,9 @@ class Window(FBL):
         # Shader.deleteProgram()
         glfw.terminate()
 
-
     @classmethod
     def run_multi_thread(cls):
+        raise DeprecationWarning('multi threading for windwing deprecated')
         for window in cls._windows:
             t = threading.Thread(target= window.thread_run)
             window.thread = t
@@ -438,6 +501,10 @@ class Window(FBL):
             if window.mother_window == self or self in window._follow_close:
                 window.close()
                 break
+
+            if self in window.children_windows:
+                window.children_windows.remove(self)
+
         glfw.make_context_current(None)
         glfw.destroy_window(self.glfw_window)
         self._windows - self
@@ -455,6 +522,7 @@ class Window(FBL):
         for i,window in enumerate(cls._windows):
             if glfw.window_should_close(window.glfw_window):
                 glfw.make_context_current(None)
+
                 if multi_thread:
                     window._terminate_flag = True
                     window.thread.join()
@@ -472,10 +540,14 @@ class Window(FBL):
                     glfw.destroy_window(window.glfw_window)
 
         for window in cls._windows:
-            if glfw.get_window_attrib(window.glfw_window, GLFW.GLFW_VISIBLE):
+            if glfw.get_window_attrib(window.glfw_window, glfw.VISIBLE):
                 return True
             else:
                 continue
+
+        print('TERMINATING GLFW')
+        print('first possible cause is : all windows closed')
+        print('second possible cause is : all windows hidden')
         return False
 
     @property
@@ -526,10 +598,11 @@ class Window(FBL):
 
     def make_window_current(self):
         # self.__class__._current_window = self
-        FBL._current = self
+        FBL.set_current(self)
         # RenderUnit.push_current_window(self)
         glfw.make_context_current(None)
         glfw.make_context_current(self.glfw_window)
+
     @classmethod
     def get_current_window(cls):
         return cls._current_window
@@ -554,6 +627,97 @@ class Window(FBL):
     def size(self):
         self._size = glfw.get_framebuffer_size(self.glfw_window)
         return self._size
+
+    @property
+    def is_resized(self):
+        return self._flag_resized
+
+    @property
+    def registered_shaders(self):
+        return self._shaders
+
+    def register_shader(self, shader):
+        self._shaders.append(shader)
+
+    @property
+    def master_window(self):
+        master = None
+        if self.mother_window is None:
+            return self
+        else:
+            master = self.mother_window.master_window
+        return master
+
+    @property
+    def offspring_windows(self, _count=0):
+        children = []
+        if len(self.children_windows) != 0:
+            children += self.children_windows
+            for c in self.children_windows:
+                children += c.offspring_windows
+        return children
+
+    @property
+    def shared_windows(self):
+        m = self.master_window
+        o = m.offspring_windows
+        o.insert(0,weakref.proxy(m))
+        o.remove(self)
+        return o
+
+    @property
+    def unique_glfw_context(self):
+        return self._unique_glfw_context
+    @property
+    def render_unit_reg(self):
+        return self._render_unit_reg
+    @property
+    def myframe(self):
+        return self._myframe
+
+class Render_object_register:
+
+    def __init__(self, window):
+        self._window = window
+        self._collections = weakref.WeakKeyDictionary()
+        self._candidate = []
+        self._structure = namedtuple('registered',['id','used'])
+        # RGBA 8bit each
+        self._counter = 0x000001
+        self._counter_max = 0xffffff
+        # set mode
+        # removes uncalled in every
+        self._mode = 0
+
+    def reg(self, object):
+        if self._counter ^ self._counter_max == 0  and len(self._candidate) == 0:
+            raise IndexError('register is fully filled')
+
+        if isinstance(object, Render_unit):
+            if object not in self._collections:
+                if len(self._candidate) == 0:
+                    id = self._counter
+                    self._counter += 0x1
+                else:
+                    id = self._candidate.pop(0)
+                self._collections[object] = self._structure(id, False)
+
+        else:
+            raise TypeError
+
+    def id(self, object):
+        return self._collections[object].id
+
+    def id_color(self, object):
+        inte = self._collections[object].id
+        inte = format(inte,'06x')
+        color= [int(f'0x{inte[i*2:i*2+2]}',16)/255 for i in range(3)]
+        return color
+
+    def color_id(self, color):
+        hex = bytearray(color).hex()
+        inte = int(hex, 16)
+        return inte
 
 class Timer:
     def __init__(self,framerate, name):
@@ -628,4 +792,5 @@ class Timer:
     @property
     def framecount(self):
         return self._framecount
+
 

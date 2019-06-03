@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.list_priority
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.list_priority to provide a more 
+OpenGL.raw.GL.SGIX.list_priority to provide a more
 Python-friendly API
 
 Overview (from the spec)

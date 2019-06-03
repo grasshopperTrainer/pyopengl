@@ -1,7 +1,7 @@
 '''OpenGL extension KHR.gl_colorspace
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.KHR.gl_colorspace to provide a more 
+OpenGL.raw.EGL.KHR.gl_colorspace to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension OES.blend_subtract
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.OES.blend_subtract to provide a more 
+OpenGL.raw.GLES1.OES.blend_subtract to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

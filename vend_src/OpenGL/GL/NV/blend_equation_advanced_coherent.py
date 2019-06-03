@@ -1,7 +1,7 @@
 '''OpenGL extension NV.blend_equation_advanced_coherent
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.blend_equation_advanced_coherent to provide a more 
+OpenGL.raw.GL.NV.blend_equation_advanced_coherent to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.shader_texture_lod
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.shader_texture_lod to provide a more 
+OpenGL.raw.GL.ARB.shader_texture_lod to provide a more
 Python-friendly API
 
 Overview (from the spec)

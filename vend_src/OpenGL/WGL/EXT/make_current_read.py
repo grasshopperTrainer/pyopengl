@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.make_current_read
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.EXT.make_current_read to provide a more 
+OpenGL.raw.WGL.EXT.make_current_read to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

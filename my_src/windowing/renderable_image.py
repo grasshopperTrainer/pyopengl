@@ -11,22 +11,33 @@ class Renderable_image(FBL):
     def __init__(self, width, height):
         self._size = [width, height]
 
-        self._framebuffer = Framebuffer(True)
-        self._renderbuffer = Renderbuffer(size=self._size)
-        self._texture = Texture_new(*self._size, slot=0)
+        self._framebuffer = Framebuffer()
+        self._renderbuffer = Renderbuffer(width, height,Renderbuffer.GL_DEPTH_COMPONENT)
+        self._texture = Texture_new(*self._size, slot=1)
 
         self._default_viewport = Viewport(0,0,width,height)
 
-        self.build()
+        self._build()
 
-    def build(self):
+    def _build(self):
         # self.bind()
         self._renderbuffer.build()
         self._texture.build()
         self._framebuffer.build(self._texture, self._renderbuffer)
 
+    def rebuild(self,width, height):
+        self._texture.delete()
+        self._framebuffer.delete()
+        self._renderbuffer.delete()
+
+        self._framebuffer = Framebuffer()
+        self._renderbuffer = Renderbuffer(width, height)
+        self._texture = Texture_new(width, height, slot=1)
+
+        self._build()
+
     def begin(self):
-        FBL.set_current(self)
+        # FBL.set_current(self)
 
         self._framebuffer.bind()
 
@@ -35,6 +46,7 @@ class Renderable_image(FBL):
         # gl.glClearColor(0,1,1,1)
         gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
 
     def end(self):
         self._framebuffer.unbind()

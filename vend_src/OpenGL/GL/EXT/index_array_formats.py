@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.index_array_formats
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.index_array_formats to provide a more 
+OpenGL.raw.GL.EXT.index_array_formats to provide a more
 Python-friendly API
 
 Overview (from the spec)

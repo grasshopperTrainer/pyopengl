@@ -1,7 +1,7 @@
 '''OpenGL extension OES.extended_matrix_palette
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.OES.extended_matrix_palette to provide a more 
+OpenGL.raw.GLES1.OES.extended_matrix_palette to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

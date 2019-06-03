@@ -1,7 +1,7 @@
 '''OpenGL extension IBM.cull_vertex
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.IBM.cull_vertex to provide a more 
+OpenGL.raw.GL.IBM.cull_vertex to provide a more
 Python-friendly API
 
 Overview (from the spec)

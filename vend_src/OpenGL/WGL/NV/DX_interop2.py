@@ -1,7 +1,7 @@
 '''OpenGL extension NV.DX_interop2
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.NV.DX_interop2 to provide a more 
+OpenGL.raw.WGL.NV.DX_interop2 to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.compressed_texture_pixel_storage
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.compressed_texture_pixel_storage to provide a more 
+OpenGL.raw.GL.ARB.compressed_texture_pixel_storage to provide a more
 Python-friendly API
 
 Overview (from the spec)

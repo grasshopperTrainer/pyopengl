@@ -1,7 +1,7 @@
 '''OpenGL extension IMG.texture_env_enhanced_fixed_function
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.IMG.texture_env_enhanced_fixed_function to provide a more 
+OpenGL.raw.GLES1.IMG.texture_env_enhanced_fixed_function to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

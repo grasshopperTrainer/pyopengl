@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.shader_trinary_minmax
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.shader_trinary_minmax to provide a more 
+OpenGL.raw.GL.AMD.shader_trinary_minmax to provide a more
 Python-friendly API
 
 Overview (from the spec)

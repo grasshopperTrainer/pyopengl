@@ -1,7 +1,7 @@
 '''OpenGL extension HP.image_transform
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.HP.image_transform to provide a more 
+OpenGL.raw.GL.HP.image_transform to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension MESAX.texture_stack
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.MESAX.texture_stack to provide a more 
+OpenGL.raw.GL.MESAX.texture_stack to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension NV.vdpau_interop
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.vdpau_interop to provide a more 
+OpenGL.raw.GL.NV.vdpau_interop to provide a more
 Python-friendly API
 
 Overview (from the spec)

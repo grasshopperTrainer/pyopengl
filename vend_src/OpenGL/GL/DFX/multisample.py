@@ -1,7 +1,7 @@
 '''OpenGL extension DFX.multisample
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.DFX.multisample to provide a more 
+OpenGL.raw.GL.DFX.multisample to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.gpu_program_parameters
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.gpu_program_parameters to provide a more 
+OpenGL.raw.GL.EXT.gpu_program_parameters to provide a more
 Python-friendly API
 
 Overview (from the spec)

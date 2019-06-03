@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.shading_language_100
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.shading_language_100 to provide a more 
+OpenGL.raw.GL.ARB.shading_language_100 to provide a more
 Python-friendly API
 
 Overview (from the spec)

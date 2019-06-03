@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.extensions_string
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.EXT.extensions_string to provide a more 
+OpenGL.raw.WGL.EXT.extensions_string to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

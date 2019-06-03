@@ -1,7 +1,7 @@
 '''OpenGL extension QCOM.perfmon_global_mode
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.QCOM.perfmon_global_mode to provide a more 
+OpenGL.raw.GLES1.QCOM.perfmon_global_mode to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension MESA.pack_invert
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.MESA.pack_invert to provide a more 
+OpenGL.raw.GL.MESA.pack_invert to provide a more
 Python-friendly API
 
 Overview (from the spec)

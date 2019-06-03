@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.texture_compression
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.texture_compression to provide a more 
+OpenGL.raw.GL.ARB.texture_compression to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -13,11 +13,11 @@ class Rectangle(BasicRenderObject):
         self._edgecol = edgecol
         self._edgeweight = edgeweight
 
-        r = RenderUnit()
+        r = Renderer_template()
         self._renderer = r
         self._renderer.move(self._pos[0], self._pos[1], 0)
 
-        r.use_shader(r.components.Shader('BRO_rectangle', 'a Rectangle object'))
+        r.set_shader(r.components.Shader('BRO_rectangle_with_edge', 'a Rectangle object'))
         r.use_vertexbuffer()
         r.use_indexbuffer()
         r.property['a_texCoord'][0:4] = [0, 0], [1, 0], [1, 1], [0, 1]

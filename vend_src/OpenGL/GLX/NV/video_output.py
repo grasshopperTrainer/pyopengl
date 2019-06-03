@@ -1,7 +1,7 @@
 '''OpenGL extension NV.video_output
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.NV.video_output to provide a more 
+OpenGL.raw.GLX.NV.video_output to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

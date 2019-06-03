@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.texture_texture4
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.texture_texture4 to provide a more 
+OpenGL.raw.GL.AMD.texture_texture4 to provide a more
 Python-friendly API
 
 Overview (from the spec)

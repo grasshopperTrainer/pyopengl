@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.shader_pixel_local_storage
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.EXT.shader_pixel_local_storage to provide a more 
+OpenGL.raw.GLES2.EXT.shader_pixel_local_storage to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

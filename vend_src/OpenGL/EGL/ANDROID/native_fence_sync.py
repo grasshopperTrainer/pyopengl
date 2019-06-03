@@ -1,7 +1,7 @@
 '''OpenGL extension ANDROID.native_fence_sync
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.ANDROID.native_fence_sync to provide a more 
+OpenGL.raw.EGL.ANDROID.native_fence_sync to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

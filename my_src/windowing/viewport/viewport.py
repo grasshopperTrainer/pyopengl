@@ -1,5 +1,5 @@
 from patterns.update_check_descriptor import UCD
-import OpenGL.GL as gl
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 from .Camera import _Camera
 from collections import namedtuple
 from ..frame_buffer_like.frame_buffer_like_bp import FBL
@@ -68,6 +68,7 @@ class Viewport:
             gl.glClearColor(*color)
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+            gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
 
             # clear just once
             # only allowed again if self.clear() is called again

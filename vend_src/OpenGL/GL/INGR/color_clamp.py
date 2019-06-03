@@ -1,7 +1,7 @@
 '''OpenGL extension INGR.color_clamp
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.INGR.color_clamp to provide a more 
+OpenGL.raw.GL.INGR.color_clamp to provide a more
 Python-friendly API
 
 Overview (from the spec)

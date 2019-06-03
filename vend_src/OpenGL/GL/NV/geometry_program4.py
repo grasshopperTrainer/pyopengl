@@ -1,7 +1,7 @@
 '''OpenGL extension NV.geometry_program4
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.geometry_program4 to provide a more 
+OpenGL.raw.GL.NV.geometry_program4 to provide a more
 Python-friendly API
 
 Overview (from the spec)

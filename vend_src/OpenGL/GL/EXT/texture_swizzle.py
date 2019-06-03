@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.texture_swizzle
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.texture_swizzle to provide a more 
+OpenGL.raw.GL.EXT.texture_swizzle to provide a more
 Python-friendly API
 
 Overview (from the spec)

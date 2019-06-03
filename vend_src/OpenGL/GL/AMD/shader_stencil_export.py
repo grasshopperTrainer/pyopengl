@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.shader_stencil_export
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.shader_stencil_export to provide a more 
+OpenGL.raw.GL.AMD.shader_stencil_export to provide a more
 Python-friendly API
 
 Overview (from the spec)

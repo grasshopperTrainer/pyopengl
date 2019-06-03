@@ -1,7 +1,7 @@
 '''OpenGL extension NV.light_max_exponent
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.light_max_exponent to provide a more 
+OpenGL.raw.GL.NV.light_max_exponent to provide a more
 Python-friendly API
 
 Overview (from the spec)

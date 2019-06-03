@@ -1,7 +1,7 @@
 '''OpenGL extension NV.fragment_program2
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.fragment_program2 to provide a more 
+OpenGL.raw.GL.NV.fragment_program2 to provide a more
 Python-friendly API
 
 Overview (from the spec)

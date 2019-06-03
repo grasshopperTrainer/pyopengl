@@ -1,7 +1,7 @@
 '''OpenGL extension SUN.global_alpha
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SUN.global_alpha to provide a more 
+OpenGL.raw.GL.SUN.global_alpha to provide a more
 Python-friendly API
 
 Overview (from the spec)

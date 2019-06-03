@@ -1,7 +1,7 @@
 '''OpenGL extension SUN.get_transparent_index
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.SUN.get_transparent_index to provide a more 
+OpenGL.raw.GLX.SUN.get_transparent_index to provide a more
 Python-friendly API
 
 Overview (from the spec)

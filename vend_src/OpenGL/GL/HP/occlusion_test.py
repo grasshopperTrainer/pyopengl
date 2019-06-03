@@ -1,7 +1,7 @@
 '''OpenGL extension HP.occlusion_test
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.HP.occlusion_test to provide a more 
+OpenGL.raw.GL.HP.occlusion_test to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension NV.copy_depth_to_color
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.copy_depth_to_color to provide a more 
+OpenGL.raw.GL.NV.copy_depth_to_color to provide a more
 Python-friendly API
 
 Overview (from the spec)

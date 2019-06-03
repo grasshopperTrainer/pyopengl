@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.texture_rg
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.texture_rg to provide a more 
+OpenGL.raw.GL.ARB.texture_rg to provide a more
 Python-friendly API
 
 Overview (from the spec)

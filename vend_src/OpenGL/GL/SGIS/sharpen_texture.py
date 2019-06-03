@@ -1,7 +1,7 @@
 '''OpenGL extension SGIS.sharpen_texture
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIS.sharpen_texture to provide a more 
+OpenGL.raw.GL.SGIS.sharpen_texture to provide a more
 Python-friendly API
 
 Overview (from the spec)

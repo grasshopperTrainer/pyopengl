@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.framebuffer_sRGB
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.EXT.framebuffer_sRGB to provide a more 
+OpenGL.raw.GLX.EXT.framebuffer_sRGB to provide a more
 Python-friendly API
 
 Overview (from the spec)

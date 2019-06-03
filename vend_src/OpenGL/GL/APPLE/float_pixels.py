@@ -1,7 +1,7 @@
 '''OpenGL extension APPLE.float_pixels
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.APPLE.float_pixels to provide a more 
+OpenGL.raw.GL.APPLE.float_pixels to provide a more
 Python-friendly API
 
 Overview (from the spec)

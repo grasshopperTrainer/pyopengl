@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.robustness_isolation
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.robustness_isolation to provide a more 
+OpenGL.raw.GL.ARB.robustness_isolation to provide a more
 Python-friendly API
 
 Overview (from the spec)

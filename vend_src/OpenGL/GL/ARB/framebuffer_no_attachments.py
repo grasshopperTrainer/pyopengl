@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.framebuffer_no_attachments
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.framebuffer_no_attachments to provide a more 
+OpenGL.raw.GL.ARB.framebuffer_no_attachments to provide a more
 Python-friendly API
 
 Overview (from the spec)

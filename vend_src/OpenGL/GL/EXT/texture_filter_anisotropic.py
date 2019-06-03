@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.texture_filter_anisotropic
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.texture_filter_anisotropic to provide a more 
+OpenGL.raw.GL.EXT.texture_filter_anisotropic to provide a more
 Python-friendly API
 
 Overview (from the spec)

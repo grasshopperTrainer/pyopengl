@@ -1,6 +1,9 @@
+import sys
 import glfw
 import inspect
+from ..renderable_image import Renderable_image
 from patterns.store_instances_dict import SID
+from ..my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
 class Mouse(SID):
 
@@ -116,12 +119,15 @@ class Mouse(SID):
         for event in self._event[when]:
             self._window._context_scope.run(event)
 
-    def instant_press_button(self, button):
-        if button not in self._button_state:
-            self._button_state[button] = None
-
+    def instant_press_button(self, button: int):
+        """
+        Triger one-time mouse button click action.
+        :param button: button index number
+        :return:
+        """
         self._button_state[button] = True
-        self.instant_mouse_states.append([self._button_state,button, False])
+        # reset action
+        self.instant_mouse_states.append([self._button_state, button, False])
 
     def instant_mouse_onscreen(self):
         self._flag_cursor_onscreen = True
@@ -136,7 +142,17 @@ class Mouse(SID):
 
     @property
     def pressed_button(self):
+        return_list = []
+        for n,v in self._button_state.items():
+            if v:
+                return_list.append(n)
+
+        return tuple(return_list)
+
+    @property
+    def button_state(self):
         return self._button_state
+
     @property
     def cursor_onscreen(self):
         return self._cursor_state['onscreen']
@@ -179,3 +195,14 @@ class Mouse(SID):
                     result[k] = v
 
         return result
+
+    @property
+    def object_id(self):
+        x,y = self.mouse_position
+        y = self._window.height - y
+
+        self._window.myframe.begin()
+        gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
+        color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
+        self._window.myframe.end()
+        print('mouse picking =',self._window._render_unit_reg.color_id(color))

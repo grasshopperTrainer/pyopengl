@@ -1,7 +1,7 @@
 '''OpenGL extension MESA.drm_image
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.MESA.drm_image to provide a more 
+OpenGL.raw.EGL.MESA.drm_image to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

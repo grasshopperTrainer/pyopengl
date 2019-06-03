@@ -1,7 +1,7 @@
 '''OpenGL extension KHR.get_all_proc_addresses
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.KHR.get_all_proc_addresses to provide a more 
+OpenGL.raw.EGL.KHR.get_all_proc_addresses to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

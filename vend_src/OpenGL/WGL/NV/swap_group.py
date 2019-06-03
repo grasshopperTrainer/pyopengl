@@ -1,7 +1,7 @@
 '''OpenGL extension NV.swap_group
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.NV.swap_group to provide a more 
+OpenGL.raw.WGL.NV.swap_group to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

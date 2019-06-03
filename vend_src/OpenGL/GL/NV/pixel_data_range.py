@@ -1,7 +1,7 @@
 '''OpenGL extension NV.pixel_data_range
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.pixel_data_range to provide a more 
+OpenGL.raw.GL.NV.pixel_data_range to provide a more
 Python-friendly API
 
 Overview (from the spec)

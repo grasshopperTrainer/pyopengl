@@ -1,7 +1,7 @@
 '''OpenGL extension NV.primitive_restart
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.primitive_restart to provide a more 
+OpenGL.raw.GL.NV.primitive_restart to provide a more
 Python-friendly API
 
 Overview (from the spec)

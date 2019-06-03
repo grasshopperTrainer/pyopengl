@@ -1,7 +1,7 @@
 '''OpenGL extension NV.gpu_program5_mem_extended
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.gpu_program5_mem_extended to provide a more 
+OpenGL.raw.GL.NV.gpu_program5_mem_extended to provide a more
 Python-friendly API
 
 Overview (from the spec)

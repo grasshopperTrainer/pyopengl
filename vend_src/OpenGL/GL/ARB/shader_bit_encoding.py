@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.shader_bit_encoding
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.shader_bit_encoding to provide a more 
+OpenGL.raw.GL.ARB.shader_bit_encoding to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.ycrcb_subsample
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.ycrcb_subsample to provide a more 
+OpenGL.raw.GL.SGIX.ycrcb_subsample to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.sample_shading
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.sample_shading to provide a more 
+OpenGL.raw.GL.ARB.sample_shading to provide a more
 Python-friendly API
 
 Overview (from the spec)

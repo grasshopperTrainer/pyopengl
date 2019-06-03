@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.tag_sample_buffer
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.tag_sample_buffer to provide a more 
+OpenGL.raw.GL.SGIX.tag_sample_buffer to provide a more
 Python-friendly API
 
 Overview (from the spec)

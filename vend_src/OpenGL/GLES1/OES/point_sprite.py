@@ -1,7 +1,7 @@
 '''OpenGL extension OES.point_sprite
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.OES.point_sprite to provide a more 
+OpenGL.raw.GLES1.OES.point_sprite to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

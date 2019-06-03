@@ -1,7 +1,7 @@
 '''OpenGL extension ATI.texture_float
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ATI.texture_float to provide a more 
+OpenGL.raw.GL.ATI.texture_float to provide a more
 Python-friendly API
 
 Overview (from the spec)

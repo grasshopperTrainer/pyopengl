@@ -1,7 +1,7 @@
 '''OpenGL extension DFX.tbuffer
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.DFX.tbuffer to provide a more 
+OpenGL.raw.GL.DFX.tbuffer to provide a more
 Python-friendly API
 
 Overview (from the spec)

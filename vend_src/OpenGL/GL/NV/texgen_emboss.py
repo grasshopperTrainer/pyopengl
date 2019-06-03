@@ -1,7 +1,7 @@
 '''OpenGL extension NV.texgen_emboss
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.texgen_emboss to provide a more 
+OpenGL.raw.GL.NV.texgen_emboss to provide a more
 Python-friendly API
 
 Overview (from the spec)

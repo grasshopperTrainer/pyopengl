@@ -1,7 +1,7 @@
 '''OpenGL extension NV.register_combiners
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.register_combiners to provide a more 
+OpenGL.raw.GL.NV.register_combiners to provide a more
 Python-friendly API
 
 Overview (from the spec)

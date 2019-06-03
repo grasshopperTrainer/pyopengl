@@ -1,7 +1,7 @@
 '''OpenGL extension SGI.video_sync
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.SGI.video_sync to provide a more 
+OpenGL.raw.GLX.SGI.video_sync to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension OES.stencil1
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.OES.stencil1 to provide a more 
+OpenGL.raw.GLES2.OES.stencil1 to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

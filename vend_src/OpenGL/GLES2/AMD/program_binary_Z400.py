@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.program_binary_Z400
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.AMD.program_binary_Z400 to provide a more 
+OpenGL.raw.GLES2.AMD.program_binary_Z400 to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

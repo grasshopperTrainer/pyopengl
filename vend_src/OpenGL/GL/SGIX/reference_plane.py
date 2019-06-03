@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.reference_plane
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.reference_plane to provide a more 
+OpenGL.raw.GL.SGIX.reference_plane to provide a more
 Python-friendly API
 
 Overview (from the spec)

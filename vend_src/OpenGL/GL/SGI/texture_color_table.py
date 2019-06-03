@@ -1,7 +1,7 @@
 '''OpenGL extension SGI.texture_color_table
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGI.texture_color_table to provide a more 
+OpenGL.raw.GL.SGI.texture_color_table to provide a more
 Python-friendly API
 
 Overview (from the spec)

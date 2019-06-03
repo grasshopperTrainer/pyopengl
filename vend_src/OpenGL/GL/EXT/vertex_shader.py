@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.vertex_shader
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.vertex_shader to provide a more 
+OpenGL.raw.GL.EXT.vertex_shader to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension ANDROID.blob_cache
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.ANDROID.blob_cache to provide a more 
+OpenGL.raw.EGL.ANDROID.blob_cache to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

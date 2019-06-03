@@ -1,7 +1,7 @@
 '''OpenGL extension OML.resample
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.OML.resample to provide a more 
+OpenGL.raw.GL.OML.resample to provide a more
 Python-friendly API
 
 Overview (from the spec)

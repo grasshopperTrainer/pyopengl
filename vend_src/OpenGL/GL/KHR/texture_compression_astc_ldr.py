@@ -1,7 +1,7 @@
 '''OpenGL extension KHR.texture_compression_astc_ldr
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.KHR.texture_compression_astc_ldr to provide a more 
+OpenGL.raw.GL.KHR.texture_compression_astc_ldr to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

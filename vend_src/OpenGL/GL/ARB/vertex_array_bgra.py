@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.vertex_array_bgra
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.vertex_array_bgra to provide a more 
+OpenGL.raw.GL.ARB.vertex_array_bgra to provide a more
 Python-friendly API
 
 Overview (from the spec)

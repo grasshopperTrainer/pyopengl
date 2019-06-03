@@ -1,7 +1,7 @@
 '''OpenGL extension NV.render_texture_rectangle
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.NV.render_texture_rectangle to provide a more 
+OpenGL.raw.WGL.NV.render_texture_rectangle to provide a more
 Python-friendly API
 
 Overview (from the spec)

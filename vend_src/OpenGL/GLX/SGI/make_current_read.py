@@ -1,7 +1,7 @@
 '''OpenGL extension SGI.make_current_read
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.SGI.make_current_read to provide a more 
+OpenGL.raw.GLX.SGI.make_current_read to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.enhanced_layouts
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.enhanced_layouts to provide a more 
+OpenGL.raw.GL.ARB.enhanced_layouts to provide a more
 Python-friendly API
 
 Overview (from the spec)

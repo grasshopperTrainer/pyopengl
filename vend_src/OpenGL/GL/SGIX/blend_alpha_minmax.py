@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.blend_alpha_minmax
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.blend_alpha_minmax to provide a more 
+OpenGL.raw.GL.SGIX.blend_alpha_minmax to provide a more
 Python-friendly API
 
 Overview (from the spec)

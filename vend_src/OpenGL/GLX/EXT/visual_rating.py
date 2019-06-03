@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.visual_rating
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.EXT.visual_rating to provide a more 
+OpenGL.raw.GLX.EXT.visual_rating to provide a more
 Python-friendly API
 
 Overview (from the spec)

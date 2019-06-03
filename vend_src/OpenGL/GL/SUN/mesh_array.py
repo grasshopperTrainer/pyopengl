@@ -1,7 +1,7 @@
 '''OpenGL extension SUN.mesh_array
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SUN.mesh_array to provide a more 
+OpenGL.raw.GL.SUN.mesh_array to provide a more
 Python-friendly API
 
 Overview (from the spec)

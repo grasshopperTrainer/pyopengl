@@ -1,7 +1,7 @@
 '''OpenGL extension OES.vertex_array_object
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.OES.vertex_array_object to provide a more 
+OpenGL.raw.GLES2.OES.vertex_array_object to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

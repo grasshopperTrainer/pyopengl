@@ -1,7 +1,7 @@
 '''OpenGL extension NV.deep_texture3D
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.deep_texture3D to provide a more 
+OpenGL.raw.GL.NV.deep_texture3D to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension APPLE.ycbcr_422
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.APPLE.ycbcr_422 to provide a more 
+OpenGL.raw.GL.APPLE.ycbcr_422 to provide a more
 Python-friendly API
 
 Overview (from the spec)

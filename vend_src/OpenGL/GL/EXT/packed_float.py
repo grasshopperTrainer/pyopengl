@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.packed_float
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.packed_float to provide a more 
+OpenGL.raw.GL.EXT.packed_float to provide a more
 Python-friendly API
 
 Overview (from the spec)

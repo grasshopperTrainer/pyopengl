@@ -1,7 +1,7 @@
 '''OpenGL extension ATI.envmap_bumpmap
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ATI.envmap_bumpmap to provide a more 
+OpenGL.raw.GL.ATI.envmap_bumpmap to provide a more
 Python-friendly API
 
 Overview (from the spec)

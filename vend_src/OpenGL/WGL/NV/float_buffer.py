@@ -1,7 +1,7 @@
 '''OpenGL extension NV.float_buffer
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.NV.float_buffer to provide a more 
+OpenGL.raw.WGL.NV.float_buffer to provide a more
 Python-friendly API
 
 Overview (from the spec)

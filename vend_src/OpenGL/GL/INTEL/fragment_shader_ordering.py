@@ -1,7 +1,7 @@
 '''OpenGL extension INTEL.fragment_shader_ordering
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.INTEL.fragment_shader_ordering to provide a more 
+OpenGL.raw.GL.INTEL.fragment_shader_ordering to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension KHR.stream_fifo
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.KHR.stream_fifo to provide a more 
+OpenGL.raw.EGL.KHR.stream_fifo to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

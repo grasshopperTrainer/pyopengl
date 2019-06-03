@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.draw_buffers_blend
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.draw_buffers_blend to provide a more 
+OpenGL.raw.GL.AMD.draw_buffers_blend to provide a more
 Python-friendly API
 
 Overview (from the spec)

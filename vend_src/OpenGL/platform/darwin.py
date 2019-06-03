@@ -7,12 +7,12 @@ This was implemented with the help of the following links:
 [4] Intro to OpenGL on Mac OS X: http://developer.apple.com/documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide/opengl_intro/chapter_1_section_1.html#//apple_ref/doc/uid/TP40001987-CH207-TP9
 
 About the  CGL API, (from [1]):
-CGL or Core OpenGL is the lowest accessible interface API for OpenGL. 
+CGL or Core OpenGL is the lowest accessible interface API for OpenGL.
 It knows nothing about windowing systems but can be used directly to 
 find both renderer information and as a full screen or off screen 
 interface. It is accessible from both Cocoa and Carbon and is what both 
 NSGL and AGL are built on. A complete Pbuffer interface is also provided. 
-Functionality is provided in via the OpenGL framework and applications 
+Functionality is provided in via the OpenGL framework and applications
 can include the OpenGL.h header to access CGL's functionality. Developers
 can see an example of using CGL with Carbon in the Carbon CGL code sample.
 
@@ -34,7 +34,7 @@ class DarwinPlatform( baseplatform.BasePlatform ):
         try:
             return ctypesloader.loadLibrary(
                 ctypes.cdll,
-                'OpenGL', 
+                'OpenGL',
                 mode=ctypes.RTLD_GLOBAL 
             ) 
         except OSError as err:

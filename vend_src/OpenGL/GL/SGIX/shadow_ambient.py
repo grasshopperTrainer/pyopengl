@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.shadow_ambient
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.shadow_ambient to provide a more 
+OpenGL.raw.GL.SGIX.shadow_ambient to provide a more
 Python-friendly API
 
 Overview (from the spec)

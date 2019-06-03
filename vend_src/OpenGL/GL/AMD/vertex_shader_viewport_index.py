@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.vertex_shader_viewport_index
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.vertex_shader_viewport_index to provide a more 
+OpenGL.raw.GL.AMD.vertex_shader_viewport_index to provide a more
 Python-friendly API
 
 Overview (from the spec)

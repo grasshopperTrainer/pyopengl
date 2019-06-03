@@ -1,7 +1,7 @@
 '''OpenGL extension APPLE.vertex_array_object
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.APPLE.vertex_array_object to provide a more 
+OpenGL.raw.GL.APPLE.vertex_array_object to provide a more
 Python-friendly API
 
 Overview (from the spec)

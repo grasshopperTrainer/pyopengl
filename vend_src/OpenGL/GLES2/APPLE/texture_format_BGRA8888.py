@@ -1,7 +1,7 @@
 '''OpenGL extension APPLE.texture_format_BGRA8888
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.APPLE.texture_format_BGRA8888 to provide a more 
+OpenGL.raw.GLES2.APPLE.texture_format_BGRA8888 to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

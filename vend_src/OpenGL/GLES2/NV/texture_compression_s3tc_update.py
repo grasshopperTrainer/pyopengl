@@ -1,7 +1,7 @@
 '''OpenGL extension NV.texture_compression_s3tc_update
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.NV.texture_compression_s3tc_update to provide a more 
+OpenGL.raw.GLES2.NV.texture_compression_s3tc_update to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

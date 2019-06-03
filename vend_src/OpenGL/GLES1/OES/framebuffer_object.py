@@ -1,7 +1,7 @@
 '''OpenGL extension OES.framebuffer_object
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES1.OES.framebuffer_object to provide a more 
+OpenGL.raw.GLES1.OES.framebuffer_object to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

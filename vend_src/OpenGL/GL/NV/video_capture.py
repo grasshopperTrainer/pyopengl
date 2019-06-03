@@ -1,7 +1,7 @@
 '''OpenGL extension NV.video_capture
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.video_capture to provide a more 
+OpenGL.raw.GL.NV.video_capture to provide a more
 Python-friendly API
 
 Overview (from the spec)

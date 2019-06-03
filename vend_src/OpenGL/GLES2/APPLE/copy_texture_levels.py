@@ -1,7 +1,7 @@
 '''OpenGL extension APPLE.copy_texture_levels
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.APPLE.copy_texture_levels to provide a more 
+OpenGL.raw.GLES2.APPLE.copy_texture_levels to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

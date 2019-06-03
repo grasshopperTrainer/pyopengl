@@ -1,7 +1,7 @@
 '''OpenGL extension OES.sample_variables
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.OES.sample_variables to provide a more 
+OpenGL.raw.GLES2.OES.sample_variables to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

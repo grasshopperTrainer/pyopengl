@@ -1,13 +1,13 @@
 '''OpenGL extension GREMEDY.string_marker
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.GREMEDY.string_marker to provide a more 
+OpenGL.raw.GL.GREMEDY.string_marker to provide a more
 Python-friendly API
 
 Overview (from the spec)
 	
 	This extension defines a mechanism to insert textual markers into
-	the OpenGL stream. 
+	the OpenGL stream.
 	
 	When debugging or profiling an OpenGL application some of the most
 	important tools are stream loggers, which just output a list of the

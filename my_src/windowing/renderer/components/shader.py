@@ -1,54 +1,61 @@
 from collections import OrderedDict
-import numpy as np
-from OpenGL.GL import *
-import ctypes
 
-from error_handler import print_message
 from .component_bp import RenderComponent
-from .properties import Properties
+from .glsl_property_container import Glsl_property_container
+
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
 
 class Shader(RenderComponent):
     _dic_shaders = OrderedDict()
 
     def __init__(self, file_name: str, name: str = None):
-        self._vertex = ''
-        self._fragment = ''
         self._file_name = file_name
+        self._vertex, self._fragment, self._attribute, self._uniform = self._load_parse_glsl(file_name)
 
-        if name is None:
-            self._name = 'Unknown'
-        else:
-            self._name = name
+        self._glindex = None
+        self._name = name
 
-        self._properties = Properties(self)
+        self._properties = Glsl_property_container(self)
+        for n,t,l in self._attribute:
+            self._properties.new_attribute(n,t,l)
+        for n,t,l in self._uniform:
+            self._properties.new_uniform(n,t,l)
 
+        # for i in self._properties.uniform.blocks:
+        #     print(i)
+        # exit()
+
+
+        self._flag_built = False
+
+    @property
+    def is_built(self):
+        return self._flag_built
+
+    def build(self):
         # 1. create program
-        self._glindex = glCreateProgram()
-
-        # 2. load external glsl
-        # 3. read attributes and unifroms from shaders
-        att_uni = self._load_parse_glsl()
-        # 4. store att_uni
-        for i in att_uni['att']:
-            self._properties.new_attribute(i[0], i[1])
-        for i in att_uni['uni']:
-            self._properties.new_uniform(i[0], i[1])
-
+        self._glindex = gl.glCreateProgram()
         # 3. bind shaders
         self._bake_shader()
         # 2. store array buffer to use
-        self._set_properties_location()
+        self.properties.validate_uniform_location()
         # self.store_self()
 
-    def _load_parse_glsl(self):
-        att_uni = {'att': [], 'uni': []}
+        self._flag_built = True
+
+    def _load_parse_glsl(self, file_name):
+        att = []
+        uni = []
+        vertex_string = ''
+        fragment_string = ''
+
         # if giving full path
-        if '.glsl' in self._file_name:
-            file_path = self._file_name
+        if '.glsl' in file_name:
+            file_path = file_name
         # if using signed directory
         else:
-            file_path = f'res/shader/{self._file_name}.glsl'
+            file_path = f'res/shader/{file_name}.glsl'
 
         f = open(file_path, 'r')
         lines = f.readlines()
@@ -72,19 +79,26 @@ class Shader(RenderComponent):
 
             # add lines
             if save_vertex is True:
-                self._vertex += line
+                vertex_string += line
             elif save_fragment is True:
-                self._fragment += line
+                fragment_string += line
 
             # store variable names
             if 'attribute ' in line or 'uniform ' in line:
+                #find layout
+                if line.find('layout') == -1 or line.find('location') == -1:
+                    raise SyntaxError("please set location by syntax 'layout(location = #) <attibute, uniform> <type> <param_name>'")
+                else:
+                    location = int(line.split('location')[1].split('=')[1].split(')')[0].strip())
+
+
 
                 if 'attribute ' in line:
-                    addto = att_uni['att']
+                    addto = att
                     l = line.split('attribute ')[1]
 
                 else:
-                    addto = att_uni['uni']
+                    addto = uni
                     l = line.split('uniform ')[1]
 
                 l = l.replace(';', '')
@@ -115,41 +129,42 @@ class Shader(RenderComponent):
                 #     # TODO parse if other types are used for shader 'attribute', or 'uniform'
                 #     pass
                 # store value
-                addto.append([name, type])
+                addto.append((name, type, location))
 
             else:
                 continue
 
-        return att_uni
+        return vertex_string, fragment_string, tuple(att), tuple(uni)
 
     def _bake_shader(self):
-        def compile(type, source):
-            id = glCreateShader(type)
-            glShaderSource(id, source)
-            glCompileShader(id)
 
-            success = glGetShaderiv(id, GL_COMPILE_STATUS)
+        def compile(type, source):
+            id = gl.glCreateShader(type)
+            gl.glShaderSource(id, source)
+            gl.glCompileShader(id)
+
+            success = gl.glGetShaderiv(id, gl.GL_COMPILE_STATUS)
 
             if not success:
-                messege = glGetShaderInfoLog(id)
+                messege = gl.glGetShaderInfoLog(id)
                 print(f'[{self.__class__.__name__}]: failed compile shader')
                 print(messege)
-                glDeleteShader(id)
+                gl.glDeleteShader(id)
 
                 return 0
 
             return id
 
-        vs = compile(GL_VERTEX_SHADER, self._vertex)
-        fs = compile(GL_FRAGMENT_SHADER, self._fragment)
+        vs = compile(gl.GL_VERTEX_SHADER, self._vertex)
+        fs = compile(gl.GL_FRAGMENT_SHADER, self._fragment)
 
-        glAttachShader(self.glindex, vs)
-        glAttachShader(self.glindex, fs)
-        glLinkProgram(self.glindex)
-        glValidateProgram(self.glindex)
+        gl.glAttachShader(self.glindex, vs)
+        gl.glAttachShader(self.glindex, fs)
+        gl.glLinkProgram(self.glindex)
+        gl.glValidateProgram(self.glindex)
 
-        glDeleteShader(vs)
-        glDeleteShader(fs)
+        gl.glDeleteShader(vs)
+        gl.glDeleteShader(fs)
 
 
     @classmethod
@@ -158,21 +173,19 @@ class Shader(RenderComponent):
         if len(index) is 0:
             for n in d:
                 i = d[n][0]
-                glDeleteProgram(i)
+                gl.glDeleteProgram(i)
         else:
             for i in index:
                 n = list(d.keys())[i]
                 v = d[n][0]
-                glDeleteProgram(v)
+                gl.glDeleteProgram(v)
 
-    def build(self):
-        pass
 
     def bind(self):
-        glUseProgram(self.glindex)
+        gl.glUseProgram(self.glindex)
 
     def unbind(self):
-        glUseProgram(0)
+        gl.glUseProgram(0)
 
     @property
     def vertexarray(self):
@@ -190,18 +203,19 @@ class Shader(RenderComponent):
     def glindex(self):
         return self._glindex
 
-    def _set_properties_location(self):
-        for i, block in enumerate(self.properties.attribute.blocks):
-            glBindAttribLocation(self.glindex, i, block._name)
-            block._location = i
+    def _validate_uniform_location(self):
+        # for i, block in enumerate(self.properties.attribute.blocks):
+        #     gl.glBindAttribLocation(self.glindex, i, block._name)
+        #     block.location = i
 
         for block in self.properties.uniform.blocks:
-            block._location = glGetUniformLocation(self.glindex, block._name)
-        glLinkProgram(self.glindex)
+            block.location = gl.glGetUniformLocation(self.glindex, block.name)
+        # exit()
+        # gl.glLinkProgram(self.glindex)
 
     @property
     def properties(self):
         return self._properties
 
     def __str__(self):
-        return f"Shader object named: '{self._name}', glindex: {self._glindex}"
+        return f"<Shader object named: '{self._name}', glindex: {self._glindex}>"

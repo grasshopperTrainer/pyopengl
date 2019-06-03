@@ -1,7 +1,7 @@
 '''OpenGL extension ATI.pixel_format_float
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ATI.pixel_format_float to provide a more 
+OpenGL.raw.GL.ATI.pixel_format_float to provide a more
 Python-friendly API
 
 Overview (from the spec)

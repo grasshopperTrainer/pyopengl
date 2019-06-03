@@ -1,7 +1,7 @@
 '''OpenGL extension SGIS.texture4D
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIS.texture4D to provide a more 
+OpenGL.raw.GL.SGIS.texture4D to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.seamless_cubemap_per_texture
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.seamless_cubemap_per_texture to provide a more 
+OpenGL.raw.GL.ARB.seamless_cubemap_per_texture to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.get_proc_address
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.ARB.get_proc_address to provide a more 
+OpenGL.raw.GLX.ARB.get_proc_address to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension NV.post_convert_rounding
 
 This module customises the behaviour of the 
-OpenGL.raw.EGL.NV.post_convert_rounding to provide a more 
+OpenGL.raw.EGL.NV.post_convert_rounding to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

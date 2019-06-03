@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.shader_texture_lod
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.EXT.shader_texture_lod to provide a more 
+OpenGL.raw.GLES2.EXT.shader_texture_lod to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

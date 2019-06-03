@@ -27,7 +27,7 @@ usage of VBO objects:
 
     http://pyopengl.sourceforge.net/context/tutorials/shader_intro.xhtml
 
-This implementation will choose either the ARB or Core (OpenGL 1.5) 
+This implementation will choose either the ARB or Core (OpenGL 1.5)
 implementation of the VBO functions.
 """
 from OpenGL.arrays.arraydatatype import ArrayDatatype
@@ -158,7 +158,7 @@ if VBO is None:
             """Initialize the VBO object 
             
             data -- PyOpenGL-compatible array-data structure, numpy arrays, ctypes arrays, etc.
-            usage -- OpenGL usage constant describing expected data-flow patterns (this is a hint 
+            usage -- OpenGL usage constant describing expected data-flow patterns (this is a hint
                 to the GL about where/how to cache the data)
                 
                 GL_STATIC_DRAW_ARB

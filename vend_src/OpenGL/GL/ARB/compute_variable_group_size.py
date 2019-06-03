@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.compute_variable_group_size
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.compute_variable_group_size to provide a more 
+OpenGL.raw.GL.ARB.compute_variable_group_size to provide a more
 Python-friendly API
 
 Overview (from the spec)

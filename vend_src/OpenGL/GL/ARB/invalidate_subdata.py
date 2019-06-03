@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.invalidate_subdata
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.invalidate_subdata to provide a more 
+OpenGL.raw.GL.ARB.invalidate_subdata to provide a more
 Python-friendly API
 
 Overview (from the spec)

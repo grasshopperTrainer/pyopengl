@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.imaging
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.imaging to provide a more 
+OpenGL.raw.GL.ARB.imaging to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

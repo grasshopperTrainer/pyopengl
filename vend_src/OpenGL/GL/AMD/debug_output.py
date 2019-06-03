@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.debug_output
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.debug_output to provide a more 
+OpenGL.raw.GL.AMD.debug_output to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -7,14 +7,14 @@ we have to store references to the objects somewhere
 For any given Python unnamedGUI library, we can use a weakref
 to the library's representation of the GL context to 
 call the cleanup function.  That means some per-unnamedGUI 
-library code in OpenGL (or the library), but it gives 
+library code in OpenGL (or the library), but it gives
 us very natural operations within OpenGL.
 
 Note: you can entirely disable use of this module by 
 setting:
 
-    OpenGL.ERROR_ON_COPY = True 
-    OpenGL.STORE_POINTERS = False 
+    OpenGL.ERROR_ON_COPY = True
+    OpenGL.STORE_POINTERS = False
         
 before importing OpenGL functionality.
 """

@@ -1,7 +1,7 @@
 '''OpenGL extension OES.query_matrix
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.OES.query_matrix to provide a more 
+OpenGL.raw.GL.OES.query_matrix to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

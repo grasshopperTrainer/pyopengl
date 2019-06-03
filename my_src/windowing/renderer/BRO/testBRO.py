@@ -1,43 +1,93 @@
-# from .basic_render_object import *
-from ..components.texture import Texture_new, Texture_load, Texture
-import OpenGL.GL as gl
+from ..renderer_template import Renderer_builder
+from patterns.update_check_descriptor import UCD
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
-import numpy as np
-from ...renderer.components import *
-from patterns.store_instances_dict import SID
-from ...viewport.viewport import Viewport
-from ..render_unit import RenderUnit
 
 class TestBRO():
+    """
+    one renderer should have one shader.
+    but this can be called from several plces...
+    when initiating ... like first_rect = TestBRO()
+    how to make calling free???
+    """
+    c = Renderer_builder()
+    c.use_shader(c.Shader('BRO_rectangle'))
+    c.use_triangle_strip_draw()
+    c.use_index_buffer(c.Indexbuffer((0,1,3,3,1,2)))
 
-    def __init__(self):
-        # Render_unit_builder.load_shader(path_or_name='BRO_rectangle')
-        self.a = RenderUnit()
-        self.a.use_shader(self.a.components.Shader('BRO_rectangle', 'a TestBRO'))
-        self.a.use_vertexbuffer()
-        self.a.use_indexbuffer()
-        self.a.use_texture()
+    c.use_render_unit(vao=True, vbo=True)
 
+    renderer = c()
+
+    _posx = UCD()
+    _posy = UCD()
+    _width = UCD()
+    _height = UCD()
+
+    _abs_posx = UCD()
+    _abs_posy = UCD()
+    _abs_width = UCD()
+    _abs_height = UCD()
+
+    def __init__(self,posx, posy, width, height):
+        self.unit = self.renderer.new_render_unit()
+
+        self._posx = posx
+        self._posy = posy
+        self._width = width
+        self._height = height
+
+        self._abs_posx = None
+        self._abs_posy = None
+        self._abs_width = None
+        self._abs_height = None
+
+        self.unit.properties['u_fillcol'] = 1,0,1,1
 
     def draw(self):
-        self.a.property['a_position'][0:4] = [0,0],[100,0],[100,100],[0,100]
-        self.a.property['u_fillcol'] = [1,0,1,1]
+        self.unit.properties['a_position'][0:4] = self.vertex
+        self.renderer._draw_(self.unit)
 
-        self.a.property['useTexture'] = False
-        self.a.property['texSlot'] = 0
+    @property
+    def vertex(self):
+        a = self.abs_posx, self.abs_posy
+        b = self.abs_posx+self.abs_width, self.abs_posy
+        c = self.abs_posx+self.abs_width, self.abs_posy+self.abs_height
+        d = self.abs_posx, self.abs_posy+self.abs_height
+        return a,b,c,d
 
-        # print(self.a._vertexbuffer._data)
-        # exit()
-        self.a._draw_()
+    @property
+    def abs_posx(self):
+        if isinstance(self._posx, float):
+            self._abs_posx = self._posx*1
+            return self._abs_posx
+        else:
+            self._abs_posx = self._posx
+            return self._abs_posx
 
-# class Render_unit_builder(SID):
-#
-#     def __init__(self, path_or_name):
-#         self._glsl_path = path_or_name
-#         self._loaded_shader = Shader(path_or_name)
+    @property
+    def abs_posy(self):
+        if isinstance(self._posy, float):
+            self._abs_posy = self._posy*1
+            return self._abs_posy
+        else:
+            self._abs_posy = self._posy
+            return self._abs_posy
 
-# class Storage:
-#
-#     def __init__(self, path, shader):
-#         pass
-#
+    @property
+    def abs_width(self):
+        if isinstance(self._width, float):
+            self._abs_width = self._width*1
+            return self._abs_width
+        else:
+            self._abs_width = self._width
+            return self._abs_width
+
+    @property
+    def abs_height(self):
+        if isinstance(self._height, float):
+            self._abs_height = self._height*1
+            return self._abs_posx
+        else:
+            self._abs_height = self._height
+            return self._height

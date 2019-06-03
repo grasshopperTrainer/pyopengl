@@ -1,7 +1,7 @@
 '''OpenGL extension QCOM.binning_control
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.QCOM.binning_control to provide a more 
+OpenGL.raw.GLES2.QCOM.binning_control to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

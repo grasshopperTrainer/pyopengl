@@ -1,7 +1,7 @@
 '''OpenGL extension MESA.set_3dfx_mode
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.MESA.set_3dfx_mode to provide a more 
+OpenGL.raw.GLX.MESA.set_3dfx_mode to provide a more
 Python-friendly API
 
 Overview (from the spec)

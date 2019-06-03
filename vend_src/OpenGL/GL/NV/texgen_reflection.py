@@ -1,7 +1,7 @@
 '''OpenGL extension NV.texgen_reflection
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.texgen_reflection to provide a more 
+OpenGL.raw.GL.NV.texgen_reflection to provide a more
 Python-friendly API
 
 Overview (from the spec)

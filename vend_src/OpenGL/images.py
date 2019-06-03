@@ -12,7 +12,7 @@ an image is processed in the system:
     format -- this is the pixel format, such as GL_RGB/GL_RED/GL_ABGR_EXT
     dims -- tuple of dimensions for the image, (width,height,depth) order 
     type -- the storage data-type for the image, normally GL_UNSIGNED_BYTE 
-        when working in Python, but all of the standard OpenGL types for 
+        when working in Python, but all of the standard OpenGL types for
         images can be used if you happen to have your data in some exotic
         format.
     
@@ -61,7 +61,7 @@ def SetupPixelRead( format, dims, type):
 def setupDefaultTransferMode( ):
     """Set pixel transfer mode to assumed internal structure of arrays
     
-    Basically OpenGL-ctypes (and PyOpenGL) assume that your image data is in 
+    Basically OpenGL-ctypes (and PyOpenGL) assume that your image data is in
     non-byte-swapped order, with big-endian ordering of bytes (though that 
     seldom matters in image data).  These assumptions are normally correct 
     when dealing with Python libraries which expose byte-arrays.
@@ -95,7 +95,7 @@ def createTargetArray( format, dims, type ):
     
     Note that the base storage type must provide a zeros method.  The zeros
     method relies on their being a registered default array-implementation for 
-    the storage type.  The default installation of OpenGL-ctypes will use 
+    the storage type.  The default installation of OpenGL-ctypes will use
     Numpy arrays for returning the result.
     """
     # calculate the number of storage elements required to store 
@@ -128,7 +128,7 @@ def formatToComponentCount( format ):
 def returnFormat( data, type ):
     """Perform compatibility conversion for PyOpenGL 2.x image-as string results
     
-    Uses OpenGL.UNSIGNED_BYTE_IMAGES_AS_STRING to control whether to perform the 
+    Uses OpenGL.UNSIGNED_BYTE_IMAGES_AS_STRING to control whether to perform the
     conversions.
     """
     if _configflags.UNSIGNED_BYTE_IMAGES_AS_STRING:

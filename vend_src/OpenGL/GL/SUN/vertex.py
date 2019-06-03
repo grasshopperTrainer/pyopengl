@@ -1,7 +1,7 @@
 '''OpenGL extension SUN.vertex
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SUN.vertex to provide a more 
+OpenGL.raw.GL.SUN.vertex to provide a more
 Python-friendly API
 
 Overview (from the spec)

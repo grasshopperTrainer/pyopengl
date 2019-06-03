@@ -1,7 +1,7 @@
 '''OpenGL extension QCOM.extended_get2
 
 This module customises the behaviour of the 
-OpenGL.raw.GLES2.QCOM.extended_get2 to provide a more 
+OpenGL.raw.GLES2.QCOM.extended_get2 to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

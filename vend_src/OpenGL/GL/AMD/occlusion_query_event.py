@@ -1,7 +1,7 @@
 '''OpenGL extension AMD.occlusion_query_event
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.AMD.occlusion_query_event to provide a more 
+OpenGL.raw.GL.AMD.occlusion_query_event to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

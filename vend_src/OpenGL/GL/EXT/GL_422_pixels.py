@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.GL_422_pixels
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.GL_422_pixels to provide a more 
+OpenGL.raw.GL.EXT.GL_422_pixels to provide a more
 Python-friendly API
 
 Overview (from the spec)

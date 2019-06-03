@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.geometry_shader4
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.geometry_shader4 to provide a more 
+OpenGL.raw.GL.EXT.geometry_shader4 to provide a more
 Python-friendly API
 
 Overview (from the spec)

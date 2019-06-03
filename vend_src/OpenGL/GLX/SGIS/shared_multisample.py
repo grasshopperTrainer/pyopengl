@@ -1,7 +1,7 @@
 '''OpenGL extension SGIS.shared_multisample
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.SGIS.shared_multisample to provide a more 
+OpenGL.raw.GLX.SGIS.shared_multisample to provide a more
 Python-friendly API
 
 The official definition of this extension is available here:

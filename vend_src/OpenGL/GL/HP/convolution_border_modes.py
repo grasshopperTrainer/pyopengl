@@ -1,7 +1,7 @@
 '''OpenGL extension HP.convolution_border_modes
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.HP.convolution_border_modes to provide a more 
+OpenGL.raw.GL.HP.convolution_border_modes to provide a more
 Python-friendly API
 
 Overview (from the spec)

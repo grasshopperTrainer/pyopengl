@@ -1,7 +1,7 @@
 '''OpenGL extension INTEL.map_texture
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.INTEL.map_texture to provide a more 
+OpenGL.raw.GL.INTEL.map_texture to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.framebuffer_multisample_blit_scaled
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.framebuffer_multisample_blit_scaled to provide a more 
+OpenGL.raw.GL.EXT.framebuffer_multisample_blit_scaled to provide a more
 Python-friendly API
 
 Overview (from the spec)

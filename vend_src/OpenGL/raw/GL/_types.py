@@ -1,6 +1,6 @@
 """OpenGL-wide constant types (not OpenGL.GL-specific)
 
-These are basically the fundamental data-types that OpenGL 
+These are basically the fundamental data-types that OpenGL
 uses (note, doesn't include the OpenGL-ES types!)
 """
 import ctypes

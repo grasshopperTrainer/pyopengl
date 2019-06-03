@@ -1,7 +1,7 @@
 '''OpenGL extension ARB.vertex_type_2_10_10_10_rev
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.ARB.vertex_type_2_10_10_10_rev to provide a more 
+OpenGL.raw.GL.ARB.vertex_type_2_10_10_10_rev to provide a more
 Python-friendly API
 
 Overview (from the spec)

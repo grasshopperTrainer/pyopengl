@@ -1,7 +1,7 @@
 '''OpenGL extension SGIX.depth_texture
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SGIX.depth_texture to provide a more 
+OpenGL.raw.GL.SGIX.depth_texture to provide a more
 Python-friendly API
 
 Overview (from the spec)

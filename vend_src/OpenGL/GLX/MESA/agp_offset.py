@@ -1,7 +1,7 @@
 '''OpenGL extension MESA.agp_offset
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.MESA.agp_offset to provide a more 
+OpenGL.raw.GLX.MESA.agp_offset to provide a more
 Python-friendly API
 
 Overview (from the spec)

@@ -1,7 +1,7 @@
 '''OpenGL extension NV.vertex_buffer_unified_memory
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.NV.vertex_buffer_unified_memory to provide a more 
+OpenGL.raw.GL.NV.vertex_buffer_unified_memory to provide a more
 Python-friendly API
 
 Overview (from the spec)

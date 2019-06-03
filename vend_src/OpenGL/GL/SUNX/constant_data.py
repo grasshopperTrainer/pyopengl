@@ -1,7 +1,7 @@
 '''OpenGL extension SUNX.constant_data
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.SUNX.constant_data to provide a more 
+OpenGL.raw.GL.SUNX.constant_data to provide a more
 Python-friendly API
 
 Overview (from the spec)

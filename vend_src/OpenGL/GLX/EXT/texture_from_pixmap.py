@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.texture_from_pixmap
 
 This module customises the behaviour of the 
-OpenGL.raw.GLX.EXT.texture_from_pixmap to provide a more 
+OpenGL.raw.GLX.EXT.texture_from_pixmap to provide a more
 Python-friendly API
 
 Overview (from the spec)

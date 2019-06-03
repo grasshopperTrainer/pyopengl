@@ -1,7 +1,7 @@
 '''OpenGL extension NV.gpu_affinity
 
 This module customises the behaviour of the 
-OpenGL.raw.WGL.NV.gpu_affinity to provide a more 
+OpenGL.raw.WGL.NV.gpu_affinity to provide a more
 Python-friendly API
 
 Overview (from the spec)

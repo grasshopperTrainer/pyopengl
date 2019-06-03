@@ -1,7 +1,7 @@
 '''OpenGL extension EXT.polygon_offset
 
 This module customises the behaviour of the 
-OpenGL.raw.GL.EXT.polygon_offset to provide a more 
+OpenGL.raw.GL.EXT.polygon_offset to provide a more
 Python-friendly API
 
 Overview (from the spec)
