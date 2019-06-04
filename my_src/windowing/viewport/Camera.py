@@ -49,8 +49,10 @@ class _Camera:
         self.VM = matrix.dot(self.VM)
 
     def rotate(self, x, y, z, radian=False):
-        if not radian:
-           x, y, z = [np.radians(-i) for i in [x,y,z]]
+        if radian:
+            x,y,z = -x,-y,-z
+        else:
+            x, y, z = [np.radians(-i) for i in [x,y,z]]
 
         matrix = np.eye(4)
 
@@ -81,7 +83,7 @@ class _Camera:
             from_point[3] = 1
         else:
             self.VM = np.eye(4)
-            self.move(from_point, 1, 1, 1)
+            self.move(*from_point)
             from_point = np.array([from_point + [1, ]]).T
 
         to_point = np.array([to_point + [1, ]]).T
@@ -94,7 +96,7 @@ class _Camera:
         if not np.isnan(angle):
             if y <= 0:
                 angle = -angle
-            self.rotate(angle, 0, 0, 1, True)
+            self.rotate(0, 0, angle, True)
 
         y = -vec[2]
         z = np.sqrt(vec[0] * vec[0] + vec[1] * vec[1])
@@ -105,7 +107,7 @@ class _Camera:
                 angle = -angle
             if y <= 0:
                 angle = np.pi - angle
-            self.rotate(angle, 1, 0, 0, True)
+            self.rotate(angle, 0, 0, True)
 
     @property
     def mode(self):
@@ -131,14 +133,20 @@ class _Camera:
 
         # set camera properties
         if self._mode == 2:
-
             self.near = 0
             self.far = 100
             # render range of xy plane
             self.left = 0
-            self.right = self._viewport.abs_width
+            self.right = self._viewport.abs_width*self.scale_factor[0]
             self.bottom = 0
-            self.top = self._viewport.abs_height
+            self.top = self._viewport.abs_height*self.scale_factor[1]
+        else:
+            self.near = 1
+            self.far = 100000
+            self.left = -1
+            self.right = 1
+            self.top = 0.5
+            self.bottom = -0.5
 
         self.build_PM()
 
@@ -192,12 +200,12 @@ class _Camera:
                         )
 
             elif self._mode == 2:
-                self.near = 0
-                self.far = 100
-                self.left = 0
-                self.right = self._viewport.abs_width*self.scale_factor[0]
-                self.bottom = 0
-                self.top = self._viewport.abs_height*self.scale_factor[1]
+                # self.near = 0
+                # self.far = 100
+                # self.left = 0
+                # self.right = self._viewport.abs_width*self.scale_factor[0]
+                # self.bottom = 0
+                # self.top = self._viewport.abs_height*self.scale_factor[1]
 
                 n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
                 # if self._viewport._mother.window.name == 'third':
