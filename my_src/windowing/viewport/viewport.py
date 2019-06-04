@@ -3,6 +3,7 @@ from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 from .Camera import _Camera
 from collections import namedtuple
 from ..frame_buffer_like.frame_buffer_like_bp import FBL
+from ..windows import Windows
 
 class Viewport:
     _current = None
@@ -78,10 +79,12 @@ class Viewport:
         if self._bound_fbl is not None:
             FBL.set_current(self._bound_fbl)
         self.set_current(self)
+        FBL.get_current().begin()
 
         gl.glViewport(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
         if do_clip:
             gl.glScissor(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
+        FBL.get_current().end()
 
         return self
 
@@ -98,7 +101,7 @@ class Viewport:
     def cal_abs_posx(self):
         if isinstance(self.posx, float):
             if self._bound_fbl is None:
-                self.abs_posx = int(self.posx * FBL.get_current().width)
+                self.abs_posx = int(self.posx * Windows.get_current().width)
             else:
                 self.abs_posx = int(self.posx * self._bound_fbl.width)
         else:
@@ -108,7 +111,7 @@ class Viewport:
     def cal_abs_posy(self):
         if isinstance(self.posy, float):
             if self._bound_fbl is None:
-                self.abs_posy = int(self.posy * FBL.get_current().height)
+                self.abs_posy = int(self.posy * Windows.get_current().height)
             else:
                 self.abs_posy = int(self.posy * self._bound_fbl.height)
         else:
@@ -118,7 +121,7 @@ class Viewport:
     def cal_abs_width(self):
         if isinstance(self.width, float):
             if self._bound_fbl is None:
-                self.abs_width = int(self.width * FBL.get_current().width)
+                self.abs_width = int(self.width * Windows.get_current().width)
             else:
                 self.abs_width = int(self.width * self._bound_fbl.width)
         else:
@@ -128,7 +131,7 @@ class Viewport:
     def cal_abs_height(self):
         if isinstance(self.height, float):
             if self._bound_fbl is None:
-                self.abs_height = int(self.height * FBL.get_current().height)
+                self.abs_height = int(self.height * Windows.get_current().height)
             else:
                 self.abs_height = int(self.height * self._bound_fbl.height)
         else:

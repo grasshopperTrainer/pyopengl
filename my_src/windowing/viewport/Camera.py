@@ -26,13 +26,13 @@ class _Camera:
         self._mode = 2
         # following is basic setting for mode2 - true 2D projection
         # render range of z
-        self.near = 0
-        self.far = 100
+        self._near = 0
+        self._far = 100
         # render range of xy plane
-        self.left = 0
-        self.right = viewport.abs_width
-        self.bottom = 0
-        self.top = viewport.abs_height
+        self._left = 0
+        self._right = viewport.abs_width
+        self._bottom = 0
+        self._top = viewport.abs_height
 
         self.scale_factor = [1,1,1]
 
@@ -41,6 +41,30 @@ class _Camera:
         self.PM = np.eye(4)
         self.VM = np.eye(4)
 
+    @property
+    def near(self):
+        near = (self._far+self._near)/2 - (self._far-self._near)/2*self.scale_factor[2]
+        return near
+    @property
+    def far(self):
+        far = (self._far+self._near)/2 + (self._far-self._near)/2*self.scale_factor[2]
+        return far
+    @property
+    def left(self):
+        left = (self._right+self._left)/2 - (self._right-self._left)/2*self.scale_factor[0]
+        return left
+    @property
+    def right(self):
+        right = (self._right + self._left) / 2 + (self._right - self._left) / 2 * self.scale_factor[0]
+        return right
+    @property
+    def bottom(self):
+        bottom = (self._top + self._bottom) / 2 - (self._top - self._bottom) / 2 * self.scale_factor[1]
+        return bottom
+    @property
+    def top(self):
+        top = (self._top + self._bottom) / 2 + (self._top - self._bottom) / 2 * self.scale_factor[1]
+        return top
 
     def move(self, x, y, z):
         # move camera
@@ -133,20 +157,20 @@ class _Camera:
 
         # set camera properties
         if self._mode == 2:
-            self.near = 0
-            self.far = 100
+            self._near = 0
+            self._far = 100
             # render range of xy plane
-            self.left = 0
-            self.right = self._viewport.abs_width*self.scale_factor[0]
-            self.bottom = 0
-            self.top = self._viewport.abs_height*self.scale_factor[1]
+            self._left = 0
+            self._right = self._viewport.abs_width
+            self._bottom = 0
+            self._top = self._viewport.abs_height
         else:
-            self.near = 1
-            self.far = 100000
-            self.left = -1
-            self.right = 1
-            self.top = 0.5
-            self.bottom = -0.5
+            self._near = 1
+            self._far = 1000000
+            self._left = -1
+            self._right = 1
+            self._top = 1
+            self._bottom = -1
 
         self.build_PM()
 
@@ -159,15 +183,19 @@ class _Camera:
                 return
 
             if self._mode == 0 or self._mode == 1:
-                n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
-                ratio = vp.abs_width / vp.abs_height
                 if major == 'v':
-                    r, l = (t - b) * ratio / 2, -(t - b) * ratio / 2
-                elif major == 'h':
-                    t, b = (r - l) / ratio / 2, -(r - l) / ratio / 2
-                else:
-                    pass
+                    ratio = vp.abs_width/vp.abs_height
+                    distance = self._top - self._bottom
+                    self._right, self._left = distance * ratio / 2, -distance * ratio / 2
 
+                elif major == 'h':
+                    ratio = vp.abs_height/vp.abs_width
+                    distance = self._right - self._left
+                    self._top, self._bottom = distance * ratio / 2, -distance * ratio / 2
+                else:
+                    raise
+
+                n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
                 if self._mode == 0:
                     if r == -l and t == -b:
                         self.PM = np.array(

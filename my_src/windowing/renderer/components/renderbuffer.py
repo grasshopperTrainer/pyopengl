@@ -32,6 +32,10 @@ class Renderbuffer(RenderComponent):
         gl.glRenderbufferStorage(gl.GL_RENDERBUFFER, self._internalformat, self._size[0],self._size[1])
 
         self.unbind()
+    def rebuild(self, width, height):
+        self._size = width, height
+        self.delete()
+        self.build()
 
     def bind(self):
         gl.glBindRenderbuffer(gl.GL_RENDERBUFFER, self._glindex)

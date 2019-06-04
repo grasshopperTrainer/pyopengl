@@ -455,9 +455,10 @@ class Renderer_template:
                 #      Implement this.
                 if True:
                     fbo.flag_something_rendered = True
-                    viewport.fillbackground()  # before make any change erase background
                     ibo = render_unit.index_buffer
                     if ibo.count != 0:  # draw a thing
+                        fbo.begin()
+                        viewport.fillbackground()  # before make any change erase background
 
                         # get id color
                         if render_unit.properties.has_property('u_id_color'):
@@ -465,7 +466,6 @@ class Renderer_template:
                             uni = render_unit.properties['u_id_color']
                             gl.glUniform4fv(uni.location, 1, id + [1, ])  # push color
 
-                        fbo.begin()
                         gl.glDrawElements(self.drawmode, ibo.count, ibo.gldtype, None)
                         fbo.end()
 

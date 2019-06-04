@@ -285,7 +285,7 @@ class Window:
         self._draw_func = func
 
     def framebuffer_size_callback(self, window, width, height):
-        self._myframe.rebuild(width, height)
+        self.myframe.rebuild(width, height)
         self._flag_resized = True
 
     def window_refresh_callback(self,a):
@@ -388,6 +388,7 @@ class Window:
                         gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER,window.myframe._frame_buffer._glindex)
                         gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0) # set source
                         gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER,0)
+                        print(window.width, window.height)
                         gl.glBlitFramebuffer(0,0,window.width,window.height,
                                              0,0,window.width,window.height,
                                              gl.GL_COLOR_BUFFER_BIT,
