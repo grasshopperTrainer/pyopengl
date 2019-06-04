@@ -1,5 +1,6 @@
 from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
-
+# from windowing.windows import Windows
+from ..my_openGL.glfw_gl_tracker import GLFW_GL_tracker
 from ..renderer import components as comp
 
 from ..frame_buffer_like.frame_buffer_like_bp import FBL
@@ -349,9 +350,9 @@ class Renderer_template:
 
     @classmethod
     def new_render_unit(cls):
-        fbl = FBL.get_current()
-        reg = cls._fbl_register
-        glfw_context = fbl.unique_glfw_context
+        glfw_context = GLFW_GL_tracker.get_current()
+        reg = cls._context_register
+
         if glfw_context not in reg:
             # generate class_singular gl components for the first call
             cls._shader.build()
@@ -359,7 +360,7 @@ class Renderer_template:
                 cls._index_buffer.build()
             if hasattr(cls, '_texture'):
                 cls._texture.build()
-            reg.append(fbl.unique_glfw_context)
+            reg.append(glfw_context)
 
         # make new unit
         ru = cls._render_unit_class()
@@ -369,7 +370,7 @@ class Renderer_template:
         return ru
 
     _render_units = {}
-    _fbl_register= []
+    _context_register= []
 
     def __init__(self, name: str = None):
         # check shader-context-existence
@@ -423,10 +424,12 @@ class Renderer_template:
             return comp.RenderComponent
 
     def _draw_(self, render_unit, fbl = None):
-        win = FBL.get_current()
-        win.render_unit_reg.reg(render_unit)
+        fbo = FBL.get_current()
+        viewport = Viewport.get_current()
+
+        fbo.render_unit_registry.register(render_unit)
         # check initiated context
-        context = FBL.get_current().unique_glfw_context
+        context = GLFW_GL_tracker.get_current()
 
         if render_unit not in self._render_units[context]:
             raise
@@ -439,7 +442,33 @@ class Renderer_template:
                 render_unit.update_variables()
 
             if self.flag_draw:
-                self.draw_element(render_unit)
+                # Automated condition can't be set
+                # for example) if first draw is ignored and second draw is run
+                # to have similar frame to swap, ignored first has to be drawn before second
+                # which is nonsence.
+                # To avoid this window drawn on has to check every renderer before any draw call is made
+                # and if any draw call is evaluated to be called all other draw call on window has to be called
+
+                # TODO BUT if viewport is consistent window could just copy from front buffer partially and paste it
+                #      on the current drawing(back) buffer. This won't effect another viewport beeing refreshed.
+                #      If this makes thing faster this is worth a strategy.
+                #      Implement this.
+                if True:
+                    fbo.flag_something_rendered = True
+                    viewport.fillbackground()  # before make any change erase background
+                    ibo = render_unit.index_buffer
+                    if ibo.count != 0:  # draw a thing
+
+                        # get id color
+                        if render_unit.properties.has_property('u_id_color'):
+                            id = fbo.render_unit_registry.id_color(render_unit)
+                            uni = render_unit.properties['u_id_color']
+                            gl.glUniform4fv(uni.location, 1, id + [1, ])  # push color
+
+                        fbo.begin()
+                        gl.glDrawElements(self.drawmode, ibo.count, ibo.gldtype, None)
+                        fbo.end()
+
             # TODO is this unnecessary processing? checking?
             # self._unbind_global()
 
@@ -449,41 +478,6 @@ class Renderer_template:
         self.vertex_buffer.unbind()
         self.index_buffer.unbind()
         self.texture.unbind()
-
-    def draw_element(self, render_unit):
-        window = FBL.get_current()
-        viewport = Viewport.get_current()
-
-        # Automated condition can't be set
-        # for example) if first draw is ignored and second draw is run
-        # to have similar frame to swap, ignored first has to be drawn before second
-        # which is nonsence.
-        # To avoid this window drawn on has to check every renderer before any draw call is made
-        # and if any draw call is evaluated to be called all other draw call on window has to be called
-
-        # TODO BUT if viewport is consistent window could just copy from front buffer partially and paste it
-        #      on the current drawing(back) buffer. This won't effect another viewport beeing refreshed.
-        #      If this makes thing faster this is worth a strategy.
-        #      Implement this.
-        if True:
-            window._flag_something_rendered = True
-            viewport.fillbackground() # before make any change erase background
-            ibo = render_unit.index_buffer
-            if ibo.count != 0: # draw a thing
-
-                # get id color
-                if render_unit.properties.has_property('u_id_color'):
-                    id = window.render_unit_reg.id_color(render_unit)
-                    uni = render_unit.properties['u_id_color']
-                    gl.glUniform4fv(uni.location,1,id+[1,]) # push color
-
-                window.myframe.begin()
-                gl.glDrawElements(self.drawmode, ibo.count, ibo.gldtype, None)
-
-                window.myframe.end()
-
-                # window.mouse.id_buffer.begin()
-                # print('ddddddd',gl.glGetIntegerv(gl.GL_MAX_DRAW_BUFFERS))
 
     def _hide_(self, set=None):
         if set is None:
@@ -504,118 +498,6 @@ class Renderer_template:
     @property
     def name(self):
         return self._name
-
-    # def update_global_variables(self):
-    #
-    #     # bind buffer and vertex_attrib_pointer with gl if form of buffer has changed
-    #     if self.shader.properties.attribute.is_buffer_formchange:
-    #         self.vertex_buffer.bind()
-    #         buffer = self.shader.properties.attribute.buffer
-    #         self.vertex_buffer.set_attribpointer(buffer)
-    #         self.vertex_buffer.unbind()
-    #
-    #     # for vertex buffer
-    #     # update buffer if change has been made
-    #     # change whole if all buffer is changed
-    #     changed_blocks = self.shader.properties.attribute.updated
-    #     if len(changed_blocks) != 0:
-    #         self.vertex_buffer.bind()
-    #
-    #         if len(changed_blocks) == len(self.shader.properties.attribute.names):
-    #             buffer = self.shader.properties.attribute.buffer
-    #             size = buffer.itemsize * buffer.size
-    #             gl.glBufferData(gl.GL_ARRAY_BUFFER, size, buffer, self.vertex_buffer._glusage)
-    #
-    #         else:
-    #             # update part only
-    #             for block in changed_blocks:
-    #
-    #                 buffer = self.shader.properties.attribute.buffer
-    #                 start_pos = self.shader.properties.attribute.posof_block(block.name)
-    #
-    #                 # finde starting offset
-    #                 start_off = 0
-    #                 for i in range(start_pos):
-    #                     dtype = buffer.dtype[i]
-    #                     bytesize = dtype.itemsize
-    #                     start_off += bytesize
-    #
-    #                 data = block.data
-    #                 for i in range(buffer.size):
-    #                     off = start_off + buffer.itemsize * i
-    #                     element = data[i]
-    #                     size = element.itemsize * element.size
-    #                     # print(off)
-    #                     # print(element)
-    #                     # print(size)
-    #                     gl.glBufferSubData(gl.GL_ARRAY_BUFFER, off, size, element)
-    #         self.vertex_buffer.unbind()
-    #
-    #         # if size changed
-    #         if self._drawmode == gl.GL_TRIANGLE_STRIP:
-    #             num_tri = buffer.size - 2
-    #             if num_tri != self.index_buffer.data.size:
-    #                 indicies = []
-    #                 for i in range(num_tri):
-    #                     if i == 0:
-    #                         indicies += [0, 1, 2]
-    #                     elif i == 1:
-    #                         indicies += [2, 0, 3]
-    #                     else:
-    #                         indicies += [i, i - 1, i + 1]
-    #                 if len(indicies) != 0:
-    #                     self.index_buffer.data = indicies
-    #                     self.index_buffer.build()
-    #                     self.index_buffer.bind()
-    #                 else:
-    #                     pass
-    #         else:
-    #             raise Exception(f"please define handler of other draw mode '{self.mode}'")
-    #
-    #     # for uniforms
-    #     changed_blocks = self.shader.properties.uniform.updated
-    #     if len(changed_blocks) != 0:
-    #         # self.vertexbuffer.bind()
-    #
-    #         # update part only
-    #         for block in changed_blocks:
-    #             n = block.data[0].size
-    #             t = block.data.dtype
-    #             if 'vec' in block.glsltype:
-    #                 n = block.glsltype.split('vec')[1]
-    #                 c = 1
-    #                 t = 'f'
-    #                 exec(f'gl.glUniform{n}{t}v({block.location},{c},block.data[{c - 1}])')
-    #             elif 'mat' in block.glsltype:
-    #                 n = block.glsltype.split('mat')[1]
-    #                 c = 1
-    #                 t = 'f'
-    #                 exec(f'gl.glUniformMatrix{n}{t}v({block.location},{c},True,block.data[{c - 1}])')
-    #             elif block.glsltype == 'int':
-    #                 gl.glUniform1i(block.location, block.data[0])
-    #             elif block.glsltype == 'float':
-    #                 gl.glUniform1f(block.location, block.data[0])
-    #             elif block.glsltype == 'bool':
-    #                 gl.glUniform1i(block.location, int(block.data[0]))
-    #             elif block.glsltype == 'sampler2D':
-    #                 gl.glUniform1i(block.location, block.data[0])
-    #             else:
-    #                 raise TypeError(f"parsing for '{block.glsltype}' undefined")
-    #
-    #     # update assigned matrix
-    #     mm = self.shader.properties['MM']
-    #     matrix = self.MM
-    #     gl.glUniformMatrix4fv(mm.location, 1, True, matrix)
-    #     vp = Viewport.get_current()
-    #
-    #     vm = self.shader.properties['VM']
-    #     matrix = vp.camera.VM
-    #     gl.glUniformMatrix4fv(vm.location, 1, True, matrix)
-    #
-    #     pm = self.shader.properties['PM']
-    #     matrix = vp.camera.PM
-    #     gl.glUniformMatrix4fv(pm.location, 1, True, matrix)
-
 
     @property
     def glsl_variables(self):
@@ -664,7 +546,6 @@ class Renderer_template:
     @property
     def property(self):
         return self.shader.properties
-
 
 
 class Renderer_builder:

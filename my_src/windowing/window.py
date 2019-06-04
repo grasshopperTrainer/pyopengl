@@ -1,6 +1,6 @@
 import threading
 import weakref
-from collections import OrderedDict,namedtuple
+from collections import OrderedDict
 from time import sleep
 from time import time
 
@@ -21,57 +21,20 @@ from .viewport import *
 from patterns.update_check_descriptor import UCD
 from .frame_buffer_like.frame_buffer_like_bp import FBL
 
-from .renderable_image import Renderable_image
-from .renderer.renderer_template import Render_unit
-from .frame import Frame
+from windowing.frame_buffer_like.renderable_image import Renderable_image
+from windowing.frame_buffer_like.frame import Frame
+from .windows import Windows
 
 
-class _Windows:
-    windows = OrderedDict()
-    iter_count = 0
-    # def __init__(self):
-        # windows = Window.get_windows()
-        # for window in windows:
-        #     self.__dict__[window.instance_name] = window
-    def __init__(self):
-        self.windows = self.__class__.windows
-        self.iter_count = self.__class__.iter_count
-
-    def __get__(self, instance, owner):
-        # return self.__class__.windows
-        return _Windows()
-
-    def __getattr__(self, item):
-        if item is 'remove':
-            return self.__delattr__
-        return self.windows[item]
-
-    def __delattr__(self, item):
-        self.windows.pop(item.instance_name)
-
-    def __add__(self, other):
-        self.windows[other.instance_name] = other
-    def __sub__(self, other):
-        self.windows.pop(other.instance_name)
-
-    def __iter__(self):
-        return self
-    def __next__(self):
-        if self.iter_count < len(self.windows):
-            self.iter_count +=1
-            return self.windows[list(self.windows.keys())[self.iter_count-1]] #type: Window
-        else:
-            self.iter_count = 0
-            raise StopIteration
-
-    def __len__(self):
-        return len(self.windows)
-
-    def __str__(self):
-        return f'collection of {len(self.windows)} window instances'
-
-class Window(FBL):
+class Window:
     """
+    Main class for window creation.
+
+
+    """
+    """
+    Load packages for internal use.
+    MEMO
     import numpy as np
     from windowing.renderer import BRO
     from windowing.renderable_image import Renderable_image
@@ -80,11 +43,10 @@ class Window(FBL):
     import OpenGL.GL as gl
     import glfw as glfw
     """
-
     def _global_init():
         import numpy as np
         from windowing.renderer import BRO
-        from windowing.renderable_image import Renderable_image
+        from windowing.frame_buffer_like.renderable_image import Renderable_image
         from windowing.unnamedGUI import mygui
         from windowing.viewport.viewport import Viewport
         import OpenGL.GL as gl
@@ -92,21 +54,25 @@ class Window(FBL):
         pass
 
     _init_global = _global_init
-    _windows = _Windows()
-    _current_window = None
+    _windows = Windows()
 
-    _framecount = 0
-    _framerate_target = 60
+    _default_framerate_target = 60
     _print_framerate = False
 
     _flag_resized = UCD()
     _flag_something_rendered = UCD()
     _size = UCD()
+    # ^are UCD still valid?
 
     @classmethod
-    def glfw_init(cls,func = None):
+    def glfw_init(cls):
+        """
+        Init GLFW and GL.
+        Singular caller for main file.
+        :return: None
+        """
         glfw.init()
-        gl.context_specification_check()
+        gl.context_specification_check() # check additional specification
 
     def __new__(cls,*args,**kwargs):
         """
@@ -115,7 +81,7 @@ class Window(FBL):
          to [instances,] → instance
          this makes deletion of instance possible before garbage collection
          ex) while inside unfinished loop like 'Window.draw_all()'
-         refer to _handle_close for further description
+         refer to _handle_close() for further description.
         :param args:
         :param kwargs:
         :return:
@@ -123,48 +89,66 @@ class Window(FBL):
 
         self = super().__new__(cls)
         self.__init__(*args,**kwargs)
-        cls._windows + self
-        return weakref.proxy(self)
+        cls._windows + self # add object to dict
+        return weakref.proxy(self) # return proxy of generated object
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
-        FBL.set_current(self)
 
-        # store relationship between mother and children
-        self._mother_window = mother_window  # type: Window
-        if mother_window is not None:
-            mother_window._children_windows.append(weakref.proxy(self))
-            self._glfw_window = glfw.create_window(width, height, name, monitor, mother_window._glfw_window)
-        else:
-            self._glfw_window = glfw.create_window(width, height, name, monitor, None)
+        Windows.set_current(self) # for init process may be needing which window is current
+        self._size = width, height
+        self._name = name
+        self._monitor = monitor
 
-        # glfw window creation error check
-        if not self._glfw_window:
-            glfw.terminate()
-
-        self._children_windows = []
-
-        if mother_window != None:
-            self._unique_glfw_context = mother_window.unique_glfw_context.give_tracker_to(self)
-        else:
-            self._unique_glfw_context = GLFW_GL_tracker(self)
-        # threading.Thread.__init__(self)
-        # save name of instance
+        # stores object name as an instance name
         f = inspect.currentframe().f_back
         self.instance_name = ''
         try:
             while True:
                 code_context = inspect.getframeinfo(f).code_context[0]
-
                 if ' Window(' in code_context and '=' in code_context:
                     self.instance_name = code_context.split('=')[0].strip()
                     break
                 else:
                     f = f.f_back
         except:
-            print_message("can't grasp instance name","error")
-            self.instance_name = 'unknown'
+            print_message("can't grasp instance name", "error")
+            self._instance_name = 'unknown'
 
-        self._buffers = []
+        # store relationship between mother and children
+        self._children_windows = []
+        self._mother_window = mother_window  # type: Window
+        if mother_window is not None:
+            mother_window._children_windows.append(weakref.proxy(self))
+            self._glfw_window = glfw.create_window(width, height, name, monitor, mother_window._glfw_window)
+            # if window is shared share unique context too
+            self._unique_glfw_context = mother_window.unique_glfw_context.give_tracker_to(self)
+        else:
+            self._glfw_window = glfw.create_window(width, height, name, monitor, None)
+            # this is a unique context wrapper and is a context identifier
+            self._unique_glfw_context = GLFW_GL_tracker(self)
+
+        # glfw window creation error check
+        if not self._glfw_window:
+            glfw.terminate()
+            raise Exception("can't create glfw context")
+        # set it current for farther settings
+        glfw.make_context_current(self.glfw_window)
+
+        # customizable frame
+        self._myframe = Frame(self.width, self.height)  # type: Renderable_image
+        # glsl: layout(location = 0), this is default output
+        # this is ambient color output
+        self._myframe.use_color_attachment(0)
+        # this is id_color: please output color for distinguishing drawn objects
+        self._myframe.use_color_attachment(1)
+        # use basig depth and stencil
+        self._myframe.use_depth_attachment(bitdepth=32)
+        self._myframe.use_stencil_attachment(bitdepth=16)
+        self._myframe.build()
+
+
+        # some info for resetting
+        # look at preset_window() for further usage
         self._init_info = OrderedDict({
             'width': width,
             'height': height,
@@ -173,62 +157,45 @@ class Window(FBL):
             'share': mother_window
         })
 
+        # option of window closing event
+        # tells what to do when window is set to close
+        # options are: remove, hide, save
+        # look at close_option() setter for furthr usage
+        self._close_option = 0
 
-
-        # set it current for farther settings
-        glfw.make_context_current(self.glfw_window)
-
-        self._option_close = 0
-
+        # frame operation
         self._framerate_target = 60
         self._framecount = 0
-        self._framerendered_flag = False
-        self._terminate_flag = False
 
-        self.thread = None
-
-        self._renderers = []  # type: List[RenderUnit]
-
-        self._draw_func = None
+        # function to execute in each state
         self._init_func = None
+        self._draw_func = None
 
+        # set virtual scoper for executing init and draw functions
+        # TODO think this won't work generally
         path = inspect.getfile(inspect.currentframe().f_back.f_back)
         self._context_scope = Virtual_scope(executing_filepath=path)
 
-        #enable inputs
+        # enable inputs
         self._keyboard = Keyboard(self)
         self._mouse = Mouse(self)
 
-        #window to follow when close
-        # TODO maybe it has to be reversed? like...
-        #   not a window that has to follow other windows closing
-        #   stores that window object, but window that closes other windows
-        #   contain windows that it has to close.
+        # follow closing of following windows
+        # set by follows_closing()
         self._follow_close = []
 
         # drawing layers
+        # TODO integrate
         self._layers = Layers(self)
 
+        # flags for frame drawing and swapping
         self._flag_resized = True
-        self._flag_something_rendered = False
 
-        self._size = None
-        # viewport
+
+        # viewport collection
         self._viewports = Viewports(self)
 
-        self._shaders = []
 
-        self._count = 0
-
-
-        self._myframe = Frame(self.width, self.height) #type: Renderable_image
-        self._myframe.use_color_attachment(0)
-        self._myframe.use_color_attachment(1)
-        self._myframe.use_depth_attachment(bitdepth=32)
-        self._myframe.use_stencil_attachment(bitdepth=16)
-        self._myframe.build()
-
-        self._render_unit_reg = Render_object_register(self)
 
     @property
     def mother_window(self):
@@ -246,16 +213,14 @@ class Window(FBL):
 
     @property
     def framerate(self):
-        return self._framerate_target
-
+        return self._default_framerate_target
     @framerate.setter
     def framerate(self, value):
-        self._framerate_target = value
+        self._default_framerate_target = value
 
     @property
     def mouse(self):
         return self._mouse
-
     @property
     def keyboard(self):
         return self._keyboard
@@ -267,47 +232,51 @@ class Window(FBL):
     def preset_window(self,func = None):
         """
         Decorator. set attribute for this single window.
-        Use g.window_hint() to specify window attribute.
+        Use glfw.window_hint() to specify window attribute.
 
         :param func: function wrapped for decorator
         :return: None
         """
         func()
-        # del self.window
-        # i = self._init_info
-        # self.window = g.create_window(i['width'],i['height'],
-        #                                  i['title'],i['monitor'],
-        #                                  i['share'])
+        # delete
+        glfw.destroy_window(self._glfw_window)
+        # reset
         i = self._init_info
         self.init(i['width'], i['height'],
                   i['title'], i['monitor'],
                   i['share'])
 
-    def _snatch_decorated(self, func):
-        source = inspect.getsource(func).splitlines()
-
-        indent = 0
-        for i in source[0]:
-            if i is ' ':
-                indent += 1
-            else:
-                break
-        indent += 4
-
-        merged = ''
-        for line in source[2:]:
-            merged += line[indent:] + '\n'
-        return merged
+    # def _snatch_decorated(self, func):
+    #     source = inspect.getsource(func).splitlines()
+    #
+    #     indent = 0
+    #     for i in source[0]:
+    #         if i is ' ':
+    #             indent += 1
+    #         else:
+    #             break
+    #     indent += 4
+    #
+    #     merged = ''
+    #     for line in source[2:]:
+    #         merged += line[indent:] + '\n'
+    #     return merged
 
     def init(self = None, func = None):
+        """
+        Decorator. Write down initiall code.
+        Typically code writen under this decorator is something you don't
+        want to repeat inside the loop.
+        :param func: wrapped function
+        :return:
+        """
         # for global init
         if not isinstance(self, Window):
             # Window.glfw_init()
-            a = Source_parser.split_func_headbody(Window._init_global, 1, )
+            a = Source_parser.split_func_headbody(Window._init_global, 1)
             b = Source_parser.split_func_headbody(self, 1)
 
             Window._init_global = a + b
-
         # for window instance init
         else:
             self._init_func = func
@@ -315,15 +284,7 @@ class Window(FBL):
     def draw(self, func):
         self._draw_func = func
 
-    # def testdraw(self, when):
-    #
-    #     def wrapper(func_to_execute):
-    #         when(func_to_execute)
-    #     return wrapper
-
     def framebuffer_size_callback(self, window, width, height):
-        # self.mouse.instant_mouse_onscreen()
-        # self.mouse.instant_press_button(button = 0)
         self._myframe.rebuild(width, height)
         self._flag_resized = True
 
@@ -409,7 +370,7 @@ class Window(FBL):
                 window._context_scope.append_scope(window.init_func)
 
 
-        timer = Timer(cls._framerate_target,'single thread')
+        timer = Timer(window._framerate_target, 'single thread')
         timer.set_init_position()
         # timer.print_framerate()
         # timer.print_framerate_drawing()
@@ -421,9 +382,8 @@ class Window(FBL):
 
                     #drawing
                     window.make_window_current()
-
                     window._context_scope.run(window.draw_func)
-                    if window._flag_something_rendered:
+                    if window.myframe.flag_something_rendered:
                         # copy from custom myframebuffer and draw it on window
                         gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER,window.myframe._frame_buffer._glindex)
                         gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0) # set source
@@ -436,7 +396,7 @@ class Window(FBL):
                         glfw.swap_buffers(window.glfw_window)
 
 
-                    window._flag_something_rendered = False
+                    window.myframe.flag_something_rendered = False
                     window._flag_resized = False
 
                     # viewports = window.viewports._viewports
@@ -444,7 +404,6 @@ class Window(FBL):
                     # # UCD.reset_instance_descriptors_update(window)
                     # UCD.reset_instance_descriptors_update(*viewports.values())
                     # UCD.reset_instance_descriptors_update(*[v.camera for v in viewports.values()])
-
                     window.mouse.reset()
 
                 glfw.poll_events()
@@ -507,7 +466,9 @@ class Window(FBL):
 
         glfw.make_context_current(None)
         glfw.destroy_window(self.glfw_window)
+        GLFW_GL_tracker.remove(self)
         self._windows - self
+
 
     @classmethod
     def _display_window(cls, multi_thread = False):
@@ -529,14 +490,14 @@ class Window(FBL):
                 else:
                     pass
 
-                if window.option_close is 0:
+                if window.close_option is 0:
                     window.close()
                     pass
 
-                elif window.option_close is 1:
+                elif window.close_option is 1:
                     glfw.hide_window(window.glfw_window)
 
-                elif window.option_close is 2:
+                elif window.close_option is 2:
                     glfw.destroy_window(window.glfw_window)
 
         for window in cls._windows:
@@ -556,20 +517,20 @@ class Window(FBL):
 
     @property
     def name(self):
-        return self._init_info['name']
+        return self._name
 
     def __str__(self):
         return f"window: '{self.name}'"
 
     @property
-    def option_close(self):
-        return self._option_close
+    def close_option(self):
+        return self._close_option
 
     def follows_closing(self, *windows):
         self._follow_close += windows
 
-    @option_close.setter
-    def option_close(self, option: (int, str)):
+    @close_option.setter
+    def close_option(self, option: (int, str)):
         """
         Set window attribute for closing operation.
         What does it mean when window_sould_close is raised by g?
@@ -591,21 +552,21 @@ class Window(FBL):
                 raise ValueError
 
         if isinstance(option, int):
-            self._option_close = option
+            self._close_option = option
 
         else:
             print_message('Type error. Maintain attribute.')
 
     def make_window_current(self):
-        # self.__class__._current_window = self
-        FBL.set_current(self)
-        # RenderUnit.push_current_window(self)
+        FBL.set_current(self._myframe)
+        self.windows.set_current(self)
+        GLFW_GL_tracker.set_current(self.unique_glfw_context)
         glfw.make_context_current(None)
         glfw.make_context_current(self.glfw_window)
 
-    @classmethod
-    def get_current_window(cls):
-        return cls._current_window
+    # @classmethod
+    # def get_current_window(cls):
+    #     return cls.windows.get_current()
 
     @property
     def layers(self):
@@ -632,12 +593,6 @@ class Window(FBL):
     def is_resized(self):
         return self._flag_resized
 
-    @property
-    def registered_shaders(self):
-        return self._shaders
-
-    def register_shader(self, shader):
-        self._shaders.append(shader)
 
     @property
     def master_window(self):
@@ -669,55 +624,8 @@ class Window(FBL):
     def unique_glfw_context(self):
         return self._unique_glfw_context
     @property
-    def render_unit_reg(self):
-        return self._render_unit_reg
-    @property
     def myframe(self):
         return self._myframe
-
-class Render_object_register:
-
-    def __init__(self, window):
-        self._window = window
-        self._collections = weakref.WeakKeyDictionary()
-        self._candidate = []
-        self._structure = namedtuple('registered',['id','used'])
-        # RGBA 8bit each
-        self._counter = 0x000001
-        self._counter_max = 0xffffff
-        # set mode
-        # removes uncalled in every
-        self._mode = 0
-
-    def reg(self, object):
-        if self._counter ^ self._counter_max == 0  and len(self._candidate) == 0:
-            raise IndexError('register is fully filled')
-
-        if isinstance(object, Render_unit):
-            if object not in self._collections:
-                if len(self._candidate) == 0:
-                    id = self._counter
-                    self._counter += 0x1
-                else:
-                    id = self._candidate.pop(0)
-                self._collections[object] = self._structure(id, False)
-
-        else:
-            raise TypeError
-
-    def id(self, object):
-        return self._collections[object].id
-
-    def id_color(self, object):
-        inte = self._collections[object].id
-        inte = format(inte,'06x')
-        color= [int(f'0x{inte[i*2:i*2+2]}',16)/255 for i in range(3)]
-        return color
-
-    def color_id(self, color):
-        hex = bytearray(color).hex()
-        inte = int(hex, 16)
-        return inte
 
 class Timer:
     def __init__(self,framerate, name):

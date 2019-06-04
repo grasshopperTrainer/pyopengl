@@ -24,7 +24,6 @@ class Vertexbuffer(RenderComponent):
         self.bind()
         gl.glBufferData(gl.GL_ARRAY_BUFFER, 0, None, self._glusage)
         self.unbind()
-        print('-vertex buffer built')
 
     def set_attribpointer(self, buffer_data):
         """

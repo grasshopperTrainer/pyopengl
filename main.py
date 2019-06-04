@@ -10,6 +10,8 @@ window = Window(640, 480, "Hello World", None, None)
 window2 = Window(1000,300,'second_screen',None, window)
 window3 = Window(2000, 1000, 'third', None, window2)
 window3.close()
+
+
 @Window.init
 def INIT():
     k = 'k'

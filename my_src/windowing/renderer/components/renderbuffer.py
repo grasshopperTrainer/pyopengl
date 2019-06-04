@@ -21,7 +21,6 @@ class Renderbuffer(RenderComponent):
 
     def __init__(self, width, height, internalformat):
         self._glindex = None
-        print('INIT RenderBuffer')
         self._size = width, height
         self._internalformat = internalformat
 

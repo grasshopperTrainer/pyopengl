@@ -1,6 +1,7 @@
-from .renderer.components import *
-from .frame_buffer_like.frame_buffer_like_bp import FBL
-from .my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+from windowing.renderer.components import *
+from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
+from .render_object_registry import Render_object_registry
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 import numpy as np
 class Frame(FBL):
     def __init__(self, width, height):
@@ -15,6 +16,9 @@ class Frame(FBL):
         self._flag_stencil_use = False
 
         self._flag_built = False
+        self._flag_something_rendered = False
+
+        self._render_unit_registry = Render_object_registry(self)
 
     def build(self):
         if not (self._flag_color_use or self._flag_depth_use or self._flag_stencil_use):
@@ -58,6 +62,18 @@ class Frame(FBL):
     @property
     def size(self):
         return self._size
+    @property
+    def flag_something_rendered(self):
+        return self._flag_something_rendered
+    @flag_something_rendered.setter
+    def flag_something_rendered(self, v):
+        if isinstance(v, bool):
+            self._flag_something_rendered = v
+        else:
+            raise
+    @property
+    def render_unit_registry(self):
+        return self._render_unit_registry
 
     def use_color_attachment(self, slot):
         self._flag_color_use = True

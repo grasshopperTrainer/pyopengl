@@ -54,7 +54,6 @@ class Texture_new(Texture):
             self.unbind()
 
     def bind(self):
-        print('this is new texture', self._glindex)
         gl.glActiveTexture(gl.GL_TEXTURE0 + self._slot)
         gl.glBindTexture(gl.GL_TEXTURE_2D, self._glindex)
 

@@ -2,95 +2,192 @@ import weakref
 import inspect
 import numpy as np
 import ctypes
+from collections import namedtuple
+
 
 import glfw.GLFW as glfw
 import OpenGL.GL as gl
-from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
+from windowing.windows import Windows
 
 class Object:
-    """
-    OpenGL contents(properties?)
+    def __init__(self, id, objects):
+        self.id = id
+        self.objects = objects
+        self.attributes = {}
 
-    There are contents. Contents are like people with different knowledge.
-    There are slots. Slots are like seats.
-    Functions are like booth with an executor.
-    You can't directly talk to people. You can only talk to an executor.
-    To pass a knowledge to a person, you have to call a person to a booth and seat.
-    There you tell data to a person.
-    """
-    _names = []
-    def __init__(self, name):
-        self.__class__._names.append(name)
-        self.name = name
+    def set_attribute(self, pname, value):
+        self.attributes[pname] = value
+
+    @property
+    def bound_targets(self):
+        targets = []
+        for n,t in self.objects.targets.items():
+            if t.object == self:
+                targets.append(t)
+        return targets
+
+class Objects:
+    def __init__(self):
         self.collection = {}
+        self.collection[0] = Object(0, self)
+        self.targets = {}
         self.slots = {}
-        self._binding = None
+        self.active = None
 
-    def append(self, index):
-        self.collection[int(index)] = {}
+    def generate(self, id):
+        self.collection[id] = Object(id, self)
 
-    def remove(self, index):
-        del self.collection[index]
+    def binding(self, target):
+        return self.targets[target].binding
 
-    def set_comment(self, index, name, value, target=None):
-        if target is None:
-            self.collection[index][name] = value
+    def bind(self, id, target = None):
+        if target not in self.targets:
+            self.targets[target] = Target(target)
+        self.targets[target].bind(self.collection[id])
+
+        if self.active is not None:
+            self.targets[self.active].bind(self.collection[id])
+
+    def activate_slot(self, slot):
+        if slot not in self.targets:
+            self.targets[slot] = Target(slot)
+        self.active = slot
+
+    def remove(self, id):
+        del self.collection[id]
+
+
+class Target:
+    def __init__(self, name):
+        self.name = name
+        self.object = None
+
+    def bind(self, object):
+        if isinstance(object, Object):
+            self.object = object
         else:
-            if not isinstance(target, gl.constant.IntConstant):
-                raise TypeError
+            raise
 
-            if target not in self.collection[index]:
-                self.collection[index][target.name] = {}
-            self.collection[index][target.name][name] = value
+    @property
+    def binding(self):
+        return self.object
 
-    def bind(self, index, target=None):
-        index = int(index)
-        self._binding = index
+    def __str__(self):
+        return f'<target object of {self.name}>'
 
-        if target != None:
-            if not isinstance(target, gl.constant.IntConstant):
-                raise TypeError
+class Slot:
+    def __init__(self, name):
+        self.name = name
+        self.active = False
 
-            if target in self.slots:
-                self.slots[target].set_content(index)
-            else:
-                s = Slot(target)
-                s.set_content(index)
-                self.slots[int(target)] = s
+    def activate(self):
+        self.active = True
 
-    def print_collection(self):
-        formated = []
-        title = f"'{self.name}'"
-        # formated.append(title)
-        space = 4
+# class Object:
+#     """
+#     OpenGL contents(properties?)
+#
+#     There are contents. Contents are like people with different knowledge.
+#     There are slots. Slots are like seats.
+#     Functions are like booth with an executor.
+#     You can't directly talk to people. You can only talk to an executor.
+#     To pass a knowledge to a person, you have to call a person to a booth and seat.
+#     There you tell data to a person.
+#     """
+#     _names = []
+#     def __init__(self, name):
+#         self.__class__._names.append(name)
+#         self.name = name
+#         self.collection = {}
+#         self.slots = {}
+#         self._binding = None
+#         self.collection[0] = {}
+#
+#     def append(self, index):
+#         self.collection[int(index)] = {}
+#
+#     def remove(self, index):
+#         del self.collection[index]
+#
+#     def set_comment(self, index, name, value, target=None):
+#         if target is None:
+#             self.collection[index][name] = value
+#         else:
+#             if not isinstance(target, gl.constant.IntConstant):
+#                 raise TypeError
+#
+#             if target not in self.collection[index]:
+#                 self.collection[index][target] = []
+#             elif not isinstance(self.collection[index][target], list):
+#                 self.collection[index][target] = [self.collection[index][target]]
+#             self.collection[index][target].append((name, value))
+#
+#     def bind(self, index, target=None):
+#         index = int(index)
+#         self._binding = index
+#
+#         if target != None:
+#             if not isinstance(target, gl.constant.IntConstant):
+#                 raise TypeError
+#
+#             if target in self.slots:
+#                 self.slots[target].set_content(index)
+#             else:
+#                 s = Slot(target)
+#                 s.set_content(index)
+#                 self.slots[int(target)] = s
+#
+#     def format_generated(self):
+#
+#         string_list = [f"<{self.name}> generated:",]
+#         generated = list(self.collection.keys())
+#         generated.sort()
+#         # check removed
+#         for i in range(generated[-1]):
+#             if i not in generated:
+#                 generated.insert(i, '-')
+#         generated = str(generated)
+#         string_list.append(f'{generated: >{len(generated)+4}}')
+#         return string_list
+#     # def print_collection(self):
+#     #     formated = []
+#     #     title = f"'{self.name}'"
+#     #     # formated.append(title)
+#     #     space = 4
+#     #
+#     #     for index,comments in self.collection.items():
+#     #         mark_front = ''
+#     #         mark_end = ''
+#     #         if index == self._binding:
+#     #             mark_front = '['
+#     #             mark_end = ']'
+#     #
+#     #         number = str(index)
+#     #         if len(comments) != 0:
+#     #             items = list(comments.items())
+#     #             formated.append(f"{title}{' '*(space- len(mark_front))}{mark_front}{number}{mark_end}{' '*(space-len(number))}{items[0][0]} : {items[0][1]}")
+#     #             for name, value in items[1:]:
+#     #                 formated.append(f"{' '*(len(title)+space*2+len(mark_end+mark_front))}{name} : {value}")
+#     #         else:
+#     #             formated.append(f"{title}{' '*(space-len(mark_front))}{mark_front}{number}{mark_end}")
+#     #             title = ' '*len(title)
+#     #
+#     #     [print(i) for i in formated]
+#
+#     def get_binding(self, slot=None):
+#         if slot is None:
+#             return self._binding
+#         else:
+#             return self.slots[int(slot)].content
+#
+#     def __len__(self):
+#         return len(self.collection)
+#
+# class Frame_buffer_object:
+#     def __init__(self):
+#         pass
+#     pass
 
-        for index,comments in self.collection.items():
-            mark_front = ''
-            mark_end = ''
-            if index == self._binding:
-                mark_front = '['
-                mark_end = ']'
-
-            number = str(index)
-            if len(comments) != 0:
-                items = list(comments.items())
-                formated.append(f"{title}{' '*(space- len(mark_front))}{mark_front}{number}{mark_end}{' '*(space-len(number))}{items[0][0]} : {items[0][1]}")
-                for name, value in items[1:]:
-                    formated.append(f"{' '*(len(title)+space*2+len(mark_end+mark_front))}{name} : {value}")
-            else:
-                formated.append(f"{title}{' '*(space-len(mark_front))}{mark_front}{number}{mark_end}")
-                title = ' '*len(title)
-
-        [print(i) for i in formated]
-
-    def get_binding(self, slot=None):
-        if slot is None:
-            return self._binding
-        else:
-            return self.slots[int(slot)].content
-
-    def __len__(self):
-        return len(self.collection)
 
 class Slot:
     """
@@ -134,24 +231,42 @@ class GLFW_GL_tracker:
 
     """
     # instance dict of the trackers bound with FBL(Window) object
-    _FBLs = weakref.WeakKeyDictionary()
+    _windows = weakref.WeakKeyDictionary()
+    _current = None
 
     def __init__(self, bound_object):
         # store instance
-        self.__class__._FBLs[bound_object] = self
-        self._bound_object = bound_object
-        # use dict to store generated's additional state information
-        self._programs = Object('program')
-        self._buffers = Object('buffer')
-        self._vertex_arrays = Object('vertex_array')
-        self._shaders = Object('shader')
-        self._textures = Object('texture')
-        self._render_buffers = Object('render_buffer')
-        self._frame_buffers = Object('frame_buffers')
-        # self._frame_buffers.set_slots('GL_FRAMEBUFFER')
+        self.__class__._windows[bound_object] = self
 
-        self._textures_active = {}
-        self._drawbuffer = {}
+        self._render_buffers = Objects()
+        self._textures = Objects()
+        self._frame_buffers = Objects()
+        self._programs = Objects()
+        self._shaders = Objects()
+        self._buffers = Objects()
+        self._vertex_arrays = Objects()
+
+        # # self._bound_object =
+        # # use dict to store generated's additional state information
+        # self._programs = Object('program')
+        # self._buffers = Object('buffer')
+        # self._vertex_arrays = Object('vertex_array')
+        # self._shaders = Object('shader')
+        # self._textures = Object('texture')
+        # self._render_buffers = Object('render_buffer')
+        # self._frame_buffers = Object('frame_buffers')
+        # self.objet_list = [
+        #     self._programs,
+        #     self._buffers,
+        #     self._vertex_arrays,
+        #     self._shaders,
+        #     self._textures,
+        #     self._render_buffers,
+        #     self._frame_buffers]
+        # # self._frame_buffers.set_slots('GL_FRAMEBUFFER')
+        #
+        # self._textures_active = {}
+        # self._drawbuffer = {}
 
     def give_tracker_to(self, window):
         """
@@ -162,15 +277,38 @@ class GLFW_GL_tracker:
         :param window: fbl.window object to give to
         :return: object of tracker
         """
-        self._FBLs[window] = self
+        self._windows[window] = self
         return self
 
     def print_full_info(self):
         # print()
-        # print(f'OpenGL CONTEXT INFO of {self._bound_object}')
-        # for n in Content._names:
-        #     exec(f'self._{n}s.print_collection()')
+        # windows = []
+        # for w,c in self.__class__._windows.items():
+        #     if c is self:
+        #         windows.append(w)
+        # print(f"OpenGL CONTEXT INFO of {'window' if len(windows) == 1 else 'windows'}:")
+        # windows = str([i.name for i in windows])
+        # print(f'{windows: >{len(windows)+4}}')
+        # print()
+        #
+        # for i in self.objet_list:
+        #     for ii in i.format_generated():
+        #         print(ii)
+        #     print(i.collection)
+        #     print()
         pass
+
+    @classmethod
+    def remove(cls, window):
+        del cls._windows[window]
+
+    @classmethod
+    def set_current(cls, object):
+        cls._current = object
+
+    @classmethod
+    def get_current(cls):
+        return cls._current
 
 class context_check:
     """
@@ -188,7 +326,7 @@ class context_check:
 
     def __get__(self, instance, owner):
         # checks whether current fbl has tracker within it
-        if FBL.get_current() not in GLFW_GL_tracker._FBLs:
+        if Windows.get_current() not in GLFW_GL_tracker._windows:
             raise Exception('Frame_buffer_like object not bound with trackable_GL')
         # modified to insert Trackable_openGL type as cls
         return lambda *args,**kwargs: self.func(Trackable_openGL, *args, **kwargs)
@@ -210,8 +348,8 @@ class vao_related:
         if not Trackable_openGL._spec_vertex_array_shared:
 
             def func(*args, **kwargs):
-                fbl = FBL.get_current()
-                windows = fbl.shared_windows + [fbl, ]
+                window = Windows.get_current()
+                windows = window.shared_windows + [window, ]
                 for win in windows:
                     win.make_window_current()
                     return_v = self.func(*args, **kwargs)
@@ -442,19 +580,19 @@ class Trackable_openGL:
         cls.byte_attribute_dict = {}
         for key, value in cls.__dict__.items():
             if key[:3] == 'GL_':
-                cls.byte_attribute_dict[value] = key
+                cls.byte_attribute_dict[int(value)] = value
 
     @context_check
     def glGenBuffers(cls,n,buffers=None):
         index = gl.glGenBuffers(n, buffers)
-        cls.ins()._buffers.append(index)
+        cls.current()._buffers.generate(index)
         return index
 
     # frame buffer
     @context_check
     def glGenFramebuffers(cls, n, framebuffers=None):
         index =  gl.glGenFramebuffers(n,framebuffers)
-        cls.ins()._frame_buffers.append(index)
+        cls.current()._frame_buffers.generate(index)
         return index
     @context_check
     def glBindFramebuffer(cls,target, framebuffer):
@@ -466,25 +604,42 @@ class Trackable_openGL:
         :param framebuffer: gl_object(index-like value)
         :return: None
         """
+        if target == gl.GL_FRAMEBUFFER:
+            cls.current()._frame_buffers.bind(framebuffer, gl.GL_DRAW_FRAMEBUFFER)
+            cls.current()._frame_buffers.bind(framebuffer, gl.GL_READ_FRAMEBUFFER)
+            cls.current()._frame_buffers.bind(framebuffer, gl.GL_FRAMEBUFFER)
+        else:
+            cls.current()._frame_buffers.bind(framebuffer, target)
+
         gl.glBindFramebuffer(target, framebuffer)
-        cls.ins()._frame_buffers.bind(framebuffer, target)
     @context_check
     def glCheckFramebufferStatus(cls, target):
         result = gl.glCheckFramebufferStatus(target)
-        index = cls.ins()._frame_buffers.get_binding(target)
-        cls.ins()._frame_buffers.set_comment(index, 'status', result, target)
+        cls.current()._frame_buffers.binding(target).set_attribute('status',cls.byte_attribute_dict[result])
         return result
     @context_check
     def glFramebufferRenderbuffer(cls, target, attachment, renderbuffertarget, renderbuffer):
-        # TODO how to log this?
+        # log frame buffer
+        fbo = cls.current()._frame_buffers
+        rbo = cls.current()._render_buffers.collection[renderbuffer]
+        # print(rbo.attributes, rbo.id)
+        # print(cls.current()._render_buffers.targets)
+        # print(rbo.id, renderbuffer)
+        # if rbo.id != renderbuffer:
+        #     raise
+        fbo.binding(target).set_attribute(attachment, rbo)
+
         gl.glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer)
     @context_check
     def glFramebufferTexture(cls, target, attachment, texture, level):
-        # TODO how to log this?
+        # log frame buffer
+        fbo = cls.current()._frame_buffers
+        fbo.binding(target).set_attribute(attachment, {'object':cls.current()._textures.collection[texture], 'level':level})
+
         gl.glFramebufferTexture(target, attachment, texture, level)
     @context_check
     def glDeleteFramebuffers(cls, n, framebuffers):
-        cls.ins()._frame_buffers.remove(framebuffers)
+        cls.current()._frame_buffers.remove(framebuffers)
         if not isinstance(n, (tuple, list)):
             framebuffers = [framebuffers]
         gl.glDeleteFramebuffers(n, framebuffers)
@@ -508,13 +663,13 @@ class Trackable_openGL:
     @vao_related
     def glGenVertexArrays(cls, n, arrays=None):
         index = gl.glGenVertexArrays(n, arrays)
-        cls.ins()._vertex_arrays.append(index)
+        cls.current()._vertex_arrays.generate(index)
         return index
 
     @context_check
     @vao_related
     def glBindVertexArray(cls, array):
-        cls.ins()._vertex_arrays.bind(array)
+        cls.current()._vertex_arrays.bind(array)
         gl.glBindVertexArray(array)
 
     @context_check
@@ -530,7 +685,7 @@ class Trackable_openGL:
     @context_check
     @vao_related
     def glBindBuffer(cls, target, buffer):
-        cls.ins()._buffers.bind(buffer, target)
+        cls.current()._buffers.bind(buffer, target)
 
         gl.glBindBuffer(target, buffer)
 
@@ -542,19 +697,19 @@ class Trackable_openGL:
     @context_check
     def glCreateProgram(cls):
         index = gl.glCreateProgram()
-        cls.ins()._programs.append(index)
+        cls.current()._programs.generate(index)
 
         return index
 
     @context_check
     def glUseProgram(cls, program):
-        cls.ins()._programs.bind(program)
+        cls.current()._programs.bind(program)
         gl.glUseProgram(program)
 
     @context_check
     def glCreateShader(cls, type):
         index = gl.glCreateShader(type)
-        cls.ins()._shaders.append(index)
+        cls.current()._shaders.generate(index)
 
         return index
 
@@ -600,18 +755,18 @@ class Trackable_openGL:
 
     @context_check
     def glLinkProgram(cls, program):
-        cls.ins()._programs.set_comment(program, 'linked', True)
+        cls.current()._programs.collection[program].set_attribute('linked', True)
         gl.glLinkProgram(program)
 
     @context_check
     def glValidateProgram(cls, program):
-        cls.ins()._programs.set_comment(program, 'validated', True)
+        cls.current()._programs.collection[program].set_attribute('validated', True)
         gl.glValidateProgram(program)
 
     @context_check
     def glDeleteShader(cls, shader):
         gl.glDeleteShader(shader)
-        cls.ins()._shaders.remove(shader)
+        cls.current()._shaders.remove(shader)
 
     @context_check
     def glBindAttribLocation(cls, program, index, name):
@@ -628,16 +783,13 @@ class Trackable_openGL:
     @context_check
     def glGenTextures(cls, n, textures=None):
         index = gl.glGenTextures(n, textures)
-        cls.ins()._textures.append(index)
+        cls.current()._textures.generate(index)
         return index
 
     @context_check
     def glTexParameter(cls, target, pname, parameter):
         gl.glTexParameter(target, pname, parameter)
-        t = cls.ins()._textures
-
-        index = t.get_binding(target)
-        t.set_comment(index, pname.name, parameter.name, target)
+        cls.current()._textures.binding(target).set_attribute(pname, parameter)
 
     @context_check
     def glTexImage2D(cls, target, level, internalformat, width, height, border, format, type, pixels):
@@ -646,18 +798,17 @@ class Trackable_openGL:
     @context_check
     def glActiveTexture(cls, texture):
         gl.glActiveTexture(texture)
-        base = gl.GL_TEXTURE0
-        n = texture - base
-        cls.ins()._textures_active[f'GL_TEXTURE{n}'] = None
+        slot = cls.byte_attribute_dict[texture]
+        cls.current()._textures.activate_slot(slot)
 
     @context_check
     def glBindTexture(cls, target, texture):
-        cls.ins()._textures.bind(texture, target)
+        cls.current()._textures.bind(texture, target)
         gl.glBindTexture(target, texture)
 
     @context_check
     def glDeleteTextures(cls, n, textures):
-        cls.ins()._textures.remove(textures)
+        cls.current()._textures.remove(textures)
         if not isinstance(textures, (tuple, list)):
             textures = [textures]
         try:
@@ -666,11 +817,9 @@ class Trackable_openGL:
         except:
             gl.glDeleteTextures(textures)
 
-
-
     @context_check
     def glDeleteRenderbuffers(cls, n, renderbuffers):
-        cls.ins()._render_buffers.remove(renderbuffers)
+        cls.current()._render_buffers.remove(renderbuffers)
         if not isinstance(renderbuffers, (list,tuple)):
             renderbuffers = [renderbuffers]
         gl.glDeleteRenderbuffers(n, renderbuffers)
@@ -730,12 +879,18 @@ class Trackable_openGL:
     # render buffer
     @context_check
     def glGenRenderbuffers(cls,n, renderbuffers=None):
-        index = gl.glGenRenderbuffers(n, renderbuffers)
-        cls.ins()._render_buffers.append(index)
-        return index
+        id = gl.glGenRenderbuffers(n, renderbuffers)
+        cls.current()._render_buffers.generate(id)
+        return id
     @context_check
     def glBindRenderbuffer(cls, target, renderbuffer):
-        cls.ins()._render_buffers.bind(renderbuffer, target)
+        """
+
+        :param target: ignore as it's always GL_RENDERBUFFER
+        :param renderbuffer: openGL object
+        :return:
+        """
+        cls.current()._render_buffers.bind(renderbuffer, target)
         gl.glBindRenderbuffer(target, renderbuffer)
     @context_check
     def glRenderbufferStorage(self, target, internalformat, width, height):
@@ -763,12 +918,12 @@ class Trackable_openGL:
 
 
     @classmethod
-    def fbl(cls):
-        return FBL.get_current()
+    def window(cls):
+        return Windows.get_current()
 
     @classmethod
-    def ins(cls):
-        return GLFW_GL_tracker._FBLs[FBL.get_current()]
+    def current(cls):
+        return GLFW_GL_tracker._windows[Windows.get_current()] #type:GLFW_GL_tracker
 
     @classmethod
     def test(cls):

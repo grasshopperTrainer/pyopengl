@@ -10,6 +10,16 @@ class FBL(SMI):
 
     @SMI.must_func
     @property
+    def flag_something_rendered(self):
+        pass
+
+    @SMI.must_func
+    @property
+    def render_unit_registry(self):
+        pass
+
+    @SMI.must_func
+    @property
     def width(self):
         pass
 
@@ -23,10 +33,20 @@ class FBL(SMI):
     def size(self):
         pass
 
+    @SMI.must_func
+    def begin(self):
+        pass
+    @SMI.must_func
+    def end(self):
+        pass
+
 
     @classmethod
     def get_current(cls):
         return cls._current
     @classmethod
     def set_current(cls, fbl):
-        cls._current = fbl
+        if isinstance(fbl, FBL):
+            cls._current = fbl
+        else:
+            raise
