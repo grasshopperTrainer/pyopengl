@@ -1,5 +1,6 @@
 import threading
 import weakref
+import traceback
 from collections import OrderedDict
 from time import sleep
 from time import time
@@ -24,6 +25,12 @@ from .frame_buffer_like.frame_buffer_like_bp import FBL
 from windowing.frame_buffer_like.renderable_image import Renderable_image
 from windowing.frame_buffer_like.frame import Frame
 from .windows import Windows
+
+class Test:
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
 
 
 class Window:
@@ -73,6 +80,13 @@ class Window:
         """
         glfw.init()
         gl.context_specification_check() # check additional specification
+    def __enter__(self):
+        return self
+    def __enter__(self):
+        print('this is enter')
+        return self.myframe
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
 
     def __new__(cls,*args,**kwargs):
         """
@@ -101,12 +115,12 @@ class Window:
 
         # stores object name as an instance name
         f = inspect.currentframe().f_back
-        self.instance_name = ''
+        self._instance_name = ''
         try:
             while True:
                 code_context = inspect.getframeinfo(f).code_context[0]
                 if ' Window(' in code_context and '=' in code_context:
-                    self.instance_name = code_context.split('=')[0].strip()
+                    self._instance_name = code_context.split('=')[0].strip()
                     break
                 else:
                     f = f.f_back
@@ -114,25 +128,30 @@ class Window:
             print_message("can't grasp instance name", "error")
             self._instance_name = 'unknown'
 
-        # store relationship between mother and children
-        self._children_windows = []
-        self._mother_window = mother_window  # type: Window
+        # 1. generate contex first.
+        # Do not mix order 1 and 2. There is automated vertex array operation during 2.
         if mother_window is not None:
-            mother_window._children_windows.append(weakref.proxy(self))
             self._glfw_window = glfw.create_window(width, height, name, monitor, mother_window._glfw_window)
-            # if window is shared share unique context too
-            self._unique_glfw_context = mother_window.unique_glfw_context.give_tracker_to(self)
         else:
             self._glfw_window = glfw.create_window(width, height, name, monitor, None)
-            # this is a unique context wrapper and is a context identifier
-            self._unique_glfw_context = GLFW_GL_tracker(self)
-
         # glfw window creation error check
         if not self._glfw_window:
             glfw.terminate()
             raise Exception("can't create glfw context")
         # set it current for farther settings
         glfw.make_context_current(self.glfw_window)
+
+        # 2. store relationship between mother and children
+        self._children_windows = []
+        self._mother_window = mother_window  # type: Window
+        if mother_window is not None:
+            mother_window._children_windows.append(weakref.proxy(self))
+            # if window is shared share unique context too
+            self._unique_glfw_context = mother_window.unique_glfw_context.give_tracker_to(self)
+        else:
+            # this is a unique context wrapper and is a context identifier
+            self._unique_glfw_context = GLFW_GL_tracker(self)
+
 
         # customizable frame
         self._myframe = Frame(self.width, self.height)  # type: Renderable_image
@@ -195,8 +214,6 @@ class Window:
         # viewport collection
         self._viewports = Viewports(self)
 
-
-
     @property
     def mother_window(self):
         return self._mother_window
@@ -224,7 +241,9 @@ class Window:
     @property
     def keyboard(self):
         return self._keyboard
-
+    @property
+    def instance_name(self):
+        return self._instance_name
     @property
     def windows(self):
         return self.__class__._windows
@@ -387,8 +406,8 @@ class Window:
                         # copy from custom myframebuffer and draw it on window
                         gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER,window.myframe._frame_buffer._glindex)
                         gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0) # set source
+
                         gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER,0)
-                        print(window.width, window.height)
                         gl.glBlitFramebuffer(0,0,window.width,window.height,
                                              0,0,window.width,window.height,
                                              gl.GL_COLOR_BUFFER_BIT,
@@ -627,6 +646,11 @@ class Window:
     @property
     def myframe(self):
         return self._myframe
+
+    def gen_child(self,width, height, name, monitor):
+        w = Window(width, height, name, monitor, self)
+        self.make_window_current()
+        return w
 
 class Timer:
     def __init__(self,framerate, name):

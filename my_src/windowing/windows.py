@@ -30,7 +30,20 @@ class Windows:
 
     # append to dict
     def __add__(self, other):
-        self.windows[other.instance_name] = other
+        # check name unique
+        if other.instance_name in self.windows.keys():
+            count = 1
+            keys = self.windows.keys()
+            while True:
+                key = other.instance_name+str(count)
+                if key in keys:
+                    count += 1
+                else:
+                    break
+        else:
+            key = other.instance_name
+        other._instance_name = key
+        self.windows[key] = other
 
     # iteration, return window object
     def __iter__(self):

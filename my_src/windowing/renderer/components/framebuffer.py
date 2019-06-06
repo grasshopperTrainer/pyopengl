@@ -75,8 +75,6 @@ class Framebuffer(RenderComponent):
 
     def bind(self):
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, self._glindex)
-        if self._bufs != None:
-            gl.glDrawBuffers(len(self._bufs),self._bufs)
 
     def unbind(self):
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)

@@ -45,6 +45,15 @@ class Frame(FBL):
             self._stencil_attachment.rebuild(width, height)
 
         self.build()
+    def __enter__(self):
+        # FBL.set_current(self)
+        if not self._flag_built:
+            raise
+        self._frame_buffer.bind()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
 
     def bind(self):
         pass

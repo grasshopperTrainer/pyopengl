@@ -458,16 +458,17 @@ class Renderer_template:
                     ibo = render_unit.index_buffer
                     if ibo.count != 0:  # draw a thing
                         fbo.begin()
-                        viewport.fillbackground()  # before make any change erase background
+                        with fbo as fbo:
+                            viewport.fillbackground()  # before make any change erase background
 
-                        # get id color
-                        if render_unit.properties.has_property('u_id_color'):
-                            id = fbo.render_unit_registry.id_color(render_unit)
-                            uni = render_unit.properties['u_id_color']
-                            gl.glUniform4fv(uni.location, 1, id + [1, ])  # push color
+                            # get id color
+                            if render_unit.properties.has_property('u_id_color'):
+                                id = fbo.render_unit_registry.id_color(render_unit)
+                                uni = render_unit.properties['u_id_color']
+                                gl.glUniform4fv(uni.location, 1, id + [1, ])  # push color
 
-                        gl.glDrawElements(self.drawmode, ibo.count, ibo.gldtype, None)
-                        fbo.end()
+                            gl.glDrawElements(self.drawmode, ibo.count, ibo.gldtype, None)
+                        # fbo.end()
 
             # TODO is this unnecessary processing? checking?
             # self._unbind_global()

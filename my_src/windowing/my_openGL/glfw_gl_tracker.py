@@ -35,7 +35,13 @@ class Objects:
         self.active = None
 
     def generate(self, id):
-        self.collection[id] = Object(id, self)
+        try:
+            id = int(id)
+            self.collection[id] = Object(id, self)
+        except:
+            id = list(id)
+            for i in id:
+                self.collection[i] = Object(i,self)
 
     def binding(self, target):
         return self.targets[target].binding
@@ -143,6 +149,11 @@ class GLFW_GL_tracker:
         :return: object of tracker
         """
         self._windows[window] = self
+        # after some vao have been created make them for new window
+        # think this is a duck taping
+        # ex) what if there is a deleted vao like 1,2,-,-,5,6
+        vao_n = len(self._vertex_arrays.collection)-1
+        gl.glGenVertexArrays(vao_n)
         return self
 
     def print_full_info(self):
@@ -373,6 +384,13 @@ class Trackable_openGL:
     for i in range(1, 15):
         exec(f'GL_COLOR_ATTACHMENT{i} = gl.GL_COLOR_ATTACHMENT{i}')
     GL_MAX_COLOR_ATTACHMENTS = gl.GL_MAX_COLOR_ATTACHMENTS
+
+    # vertex array parameter
+    GL_VERTEX_ARRAY_BUFFER_BINDING = gl.GL_VERTEX_ARRAY_BUFFER_BINDING
+    GL_VERTEX_ARRAY_SIZE = gl.GL_VERTEX_ARRAY_SIZE
+    GL_VERTEX_ARRAY_BINDING = gl.GL_VERTEX_ARRAY_BINDING
+
+    GL_VERTEX_ARRAY_POINTER = gl.GL_VERTEX_ARRAY_POINTER
 
     # for IDE hinting
     _spec_buffer_shared = None
