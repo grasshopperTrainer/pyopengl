@@ -76,15 +76,16 @@ class Viewport:
             self._flag_clear = False
 
     def open(self, do_clip = True):
-        if self._bound_fbl is not None:
-            FBL.set_current(self._bound_fbl)
+        # if self._bound_fbl is not None:
+        #     FBL.set_current(self._bound_fbl)
         self.set_current(self)
-        FBL.get_current().begin()
 
-        gl.glViewport(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
-        if do_clip:
-            gl.glScissor(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
-        FBL.get_current().end()
+        with Windows.get_current():
+            gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+
+            gl.glViewport(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
+            if do_clip:
+                gl.glScissor(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
 
         return self
 

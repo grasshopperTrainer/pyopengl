@@ -106,6 +106,8 @@ class Window:
         return self # return proxy of generated object
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
+
+
         Windows.set_current(self) # for init process may be needing which window is current
         self._size = width, height
         self._name = name
@@ -153,7 +155,9 @@ class Window:
 
 
         # customizable frame
-        self._myframe = Frame(self.width, self.height)  # type: Renderable_image
+        m = glfw.get_primary_monitor()
+        _,_,max_width,max_height = glfw.get_monitor_workarea(m)
+        self._myframe = Frame(max_width, max_height)  # type: Renderable_image
         # glsl: layout(location = 0), this is default output
         # this is ambient color output
         self._myframe.use_color_attachment(0)
@@ -213,6 +217,10 @@ class Window:
         # viewport collection
         self._viewports = Viewports(self)
 
+        self.initiation_glfw_setting()
+        self.initiation_gl_setting()
+        self.initiation_window_setting()
+
 
     @property
     def mother_window(self):
@@ -265,76 +273,7 @@ class Window:
                   i['title'], i['monitor'],
                   i['share'])
 
-    # def _snatch_decorated(self, func):
-    #     source = inspect.getsource(func).splitlines()
-    #
-    #     indent = 0
-    #     for i in source[0]:
-    #         if i is ' ':
-    #             indent += 1
-    #         else:
-    #             break
-    #     indent += 4
-    #
-    #     merged = ''
-    #     for line in source[2:]:
-    #         merged += line[indent:] + '\n'
-    #     return merged
-
-    def init(self = None, func = None):
-        """
-        Decorator. Write down initiall code.
-        Typically code writen under this decorator is something you don't
-        want to repeat inside the loop.
-        :param func: wrapped function
-        :return:
-        """
-        # for global init
-        if not isinstance(self, Window):
-            # Window.glfw_init()
-            a = Source_parser.split_func_headbody(Window._init_global, 1)
-            b = Source_parser.split_func_headbody(self, 1)
-
-            Window._init_global = a + b
-        # for window instance init
-        else:
-            self._init_func = func
-
-            if self in self.windows:
-                self.make_window_current()
-                # init setting
-                self.initiation_glfw_setting()
-                self.initiation_gl_setting()
-                self.initiation_window_setting()
-
-                # assigned var names
-                # TODO maybe need more assigned variables?
-                self._context_scope.set_assigned(
-                    {'window': self, 'windows': self.windows, 'self': self, self.instance_name: self})
-
-                # if Window has global init
-                func = self.__class__._init_global
-                self._context_scope.append_scope(func)
-
-                # if window has mother window
-                if self._mother_window is not None:
-                    if self.mother_window.init_func is not None:
-                        self._context_scope.append_scope_byscope(self.mother_window._context_scope)
-
-                    # renderers = self.mother_self.renderers
-                    #
-                    # for renderer in renderers:
-                    #     renderer[1].rebind()
-
-                if self.init_func is not None:
-                    self._context_scope.append_scope(self.init_func)
-
-
-    def draw(self, func):
-        self._draw_func = func
-
     def framebuffer_size_callback(self, window, width, height):
-        self.myframe.rebuild(width, height)
         self._flag_resized = True
 
     def window_refresh_callback(self,a):
@@ -633,7 +572,7 @@ class Window:
 
     @property
     def viewports(self):
-        return self._viewports
+        return self._viewports #type:Viewports
 
     @property
     def width(self):

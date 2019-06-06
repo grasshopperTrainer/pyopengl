@@ -42,7 +42,7 @@ class Windows:
                     break
         else:
             key = other.name
-        other._instance_name = key
+        other._name = key
         self.windows[key] = other
 
     # iteration, return window object

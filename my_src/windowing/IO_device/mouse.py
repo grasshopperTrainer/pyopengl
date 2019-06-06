@@ -167,6 +167,12 @@ class Mouse(SID):
         # except:
         #     x, y = -1, -1
         return x, y
+    @property
+    def is_any_pressed(self):
+        if len(self.pressed_button) != 0:
+            return True
+        else:
+            return False
 
     @property
     def scroll_offset(self):
@@ -200,13 +206,14 @@ class Mouse(SID):
     @property
     def cursor_object(self):
         x,y = self.mouse_position
-
         self._window.make_window_current()
-        self._window.myframe.begin()
-        gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
-        color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
-        self._window.myframe.end()
-        return self._window.myframe.render_unit_registry.object(color)
+
+        with self._window.myframe:
+            gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
+            color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
+            self._window.myframe.end()
+            print(color)
+            return self._window.myframe.render_unit_registry.object(color)
 
     def set_object_selection_callback(self, selection, state, func):
         def callback_func():

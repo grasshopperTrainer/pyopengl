@@ -21,7 +21,7 @@ class Viewports:
         if not all([isinstance(i, Number) for i in (x, y, width, height)]):
             raise TypeError('value should be expressed by float of int')
 
-        new_vp = Viewport(x, y, width, height, self._window.myframe, name)
+        new_vp = Viewport(x, y, width, height, self._window, name)
         self._viewports[name] = new_vp
         # gl.glViewportIndexedf(len(self._viewports) - 1, x, y, width, height)
         return new_vp
@@ -38,7 +38,7 @@ class Viewports:
         if isinstance(item, str):
             return self._viewports[item]
         elif isinstance(item, int):
-            return list(self._viewports.items())[item][1]
+            return list(self._viewports.items())[item][1] #type:Viewport
 
     @property
     def current_viewport(self):

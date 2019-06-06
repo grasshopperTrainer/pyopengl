@@ -475,10 +475,10 @@ class Renderer_template:
                     fbo.flag_something_rendered = True
                     ibo = render_unit.index_buffer
                     if ibo.count != 0:  # draw a thing
-                        fbo.begin()
                         with fbo as fbo:
+                            gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT0) # not to draw background on id_buffer
                             viewport.fillbackground()  # before make any change erase background
-
+                            fbo.bindDrawBuffer() # else draw ambient, and id the same area
                             # get id color
                             if render_unit.properties.has_property('u_id_color'):
                                 id = fbo.render_unit_registry.id_color(render_unit)

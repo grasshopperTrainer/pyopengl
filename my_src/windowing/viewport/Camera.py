@@ -187,7 +187,8 @@ class _Camera:
                     ratio = vp.abs_width/vp.abs_height
                     distance = self._top - self._bottom
                     self._right, self._left = distance * ratio / 2, -distance * ratio / 2
-
+                    print(vp.abs_height, vp.abs_width)
+                    print(self.right,self.left,self.top,self.bottom)
                 elif major == 'h':
                     ratio = vp.abs_height/vp.abs_width
                     distance = self._right - self._left
@@ -231,9 +232,9 @@ class _Camera:
                 # self.near = 0
                 # self.far = 100
                 # self.left = 0
-                # self.right = self._viewport.abs_width*self.scale_factor[0]
+                self._right = self._viewport.abs_width*self.scale_factor[0]
                 # self.bottom = 0
-                # self.top = self._viewport.abs_height*self.scale_factor[1]
+                self._top = self._viewport.abs_height*self.scale_factor[1]
 
                 n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
                 # if self._viewport._mother.window.name == 'third':
