@@ -13,6 +13,8 @@ class Mouse(SID):
                       'click_release', 'scroll', 'scroll_up', 'scroll_down', 'scroll_right', 'scroll_left')
         empty_lists = [[] for i in range(len(events))]
         self._event = dict(zip(events, empty_lists))
+
+        glfw.set_input_mode(self._window.glfw_window, glfw.STICKY_MOUSE_BUTTONS, glfw.TRUE)
         glfw.set_cursor_pos_callback(self._window.glfw_window, self._callback_mouse_move)
         glfw.set_cursor_enter_callback(self._window.glfw_window, self._callback_mouse_enter)
         glfw.set_mouse_button_callback(self._window.glfw_window, self._callback_mouse_button)

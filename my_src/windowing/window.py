@@ -102,31 +102,30 @@ class Window:
         """
 
         self = super().__new__(cls)
-        self.__init__(*args,**kwargs)
-        cls._windows + self # add object to dict
-        return weakref.proxy(self) # return proxy of generated object
+        # cls._windows + self
+        return self # return proxy of generated object
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
-
         Windows.set_current(self) # for init process may be needing which window is current
         self._size = width, height
         self._name = name
         self._monitor = monitor
 
+        self.windows + self
         # stores object name as an instance name
-        f = inspect.currentframe().f_back
-        self._instance_name = ''
-        try:
-            while True:
-                code_context = inspect.getframeinfo(f).code_context[0]
-                if ' Window(' in code_context and '=' in code_context:
-                    self._instance_name = code_context.split('=')[0].strip()
-                    break
-                else:
-                    f = f.f_back
-        except:
-            print_message("can't grasp instance name", "error")
-            self._instance_name = 'unknown'
+        # f = inspect.currentframe().f_back
+        # self._instance_name = ''
+        # try:
+        #     while True:
+        #         code_context = inspect.getframeinfo(f).code_context[0]
+        #         if ' Window(' in code_context and '=' in code_context:
+        #             self._instance_name = code_context.split('=')[0].strip()
+        #             break
+        #         else:
+        #             f = f.f_back
+        # except:
+        #     print_message("can't grasp instance name", "error")
+        #     self._instance_name = 'unknown'
 
         # 1. generate contex first.
         # Do not mix order 1 and 2. There is automated vertex array operation during 2.
@@ -213,6 +212,7 @@ class Window:
 
         # viewport collection
         self._viewports = Viewports(self)
+
 
     @property
     def mother_window(self):
@@ -378,6 +378,8 @@ class Window:
     #     GL.glClear(GL.GL_COLOR_BUFFER_BIT)
     #     GL.glClear(GL.GL_DEPTH_BUFFER_BIT)
     #     self._flag_need_swap = True
+    def _draw_(self):
+        pass
 
     @classmethod
     def run_single_thread(cls, framecount = None):
@@ -431,8 +433,9 @@ class Window:
 
                     #drawing
                     window.make_window_current()
-                    window.viewports[0].open()
-                    window._context_scope.run(window.draw_func)
+                    # window.viewports[0].open()
+                    window._draw_()
+
                     if window.myframe.flag_something_rendered:
                         # copy from custom myframebuffer and draw it on window
                         window.make_window_current()
@@ -610,12 +613,14 @@ class Window:
             print_message('Type error. Maintain attribute.')
 
     def make_window_current(self):
-        if self.windows.get_current() != self:
-            FBL.set_current(self._myframe)
-            self.windows.set_current(self)
-            GLFW_GL_tracker.set_current(self.unique_glfw_context)
-            glfw.make_context_current(None)
-            glfw.make_context_current(self.glfw_window)
+        # if self.windows.get_current() != self:
+        self.windows.set_current(self)
+
+        glfw.make_context_current(None)
+        glfw.make_context_current(self.glfw_window)
+
+        GLFW_GL_tracker.set_current(self.unique_glfw_context)
+        FBL.set_current(self._myframe)
 
 
     # @classmethod

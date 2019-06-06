@@ -42,7 +42,7 @@ class TestBRO():
         self._abs_width = None
         self._abs_height = None
 
-        self._color1 = 1,1,1,1
+        self._color1 = 1,1,0,1
         self._color2 = 1,0,1,1
         self._draw_color = self._color1
 
@@ -50,8 +50,10 @@ class TestBRO():
 
     def draw(self):
         self.unit.properties['a_position'][0:4] = self.vertex
+        # print(self._draw_color)
         self.unit.properties['u_fillcol'] = self._draw_color
         self.renderer._draw_(self.unit)
+
 
     @property
     def vertex(self):

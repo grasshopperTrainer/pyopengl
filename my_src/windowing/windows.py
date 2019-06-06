@@ -24,24 +24,24 @@ class Windows:
 
     # removes from dict
     def __delattr__(self, item):
-        self.windows.pop(item.instance_name)
+        self.windows.pop(item.name)
     def __sub__(self, other):
-        del self.windows[other.instance_name]
+        del self.windows[other.name]
 
     # append to dict
     def __add__(self, other):
         # check name unique
-        if other.instance_name in self.windows.keys():
+        if other.name in self.windows.keys():
             count = 1
             keys = self.windows.keys()
             while True:
-                key = other.instance_name+str(count)
+                key = other.name+str(count)
                 if key in keys:
                     count += 1
                 else:
                     break
         else:
-            key = other.instance_name
+            key = other.name
         other._instance_name = key
         self.windows[key] = other
 
