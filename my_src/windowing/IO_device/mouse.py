@@ -13,7 +13,6 @@ class Mouse(SID):
                       'click_release', 'scroll', 'scroll_up', 'scroll_down', 'scroll_right', 'scroll_left')
         empty_lists = [[] for i in range(len(events))]
         self._event = dict(zip(events, empty_lists))
-
         glfw.set_cursor_pos_callback(self._window.glfw_window, self._callback_mouse_move)
         glfw.set_cursor_enter_callback(self._window.glfw_window, self._callback_mouse_enter)
         glfw.set_mouse_button_callback(self._window.glfw_window, self._callback_mouse_button)
@@ -90,13 +89,13 @@ class Mouse(SID):
             self._cursor_state['onscreen'] = False
 
     def _callback_mouse_button(self, context, button, action, mods):
+        # TODO why first mouse click behaves differently?
         if action is 1:
             self._button_state[button] = True
             self._run_all_func(when='click_press')
         if action is 0:
             self._button_state[button] = False
             self._run_all_func(when='click_release')
-
         self._run_all_func(when='click')
 
     def _callback_mouse_scroll(self, context, xoffset, yoffset):
@@ -114,7 +113,8 @@ class Mouse(SID):
 
     def _run_all_func(self, when):
         for event in self._event[when]:
-            self._window._context_scope.run(event)
+            event()
+            # self._window._context_scope.run(event)
 
     def instant_press_button(self, button: int):
         """
@@ -159,7 +159,9 @@ class Mouse(SID):
 
     @property
     def mouse_position(self):
+        # flipped to match openGL buffer order
         x, y = glfw.get_cursor_pos(self._window.glfw_window)
+        y = self._window.height - y
         # except:
         #     x, y = -1, -1
         return x, y
@@ -194,12 +196,19 @@ class Mouse(SID):
         return result
 
     @property
-    def object_id(self):
+    def cursor_object(self):
         x,y = self.mouse_position
-        y = self._window.height - y
 
+        self._window.make_window_current()
         self._window.myframe.begin()
         gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
         color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
         self._window.myframe.end()
-        print('mouse picking =',self._window.myframe.render_unit_registry.color_id(color))
+        return self._window.myframe.render_unit_registry.object(color)
+
+    def set_object_selection_callback(self, selection, state, func):
+        def callback_func():
+            print('selection')
+            if self.cursor_object == selection:
+                func()
+        state(callback_func)

@@ -91,8 +91,9 @@ class Box:
     # need to collect data and set drawing properties?
     # and then...
     # properteis...
-
-a = Box(1,2,3,4,5)
-b = Box(1,2,3,3,5)
-c = Box(2,3,4,5,6)
-a.set_children(b, [1, 2])
+#
+# a = Box('f',0,0,100,100)
+# b = Box('s',0,0,100,100)
+# c = Box('t',0,0,100,100)
+# d = Box('master',0,0,400,400)
+# d.set_children(a,b,c,d)

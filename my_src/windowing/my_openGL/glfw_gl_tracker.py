@@ -27,7 +27,8 @@ class Object:
         return targets
 
 class Objects:
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.collection = {}
         self.collection[0] = Object(0, self)
         self.targets = {}
@@ -41,7 +42,7 @@ class Objects:
         except:
             id = list(id)
             for i in id:
-                self.collection[i] = Object(i,self)
+                self.collection[int(i)] = Object(int(i),self)
 
     def binding(self, target):
         return self.targets[target].binding
@@ -109,13 +110,13 @@ class GLFW_GL_tracker:
         # store instance
         self.__class__._windows[bound_object] = self
 
-        self._render_buffers = Objects()
-        self._textures = Objects()
-        self._frame_buffers = Objects()
-        self._programs = Objects()
-        self._shaders = Objects()
-        self._buffers = Objects()
-        self._vertex_arrays = Objects()
+        self._render_buffers = Objects('render_buffers')
+        self._textures = Objects('textures')
+        self._frame_buffers = Objects('frame_buffers')
+        self._programs = Objects('programs')
+        self._shaders = Objects('shaders')
+        self._buffers = Objects('buffers')
+        self._vertex_arrays = Objects('vertes_arrays')
 
         # # self._bound_object =
         # # use dict to store generated's additional state information
@@ -522,6 +523,7 @@ class Trackable_openGL:
         gl.glFramebufferTexture(target, attachment, texture, level)
     @context_check
     def glDeleteFramebuffers(cls, n, framebuffers):
+        print('glDeleteFramebuffers=', n, framebuffers)
         cls.current()._frame_buffers.remove(framebuffers)
         if not isinstance(n, (tuple, list)):
             framebuffers = [framebuffers]

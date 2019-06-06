@@ -1,14 +1,10 @@
-from ..renderer_template import Renderer_builder
+from ..renderer.renderer_template import Renderer_builder
 from patterns.update_check_descriptor import UCD
 from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
 
-class TestBRO():
+class Box:
     """
-    one renderer should have one shader.
-    but this can be called from several plces...
-    when initiating ... like first_rect = TestBRO()
-    how to make calling free???
     """
     c = Renderer_builder()
     c.use_shader(c.Shader('BRO_rectangle'))
@@ -30,8 +26,8 @@ class TestBRO():
     _abs_height = UCD()
 
     def __init__(self,posx, posy, width, height):
+        print('gui box')
         self.unit = self.renderer.new_render_unit()
-
         self._posx = posx
         self._posy = posy
         self._width = width
@@ -45,8 +41,6 @@ class TestBRO():
         self._color1 = 1,1,1,1
         self._color2 = 1,0,1,1
         self._draw_color = self._color1
-
-        # self.unit.properties['u_fillcol'] = self._draw_color
 
     def draw(self):
         self.unit.properties['a_position'][0:4] = self.vertex

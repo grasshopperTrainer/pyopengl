@@ -164,6 +164,7 @@ class Window:
         self._myframe.use_depth_attachment(bitdepth=32)
         self._myframe.use_stencil_attachment(bitdepth=16)
         self._myframe.build()
+        print('window my frame buffer=',self.myframe._frame_buffer._glindex)
 
 
         # some info for resetting
@@ -209,7 +210,6 @@ class Window:
 
         # flags for frame drawing and swapping
         self._flag_resized = True
-
 
         # viewport collection
         self._viewports = Viewports(self)
@@ -300,6 +300,36 @@ class Window:
         else:
             self._init_func = func
 
+            if self in self.windows:
+                self.make_window_current()
+                # init setting
+                self.initiation_glfw_setting()
+                self.initiation_gl_setting()
+                self.initiation_window_setting()
+
+                # assigned var names
+                # TODO maybe need more assigned variables?
+                self._context_scope.set_assigned(
+                    {'window': self, 'windows': self.windows, 'self': self, self.instance_name: self})
+
+                # if Window has global init
+                func = self.__class__._init_global
+                self._context_scope.append_scope(func)
+
+                # if window has mother window
+                if self._mother_window is not None:
+                    if self.mother_window.init_func is not None:
+                        self._context_scope.append_scope_byscope(self.mother_window._context_scope)
+
+                    # renderers = self.mother_self.renderers
+                    #
+                    # for renderer in renderers:
+                    #     renderer[1].rebind()
+
+                if self.init_func is not None:
+                    self._context_scope.append_scope(self.init_func)
+
+
     def draw(self, func):
         self._draw_func = func
 
@@ -358,38 +388,38 @@ class Window:
         """
         # TODO is it good to have this long initiation here?
         #initiation
-        for window in cls._windows:
-            window.make_window_current()
+        # for window in cls._windows:
+        #     window.make_window_current()
+        #
+        #     # init setting
+        #     window.initiation_glfw_setting()
+        #     window.initiation_gl_setting()
+        #     window.initiation_window_setting()
+        #
+        #     # assigned var names
+        #     # TODO maybe need more assigned variables?
+        #     window._context_scope.set_assigned(
+        #         {'window': window, 'windows': window.windows, 'self': window, window.instance_name: window})
+        #
+        #     # if Window has global init
+        #     func = window.__class__._init_global
+        #     window._context_scope.append_scope(func)
+        #
+        #     # if window has mother window
+        #     if window._mother_window is not None:
+        #         if window.mother_window.init_func is not None:
+        #             window._context_scope.append_scope_byscope(window.mother_window._context_scope)
+        #
+        #         # renderers = window.mother_window.renderers
+        #         #
+        #         # for renderer in renderers:
+        #         #     renderer[1].rebind()
+        #
+        #     if window.init_func is not None:
+        #         window._context_scope.append_scope(window.init_func)
 
-            # init setting
-            window.initiation_glfw_setting()
-            window.initiation_gl_setting()
-            window.initiation_window_setting()
 
-            # assigned var names
-            # TODO maybe need more assigned variables?
-            window._context_scope.set_assigned(
-                {'window': window, 'windows': window.windows, 'self': window, window.instance_name: window})
-
-            # if Window has global init
-            func = window.__class__._init_global
-            window._context_scope.append_scope(func)
-
-            # if window has mother window
-            if window._mother_window is not None:
-                if window.mother_window.init_func is not None:
-                    window._context_scope.append_scope_byscope(window.mother_window._context_scope)
-
-                # renderers = window.mother_window.renderers
-                #
-                # for renderer in renderers:
-                #     renderer[1].rebind()
-
-            if window.init_func is not None:
-                window._context_scope.append_scope(window.init_func)
-
-
-        timer = Timer(window._framerate_target, 'single thread')
+        timer = Timer(cls._default_framerate_target, 'single thread')
         timer.set_init_position()
         # timer.print_framerate()
         # timer.print_framerate_drawing()
@@ -401,9 +431,11 @@ class Window:
 
                     #drawing
                     window.make_window_current()
+                    window.viewports[0].open()
                     window._context_scope.run(window.draw_func)
                     if window.myframe.flag_something_rendered:
                         # copy from custom myframebuffer and draw it on window
+                        window.make_window_current()
                         gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER,window.myframe._frame_buffer._glindex)
                         gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0) # set source
 
@@ -578,11 +610,13 @@ class Window:
             print_message('Type error. Maintain attribute.')
 
     def make_window_current(self):
-        FBL.set_current(self._myframe)
-        self.windows.set_current(self)
-        GLFW_GL_tracker.set_current(self.unique_glfw_context)
-        glfw.make_context_current(None)
-        glfw.make_context_current(self.glfw_window)
+        if self.windows.get_current() != self:
+            FBL.set_current(self._myframe)
+            self.windows.set_current(self)
+            GLFW_GL_tracker.set_current(self.unique_glfw_context)
+            glfw.make_context_current(None)
+            glfw.make_context_current(self.glfw_window)
+
 
     # @classmethod
     # def get_current_window(cls):
@@ -609,10 +643,11 @@ class Window:
         self._size = glfw.get_framebuffer_size(self.glfw_window)
         return self._size
 
+
+
     @property
     def is_resized(self):
         return self._flag_resized
-
 
     @property
     def master_window(self):
@@ -651,6 +686,28 @@ class Window:
         w = Window(width, height, name, monitor, self)
         self.make_window_current()
         return w
+
+    def get_position(self, vertex = 0):
+        top_left = glfw.get_window_pos(self._glfw_window)
+        if vertex == 0:
+            pos = top_left
+        elif vertex == 1:
+            pos = top_left[0],top_left[1] + self.height
+        elif vertex == 2:
+            pos = top_left[0]+ self.width,top_left[1]+self.height
+        elif vertex == 3:
+            pos = top_left[0]+self.width,top_left[1]
+        else:
+            raise KeyError
+        return pos
+
+    def set_position(self, target, reference):
+        vec =[a-b for a,b in zip(self.get_position(),reference)]
+        xpos,ypos = target[0]+vec[0], target[1]+vec[1]
+        glfw.set_window_pos(self.glfw_window,xpos,ypos)
+
+    def set_size_limit(self):
+        pass
 
 class Timer:
     def __init__(self,framerate, name):

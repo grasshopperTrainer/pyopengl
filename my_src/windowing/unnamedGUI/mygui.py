@@ -1,16 +1,11 @@
-from GUI_builder.parts.box import Box
-from ..renderer import BRO
+from ..renderer.renderer_template import Renderer_builder
+from patterns.update_check_descriptor import UCD
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
 
-
-class testgui:
-    def __init__(self):
-        a = Box(name ='base', posx=0.0,posy=0.0,width=1.0,height=1.0)
+class My_GUI:
+    def draw(self):
 
         pass
 
-    def run(self):
-
-        print('run gui')
-        pass
-
+    pass

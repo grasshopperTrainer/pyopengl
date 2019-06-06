@@ -28,7 +28,6 @@ class Render_object_registry:
                 else:
                     id = self._candidate.pop(0)
                 self._collections[object] = self._structure(id, False)
-
         else:
             raise TypeError
 
@@ -44,4 +43,11 @@ class Render_object_registry:
     def color_id(self, color):
         hex = bytearray(color).hex()
         inte = int(hex, 16)
+
         return inte
+
+    def object(self, color):
+        id = self.color_id(color)
+        for o,i in self._collections.items():
+            if i.id == id:
+                return o

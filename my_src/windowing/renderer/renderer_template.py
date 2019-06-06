@@ -319,7 +319,6 @@ class Renderer_template:
         else:
             raise TypeError
 
-
     @classmethod
     def use_index_buffer(cls, index_buffer):
         if isinstance(index_buffer, comp.Indexbuffer):
@@ -348,35 +347,37 @@ class Renderer_template:
     def use_triangle_strip_draw(cls):
         cls._drawmode = gl.GL_TRIANGLE_STRIP
 
-    @classmethod
-    def new_render_unit(cls):
-        glfw_context = GLFW_GL_tracker.get_current()
-        reg = cls._context_register
 
+    def new_render_unit(self):
+        # check for context first call
+        glfw_context = GLFW_GL_tracker.get_current()
+        reg = self._context_register
         if glfw_context not in reg:
             # generate class_singular gl components for the first call
-            cls._shader.build()
-            if hasattr(cls, '_index_buffer'):
-                cls._index_buffer.build()
-            if hasattr(cls, '_texture'):
-                cls._texture.build()
+            self._shader.build()
+            if hasattr(self, '_index_buffer'):
+                self._index_buffer.build()
+            if hasattr(self, '_texture'):
+                self._texture.build()
             reg.append(glfw_context)
 
+
         # make new unit
-        ru = cls._render_unit_class()
-        if glfw_context not in cls._render_units:
-            cls._render_units[glfw_context] = []
-        cls._render_units[glfw_context].append(ru)
+        ru = self._render_unit_class()
+        if glfw_context not in self._render_units:
+            self._render_units[glfw_context] = []
+        self._render_units[glfw_context].append(ru)
         return ru
 
-    _render_units = {}
-    _context_register= []
+
 
     def __init__(self, name: str = None):
         # check shader-context-existence
         if not (hasattr(self, '_shader') and hasattr(self, '_drawmode')):
             raise Exception('Not enough comp fed.')
 
+        self._render_units = {}
+        self._context_register = []
 
         self._MM = np.eye(4)
 
@@ -423,7 +424,24 @@ class Renderer_template:
         else:
             return comp.RenderComponent
 
+    def _check_shader_build(self):
+        # check for context first call
+        glfw_context = GLFW_GL_tracker.get_current()
+        reg = self._context_register
+
+        if glfw_context not in reg:
+            # generate class_singular gl components for the first call
+            self._shader.build()
+            if hasattr(self, '_index_buffer'):
+                self._index_buffer.build()
+            if hasattr(self, '_texture'):
+                self._texture.build()
+            reg.append(glfw_context)
+
     def _draw_(self, render_unit, fbl = None):
+        self._check_shader_build()
+
+        # actual draw
         fbo = FBL.get_current()
         viewport = Viewport.get_current()
 
@@ -431,8 +449,8 @@ class Renderer_template:
         # check initiated context
         context = GLFW_GL_tracker.get_current()
 
-        if render_unit not in self._render_units[context]:
-            raise
+        # if render_unit not in self._render_units[context]:
+        #     raise
 
         if self.flag_draw or self.flag_run:
             # load opengl states

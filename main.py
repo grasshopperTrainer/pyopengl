@@ -1,5 +1,4 @@
 from windowing.window import Window
-
 from patterns.update_check_descriptor import UCD
 
 # Initialize the library
@@ -14,11 +13,12 @@ window3.close()
 @Window.init
 def INIT():
     k = 'k'
+    from guitester import Test_gui
+
     pass
 
 @window2.init
 def init():
-    window2.mouse.instant_press_button(1)
     tr = BRO.TestBRO(0,0,200,200)
     tr2 = BRO.TestBRO(100,100,100,200)
 
@@ -26,10 +26,12 @@ def init():
     vp.camera.mode = 1
     vp.camera.lookat([0,0,0],[500,500,500])
 
+    window2.mouse.set_object_selection_callback(tr.unit, window2.mouse.click_press, tr.switch_color)
+    # window2.mouse.instant_press_button(1)
 
-    pass
 @window3.init
 def init():
+
     # window3.mouse.instant_press_button(1)
     pass
 
@@ -44,13 +46,11 @@ def draw():
         window2.viewports[1].clear(1,1,0,1)
         tr.draw()
         tr2.draw()
-        window2.unique_glfw_context.print_full_info()
-        print(window2.mouse.object_id)
-        print('generating new window')
-        window2.gen_child(500,500,'testui',None)
-        print('new window generated')
-        # window2.gen_child(500,500,'testui',None)
+        # print(window2.mouse.cursor_object)
         print('end of draw')
+        k = Test_gui(window2)
+    # gui.draw()
+
         # exit()
 # @window3.draw
 # def draw():

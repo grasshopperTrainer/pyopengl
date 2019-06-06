@@ -285,29 +285,28 @@ class Virtual_scope:
             return
 
         elif obj in ____._code_dict:
-            try:
-                exec(____._code_dict[obj])
-
-            except Exception as e:
-                lineno = sys.exc_info()[2].tb_next.tb_lineno
-                head = []
-                if callable(obj):
-                    source = inspect.getsource(obj).splitlines()
-                elif isinstance(obj, str):
-                    source = obj.splitlines()
-
-                for i,line in enumerate(source):
-
-                    if len(line) is 0 or line[0] is ' ':
-                        head = source[:i]
-                        source = source[i:]
-                        break
-
-                head = reduce(lambda x,y: x+' - '+ y, head)
-                error_line = source[lineno-1]
-                print_message(str(e),header='error',where_from=head[:-1], var_info = f'source: {error_line}')
-                print(traceback.format_exc())
-                exit()
+            # try:
+            exec(____._code_dict[obj])
+            #
+            # except Exception as e:
+            #     lineno = sys.exc_info()[2].tb_next.tb_lineno
+            #     head = []
+            #     if callable(obj):
+            #         source = inspect.getsource(obj).splitlines()
+            #     elif isinstance(obj, str):
+            #         source = obj.splitlines()
+            #
+            #     for i,line in enumerate(source):
+            #
+            #         if len(line) is 0 or line[0] is ' ':
+            #             head = source[:i]
+            #             source = source[i:]
+            #             break
+            #
+            #     head = reduce(lambda x,y: x+' - '+ y, head)
+            #     error_line = source[lineno-1]
+            #     print_message(str(e),header='error',where_from=head[:-1], var_info = f'source: {error_line}')
+            #     exit()
 
         else:
             code = ____.compile(obj)

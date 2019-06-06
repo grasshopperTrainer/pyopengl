@@ -42,14 +42,13 @@ class Indexbuffer(RenderComponent):
         else:
             raise TypeError
 
-        self._flag_firstbuild = True
         # object index(?or just referring as just object is correct?) from OpenGL
         self._glindex = None
 
     def build(self):
-        if self._flag_firstbuild:
-            self._glindex = gl.glGenBuffers(1)
-            self._flag_firstbuild = False
+        # if self._flag_firstbuild:
+        self._glindex = gl.glGenBuffers(1)
+            # self._flag_firstbuild = False
 
         datasize = self.data.size * self.data.itemsize
         self.bind()
