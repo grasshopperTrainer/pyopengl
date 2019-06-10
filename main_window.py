@@ -11,6 +11,7 @@ class Main_window(Window):
         self.mouse.set_object_selection_callback(self.rect.unit,self.mouse.click_press,self.rect.switch_color)
         self.viewports[0].camera.mode = 1
         self.viewports[0].camera.lookat([0,0,0],[200,200,300])
+
     def _draw_(self):
         if len(self.mouse.pressed_button) != 0 or self.is_resized:
             self.viewports[0].open()

@@ -112,6 +112,7 @@ class Render_unit_temp:
         self._shader = self.__class__._shader
         self._properties = self._shader.properties.copy()
 
+        # generate instance
         cls = self.__class__
         if isinstance(cls._vertex_array, type):
             self._vertex_array = cls._vertex_array()
@@ -121,6 +122,8 @@ class Render_unit_temp:
             self._index_buffer = cls._index_buffer()
         if isinstance(cls._texture, type):
             self._texture = cls._texture()
+
+        self._shader_buffer = self._shader.buffer_type()
 
         self._flag_built = False
 
@@ -139,6 +142,8 @@ class Render_unit_temp:
         self.texture.build()
 
     def update_variables(self):
+        # self._shader_buffer.late_update()
+
         # for attribute
         # bind buffer and vertex_attrib_pointer with gl if form of buffer has changed
         if self.properties.attribute.is_buffer_formchange:
@@ -247,6 +252,7 @@ class Render_unit_temp:
         pm = self.properties['PM']
         matrix = vp.camera.PM
         gl.glUniformMatrix4fv(pm.location, 1, True, matrix)
+        pass
 
     def bind(self):
         if not self._flag_built:
@@ -265,9 +271,13 @@ class Render_unit_temp:
 
         self.texture.bind()
 
+
     @property
     def properties(self):
         return self._properties
+    @property
+    def shader_buffer(self):
+        return self._shader_buffer
 
 class Renderer_template:
     """

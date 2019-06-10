@@ -224,7 +224,7 @@ class _Property:
         for n, b in self._blocks.items():
             b._flag_changed = False
 
-class Glsl_property_container:
+class GLSL_property_container:
 
     def __init__(self, shader):
         self._shader = shader

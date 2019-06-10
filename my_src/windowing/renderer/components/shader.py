@@ -1,7 +1,8 @@
 from collections import OrderedDict
 
 from .component_bp import RenderComponent
-from .glsl_property_container import Glsl_property_container
+from .glsl_property_container import GLSL_property_container
+from .glsl_input_type_builder import GLSL_input_type_builder, GLSL_input_type_template
 
 from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
@@ -16,16 +17,13 @@ class Shader(RenderComponent):
         self._glindex = None
         self._name = name
 
-        self._properties = Glsl_property_container(self)
+        self._properties = GLSL_property_container(self)
         for n,t,l in self._attribute:
             self._properties.new_attribute(n,t,l)
         for n,t,l in self._uniform:
             self._properties.new_uniform(n,t,l)
 
-        # for i in self._properties.uniform.blocks:
-        #     print(i)
-        # exit()
-
+        self._buffer_type = GLSL_input_type_builder(self._vertex, self._fragment) #type: GLSL_input_type_template
 
         self._flag_built = False
 
@@ -202,6 +200,9 @@ class Shader(RenderComponent):
     @property
     def glindex(self):
         return self._glindex
+    @property
+    def buffer_type(self):
+        return self._buffer_type
 
     def _validate_uniform_location(self):
         # for i, block in enumerate(self.properties.attribute.blocks):

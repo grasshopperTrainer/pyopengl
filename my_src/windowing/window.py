@@ -157,7 +157,8 @@ class Window:
         # customizable frame
         m = glfw.get_primary_monitor()
         _,_,max_width,max_height = glfw.get_monitor_workarea(m)
-        self._myframe = Frame(max_width, max_height)  # type: Renderable_image
+        extra = 500 # this is to cover Windows content area. May be needed for full screen draw
+        self._myframe = Frame(max_width+extra, max_height+ extra)  # type: Renderable_image
         # glsl: layout(location = 0), this is default output
         # this is ambient color output
         self._myframe.use_color_attachment(0)
@@ -274,6 +275,17 @@ class Window:
                   i['share'])
 
     def framebuffer_size_callback(self, window, width, height):
+        # print()
+        # print(glfw.get_primary_monitor())
+        # for i in glfw.get_monitors():
+        #     print(glfw.get_monitor_pos(i))
+        if any(a < b for a,b in zip(self.myframe.size, self.size)):
+            x,y = self.size
+            self.myframe.rebuild(self.size)
+        # elif any(a <b for a,b in zip(glfw.get_monitor_workarea() self.size))
+        print(self.myframe.size)
+        print(self.size)
+        # self.myframe.rebuild()
         self._flag_resized = True
 
     def window_refresh_callback(self,a):
