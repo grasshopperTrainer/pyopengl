@@ -24,6 +24,9 @@ class Vertexbuffer(RenderComponent):
         self.bind()
         gl.glBufferData(gl.GL_ARRAY_BUFFER, 0, None, self._glusage)
         self.unbind()
+    def push_buffer(self, buffer):
+        datasize = buffer.size * buffer.itemsize
+        gl.glBufferData(gl.GL_ARRAY_BUFFER, datasize, buffer, self._glusage)
 
     def set_attribpointer(self, buffer_data):
         """
@@ -79,6 +82,8 @@ class Vertexbuffer(RenderComponent):
         pass
 
     def bind(self):
+        if self._glindex is None:
+            self.build()
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self._glindex)
 
     def unbind(self):

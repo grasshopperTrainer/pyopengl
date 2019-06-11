@@ -11,6 +11,8 @@ class Vertexarray(RenderComponent):
         self._glindex = gl.glGenVertexArrays(1)
 
     def bind(self):
+        if self._glindex is None:
+            self.build()
         gl.glBindVertexArray(self._glindex)
 
     def unbind(self):

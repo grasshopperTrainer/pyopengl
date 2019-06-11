@@ -1,12 +1,20 @@
 import weakref
 import numpy as np
 import copy
+from ...my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
 
 class glsl_attribute:
 
     def __init__(self, kind, name, location):
+        """
+
+        :param kind: 0 - attribute, 1 - uniform
+        :param name:
+        :param location:
+        """
         self._dict = weakref.WeakKeyDictionary()
+
         self._kind = kind
         self._name = name
         self._location = location
@@ -15,28 +23,70 @@ class glsl_attribute:
     def __get__(self, instance, owner):
         if instance not in self._dict:
             self._dict[instance] = {}
-        if 'array' not in self._dict[instance]:
             return self
         else:
-            return self._dict[instance]['value']
+            return self._dict[instance][self._name]
 
     def __set__(self, instance, value):
-        if instance not in _dict:
-            _dict[instance] = {}
-        self._dict[instance]['value'] = value
+        if instance not in self._dict:
+            self._dict[instance] = {}
+        if not np.array_equal(self._dict[instance][self._name], value):
+            try:
+                self._dict[instance][self._name] = value
+            except:
+                self._dict[instance][self._name] = value.flatten('F')
+
+            if self._kind == 0:
+                instance._attribute_update_que.append(self._name)
+                self.push_attribute(instance)
+            else:
+                self.push_uniform(instance)
+                instance._uniform_update_que.append(self)
 
     def set_array(self,instance, array):
-        self._dict[instance]['array'] = array
+        self._dict[instance] = array
+
+    def push_attribute(self, instance):
+        instance._vertex_buffer.bind()
+        buffer = self._dict[instance]
+        start_pos = buffer.dtype.names.index(self._name)
+
+        # finde starting offset
+        start_off = 0
+        for i in range(start_pos):
+            dtype = buffer.dtype[i]
+            bytesize = dtype.itemsize
+            start_off += bytesize
+
+        data = buffer[self._name]
+        for i in range(buffer.size):
+            off = start_off + buffer.itemsize * i
+            element = data[i]
+            size = element.itemsize * element.size
+            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, off, size, element)
 
 class vector(glsl_attribute):
-    _default_dtype = np.float32
+    _dtype = np.float32
+
+    def push_uniform(self, instance):
+        n = int(self.__class__.__name__.split('vec')[1])
+        c = 1
+        d = self._dict[instance][self._name][0]
+        t = d.dtype.kind
+        l = self._location
+
+        instance.shader.bind()
+        exec(f'gl.glUniform{n}{t}v({l},{c},d)')
+
+        # pass
 
 class vec2(vector):
     _n = 2
     _dict = weakref.WeakKeyDictionary()
 
-    def __set__(self, instance, value):
-        self._dict[instance] = value
+
+
+
 
 class vec3(vector):
     _n = 3
@@ -49,19 +99,34 @@ class vec4(vector):
     pass
 
 class matrix(glsl_attribute):
-    pass
+
+    def push_uniform(self, instance):
+        n = int(self.__class__.__name__.split('mat')[1])
+        d = self._dict[instance][self._name][0]
+        l = self._location
+        c = 1
+        t = d.dtype.kind
+        instance.shader.bind()
+        exec(f'gl.glUniformMatrix{n}{t}v({l},{c},False,d)')
 
 class mat4(matrix):
     _n = 16
-    _default_dtype = np.float32
+    _dtype = np.float32
     pass
 
 class integer(glsl_attribute):
     _n = 1
-    _default_dtype = np.uint
-    pass
+    _dtype = np.int
+
+
+    def push_uniform(self, instance):
+        d = self._dict[instance][self._name][0]
+        instance.shader.bind()
+        gl.glUniform1i(self._location, d)
 
 class bool(integer):
+
+
     pass
 
 class sampler2D(integer):
@@ -82,10 +147,11 @@ class GLSL_input_type_builder:
     def __new__(cls, *args, **kwargs):
         glsl_type = type(f'shader_object{cls._count}', (GLSL_input_type_template,), {'kkk':10})
 
-        if len(args) != 2:
+        if len(args) != 3:
             raise
-        vertex = args[0].splitlines()
-        fragment = args[1].splitlines()
+        glsl_type.shader = args[0]
+        vertex = args[1].splitlines()
+        fragment = args[2].splitlines()
 
         att_dict = {'vertex': vertex,'fragment': fragment}
         att_args = []
@@ -113,14 +179,14 @@ class GLSL_input_type_builder:
         # need to create buffer...
         att_fields = []
         for i in att_args:
-            dtype = eval(f'{i[1]}._default_dtype')
+            dtype = eval(f'{i[1]}._dtype')
             n = eval(f'{i[1]}._n')
             att_fields.append((i[2],dtype,n))
         _attribute_buffer = np.zeros(1, att_fields)
 
         uni_fields = []
         for i in uni_args:
-            dtype = eval(f'{i[1]}._default_dtype')
+            dtype = eval(f'{i[1]}._dtype')
             n = eval(f'{i[1]}._n')
             uni_fields.append((i[2], dtype, n))
         _uniform_buffer = np.zeros(1, uni_fields)
@@ -130,22 +196,25 @@ class GLSL_input_type_builder:
 
         # need to create attributes
         for i in att_args:
-            exec(f"glsl_type.{i[2]} = {i[1]}('attribute','{i[2]}',{i[3]})")
+            exec(f"glsl_type.{i[2]} = {i[1]}(0,'{i[2]}',{i[3]})")
         for i in uni_args:
-            exec(f"glsl_type.{i[2]} = {i[1]}('uniform','{i[2]}',{i[3]})")
+            exec(f"glsl_type.{i[2]} = {i[1]}(1,'{i[2]}',{i[3]})")
 
         cls._count += 1
 
         return glsl_type #type: GLSL_input_type_template
 
-    def __init__(self, vertex_str, fragment_str):
+    def __init__(self,shader, vertex_str, fragment_str):
         pass
 
 class GLSL_input_type_template:
 
-    def __init__(self):
-        # self._vbo = vbo
-        # print(vbo, type(vbo))
+    _flag_uniform_location_validated = False
+    _att_dict = None
+
+    def __init__(self,vertex_array, vertex_buffer):
+        self._vertex_array = vertex_array
+        self._vertex_buffer = vertex_buffer
 
         # copy buffer structure
         self._attribute_buffer = self.__class__._attribute_buffer.copy()
@@ -153,17 +222,27 @@ class GLSL_input_type_template:
 
         # initiate property objects
         for kind, dtype, name, location in self._att_dict:
-            exec(f"self.{name}.set_array(self, self._{kind}_buffer['{name}'])")
+            exec(f"self.{name}.set_array(self, self._{kind}_buffer)")
 
 
         self._flag_resized = False
+        self._attribute_update_que = []
+        self._uniform_update_que = []
 
-    def late_update(self):
-        """
-        what do i need to update?
-        :return:
-        """
-    
-    def resize(self):
-
+    def resize(self, n):
+        self._attribute_buffer.resize(n, refcheck=False)
+        self._vertex_array.bind()
+        self._vertex_buffer.bind()
+        self._vertex_buffer.set_attribpointer(self._attribute_buffer)
+        self._vertex_buffer.unbind()
         self._flag_resized = True
+
+    # @classmethod
+    # def validate_uniform_location(cls):
+    #     mark = None
+    #     for i, v in enumerate(cls._att_dict):
+    #         if v[0] == 'uniform':
+    #             mark = i
+    #             print(cls.shader, v[2])
+    #             gl.glGetUniformLocation(cls.shader,v[3])
+    #     cls._flag_uniform_location_validated = True

@@ -23,7 +23,7 @@ class Shader(RenderComponent):
         for n,t,l in self._uniform:
             self._properties.new_uniform(n,t,l)
 
-        self._buffer_type = GLSL_input_type_builder(self._vertex, self._fragment) #type: GLSL_input_type_template
+        self._buffer_type = GLSL_input_type_builder(self, self._vertex, self._fragment) #type: GLSL_input_type_template
 
         self._flag_built = False
 

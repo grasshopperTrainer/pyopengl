@@ -110,7 +110,6 @@ class Render_unit_temp:
 
     def __init__(self):
         self._shader = self.__class__._shader
-        self._properties = self._shader.properties.copy()
 
         # generate instance
         cls = self.__class__
@@ -123,7 +122,7 @@ class Render_unit_temp:
         if isinstance(cls._texture, type):
             self._texture = cls._texture()
 
-        self._shader_buffer = self._shader.buffer_type()
+        self._shader_attribute = self._shader.buffer_type(self._vertex_array, self._vertex_buffer)
 
         self._flag_built = False
 
@@ -141,122 +140,10 @@ class Render_unit_temp:
 
         self.texture.build()
 
-    def update_variables(self):
-        # self._shader_buffer.late_update()
-
-        # for attribute
-        # bind buffer and vertex_attrib_pointer with gl if form of buffer has changed
-        if self.properties.attribute.is_buffer_formchange:
-            self.vertex_buffer.bind()
-            buffer = self.properties.attribute.buffer
-            self.vertex_buffer.set_attribpointer(buffer)
-            self.vertex_buffer.unbind()
-
-        # for vertex buffer
-        # update buffer if change has been made
-        # change whole if all buffer is changed
-        changed_blocks = self.properties.attribute.updated
-        if len(changed_blocks) != 0:
-            self.vertex_buffer.bind()
-
-            if len(changed_blocks) == len(self.properties.attribute.names):
-                buffer = self.properties.attribute.buffer
-                self.vertex_buffer.set_attribpointer(buffer)
-                # size = buffer.itemsize * buffer.size
-                # gl.glBufferData(gl.GL_ARRAY_BUFFER, size, buffer, self.vertex_buffer._glusage)
-
-            else:
-                # update part only
-                for block in changed_blocks:
-
-                    buffer = self.properties.attribute.buffer
-                    start_pos = self.properties.attribute.posof_block(block.name)
-
-                    # finde starting offset
-                    start_off = 0
-                    for i in range(start_pos):
-                        dtype = buffer.dtype[i]
-                        bytesize = dtype.itemsize
-                        start_off += bytesize
-
-                    data = block.data
-                    for i in range(buffer.size):
-                        off = start_off + buffer.itemsize * i
-                        element = data[i]
-                        size = element.itemsize * element.size
-                        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, off, size, element)
-
-            self.vertex_buffer.unbind()
-
-            # if isinstance(self.index_buffer, comp.Indexbuffer):
-            #     # automated index setting
-            #     # if size changed
-            #     if self._drawmode == gl.GL_TRIANGLE_STRIP:
-            #         num_tri = buffer.size - 2
-            #         if num_tri != self.index_buffer.data.size:
-            #             indicies = []
-            #             for i in range(num_tri):
-            #                 if i == 0:
-            #                     indicies += [0, 1, 2]
-            #                 elif i == 1:
-            #                     indicies += [2, 0, 3]
-            #                 else:
-            #                     indicies += [i, i - 1, i + 1]
-            #             if len(indicies) != 0:
-            #                 self.index_buffer.data = indicies
-            #                 self.index_buffer.build()
-            #                 self.index_buffer.bind()
-            #             else:
-            #                 pass
-            #     else:
-            #         raise Exception(f"please define handler of other draw mode '{self.mode}'")
-
-        # for uniforms
-        changed_blocks = self.properties.uniform.updated
-        if len(changed_blocks) != 0:
-            # update part only
-            for block in changed_blocks:
-                n = block.data[0].size
-                t = block.data.dtype
-                if 'vec' in block.glsltype:
-                    n = block.glsltype.split('vec')[1]
-                    c = 1
-                    t = 'f'
-                    exec(f'gl.glUniform{n}{t}v({block.location},{c},block.data[{c - 1}])')
-                elif 'mat' in block.glsltype:
-                    n = block.glsltype.split('mat')[1]
-                    c = 1
-                    t = 'f'
-                    exec(f'gl.glUniformMatrix{n}{t}v({block.location},{c},True,block.data[{c - 1}])')
-                elif block.glsltype == 'int':
-                    gl.glUniform1i(block.location, block.data[0])
-                elif block.glsltype == 'float':
-                    gl.glUniform1f(block.location, block.data[0])
-                elif block.glsltype == 'bool':
-                    gl.glUniform1i(block.location, int(block.data[0]))
-                elif block.glsltype == 'sampler2D':
-                    gl.glUniform1i(block.location, block.data[0])
-                else:
-                    raise TypeError(f"parsing for '{block.glsltype}' undefined")
-
-        # update assigned matrix from global object
-        # mm = self.properties['MM']
-        # matrix = self.MM
-        # gl.glUniformMatrix4fv(mm.location, 1, True, matrix)
-
-        vp = Viewport.get_current()
-        vm = self.properties['VM']
-        matrix = vp.camera.VM
-        gl.glUniformMatrix4fv(vm.location, 1, True, matrix)
-
-        pm = self.properties['PM']
-        matrix = vp.camera.PM
-        gl.glUniformMatrix4fv(pm.location, 1, True, matrix)
-        pass
 
     def bind(self):
         if not self._flag_built:
-            self._build_()
+            # self._build_()
             self._flag_built = True
 
         self.shader.bind()
@@ -271,13 +158,9 @@ class Render_unit_temp:
 
         self.texture.bind()
 
-
     @property
-    def properties(self):
-        return self._properties
-    @property
-    def shader_buffer(self):
-        return self._shader_buffer
+    def shader_attribute(self):
+        return self._shader_attribute
 
 class Renderer_template:
     """
@@ -459,15 +342,15 @@ class Renderer_template:
         # check initiated context
         context = GLFW_GL_tracker.get_current()
 
-        # if render_unit not in self._render_units[context]:
-        #     raise
+        render_unit.shader_attribute.PM = viewport.camera.PM
+        render_unit.shader_attribute.VM = viewport.camera.VM
 
         if self.flag_draw or self.flag_run:
             # load opengl states
             render_unit.bind()
 
-            if self.flag_run:
-                render_unit.update_variables()
+            # if self.flag_run:
+            #     render_unit.update_variables()
 
             if self.flag_draw:
                 # Automated condition can't be set
@@ -482,6 +365,7 @@ class Renderer_template:
                 #      If this makes thing faster this is worth a strategy.
                 #      Implement this.
                 if True:
+
                     fbo.flag_something_rendered = True
                     ibo = render_unit.index_buffer
                     if ibo.count != 0:  # draw a thing
@@ -490,11 +374,9 @@ class Renderer_template:
                             viewport.fillbackground()  # before make any change erase background
                             fbo.bindDrawBuffer() # else draw ambient, and id the same area
                             # get id color
-                            if render_unit.properties.has_property('u_id_color'):
-                                id = fbo.render_unit_registry.id_color(render_unit)
-                                uni = render_unit.properties['u_id_color']
-                                gl.glUniform4fv(uni.location, 1, id + [1, ])  # push color
-
+                            if hasattr(render_unit.shader_attribute,'u_id_color'):
+                                id = fbo.render_unit_registry.id_color(render_unit) + [1,]
+                                render_unit.shader_attribute.u_id_color = id # push color
                             gl.glDrawElements(self.drawmode, ibo.count, ibo.gldtype, None)
                         # fbo.end()
 

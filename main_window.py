@@ -1,5 +1,6 @@
 from windowing.window import Window
 from windowing.renderer.BRO.testBRO import TestBRO
+from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
 class Main_window(Window):
     def __init__(self):
@@ -22,6 +23,7 @@ class Main_window(Window):
                 Top_bar()
             #     print('switch')
             #     self.rect.switch_color()
+        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 1)
 
 class Top_bar(Window):
     def __init__(self):

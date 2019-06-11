@@ -47,11 +47,14 @@ class TestBRO():
         self._draw_color = self._color1
 
         # self.unit.properties['u_fillcol'] = self._draw_color
+        self.unit.shader_attribute.resize(4)
 
     def draw(self):
-        self.unit.properties['a_position'][0:4] = self.vertex
+        # self.unit.properties['a_position'][0:4] = self.vertex
+        self.unit.shader_attribute.a_position = self.vertex
+        self.unit.shader_attribute.u_fillcol = self._draw_color
         # print(self._draw_color)
-        self.unit.properties['u_fillcol'] = self._draw_color
+        # self.unit.properties['u_fillcol'] = self._draw_color
         self.renderer._draw_(self.unit)
 
 
