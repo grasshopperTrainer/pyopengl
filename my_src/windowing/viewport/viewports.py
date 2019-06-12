@@ -18,7 +18,7 @@ class Viewports:
         self._viewports['default'].open()
 
     def new(self, x, y, width, height, name):
-        if not all([isinstance(i, Number) for i in (x, y, width, height)]):
+        if not all([isinstance(i, Number) or callable(i) for i in (x, y, width, height)]):
             raise TypeError('value should be expressed by float of int')
 
         new_vp = Viewport(x, y, width, height, self._window, name)
@@ -34,11 +34,11 @@ class Viewports:
         self.make_viewport_current(vp)
         vp.open()
 
-    def __getitem__(self, item):
+    def __getitem__(self, item) -> Viewport:
         if isinstance(item, str):
             return self._viewports[item]
         elif isinstance(item, int):
-            return list(self._viewports.items())[item][1] #type:Viewport
+            return list(self._viewports.items())[item][1]
 
     @property
     def current_viewport(self):

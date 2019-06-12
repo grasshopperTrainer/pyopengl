@@ -117,14 +117,16 @@ class Render_unit_temp:
             self._vertex_array = cls._vertex_array()
         if isinstance(cls._vertex_buffer, type):
             self._vertex_buffer = cls._vertex_buffer()
+        # bind shader and vao_vbo_pair
+        self._shader_attribute = self._shader.input_type(self._vertex_array, self._vertex_buffer)
+
         if isinstance(cls._index_buffer, type):
             self._index_buffer = cls._index_buffer()
         if isinstance(cls._texture, type):
             self._texture = cls._texture()
 
-        self._shader_attribute = self._shader.buffer_type(self._vertex_array, self._vertex_buffer)
-
         self._flag_built = False
+
 
     def _build_(self):
         if not self.shader.is_built:

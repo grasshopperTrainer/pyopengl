@@ -50,6 +50,8 @@ class Viewport:
 
         self.set_current(self)
 
+        self._iter_count = 0
+
     def clear(self, *color):
         # if clear is called, save clear color
         if len(color) == 4:
@@ -98,45 +100,80 @@ class Viewport:
         if self._flag_clear:
             self.fillbackground()
 
-
     def cal_abs_posx(self):
+        h = Windows.get_current().width if self._bound_fbl is None else self._bound_fbl.width
         if isinstance(self.posx, float):
-            if self._bound_fbl is None:
-                self.abs_posx = int(self.posx * Windows.get_current().width)
-            else:
-                self.abs_posx = int(self.posx * self._bound_fbl.width)
+            self.abs_posx = int(self.posx * h)
+        elif callable(self.posx):
+            self.abs_posx = int(self.posx(h))
         else:
             self.abs_posx = self.posx
 
 
     def cal_abs_posy(self):
+        h = Windows.get_current().height if self._bound_fbl is None else self._bound_fbl.height
         if isinstance(self.posy, float):
-            if self._bound_fbl is None:
-                self.abs_posy = int(self.posy * Windows.get_current().height)
-            else:
-                self.abs_posy = int(self.posy * self._bound_fbl.height)
+            self.abs_posy = int(self.posy * h)
+        elif callable(self.posy):
+            self.abs_posy = int(self.posy(h))
         else:
             self.abs_posy = self.posy
 
 
     def cal_abs_width(self):
+        h = Windows.get_current().width if self._bound_fbl is None else self._bound_fbl.width
         if isinstance(self.width, float):
-            if self._bound_fbl is None:
-                self.abs_width = int(self.width * Windows.get_current().width)
-            else:
-                self.abs_width = int(self.width * self._bound_fbl.width)
+            self.abs_width = int(self.width * h)
+        elif callable(self.width):
+            self.abs_width = int(self.width(h))
         else:
             self.abs_width = self.width
 
 
     def cal_abs_height(self):
+        h = Windows.get_current().height if self._bound_fbl is None else self._bound_fbl.height
         if isinstance(self.height, float):
-            if self._bound_fbl is None:
-                self.abs_height = int(self.height * Windows.get_current().height)
-            else:
-                self.abs_height = int(self.height * self._bound_fbl.height)
+            self.abs_height = int(self.height * h)
+
+        elif callable(self.height):
+            self.abs_height = int(self.height(h))
+
         else:
             self.abs_height = self.height
+
+    def get_vertex_from_window(self, index):
+        """
+        Returns coordinate relative to window coordinate.
+        Index goes anti-clockwise begining from top left.
+
+        0-------3
+        ｜     ｜
+        ｜     ｜
+        1-------2
+
+        :param vertex: index of a vertex 0,1,2,3
+        :return: tuple(x,y)
+        """
+        if index == 0:
+            return self.abs_posx, self.abs_posy
+        elif index == 1:
+            return self.abs_posx, self.abs_posy + self.abs_height
+        elif index == 2:
+            return self.abs_posx+self.abs_width, self.abs_posy + self.abs_height
+        elif index == 3:
+            return self.abs_posx+self.abs_width, self.abs_posy
+        else:
+            raise
+
+    def get_vertex_from_screen(self, index):
+        raise
+        pass
+
+    def set_min(self):
+        pass
+
+    def set_max(self):
+        pass
 
     @property
     def camera(self):
@@ -156,3 +193,5 @@ class Viewport:
     @classmethod
     def set_current(cls, vp):
         cls._current = vp
+
+

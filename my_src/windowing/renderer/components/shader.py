@@ -23,7 +23,7 @@ class Shader(RenderComponent):
         for n,t,l in self._uniform:
             self._properties.new_uniform(n,t,l)
 
-        self._buffer_type = GLSL_input_type_builder(self, self._vertex, self._fragment) #type: GLSL_input_type_template
+        self._input_type = GLSL_input_type_builder(self, self._vertex, self._fragment) #type: GLSL_input_type_template
 
         self._flag_built = False
 
@@ -36,9 +36,6 @@ class Shader(RenderComponent):
         self._glindex = gl.glCreateProgram()
         # 3. bind shaders
         self._bake_shader()
-        # 2. store array buffer to use
-        self.properties.validate_uniform_location()
-        # self.store_self()
 
         self._flag_built = True
 
@@ -201,8 +198,8 @@ class Shader(RenderComponent):
     def glindex(self):
         return self._glindex
     @property
-    def buffer_type(self):
-        return self._buffer_type
+    def input_type(self):
+        return self._input_type
 
     def _validate_uniform_location(self):
         # for i, block in enumerate(self.properties.attribute.blocks):

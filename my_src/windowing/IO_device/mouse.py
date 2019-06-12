@@ -2,6 +2,12 @@ import glfw
 from patterns.store_instances_dict import SID
 from ..my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
+class Position_registry:
+    pass
+    def new(self):
+        pass
+
+
 class Mouse(SID):
 
     def __init__(self, window):
@@ -25,6 +31,14 @@ class Mouse(SID):
 
         self._button_state = {}
         self._cursor_state = {'onscreen':False,'moving':False}
+
+        self._window_selection_area = []
+
+        self._position_registry = Position_registry()
+
+        self._just_released = False
+        self._just_pressed = False
+
 
     # def __call__(self, func):
     #     source = inspect.getsource(func).splitlines()[2:]
@@ -95,9 +109,11 @@ class Mouse(SID):
         if action is 1:
             self._button_state[button] = True
             self._run_all_func(when='click_press')
+            self._just_pressed = True
         if action is 0:
             self._button_state[button] = False
             self._run_all_func(when='click_release')
+            self._just_released = True
         self._run_all_func(when='click')
 
     def _callback_mouse_scroll(self, context, xoffset, yoffset):
@@ -133,11 +149,16 @@ class Mouse(SID):
         self.instant_mouse_states.append([self._cursor_state,'onscreen', False])
 
     def reset(self):
+        self._just_released = False
+        self._just_pressed = False
+
         for type,key,state in self.instant_mouse_states:
             type[key] = state
         self.instant_mouse_states = []
         self._cursor_state['moving'] = False
-
+    @property
+    def is_just_released(self):
+        return self._just_released
 
     @property
     def pressed_button(self):
@@ -158,15 +179,21 @@ class Mouse(SID):
     @property
     def moving(self):
         return self._cursor_state['moving']
+    @property
+    def window(self):
+        return self._window
 
     @property
-    def mouse_position(self):
+    def window_position(self):
         # flipped to match openGL buffer order
         x, y = glfw.get_cursor_pos(self._window.glfw_window)
-        y = self._window.height - y
-        # except:
-        #     x, y = -1, -1
         return x, y
+
+    @property
+    def screen_position(self):
+        pos = [a+b for a,b in zip(self.window.get_vertex(0), self.window_position)]
+        return pos
+
     @property
     def is_any_pressed(self):
         if len(self.pressed_button) != 0:
@@ -205,19 +232,45 @@ class Mouse(SID):
 
     @property
     def cursor_object(self):
-        x,y = self.mouse_position
+        x,y = self.window_position
+        y = self._window.height - y
         self._window.make_window_current()
 
         with self._window.myframe:
             gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
             color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
             self._window.myframe.end()
-            print(color)
             return self._window.myframe.render_unit_registry.object(color)
 
     def set_object_selection_callback(self, selection, state, func):
         def callback_func():
-            print('selection')
+            print('object selection')
             if self.cursor_object == selection:
                 func()
         state(callback_func)
+
+    def set_viewport_selection_callback(self, viewport, is_in, callback_state, func):
+        def callback_func():
+            print('viewport selection')
+            x,y = self.window_position
+
+        state(callback_func)
+
+    def is_in_viewport(self, viewport):
+        a = viewport.get_vertex_from_window(0)
+        b = viewport.get_vertex_from_window(2)
+        x,y = self.window_position
+
+        if a[0]< x < b[0] and a[1] < y < b[1]:
+            return True
+        else:
+            return False
+
+    @property
+    def is_in_window(self):
+        w,h = self._window.size
+        x,y = self.window_position
+        if 0<x<w and 0<y<h:
+            return True
+        else:
+            return False

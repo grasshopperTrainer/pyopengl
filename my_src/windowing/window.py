@@ -89,31 +89,23 @@ class Window:
         pass
 
     def __new__(cls,*args,**kwargs):
-        """
-         fliped hooking
-         from instance → [instances,]
-         to [instances,] → instance
-         this makes deletion of instance possible before garbage collection
-         ex) while inside unfinished loop like 'Window.draw_all()'
-         refer to _handle_close() for further description.
-        :param args:
-        :param kwargs:
-        :return:
-        """
-
         self = super().__new__(cls)
+
         # cls._windows + self
         return self # return proxy of generated object
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
 
-
-        Windows.set_current(self) # for init process may be needing which window is current
         self._size = width, height
         self._name = name
         self._monitor = monitor
 
+        # add this window to a group
+        # but if window is set to be singular
+        # evade window creation
         self.windows + self
+
+        Windows.set_current(self) # for init process may be needing which window is current
         # stores object name as an instance name
         # f = inspect.currentframe().f_back
         # self._instance_name = ''
@@ -206,7 +198,6 @@ class Window:
 
         # follow closing of following windows
         # set by follows_closing()
-        self._follow_close = []
 
         # drawing layers
         # TODO integrate
@@ -218,10 +209,29 @@ class Window:
         # viewport collection
         self._viewports = Viewports(self)
 
-        self.initiation_glfw_setting()
+        self.initiation_post_glfw_setting()
         self.initiation_gl_setting()
         self.initiation_window_setting()
 
+        self._flag_singular = False
+
+
+        self._flag_movable = True
+
+        self._callbacks = {
+            'pre_draw':[],
+            'post_draw':[],
+            'window_resize':[],
+            'window_close':[],
+            'window_pos':[],
+            'window_refresh':[],
+            'window_focused':[],
+            'window_maximized':[],
+            'window_iconify':[],
+            'window_content_scale':[]
+                           }
+
+        self._z_position = 0
 
     @property
     def mother_window(self):
@@ -229,7 +239,6 @@ class Window:
     @property
     def children_windows(self):
         return self._children_windows
-
     @property
     def draw_func(self):
         return self._draw_func
@@ -237,16 +246,114 @@ class Window:
     def init_func(self):
         return self._init_func
 
-    @property
-    def framerate(self):
-        return self._default_framerate_target
-    @framerate.setter
-    def framerate(self, value):
-        self._default_framerate_target = value
+    # @property
+    # def framerate(self):
+    #     return self._default_framerate_target
+    # @framerate.setter
+    # def framerate(self, value):
+    #     self._default_framerate_target = value
+    def _callback_exec(func):
+        def wrapper(*args, **kwargs):
+            name = func.__name__.split('_callback')[0]
+            for f,a,k,_ in args[0]._callbacks[name]:
+                f(*a,**k)
+            func(*args, **kwargs)
+        return wrapper
 
+    @_callback_exec
+    def window_resize_callback(self, window, width, height):
+        if any(a < b for a,b in zip(self.myframe.size, self.size)):
+            self.myframe.rebuild(self.size)
+        self._flag_resized = True
+
+    @_callback_exec
+    def window_refresh_callback(self,a):
+        pass
+    @_callback_exec
+    def pre_draw_callback(self):
+        pass
+    @_callback_exec
+    def post_draw_callback(self):
+        pass
+    @_callback_exec
+    def window_pos_callback(self, window, x, y):
+        pass
+    @_callback_exec
+    def window_close_callback(self,window):
+        pass
+    @_callback_exec
+    def window_focused_callback(self,window,focused):
+        print('ddd')
+        pass
+    @_callback_exec
+    def window_iconify_callback(self, window, iconified):
+        pass
+    @_callback_exec
+    def window_content_scale_callback(self, xscale, yscale):
+        pass
+    @_callback_exec
+    def window_maximized_callback(self,window, maximized):
+        pass
+
+    def _callback_setter(func):
+        def wrapper(self, function, args: tuple = (), kwargs: dict = {}, name:str = 'unknown'):
+            if not callable(function):
+                raise TypeError
+            if not isinstance(args, tuple):
+                raise TypeError
+            if not isinstance(kwargs, dict):
+                raise TypeError
+            callback_name = func.__name__.split('set_')[1].split('_callback')[0]
+            self._callbacks[callback_name].append((function,args,kwargs,name))
+        return wrapper
+
+    @_callback_setter
+    def set_pre_draw_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown'):
+        pass
+    @_callback_setter
+    def set_post_draw_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown'):
+        pass
+    @_callback_setter
+    def set_window_resize_callback(self, func, args:tuple = (), kwargs:dict={}, name:str='unknown'):
+        pass
+    @_callback_setter
+    def set_window_close_callback(self, func, args:tuple=(),kwargs:dict={}, name:str='unknown'):
+        pass
+    @_callback_setter
+    def set_window_pos_callback(self, func, args:tuple=(),kwargs:dict={}, name:str='unknown'):
+        pass
+    @_callback_setter
+    def set_window_iconify_callback(self, func, args:tuple=(),kwargs:dict={}, name:str='unknown'):
+        pass
+
+    def _follow(func):
+        def wrapper(self, *windows):
+            if not all([isinstance(w, Window) for w in windows]):
+                raise TypeError
+        return wrapper
+
+    @_follow
+    def follow_window_iconify(self, *windows):
+        for w in windows:
+            w.set_window_iconify_callback(self.config_iconified, (True,))
+    @_follow
+    def follows_window_close(self, *windows):
+        for w in windows:
+            w.set_window_close_callback(self.close)
+
+    # def (self, window):
+    #     if not isinstance(window,Window):
+    #         raise TypeError
+    #     self.set_window_iconify_callback(window.config_iconified, (True,))
+
+    def set_window_z_position(self, z:int):
+        self.windows.set_window_z_position(self,z)
+    def test(self):
+        glfw.request_window_attention(self.glfw_window)
     @property
     def mouse(self):
         return self._mouse
+
     @property
     def keyboard(self):
         return self._keyboard
@@ -257,48 +364,117 @@ class Window:
     def windows(self):
         return self.__class__._windows
 
-    def preset_window(self,func = None):
-        """
-        Decorator. set attribute for this single window.
-        Use glfw.window_hint() to specify window attribute.
+    def _set_config(func):
+        def wrapper(self, set:bool):
+            if set:
+                set = glfw.TRUE
+            else:
+                set = glfw.FALSE
 
-        :param func: function wrapped for decorator
-        :return: None
-        """
-        func()
-        # delete
-        glfw.destroy_window(self._glfw_window)
-        # reset
-        i = self._init_info
-        self.init(i['width'], i['height'],
-                  i['title'], i['monitor'],
-                  i['share'])
+            hint = 'glfw.' + func.__name__.split('config_')[1].upper()
+            if hasattr(self, 'glfw_window'):
+                try:
+                    glfw.set_window_attrib(self.glfw_window, eval(hint), set)
+                except:
+                    print(f"hint {hint} can't be set after glfw context creation")
+            else:
+                glfw.window_hint(eval(hint), set)
 
-    def framebuffer_size_callback(self, window, width, height):
-        # print()
-        # print(glfw.get_primary_monitor())
-        # for i in glfw.get_monitors():
-        #     print(glfw.get_monitor_pos(i))
-        if any(a < b for a,b in zip(self.myframe.size, self.size)):
-            x,y = self.size
-            self.myframe.rebuild(self.size)
-        # elif any(a <b for a,b in zip(glfw.get_monitor_workarea() self.size))
-        print(self.myframe.size)
-        print(self.size)
-        # self.myframe.rebuild()
-        self._flag_resized = True
+        return wrapper
 
-    def window_refresh_callback(self,a):
+
+    @_set_config
+    def config_decorated(self, set:bool):
+        pass
+    @_set_config
+    def config_resizable(self, set:bool):
         pass
 
-    def initiation_glfw_setting(self):
+
+    def config_movable(self, set:bool):
+        self._flag_movable = set
+
+    def config_iconified(self, set: bool):
+        if set:
+            set = glfw.TRUE
+        else:
+            set = glfw.FALSE
+
+        if hasattr(self, 'glfw_window'):
+            if set:
+                glfw.iconify_window(self.glfw_window)
+            else:
+                pass
+        else:
+            glfw.window_hint(glfw.ICONIFIED, set)
+
+    def config_focused(self, set:bool):
+        if set:
+            set = glfw.TRUE
+        else:
+            set = glfw.FALSE
+
+        if hasattr(self, 'glfw_window'):
+            if set:
+                glfw.focus_window(self.glfw_window)
+            else:
+                pass
+        else:
+            glfw.window_hint(glfw.FOCUSED, set)
+
+    def config_visible(self, set:bool):
+        if set:
+            set = glfw.TRUE
+        else:
+            set = glfw.FALSE
+
+        if hasattr(self, 'glfw_window'):
+            if set:
+                glfw.show_window(self.glfw_window)
+            else:
+                glfw.hide_window(self.glfw_window)
+        else:
+            glfw.window_hint(glfw.VISIBLE, set)
+    # def show(self):
+    #     glfw.show_window(self.glfw_window)
+    # def hide(self):
+    #     glfw.hide_window(self.glfw_window)
+
+    def _get_config(func):
+        @property
+        def wrapper(self):
+            hint = 'glfw.' + func.__name__.split('is_')[1].upper()
+            return bool(glfw.get_window_attrib(self.glfw_window,eval(hint)))
+        return wrapper
+
+    @_get_config
+    def is_visible(self):
+        pass
+
+    @_get_config
+    def is_resizable(self):
+        pass
+    @_get_config
+    def is_focused(self):
+        pass
+
+
+
+
+    def initiation_post_glfw_setting(self):
         # default setting
         glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 4)
         glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
         glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
-        glfw.set_framebuffer_size_callback(self.glfw_window, self.framebuffer_size_callback)
+        glfw.set_framebuffer_size_callback(self.glfw_window, self.window_resize_callback)
         glfw.set_window_refresh_callback(self.glfw_window, self.window_refresh_callback)
+        glfw.set_window_pos_callback(self.glfw_window,self.window_pos_callback)
+        glfw.set_window_focus_callback(self.glfw_window,self.window_focused_callback)
+        glfw.set_window_iconify_callback(self.glfw_window,self.window_iconify_callback)
+        glfw.set_window_close_callback(self.glfw_window,self.window_close_callback)
+        glfw.set_window_content_scale_callback(self.glfw_window,self.window_content_scale_callback)
+        glfw.set_window_maximize_callback(self.glfw_window,self.window_maximized_callback)
         # g.swap_interval(60)
 
     def initiation_gl_setting(self):
@@ -339,38 +515,6 @@ class Window:
         works very fine.
         :return:
         """
-        # TODO is it good to have this long initiation here?
-        #initiation
-        # for window in cls._windows:
-        #     window.make_window_current()
-        #
-        #     # init setting
-        #     window.initiation_glfw_setting()
-        #     window.initiation_gl_setting()
-        #     window.initiation_window_setting()
-        #
-        #     # assigned var names
-        #     # TODO maybe need more assigned variables?
-        #     window._context_scope.set_assigned(
-        #         {'window': window, 'windows': window.windows, 'self': window, window.instance_name: window})
-        #
-        #     # if Window has global init
-        #     func = window.__class__._init_global
-        #     window._context_scope.append_scope(func)
-        #
-        #     # if window has mother window
-        #     if window._mother_window is not None:
-        #         if window.mother_window.init_func is not None:
-        #             window._context_scope.append_scope_byscope(window.mother_window._context_scope)
-        #
-        #         # renderers = window.mother_window.renderers
-        #         #
-        #         # for renderer in renderers:
-        #         #     renderer[1].rebind()
-        #
-        #     if window.init_func is not None:
-        #         window._context_scope.append_scope(window.init_func)
-
 
         timer = Timer(cls._default_framerate_target, 'single thread')
         timer.set_init_position()
@@ -385,7 +529,9 @@ class Window:
                     #drawing
                     window.make_window_current()
                     # window.viewports[0].open()
+                    window.pre_draw_callback()
                     window._draw_()
+                    window.post_draw_callback()
 
                     if window.myframe.flag_something_rendered:
                         # copy from custom myframebuffer and draw it on window
@@ -463,12 +609,9 @@ class Window:
         :return: None
         """
         for window in self._windows:
-            if window.mother_window == self or self in window._follow_close:
-                window.close()
-                break
-
             if self in window.children_windows:
                 window.children_windows.remove(self)
+
 
         glfw.make_context_current(None)
         glfw.destroy_window(self.glfw_window)
@@ -532,8 +675,7 @@ class Window:
     def close_option(self):
         return self._close_option
 
-    def follows_closing(self, *windows):
-        self._follow_close += windows
+
 
     @close_option.setter
     def close_option(self, option: (int, str)):
@@ -599,8 +741,6 @@ class Window:
         self._size = glfw.get_framebuffer_size(self.glfw_window)
         return self._size
 
-
-
     @property
     def is_resized(self):
         return self._flag_resized
@@ -643,28 +783,57 @@ class Window:
         self.make_window_current()
         return w
 
-    def get_position(self, vertex = 0):
+    def get_vertex(self, vertex = 0):
+        """
+        Returns coordinate of window vertex.
+        Index goes anti-clockwise begining from top left.
+
+        0-------3
+        ｜     ｜
+        ｜     ｜
+        1-------2
+
+        :param vertex: index of a vertex 0,1,2,3
+        :return: tuple(x,y)
+        """
         top_left = glfw.get_window_pos(self._glfw_window)
         if vertex == 0:
-            pos = top_left
+            return top_left
         elif vertex == 1:
-            pos = top_left[0],top_left[1] + self.height
+            return top_left[0],top_left[1] + self.height
         elif vertex == 2:
-            pos = top_left[0]+ self.width,top_left[1]+self.height
+            return top_left[0]+ self.width,top_left[1]+self.height
         elif vertex == 3:
-            pos = top_left[0]+self.width,top_left[1]
+            return top_left[0]+self.width,top_left[1]
         else:
             raise KeyError
-        return pos
 
-    def set_position(self, target, reference):
-        vec =[a-b for a,b in zip(self.get_position(),reference)]
-        xpos,ypos = target[0]+vec[0], target[1]+vec[1]
-        glfw.set_window_pos(self.glfw_window,xpos,ypos)
+    def move_to(self, target_screen_coord, reference_window_coord):
+        x,y = int(target_screen_coord[0] - reference_window_coord[0]), int(target_screen_coord[1] - reference_window_coord[1])
+        self.position = (x,y)
+
+    @property
+    def position(self):
+        return glfw.get_window_pos(self.glfw_window)
+
+    @position.setter
+    def position(self, pos):
+        if self._flag_movable:
+            glfw.set_window_pos(self.glfw_window, int(pos[0]), int(pos[1]))
+
+    def set_fix_position(self, target_screen_pos, reference_window_pos):
+        self.move_to(target_screen_pos,reference_window_pos)
+        self._flag_movable = False
 
     def set_size_limit(self):
         pass
 
+    @property
+    def is_singular(self):
+        return self._flag_singular
+
+    # def follow_cursor(self):
+    #     print(self.mouse.window_position)
 class Timer:
     def __init__(self,framerate, name):
         self._framecount = 0
