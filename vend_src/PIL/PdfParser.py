@@ -437,7 +437,7 @@ class PdfParser:
 
     def close_buf(self):
         try:
-            self.buf.close()
+            self.buf.config_window_close()
         except AttributeError:
             pass
         self.buf = None
@@ -446,7 +446,7 @@ class PdfParser:
         if self.should_close_buf:
             self.close_buf()
         if self.f is not None and self.should_close_file:
-            self.f.close()
+            self.f.config_window_close()
             self.f = None
 
     def seek_end(self):

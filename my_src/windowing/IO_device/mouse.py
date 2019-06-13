@@ -26,7 +26,6 @@ class Mouse(SID):
         glfw.set_mouse_button_callback(self._window.glfw_window, self._callback_mouse_button)
         glfw.set_scroll_callback(self._window.glfw_window, self._callback_mouse_scroll)
 
-
         self.instant_mouse_states = []
 
         self._button_state = {}
@@ -39,7 +38,7 @@ class Mouse(SID):
         self._just_released = False
         self._just_pressed = False
 
-
+        self._mapping_source = None
     # def __call__(self, func):
     #     source = inspect.getsource(func).splitlines()[2:]
     #     source = [line[4:] for line in source]
@@ -114,7 +113,7 @@ class Mouse(SID):
             self._button_state[button] = False
             self._run_all_func(when='click_release')
             self._just_released = True
-        self._run_all_func(when='click')
+        self._run_all_func(context,button,action,mods,when='click')
 
     def _callback_mouse_scroll(self, context, xoffset, yoffset):
         self._scroll_offset = xoffset, yoffset
@@ -129,9 +128,13 @@ class Mouse(SID):
 
         self._run_all_func(when='scroll')
 
-    def _run_all_func(self, when):
+    def _run_all_func(self, *args, when):
         for event in self._event[when]:
-            event()
+            if hasattr(event,'__self__'):
+                if event.__self__.__class__ is self.__class__:
+                    event(*args)
+            else:
+                event()
             # self._window._context_scope.run(event)
 
     def instant_press_button(self, button: int):
@@ -186,13 +189,37 @@ class Mouse(SID):
     @property
     def window_position(self):
         # flipped to match openGL buffer order
-        x, y = glfw.get_cursor_pos(self._window.glfw_window)
-        return x, y
+        if self._mapping_source != None and not self.window.is_focused:
+            wi, vp = self._mapping_source
+            ratio = wi.mouse.viewport_position(vp, True)
+            size = self.window.size
+            mapped = [a * b for a, b in zip(ratio, size)]
+            return mapped
+        else:
+            return glfw.get_cursor_pos(self._window.glfw_window)
+
+    def set_mapping_from_window(self, source_window, source_viewport):
+        if isinstance(source_viewport, (int, str)):
+            source_viewport = source_window.viewports[source_viewport]
+        self._mapping_source = (source_window, source_viewport)
+        source_window.mouse.click(self._callback_mouse_button)
+
+    def reset_mapping_from_window(self):
+        self._mapping_source = None
 
     @property
     def screen_position(self):
         pos = [a+b for a,b in zip(self.window.get_vertex(0), self.window_position)]
         return pos
+
+    def viewport_position(self, viewport:'Viewport', reparameterize:bool):
+        x,y = self.window_position
+        a0,a1 = viewport.get_vertex_from_window(0)
+        if not reparameterize:
+            return x-a1, yy-a2
+        else:
+            w,h = viewport.abs_width,viewport.abs_height
+            return (x-a0)/w, (y-a1)/h
 
     @property
     def is_any_pressed(self):
@@ -239,7 +266,6 @@ class Mouse(SID):
         with self._window.myframe:
             gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
             color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
-            self._window.myframe.end()
             return self._window.myframe.render_unit_registry.object(color)
 
     def set_object_selection_callback(self, selection, state, func):
@@ -260,7 +286,6 @@ class Mouse(SID):
         a = viewport.get_vertex_from_window(0)
         b = viewport.get_vertex_from_window(2)
         x,y = self.window_position
-
         if a[0]< x < b[0] and a[1] < y < b[1]:
             return True
         else:
@@ -274,3 +299,4 @@ class Mouse(SID):
             return True
         else:
             return False
+

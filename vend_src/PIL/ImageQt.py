@@ -91,7 +91,7 @@ def fromqimage(im):
     except TypeError:
         # workaround for Python 2
         b.write(str(buffer.data()))
-    buffer.close()
+    buffer.config_window_close()
     b.seek(0)
 
     return Image.open(b)

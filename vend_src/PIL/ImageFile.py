@@ -131,7 +131,7 @@ class ImageFile(Image.Image):
         # raise exception if something's wrong.  must be called
         # directly after open, and closes file when finished.
         if self._exclusive_fp:
-            self.fp.close()
+            self.fp.config_window_close()
         self.fp = None
 
     def load(self):
@@ -253,7 +253,7 @@ class ImageFile(Image.Image):
         self.load_end()
 
         if self._exclusive_fp and self._close_exclusive_fp_after_loading:
-            self.fp.close()
+            self.fp.config_window_close()
         self.fp = None
 
         if not self.map and not LOAD_TRUNCATED_IMAGES and err_code < 0:

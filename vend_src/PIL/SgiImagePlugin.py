@@ -196,7 +196,7 @@ def _save(im, fp, filename):
     for channel in im.split():
         fp.write(channel.tobytes('raw', rawmode, 0, orientation))
 
-    fp.close()
+    fp.config_window_close()
 
 
 class SGI16Decoder(ImageFile.PyDecoder):

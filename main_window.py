@@ -13,6 +13,8 @@ class Main_window(Window):
         self.viewports[0].camera.mode = 1
         self.viewports[0].camera.lookat([0,0,0],[200,200,300])
 
+        self.viewports.new(0,0, 1., 100,'top_bar')
+        self.viewports.new(lambda x:x-400, 100, 400, lambda x:x-100,'side_bar')
         self.viewports.new(20,20,lambda x:x-40,lambda x:x-40,'center').set_min()
 
         self.flag_topbar_created = False
@@ -20,7 +22,6 @@ class Main_window(Window):
         self.top_bar = None
 
     def _draw_(self):
-
         if len(self.mouse.pressed_button) != 0 or self.is_resized:
             self.viewports[0].open()
             self.viewports[0].clear(0,1,1,0)
@@ -32,38 +33,28 @@ class Main_window(Window):
 
         if self.top_bar !=None:
             conditions = [
-                not self.mouse.is_in_viewport(self.viewports[1]),
+                not self.mouse.is_in_viewport(self.viewports['center']),
                 self.top_bar.flag_following,
                 self.mouse.is_in_window,
                 self.top_bar.mouse.is_just_released
             ]
             if all(conditions):
                 self.top_bar.move_to(self.get_vertex(0),(0,0))
-                self.top_bar.move_to(self.get_vertex(0),(0,0))
                 self.top_bar.flag_follow_active = False
-                def f(): self.top_bar.move_to(self.get_vertex(0),(0,0))
-                self.set_pre_draw_callback(f)
-                # self.set_pre_draw_callback(self.top_bar.test)
-                # self.set_window_pos_callback(self.top_bar.test)
-                # self.set_window_pos_callback(self.top_bar.test)
-                # self.set_window_back_of(self.top_bar)
-                #
-                # def f():
-                #     if self.is_focused:
-                #         self.top_bar.config_focused(True)
-                # self.top_bar.set_pre_draw_callback(f)
-                # self.set_window_pos_callback(self.top_bar.config_focused,(True,))
-                # # self.set_window_resize_callback(self.top_bar.config_focused,(True,))
-                print('kkk')
+                self.top_bar.config_visible(False)
+                # self.top_bar.pin_on_area(self, 0, 0, 1.0, 1.0, 0, lambda x: x - 100, 1., 1.)
+                self.top_bar.pin_on_viewport(self, 'top_bar', 0)
+                self.top_bar.mouse.set_mapping_from_window(self, 'top_bar')
+                # self.top_bar.mouse.reset_mapping_from_window()
 
 class Top_bar(Window):
     def __init__(self, master_window):
         self.config_visible(False)
-        super().__init__(1000,100, 'top_bar',None, None)
+        super().__init__(1000,100, 'top_bar',None, master_window)
         self.set_window_z_position(1)
 
-        self.follow_iconify(master_window)
-        self.follows_closing(master_window)
+        self.follow_window_iconify(master_window)
+        self.follow_window_close(master_window)
 
         self.position = (500,500)
         self.config_visible(True)
@@ -74,7 +65,18 @@ class Top_bar(Window):
         self.flag_follow_active = True
         self.flag_following = False
 
+        self.rect = TestBRO(0,0,100,100)
+
+        self.viewports[0].open()
+        self.viewports[0].clear_instant(0,1,0,1)
+
     def _draw_(self):
+        if len(self.keyboard.pressed_keys) != 0:
+            print('bar key pressed')
+
+        def f(): print('top bar clicking',self.mouse.window_position)
+        self.mouse.click(f)
+
         if self.flag_follow_active:
             if not self.mouse.is_in_viewport(self.viewports['center']) and self.mouse.is_in_window and 0 in self.mouse.pressed_button:
                 if not self.flag_following:

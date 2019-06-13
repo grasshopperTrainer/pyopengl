@@ -187,8 +187,6 @@ class _Camera:
                     ratio = vp.abs_width/vp.abs_height
                     distance = self._top - self._bottom
                     self._right, self._left = distance * ratio / 2, -distance * ratio / 2
-                    print(vp.abs_height, vp.abs_width)
-                    print(self.right,self.left,self.top,self.bottom)
                 elif major == 'h':
                     ratio = vp.abs_height/vp.abs_width
                     distance = self._right - self._left

@@ -9,35 +9,17 @@ class Viewport:
     _current = None
     DEF_CLEAR_COLOR = 0, 0, 0, 0
 
-    posx = UCD()
-    posy = UCD()
-    width = UCD()
-    height = UCD()
 
-    abs_posx = UCD()
-    abs_posy = UCD()
-    abs_width = UCD()
-    abs_height = UCD()
 
     def __init__(self, x, y, width, height, fbl=None, name= None):
 
         self._bound_fbl = fbl
         self._name = name
 
-        self.posx = x
-        self.posy = y
-        self.width = width
-        self.height = height
-
-        self.abs_posx.set_pre_get_callback(self.cal_abs_posx)
-        self.abs_posy.set_pre_get_callback(self.cal_abs_posy)
-        self.abs_width.set_pre_get_callback(self.cal_abs_width)
-        self.abs_height.set_pre_get_callback(self.cal_abs_height)
-
-        self.abs_posx = self.cal_abs_posx()
-        self.abs_posy = self.cal_abs_posy()
-        self.abs_width = self.cal_abs_width()
-        self.abs_height = self.cal_abs_height()
+        self._posx = x
+        self._posy = y
+        self._width = width
+        self._height = height
 
         self._camera = _Camera(self)
 
@@ -59,7 +41,22 @@ class Viewport:
         # not going to clear right now because it may be meaningless
         # if nothing is drawn on viewport
         self._flag_clear = True
-
+    def clear_instant(self, *color):
+        if len(color) == 0:
+            color = self.DEF_CLEAR_COLOR
+        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER,self._bound_fbl.myframe._frame_buffer._glindex)
+        gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT0)
+        gl.glClearColor(*color)
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+        gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
+        self._bound_fbl.myframe._flag_something_rendered = True
+    @property
+    def clear_color(self):
+        if self._clear_color is None:
+            return self.DEF_CLEAR_COLOR
+        else:
+            return self._clear_color
     def fillbackground(self):
         # clear window by being called from (class)RenderUnit.draw_element()
         if self._flag_clear:
@@ -92,56 +89,95 @@ class Viewport:
         return self
 
     @property
-    def absolute_values(self):
+    def absolute_gl_values(self):
         n = namedtuple('pixel_coordinates',['posx','posy','width','height'])
         return n(self.abs_posx,self.abs_posy,self.abs_width,self.abs_height)
 
     def close(self):
         if self._flag_clear:
             self.fillbackground()
-
-    def cal_abs_posx(self):
+    @property
+    def abs_posx(self):
         h = Windows.get_current().width if self._bound_fbl is None else self._bound_fbl.width
-        if isinstance(self.posx, float):
-            self.abs_posx = int(self.posx * h)
-        elif callable(self.posx):
-            self.abs_posx = int(self.posx(h))
+        if isinstance(self._posx, float):
+            return int(self._posx * h)
+        elif callable(self._posx):
+            return int(self._posx(h))
         else:
-            self.abs_posx = self.posx
+            return self._posx
 
+    @property
+    def abs_posy(self):
+        """
+        flipin from glfw to gl coordinate
+        glfw:
+        (0,0)----(w,0)
+        |           |
+        |           |
+        |           |
+        |           |
+        (0,h)---(w,h)
 
-    def cal_abs_posy(self):
+        gl:
+        (0,h)----(w,h)
+        |           |
+        |           |
+        |           |
+        |           |
+        (0,0)---(w,0)
+
+        :return:
+        """
         h = Windows.get_current().height if self._bound_fbl is None else self._bound_fbl.height
-        if isinstance(self.posy, float):
-            self.abs_posy = int(self.posy * h)
-        elif callable(self.posy):
-            self.abs_posy = int(self.posy(h))
+        if isinstance(self._posy, float):
+            return int((1-self._posy) * h - self.abs_height)
+        elif callable(self._posy):
+            return int(h-self._posy(h) - self.abs_height)
         else:
-            self.abs_posy = self.posy
+            return int(h-self._posy - self.abs_height)
 
-
-    def cal_abs_width(self):
+    @property
+    def abs_width(self):
         h = Windows.get_current().width if self._bound_fbl is None else self._bound_fbl.width
-        if isinstance(self.width, float):
-            self.abs_width = int(self.width * h)
-        elif callable(self.width):
-            self.abs_width = int(self.width(h))
+        if isinstance(self._width, float):
+            return int(self._width * h)
+        elif callable(self._width):
+            return int(self._width(h))
         else:
-            self.abs_width = self.width
+            return self._width
 
-
-    def cal_abs_height(self):
+    @property
+    def abs_height(self):
         h = Windows.get_current().height if self._bound_fbl is None else self._bound_fbl.height
-        if isinstance(self.height, float):
-            self.abs_height = int(self.height * h)
-
-        elif callable(self.height):
-            self.abs_height = int(self.height(h))
-
+        if isinstance(self._height, float):
+            return int(self._height * h)
+        elif callable(self._height):
+            return int(self._height(h))
         else:
-            self.abs_height = self.height
+            return self._height
 
-    def get_vertex_from_window(self, index):
+    @property
+    def abs_glfw_posx(self):
+        return self.abs_posx
+
+    @property
+    def abs_glfw_posy(self):
+        h = Windows.get_current().height if self._bound_fbl is None else self._bound_fbl.height
+        if isinstance(self._posy, float):
+            return int(self._posy * h)
+        elif callable(self._posy):
+            return int(self._posy(h))
+        else:
+            return int(self._posy)
+
+    @property
+    def abs_glfw_width(self):
+        return self.abs_width
+    @property
+    def abs_glfw_height(self):
+        return self.abs_height
+
+    def get_vertex_from_window(self, *index):
         """
         Returns coordinate relative to window coordinate.
         Index goes anti-clockwise begining from top left.
@@ -154,16 +190,22 @@ class Viewport:
         :param vertex: index of a vertex 0,1,2,3
         :return: tuple(x,y)
         """
-        if index == 0:
-            return self.abs_posx, self.abs_posy
-        elif index == 1:
-            return self.abs_posx, self.abs_posy + self.abs_height
-        elif index == 2:
-            return self.abs_posx+self.abs_width, self.abs_posy + self.abs_height
-        elif index == 3:
-            return self.abs_posx+self.abs_width, self.abs_posy
+        result = []
+        for i in index:
+            if i == 0:
+                result.append((self.abs_glfw_posx, self.abs_glfw_posy))
+            elif i == 1:
+                result.append((self.abs_glfw_posx, self.abs_glfw_posy + self.abs_glfw_height))
+            elif i == 2:
+                result.append((self.abs_glfw_posx+self.abs_glfw_width, self.abs_glfw_posy + self.abs_glfw_height))
+            elif i == 3:
+                result.append((self.abs_glfw_posx+self.abs_glfw_width, self.abs_glfw_posy))
+            else:
+                raise
+        if len(result) == 1:
+            return result[0]
         else:
-            raise
+            return result
 
     def get_vertex_from_screen(self, index):
         raise

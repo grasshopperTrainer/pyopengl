@@ -45,7 +45,7 @@ class Windows:
             key = other.name
         other._name = key
         self.windows[key] = other
-        self.windows_z[key] = 0
+        self.set_window_z_position(other, 0)
 
     # iteration, return window object
     def __iter__(self):
@@ -80,4 +80,17 @@ class Windows:
 
     @classmethod
     def set_window_z_position(cls, window, z):
-        cls.windows_z[window] = z
+        for l in cls.windows_z.values():
+            if window in l:
+                l.remove(window)
+                break
+
+        z = int(z)
+        if z not in cls.windows_z:
+            cls.windows_z[z] = []
+
+        cls.windows_z[z].append(window)
+
+    @classmethod
+    def get_window_z_position(cls):
+        return cls.windows_z

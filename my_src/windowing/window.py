@@ -66,7 +66,7 @@ class Window:
     _default_framerate_target = 60
     _print_framerate = False
 
-    _flag_resized = UCD()
+    _flag_just_resized = UCD()
     _flag_something_rendered = UCD()
     _size = UCD()
     # ^are UCD still valid?
@@ -83,7 +83,6 @@ class Window:
     def __enter__(self):
         return self
     def __enter__(self):
-        print('this is enter')
         return self.myframe
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
@@ -150,7 +149,7 @@ class Window:
         m = glfw.get_primary_monitor()
         _,_,max_width,max_height = glfw.get_monitor_workarea(m)
         extra = 500 # this is to cover Windows content area. May be needed for full screen draw
-        self._myframe = Frame(max_width+extra, max_height+ extra)  # type: Renderable_image
+        self._myframe = Frame(max_width+extra, max_height+ extra, self)  # type: Renderable_image
         # glsl: layout(location = 0), this is default output
         # this is ambient color output
         self._myframe.use_color_attachment(0)
@@ -160,7 +159,6 @@ class Window:
         self._myframe.use_depth_attachment(bitdepth=32)
         self._myframe.use_stencil_attachment(bitdepth=16)
         self._myframe.build()
-        print('window my frame buffer=',self.myframe._frame_buffer._glindex)
 
 
         # some info for resetting
@@ -204,7 +202,7 @@ class Window:
         self._layers = Layers(self)
 
         # flags for frame drawing and swapping
-        self._flag_resized = True
+        self._flag_just_resized = True
 
         # viewport collection
         self._viewports = Viewports(self)
@@ -264,11 +262,14 @@ class Window:
     def window_resize_callback(self, window, width, height):
         if any(a < b for a,b in zip(self.myframe.size, self.size)):
             self.myframe.rebuild(self.size)
-        self._flag_resized = True
+        self._flag_just_resized = True
 
     @_callback_exec
-    def window_refresh_callback(self,a):
-        pass
+    def window_refresh_callback(self, window):
+        # copy from custom myframebuffer and draw it on window
+
+        print(f'{self} refreshed')
+
     @_callback_exec
     def pre_draw_callback(self):
         pass
@@ -283,7 +284,7 @@ class Window:
         pass
     @_callback_exec
     def window_focused_callback(self,window,focused):
-        print('ddd')
+        print(f'{self} focused')
         pass
     @_callback_exec
     def window_iconify_callback(self, window, iconified):
@@ -295,8 +296,9 @@ class Window:
     def window_maximized_callback(self,window, maximized):
         pass
 
+
     def _callback_setter(func):
-        def wrapper(self, function, args: tuple = (), kwargs: dict = {}, name:str = 'unknown'):
+        def wrapper(self, function, args: tuple = (), kwargs: dict = {}, name:str = 'unknown', instant = False):
             if not callable(function):
                 raise TypeError
             if not isinstance(args, tuple):
@@ -304,42 +306,49 @@ class Window:
             if not isinstance(kwargs, dict):
                 raise TypeError
             callback_name = func.__name__.split('set_')[1].split('_callback')[0]
-            self._callbacks[callback_name].append((function,args,kwargs,name))
+            self._callbacks[callback_name].append((function, args, kwargs, name))
         return wrapper
 
     @_callback_setter
-    def set_pre_draw_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown'):
+    def set_pre_draw_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown', instant = False):
         pass
     @_callback_setter
-    def set_post_draw_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown'):
+    def set_post_draw_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown', instant = False):
         pass
     @_callback_setter
-    def set_window_resize_callback(self, func, args:tuple = (), kwargs:dict={}, name:str='unknown'):
+    def set_window_resize_callback(self, func, args:tuple = (), kwargs:dict={}, name:str='unknown', instant = False):
         pass
     @_callback_setter
-    def set_window_close_callback(self, func, args:tuple=(),kwargs:dict={}, name:str='unknown'):
+    def set_window_close_callback(self, func, args:tuple=(),kwargs:dict={}, name:str='unknown', instant = False):
         pass
     @_callback_setter
-    def set_window_pos_callback(self, func, args:tuple=(),kwargs:dict={}, name:str='unknown'):
+    def set_window_pos_callback(self, func, args:tuple=(),kwargs:dict={}, name:str='unknown', instant = False):
         pass
     @_callback_setter
-    def set_window_iconify_callback(self, func, args:tuple=(),kwargs:dict={}, name:str='unknown'):
+    def set_window_iconify_callback(self, func, args:tuple=(),kwargs:dict={}, name:str='unknown', instant = False):
         pass
+    @_callback_setter
+    def set_window_refresh_callback(self, func=None, args:tuple=(),kwargs:dict={}, name:str='unknown', instant = False):
+        pass
+    def set_window_refresh(self):
+        self.window_refresh_callback(self.glfw_window)
 
     def _follow(func):
         def wrapper(self, *windows):
             if not all([isinstance(w, Window) for w in windows]):
                 raise TypeError
+            func(self, *windows)
         return wrapper
 
     @_follow
     def follow_window_iconify(self, *windows):
         for w in windows:
-            w.set_window_iconify_callback(self.config_iconified, (True,))
+            w.set_window_iconify_callback(self.config_iconified)
     @_follow
-    def follows_window_close(self, *windows):
+    def follow_window_close(self, *windows):
         for w in windows:
-            w.set_window_close_callback(self.close)
+            w.set_window_close_callback(self.config_window_close)
+
 
     # def (self, window):
     #     if not isinstance(window,Window):
@@ -390,21 +399,43 @@ class Window:
     def config_resizable(self, set:bool):
         pass
 
+    def config_window_close(self):
+        """
+        Closes window concequently.
+
+        To close itself, closes all the child windows beforehand
+
+        :return: None
+        """
+        for window in self._windows:
+            if self in window.children_windows:
+                window.children_windows.remove(self)
+
+        glfw.make_context_current(None)
+        glfw.destroy_window(self.glfw_window)
+        GLFW_GL_tracker.remove(self)
+        self._windows - self
 
     def config_movable(self, set:bool):
         self._flag_movable = set
 
-    def config_iconified(self, set: bool):
-        if set:
-            set = glfw.TRUE
+    def config_iconified(self, set: bool=None):
+        print('iconify')
+        if set is None:
+            set = not glfw.get_window_attrib(self.glfw_window,glfw.ICONIFIED)
+            print(set)
         else:
-            set = glfw.FALSE
+            if set:
+                set = glfw.TRUE
+            else:
+                set = glfw.FALSE
 
         if hasattr(self, 'glfw_window'):
+
             if set:
                 glfw.iconify_window(self.glfw_window)
             else:
-                pass
+                glfw.restore_window(self.glfw_window)
         else:
             glfw.window_hint(glfw.ICONIFIED, set)
 
@@ -458,7 +489,88 @@ class Window:
     def is_focused(self):
         pass
 
+    def is_child_of(self, mother):
+        if mother is self._mother_window:
+            return True
+        else:
+            return False
+    def is_mother_of(self, child):
+        if child in self._children_windows:
+            return True
+        else:
+            return False
+    def is_shared_window(self, win):
+        if win in self.shared_windows:
+            return True
+        else:
+            return False
 
+    def copy_frame_from(dst, src, src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y):
+        if not dst.is_shared_window(src):
+            raise
+
+        # interprete to absolute(pixel) values
+        args = {'src0x': src0x, 'src0y': src0y, 'src1x': src1x, 'src1y': src1y, 'dst0x': dst0x, 'dst0y': dst0y,
+                'dst1x': dst1x, 'dst1y': dst1y}
+        for n, v in args.items():
+            ref = src if 'src' in n else dst
+            ref = ref.width if 'x' in n else ref.height
+
+            if isinstance(v, int):
+                args[n] = int(v)
+            elif isinstance(v, float):
+                args[n] = int(ref * v)
+            elif callable(v):
+                args[n] = int(v(ref))
+        src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y = args.values()
+
+        gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, src.myframe._frame_buffer._glindex)
+        gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # set source
+
+        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, dst.myframe._frame_buffer._glindex) # set target
+        gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT0)
+
+        gl.glBlitFramebuffer(src0x, src0y, src1x, src1y,
+                             dst0x, dst0y, dst1x, dst1y,
+                             gl.GL_COLOR_BUFFER_BIT,
+                             gl.GL_LINEAR)
+        dst.myframe.flag_something_rendered = True
+
+        # how to combine object detection?
+        # copy id_color? cast mouse movement to another window?
+        # if copying id_color... color can be duplicated... how to make it not duplicate?
+        # what if not blit but make native draw...
+
+    def pin_on_area(self, target_window, src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y):
+        target_window.copy_frame_from(self, src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y)
+
+        def pin_on_area():
+            if self.myframe.flag_something_rendered or target_window.myframe.flag_something_rendered:
+                target_window.copy_frame_from(self,src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y)
+
+        target_window.set_post_draw_callback(pin_on_area,name='_pin_on_area')
+
+    def pin_on_viewport(self, target_window, target_viewport:(int, str, Viewport), source_viewport:(int, str, Viewport)):
+        if isinstance(target_viewport, (int, str)):
+            target_viewport = target_window.viewports[target_viewport]
+        if isinstance(source_viewport, (int, str)):
+            source_viewport = self.viewports[source_viewport]
+        src0x, src0y, srcw, srch = source_viewport.absolute_gl_values
+        src1x, src1y = [a + b for a, b in zip((src0x, src0y), (srcw, srch))]
+        dst0x, dst0y, dstw, dsth = target_viewport.absolute_gl_values
+        dst1x, dst1y = [a + b for a, b in zip((dst0x, dst0y), (dstw, dsth))]
+
+        target_window.copy_frame_from(self, src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y)
+
+        def pin_on_viewport():
+            if self.myframe.flag_something_rendered or target_window.myframe.flag_something_rendered:
+                src0x, src0y, srcw, srch = source_viewport.absolute_gl_values
+                src1x, src1y = [a + b for a, b in zip((src0x, src0y), (srcw, srch))]
+                dst0x, dst0y, dstw, dsth = target_viewport.absolute_gl_values
+                dst1x, dst1y = [a + b for a, b in zip((dst0x, dst0y), (dstw, dsth))]
+                target_window.copy_frame_from(self,src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y)
+
+        target_window.set_post_draw_callback(pin_on_viewport,name='_pin_on_viewport')
 
 
     def initiation_post_glfw_setting(self):
@@ -475,6 +587,8 @@ class Window:
         glfw.set_window_close_callback(self.glfw_window,self.window_close_callback)
         glfw.set_window_content_scale_callback(self.glfw_window,self.window_content_scale_callback)
         glfw.set_window_maximize_callback(self.glfw_window,self.window_maximized_callback)
+
+        # glfw.set_window
         # g.swap_interval(60)
 
     def initiation_gl_setting(self):
@@ -533,23 +647,22 @@ class Window:
                     window._draw_()
                     window.post_draw_callback()
 
-                    if window.myframe.flag_something_rendered:
-                        # copy from custom myframebuffer and draw it on window
+                    if window.myframe._flag_something_rendered:
                         window.make_window_current()
-                        gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER,window.myframe._frame_buffer._glindex)
-                        gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0) # set source
+                        gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, window.myframe._frame_buffer._glindex)
+                        gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # set source
 
-                        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER,0)
-                        gl.glBlitFramebuffer(0,0,window.width,window.height,
-                                             0,0,window.width,window.height,
+                        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, 0)
+                        gl.glBlitFramebuffer(0, 0, window.width, window.height,
+                                             0, 0, window.width, window.height,
                                              gl.GL_COLOR_BUFFER_BIT,
                                              gl.GL_LINEAR)
 
+                        # window.buffer_swap_callback()
                         glfw.swap_buffers(window.glfw_window)
 
-
                     window.myframe.flag_something_rendered = False
-                    window._flag_resized = False
+                    window._flag_just_resized = False
 
                     # viewports = window.viewports._viewports
                     #
@@ -557,6 +670,11 @@ class Window:
                     # UCD.reset_instance_descriptors_update(*viewports.values())
                     # UCD.reset_instance_descriptors_update(*[v.camera for v in viewports.values()])
                     window.mouse.reset()
+                # z_dict = sorted(cls._windows.get_window_z_position().items())
+                # for i,l in z_dict:
+                #     for w in l:
+                #         w.config_focused(True)
+                #         w.config_focused(False)
 
                 glfw.poll_events()
 
@@ -600,23 +718,7 @@ class Window:
     def print_framerate(cls, state: bool = True):
         cls._print_framerate = state
 
-    def close(self):
-        """
-        Closes window concequently.
 
-        To close itself, closes all the child windows beforehand
-
-        :return: None
-        """
-        for window in self._windows:
-            if self in window.children_windows:
-                window.children_windows.remove(self)
-
-
-        glfw.make_context_current(None)
-        glfw.destroy_window(self.glfw_window)
-        GLFW_GL_tracker.remove(self)
-        self._windows - self
 
 
     @classmethod
@@ -640,7 +742,7 @@ class Window:
                     pass
 
                 if window.close_option is 0:
-                    window.close()
+                    window.config_window_close()
                     pass
 
                 elif window.close_option is 1:
@@ -743,7 +845,7 @@ class Window:
 
     @property
     def is_resized(self):
-        return self._flag_resized
+        return self._flag_just_resized
 
     @property
     def master_window(self):

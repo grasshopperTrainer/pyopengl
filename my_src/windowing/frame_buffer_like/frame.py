@@ -3,10 +3,26 @@ from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
 from .render_object_registry import Render_object_registry
 from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 from ..viewport.viewport import Viewport
+from numbers import Number
 import numpy as np
+
+
 class Frame(FBL):
-    def __init__(self, width, height):
+    def __init__(self, width, height, window_binding):
+        #typecheck
+        if not isinstance(width, Number):
+            raise TypeError
+        if not isinstance(height, Number):
+            raise TypeError
+
+        is_window_type = any([c.__name__ == 'Window' for c in window_binding.__class__.__mro__])
+        if not is_window_type:
+            if window_binding != None:
+                raise TypeError
+
         self._size = width, height
+        self._window_binding = window_binding
+
         self._frame_buffer = Framebuffer()
         self._color_attachments = []
         self._depth_attachment = None
@@ -46,6 +62,7 @@ class Frame(FBL):
             self._stencil_attachment.rebuild(width, height)
 
         self.build()
+
     def __enter__(self):
         # FBL.set_current(self)
         if not self._flag_built:
@@ -56,14 +73,15 @@ class Frame(FBL):
             gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT1)
             gl.glClearColor(0,0,0,0)
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-            gl.glClearColor(*vp._clear_color)
+            gl.glClearColor(*vp.clear_color)
             gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT0)
             vp.fillbackground()
             self.bindDrawBuffer()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+        self._flag_something_rendered = True
+
     def bindDrawBuffer(self):
         at = [gl.GL_COLOR_ATTACHMENT0 + i for i in range(len(self._color_attachments))]
         at + [gl.GL_DEPTH_ATTACHMENT, gl.GL_STENCIL_ATTACHMENT]

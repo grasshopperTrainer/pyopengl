@@ -172,7 +172,7 @@ class Texture_load(Texture):
                         0, format, data_type, self.pixel_data)
 
         # remove image data from memory
-        self.image.close()
+        self.image.config_window_close()
 
         self.unbind()
 

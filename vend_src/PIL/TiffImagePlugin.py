@@ -1161,7 +1161,7 @@ class TiffImageFile(ImageFile.ImageFile):
         self.readonly = 0
         # libtiff closed the fp in a, we need to close self.fp, if possible
         if self._exclusive_fp and not self._is_animated:
-            self.fp.close()
+            self.fp.config_window_close()
             self.fp = None  # might be shared
 
         if err < 0:
@@ -1363,7 +1363,7 @@ class TiffImageFile(ImageFile.ImageFile):
     def _close__fp(self):
         try:
             if self.__fp != self.fp:
-                self.__fp.close()
+                self.__fp.config_window_close()
         except AttributeError:
             pass
         finally:
