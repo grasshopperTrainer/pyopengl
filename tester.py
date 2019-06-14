@@ -22,3 +22,15 @@
 #     a = 10
 #
 # print(f.a)
+class A:
+    def f():
+        pass
+
+print(A.f.__dir__())
+for i in A.f.__dir__():
+    print()
+    print(i)
+    try:
+        exec(f'print(A.f.{i}())')
+    except:
+        exec(f'print(A.f.{i})')

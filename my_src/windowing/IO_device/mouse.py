@@ -14,17 +14,26 @@ class Mouse(SID):
         self._window = window
 
         self._scroll_offset = []
-
-        events = ('move', 'enter', 'exit', 'click', 'click_press',
-                      'click_release', 'scroll', 'scroll_up', 'scroll_down', 'scroll_right', 'scroll_left')
-        empty_lists = [[] for i in range(len(events))]
-        self._event = dict(zip(events, empty_lists))
+        self._callbacks = {
+            'any' : {},
+            'move' : {},
+            'enter' : {},
+            'exit' : {},
+            'button' : {},
+            'button_press' : {},
+            'button_release' : {},
+            'scroll' : {},
+            'scroll_up' : {},
+            'scroll_down' : {},
+            'scroll_right' : {},
+            'scroll_left' : {}
+        }
 
         glfw.set_input_mode(self._window.glfw_window, glfw.STICKY_MOUSE_BUTTONS, glfw.TRUE)
-        glfw.set_cursor_pos_callback(self._window.glfw_window, self._callback_mouse_move)
-        glfw.set_cursor_enter_callback(self._window.glfw_window, self._callback_mouse_enter)
-        glfw.set_mouse_button_callback(self._window.glfw_window, self._callback_mouse_button)
-        glfw.set_scroll_callback(self._window.glfw_window, self._callback_mouse_scroll)
+        glfw.set_cursor_pos_callback(self._window.glfw_window, self.mouse_move_callback)
+        glfw.set_cursor_enter_callback(self._window.glfw_window, self.mouse_enter_callback)
+        glfw.set_mouse_button_callback(self._window.glfw_window, self.mouse_button_callback)
+        glfw.set_scroll_callback(self._window.glfw_window, self.mouse_scroll_callback)
 
         self.instant_mouse_states = []
 
@@ -39,103 +48,166 @@ class Mouse(SID):
         self._just_pressed = False
 
         self._mapping_source = None
-    # def __call__(self, func):
-    #     source = inspect.getsource(func).splitlines()[2:]
-    #     source = [line[4:] for line in source]
-    #
-    #     functions = {}
-    #     add = False
-    #     # TODO put inside parser
-    #     for i, line in enumerate(source):
-    #         if line.find('def') == 0:
-    #             end = line.find('(')
-    #             name = line[3:end].strip()
-    #             functions[name] = line + '\n'
-    #         elif line[:4] == '    ':
-    #             functions[name] += line + '\n'
-    #
-    #     for func_name in functions:
-    #         if func_name in self._event:
-    #             self._event[func_name] = functions[func_name]
 
-    def move(self, func):
-        self._event['move'].append(func)
+    def _callback_exec(func):
+        def wrapper(*args, **kwargs):
+            name = func.__name__.split('_callback')[0]
+            self = args[0]
+            for n,callback in self._callbacks[name].items():
+                f, a, k, n, i = callback
+                f(*a, **k)
+                if i: # remove if instant
+                    del self._callbacks[name][n]
+            func(*args, **kwargs)
+            self.any_callback()
+        return wrapper
 
-    def enter(self, func):
-        self._event['enter'].append(func)
+    def any_callback(self):
+        for n, callback in self._callbacks['any'].items():
+            f, a, k, n, i = callback
+            f(*a, **k)
+            if i:  # remove if instant
+                del self._callbacks['any'][n]
 
-    def exit(self, func):
-        self._event['exit'].append(func)
+    @_callback_exec
+    def move_callback(self):
+        pass
+    @_callback_exec
+    def enter_callback(self):
+        pass
+    @_callback_exec
+    def exit_callback(self):
+        pass
+    @_callback_exec
+    def button_callback(self):
+        pass
+    @_callback_exec
+    def button_press_callback(self):
+        pass
+    @_callback_exec
+    def button_release_callback(self):
+        pass
+    @_callback_exec
+    def scroll_callback(self):
+        pass
+    @_callback_exec
+    def scroll_right_callback(self):
+        pass
+    @_callback_exec
+    def scroll_left_callback(self):
+        pass
+    @_callback_exec
+    def scroll_up_callback(self):
+        pass
+    @_callback_exec
+    def scroll_down_callback(self):
+        pass
 
-    def click(self, func):
-        self._event['click'].append(func)
+    def _callback_setter(func):
+        def wrapper(self, function, args: tuple = (), kwargs: dict = {}, name: str = 'unknown', instant=False):
+            if not callable(function):
+                raise TypeError
+            if not isinstance(args, tuple):
+                raise TypeError
+            if not isinstance(kwargs, dict):
+                raise TypeError
+            callback_name = func.__name__.split('set_')[1].split('_callback')[0]
 
-    def click_press(self, func):
-        self._event['click_press'].append(func)
+            # check equal callback
+            exist = False
+            func_name = function.__qualname__
+            callbacks = self._callbacks[callback_name]
+            if func_name in callbacks:
+                f,a,k,n,i = callbacks[func_name]
+                if function.__code__ == f.__code__:
+                    exist = True
+                else:
+                    exist = False
+                    count = 0
+                    while True:
+                        func_name = f'{func_name}{count}'
+                        if func_name in callbacks:
+                            count += 1
+                        else:
+                            break
+            if not exist:
+                self._callbacks[callback_name][func_name] = function, args, kwargs, name, instant
 
-    def click_release(self, func):
-        self._event['click_release'].append(func)
+        return wrapper
 
-    def scroll(self, func):
-        self._event['scroll'].append(func)
+    @_callback_setter
+    def set_any_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+        pass
+    @_callback_setter
+    def set_move_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+        pass
+    @_callback_setter
+    def set_enter_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+        pass
+    @_callback_setter
+    def set_exit_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+        pass
+    @_callback_setter
+    def set_button_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+        pass
+    @_callback_setter
+    def set_button_press_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+        pass
+    @_callback_setter
+    def set_button_release_callback(self, func, args:tuple=(), kwargs:dict={}, name:str ='unknown',instant=False):
+        pass
+    @_callback_setter
+    def set_scroll_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+        pass
+    @_callback_setter
+    def set_scroll_up_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+        pass
+    @_callback_setter
+    def set_scroll_down_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+        pass
+    @_callback_setter
+    def set_scroll_right_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+        pass
+    @_callback_setter
+    def set_scroll_left_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+        pass
 
-    def scroll_up(self, func):
-        self._event['scroll_up'].append(func)
-
-    def scroll_down(self, func):
-        self._event['scroll_down'].append(func)
-
-    def scroll_right(self, func):
-        self._event['scroll_right'].append(func)
-
-    def scroll_left(self, func):
-        self._event['scroll_left'].append(func)
-
-    def _callback_mouse_move(self, context, xpos, ypos):
-        self._run_all_func(when='move')
+    def mouse_move_callback(self, context, xpos, ypos):
+        self.move_callback()
         self._cursor_state['moving'] = True
 
-    def _callback_mouse_enter(self, context, entered):
+
+    def mouse_enter_callback(self, context, entered):
         if entered:
-            self._run_all_func(when='enter')
+            self.enter_callback()
             self._cursor_state['onscreen'] = True
         else:
-            self._run_all_func(when='exit')
+            self.exit_callback()
             self._cursor_state['onscreen'] = False
 
-    def _callback_mouse_button(self, context, button, action, mods):
+    def mouse_button_callback(self, context, button, action, mods):
         # TODO why first mouse click behaves differently?
         if action is 1:
             self._button_state[button] = True
-            self._run_all_func(when='click_press')
+            self.button_press_callback()
             self._just_pressed = True
         if action is 0:
             self._button_state[button] = False
-            self._run_all_func(when='click_release')
+            self.button_release_callback()
             self._just_released = True
-        self._run_all_func(context,button,action,mods,when='click')
+        self.button_callback()
 
-    def _callback_mouse_scroll(self, context, xoffset, yoffset):
+    def mouse_scroll_callback(self, context, xoffset, yoffset):
         self._scroll_offset = xoffset, yoffset
         if xoffset >= 0:
-            self._run_all_func(when='scroll_right')
+            self.scroll_right_callback()
         else:
-            self._run_all_func(when='scroll_left')
+            self.scroll_left_callback()
         if yoffset >= 0:
-            self._run_all_func(when='scroll_up')
+            self.scroll_up_callback()
         else:
-            self._run_all_func(when='scroll_down')
-
-        self._run_all_func(when='scroll')
-
-    def _run_all_func(self, *args, when):
-        for event in self._event[when]:
-            if hasattr(event,'__self__'):
-                if event.__self__.__class__ is self.__class__:
-                    event(*args)
-            else:
-                event()
-            # self._window._context_scope.run(event)
+            self.scroll_down_callback()
+        self.scroll_callback()
 
     def instant_press_button(self, button: int):
         """
@@ -198,13 +270,23 @@ class Mouse(SID):
         else:
             return glfw.get_cursor_pos(self._window.glfw_window)
 
-    def set_mapping_from_window(self, source_window, source_viewport):
+    def set_map_from_window(self, source_window, source_viewport):
         if isinstance(source_viewport, (int, str)):
             source_viewport = source_window.viewports[source_viewport]
-        self._mapping_source = (source_window, source_viewport)
-        source_window.mouse.click(self._callback_mouse_button)
 
-    def reset_mapping_from_window(self):
+        # connect position
+        self._mapping_source = (source_window, source_viewport)
+
+        # connect callbacks
+        for name, callbacks in source_window.mouse._callbacks.items():
+            callbacks[self] = (eval(f'self.{name}_callback'), (),{},'sys',False)
+
+    def reset_map_from_window(self):
+        # remove callbacks
+        for name, callbacks in self._mapping_source[0].mouse._callbacks.items():
+            if self in callbacks:
+                del callbacks[self]
+        # reset position
         self._mapping_source = None
 
     @property
@@ -268,12 +350,12 @@ class Mouse(SID):
             color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
             return self._window.myframe.render_unit_registry.object(color)
 
-    def set_object_selection_callback(self, selection, state, func):
+    def set_object_selection_callback(self, selection, callback, func):
         def callback_func():
             print('object selection')
             if self.cursor_object == selection:
                 func()
-        state(callback_func)
+        callback(callback_func)
 
     def set_viewport_selection_callback(self, viewport, is_in, callback_state, func):
         def callback_func():

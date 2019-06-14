@@ -9,7 +9,7 @@ class Main_window(Window):
 
         self.rect = TestBRO(0,0,100,100)
         self.rect2 = TestBRO(100,100,200,200)
-        self.mouse.set_object_selection_callback(self.rect.unit,self.mouse.click_press,self.rect.switch_color)
+        self.mouse.set_object_selection_callback(self.rect.unit,self.mouse.set_button_press_callback,self.rect.switch_color)
         self.viewports[0].camera.mode = 1
         self.viewports[0].camera.lookat([0,0,0],[200,200,300])
 
@@ -42,10 +42,10 @@ class Main_window(Window):
                 self.top_bar.move_to(self.get_vertex(0),(0,0))
                 self.top_bar.flag_follow_active = False
                 self.top_bar.config_visible(False)
-                # self.top_bar.pin_on_area(self, 0, 0, 1.0, 1.0, 0, lambda x: x - 100, 1., 1.)
                 self.top_bar.pin_on_viewport(self, 'top_bar', 0)
-                self.top_bar.mouse.set_mapping_from_window(self, 'top_bar')
-                # self.top_bar.mouse.reset_mapping_from_window()
+                self.top_bar.mouse.set_map_from_window(self, 'top_bar')
+                # self.top_bar.mouse.reset_map_from_window()
+
 
 class Top_bar(Window):
     def __init__(self, master_window):
@@ -75,7 +75,7 @@ class Top_bar(Window):
             print('bar key pressed')
 
         def f(): print('top bar clicking',self.mouse.window_position)
-        self.mouse.click(f)
+        self.mouse.set_button_press_callback(f)
 
         if self.flag_follow_active:
             if not self.mouse.is_in_viewport(self.viewports['center']) and self.mouse.is_in_window and 0 in self.mouse.pressed_button:

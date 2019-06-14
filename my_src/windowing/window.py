@@ -217,16 +217,16 @@ class Window:
         self._flag_movable = True
 
         self._callbacks = {
-            'pre_draw':[],
-            'post_draw':[],
-            'window_resize':[],
-            'window_close':[],
-            'window_pos':[],
-            'window_refresh':[],
-            'window_focused':[],
-            'window_maximized':[],
-            'window_iconify':[],
-            'window_content_scale':[]
+            'pre_draw':{},
+            'post_draw':{},
+            'window_resize':{},
+            'window_close':{},
+            'window_pos':{},
+            'window_refresh':{},
+            'window_focused':{},
+            'window_maximized':{},
+            'window_iconify':{},
+            'window_content_scale':{}
                            }
 
         self._z_position = 0
@@ -253,8 +253,12 @@ class Window:
     def _callback_exec(func):
         def wrapper(*args, **kwargs):
             name = func.__name__.split('_callback')[0]
-            for f,a,k,_ in args[0]._callbacks[name]:
-                f(*a,**k)
+            self = args[0]
+            for n, callback in self._callbacks[name].items():
+                f, a, k, n, i = callback
+                f(*a, **k)
+                if i:  # remove if instant
+                    del self._callbacks[name][n]
             func(*args, **kwargs)
         return wrapper
 
@@ -296,9 +300,8 @@ class Window:
     def window_maximized_callback(self,window, maximized):
         pass
 
-
     def _callback_setter(func):
-        def wrapper(self, function, args: tuple = (), kwargs: dict = {}, name:str = 'unknown', instant = False):
+        def wrapper(self, function, args: tuple = (), kwargs: dict = {}, name: str = 'unknown', instant=False):
             if not callable(function):
                 raise TypeError
             if not isinstance(args, tuple):
@@ -306,7 +309,27 @@ class Window:
             if not isinstance(kwargs, dict):
                 raise TypeError
             callback_name = func.__name__.split('set_')[1].split('_callback')[0]
-            self._callbacks[callback_name].append((function, args, kwargs, name))
+
+            # check equal callback
+            exist = False
+            func_name = function.__qualname__
+            callbacks = self._callbacks[callback_name]
+            if func_name in callbacks:
+                f, a, k, n, i = callbacks[func_name]
+                if function.__code__ == f.__code__:
+                    exist = True
+                else:
+                    exist = False
+                    count = 0
+                    while True:
+                        func_name = f'{func_name}{count}'
+                        if func_name in callbacks:
+                            count += 1
+                        else:
+                            break
+            if not exist:
+                self._callbacks[callback_name][func_name] = function, args, kwargs, name, instant
+
         return wrapper
 
     @_callback_setter
