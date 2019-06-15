@@ -3,20 +3,14 @@
   <component name="ChangeListManager">
     <list default="true" id="8845630d-f53b-42f1-9947-fe08a9c9effb" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/guitester.py" beforeDir="false" afterPath="$PROJECT_DIR$/guitester.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main_window.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_window.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/my_openGL/glfw_gl_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/my_openGL/glfw_gl_tracker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/BRO/testBRO.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/BRO/testBRO.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/components/indexbuffer.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/components/indexbuffer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/renderer/renderer_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/renderer/renderer_template.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/viewport/viewport.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/viewport/viewport.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/viewport/viewports.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/viewport/viewports.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/unnamedGUI/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/unnamedGUI/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/unnamedGUI/box.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/unnamedGUI/box.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/unnamedGUI/mygui.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/window.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/window.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/windows.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/windows.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vend_src/PIL/WebPImagePlugin.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/PIL/WebPImagePlugin.py" afterDir="false" />
     </list>
     <list id="7bbdcc47-e1ba-496a-aa74-c0bd87237871" name="1. Wrote custom frame for glfw Window. This is to extend function of window like mouse picking. As a result (class)Window and window drawing pipline has been fixed. Now things are not drawn directly on glfw default framebuffer(which is unaccessible), rather drawing on custom myframe and copied onto the window right before frame swap using glBlit." comment="" />
     <list id="4065d1bc-204e-4182-9fe0-52dae746ef17" name="1.reorganized relationship between Window - GLFW.context - FBL - Renderer - Render_unit." comment="" />
@@ -36,22 +30,10 @@
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="277">
-                  <caret line="230" column="8" selection-start-line="230" selection-start-column="8" selection-end-line="230" selection-end-column="8" />
-                  <folding>
-                    <element signature="e#0#11#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="684">
-                  <caret line="75" column="52" lean-forward="true" selection-start-line="75" selection-start-column="52" selection-end-line="75" selection-end-column="52" />
+                <state relative-caret-position="171">
+                  <caret line="44" selection-start-line="44" selection-end-line="44" />
                   <folding>
                     <element signature="e#0#43#0" expanded="true" />
                   </folding>
@@ -62,8 +44,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/error.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="2820">
-                  <caret line="235" column="40" selection-start-line="235" selection-start-column="40" selection-end-line="235" selection-end-column="40" />
+                <state relative-caret-position="247">
+                  <caret line="231" selection-start-line="231" selection-end-line="231" />
                 </state>
               </provider>
             </entry>
@@ -71,8 +53,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/framebuffer.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="206">
-                  <caret line="82" column="38" lean-forward="true" selection-start-line="82" selection-start-column="38" selection-end-line="82" selection-end-column="38" />
+                <state relative-caret-position="355">
+                  <caret line="76" selection-start-line="76" selection-end-line="76" />
                   <folding>
                     <element signature="e#0#26#0" expanded="true" />
                   </folding>
@@ -80,11 +62,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/my_openGL/glfw_gl_tracker.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="182">
-                  <caret line="806" column="18" selection-start-line="806" selection-start-column="18" selection-end-line="806" selection-end-column="18" />
+                <state relative-caret-position="-81">
+                  <caret line="84" column="6" selection-start-line="84" selection-start-column="6" selection-end-line="84" selection-end-column="6" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
@@ -93,13 +75,10 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/testBRO.py">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/renderbuffer.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="172">
-                  <caret line="76" column="13" lean-forward="true" selection-start-line="76" selection-start-column="13" selection-end-line="76" selection-end-column="13" />
-                  <folding>
-                    <element signature="e#0#48#0" expanded="true" />
-                  </folding>
+                <state relative-caret-position="199">
+                  <caret line="27" selection-start-line="27" selection-end-line="27" />
                 </state>
               </provider>
             </entry>
@@ -107,10 +86,31 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/main_window.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="110">
-                  <caret line="33" column="56" lean-forward="true" selection-start-line="33" selection-start-column="56" selection-end-line="33" selection-end-column="56" />
+                <state relative-caret-position="600">
+                  <caret line="74" selection-start-line="74" selection-end-line="74" />
                   <folding>
                     <element signature="e#0#35#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/__init__.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="12">
+                  <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/testBRO.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="151">
+                  <caret line="70" column="8" selection-start-line="70" selection-start-column="8" selection-end-line="70" selection-end-column="8" />
+                  <folding>
+                    <element signature="e#0#48#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -123,8 +123,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewport.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="96">
-                  <caret line="8" column="19" lean-forward="true" selection-start-line="8" selection-start-column="19" selection-end-line="8" selection-end-column="19" />
+                <state relative-caret-position="171">
+                  <caret line="94" selection-start-line="94" selection-end-line="94" />
                   <folding>
                     <element signature="e#0#48#0" expanded="true" />
                   </folding>
@@ -133,10 +133,43 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="63">
+                  <caret line="77" column="39" lean-forward="true" selection-start-line="77" selection-start-column="39" selection-end-line="77" selection-end-column="39" />
+                  <folding>
+                    <element signature="e#0#11#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/vend_src/glfw/__init__.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="171">
+                  <caret line="587" selection-start-line="587" selection-end-line="587" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/box.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="257">
+                  <caret line="56" column="14" lean-forward="true" selection-start-line="56" selection-start-column="14" selection-end-line="59" selection-end-column="17" />
+                  <folding>
+                    <element signature="e#0#57#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/renderer_template.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="157">
-                  <caret line="346" column="23" selection-start-line="346" selection-start-column="23" selection-end-line="346" selection-end-column="23" />
+                <state relative-caret-position="2521">
+                  <caret line="345" column="22" selection-start-line="345" selection-start-column="22" selection-end-line="345" selection-end-column="22" />
                   <folding>
                     <element signature="e#0#70#0" expanded="true" />
                   </folding>
@@ -147,8 +180,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewports.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="121">
-                  <caret line="33" column="43" lean-forward="true" selection-start-line="33" selection-start-column="43" selection-end-line="33" selection-end-column="43" />
+                <state relative-caret-position="189">
+                  <caret line="30" lean-forward="true" selection-start-line="30" selection-end-line="30" />
                   <folding>
                     <element signature="e#0#26#0" expanded="true" />
                   </folding>
@@ -156,11 +189,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="229">
-                  <caret line="810" column="35" lean-forward="true" selection-start-line="810" selection-start-column="35" selection-end-line="810" selection-end-column="35" />
+                <state relative-caret-position="315">
+                  <caret line="433" column="19" selection-start-line="433" selection-start-column="19" selection-end-line="433" selection-end-column="19" />
                   <folding>
                     <element signature="e#0#16#0" expanded="true" />
                   </folding>
@@ -168,11 +201,35 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/windows.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="192">
+                  <caret line="50" column="38" lean-forward="true" selection-start-line="50" selection-start-column="38" selection-end-line="50" selection-end-column="38" />
+                  <folding>
+                    <element signature="e#0#35#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/main.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="60">
+                  <caret line="5" selection-start-line="5" selection-end-line="5" />
+                  <folding>
+                    <element signature="e#0#35#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="109">
-                  <caret line="11" column="11" selection-start-line="11" selection-start-column="11" selection-end-line="11" selection-end-column="11" />
+                <state relative-caret-position="108">
+                  <caret line="9" column="29" selection-start-line="9" selection-start-column="29" selection-end-line="9" selection-end-column="29" />
                 </state>
               </provider>
             </entry>
@@ -191,9 +248,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>__</find>
-      <find>__exit</find>
-      <find>__enter</find>
       <find>enable</find>
       <find>init</find>
       <find>shader.build</find>
@@ -221,6 +275,9 @@
       <find>frame</find>
       <find>GL_SCISSOR</find>
       <find>SCI</find>
+      <find>'unknown'</find>
+      <find>sys</find>
+      <find>weakref.proxy(</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -233,6 +290,8 @@
       <replace>abs_glfw_posy</replace>
       <replace>abs_glfw_width</replace>
       <replace>abs_glfw_height</replace>
+      <replace>identifier</replace>
+      <replace>'not_given'</replace>
     </replaceStrings>
     <dirStrings>
       <dir>C:\Users\dingo\PycharmProjects\pyopengl\vend_src\numpy</dir>
@@ -274,9 +333,7 @@
         <option value="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/render_object_registry.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/unnamedGUI/mygui.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/unnamedGUI/component.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/unnamedGUI/__init__.py" />
         <option value="$PROJECT_DIR$/my_src/virtual_scope/virtual_scope.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/unnamedGUI/box.py" />
         <option value="$PROJECT_DIR$/guitester.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/xxx.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/glsl_shader_type_builder.py" />
@@ -288,7 +345,6 @@
         <option value="$PROJECT_DIR$/my_src/windowing/viewport/Camera.py" />
         <option value="$PROJECT_DIR$/tester.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/framebuffer.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/windows.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/indexbuffer.py" />
         <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/viewport/__init__.py" />
@@ -297,11 +353,14 @@
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/BRO/testBRO.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/viewport/viewports.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/viewport/viewport.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/renderer/renderer_template.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/unnamedGUI/__init__.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/unnamedGUI/box.py" />
         <option value="$PROJECT_DIR$/main_window.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/windows.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/window.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/renderer/renderer_template.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py" />
       </list>
     </option>
   </component>
@@ -319,7 +378,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -343,20 +401,13 @@
               <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
               <item name="my_src" type="462c0819:PsiDirectoryNode" />
               <item name="windowing" type="462c0819:PsiDirectoryNode" />
-              <item name="renderer" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
-              <item name="my_src" type="462c0819:PsiDirectoryNode" />
-              <item name="windowing" type="462c0819:PsiDirectoryNode" />
-              <item name="renderer" type="462c0819:PsiDirectoryNode" />
-              <item name="components" type="462c0819:PsiDirectoryNode" />
+              <item name="unnamedGUI" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -782,7 +833,14 @@
       <option name="project" value="LOCAL" />
       <updated>1560497433090</updated>
     </task>
-    <option name="localTasksCounter" value="37" />
+    <task id="LOCAL-00037" summary="Fixed viewport operation by revising late clear(which is default clear tactic) run conditions. Clearing will occure:&#10;1. right before something is rendered on window's frame_buffer(myframe) with __enter__.&#10;2. right after window's drawing function is called and current viewport is viewport is set to clear.&#10;3. right before vieports.close() is called and current viewport is set to clear.&#10;Still couldn't deside whether Viewport is Window subordinary or FBL subordinary. Think it should be Window sub and create another functionality for FBL which is very mush similar to Viewport. This must be something like - Instant_viewport.">
+      <created>1560576667915</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1560576667915</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="TodoView" selected-index="2">
@@ -796,14 +854,13 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="435" y="-1087" width="1295" height="695" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.30594406" weight="0.25629076" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.30594406" weight="0.25496426" />
       <window_info x="0" y="29" width="546" height="660" id="Structure" order="1" sideWeight="0.6940559" side_tool="true" weight="0.25629076" />
       <window_info id="Favorites" order="2" sideWeight="0.6923077" side_tool="true" weight="0.2945014" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3146853" />
-      <window_info active="true" anchor="bottom" x="548" y="29" width="546" height="660" id="Run" order="2" sideWeight="0.4988864" visible="true" weight="0.39253998" />
+      <window_info active="true" anchor="bottom" x="304" y="29" width="790" height="660" id="Run" order="2" sideWeight="0.4988864" type="WINDOWED" visible="true" weight="0.5435169" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.14159292" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -868,7 +925,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="wrote basic render on framebuffer&#10;recall rendering from texture to verity framebuffer writing" />
     <MESSAGE value="fixxing....." />
     <MESSAGE value="1. revised patter.UCD&#10;It works but not sure whether this is nescessary or comprehensive.&#10;&#10;2. revised patter.SMI&#10;Think this is useful(temporal thought)&#10;&#10;3. general code cleaning&#10;&#10;&#10;...next&#10;Rendering image is initiated so&#10;&#10;1.go back to GUI building and&#10;&#10;2.implement mouse cursor collision.&#10;&#10;2019/05/22&#10;following commit 2d8d033ffae85ceea355474dae12633eb035df04" />
     <MESSAGE value="1. custom exception handler in Virtual_scope.compile() built" />
@@ -893,16 +949,10 @@
     <MESSAGE value="1. Expanding window functionality.&#10;2. Testing window handling and user-syntax by writing sketchup_like ui bar.&#10;3. need to write function controlling window display order" />
     <MESSAGE value="1. window display order seems to be inappropriate.&#10;2. developed window pinning action and&#10;3. developing window action sharing&#10;4. other window controlling organized and implemented" />
     <MESSAGE value="mouse callbacks organized and mapping function built." />
-    <option name="LAST_COMMIT_MESSAGE" value="mouse callbacks organized and mapping function built." />
+    <MESSAGE value="Fixed viewport operation by revising late clear(which is default clear tactic) run conditions. Clearing will occure:&#10;1. right before something is rendered on window's frame_buffer(myframe) with __enter__.&#10;2. right after window's drawing function is called and current viewport is viewport is set to clear.&#10;3. right before vieports.close() is called and current viewport is set to clear.&#10;Still couldn't deside whether Viewport is Window subordinary or FBL subordinary. Think it should be Window sub and create another functionality for FBL which is very mush similar to Viewport. This must be something like - Instant_viewport." />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed viewport operation by revising late clear(which is default clear tactic) run conditions. Clearing will occure:&#10;1. right before something is rendered on window's frame_buffer(myframe) with __enter__.&#10;2. right after window's drawing function is called and current viewport is viewport is set to clear.&#10;3. right before vieports.close() is called and current viewport is set to clear.&#10;Still couldn't deside whether Viewport is Window subordinary or FBL subordinary. Think it should be Window sub and create another functionality for FBL which is very mush similar to Viewport. This must be something like - Instant_viewport." />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/.PyCharmCE2019.1/system/python_stubs/750648812/_weakref.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="182">
-          <caret line="25" column="7" selection-start-line="25" selection-start-column="7" selection-end-line="25" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/component_bp.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="144">
@@ -941,16 +991,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/mygui.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="10" column="8" lean-forward="true" selection-start-line="10" selection-start-column="8" selection-end-line="10" selection-end-column="8" />
-          <folding>
-            <element signature="e#0#48#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
@@ -974,7 +1014,6 @@
           <caret line="8" column="26" selection-start-line="8" selection-start-column="26" selection-end-line="8" selection-end-column="26" />
           <folding>
             <element signature="e#0#35#0" expanded="true" />
-            <marker date="1559823138645" expanded="true" signature="521:566" ph="..." />
           </folding>
         </state>
       </provider>
@@ -983,16 +1022,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="564">
           <caret line="53" selection-start-line="53" selection-end-line="53" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/box.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="504">
-          <caret line="44" column="19" selection-start-line="44" selection-start-column="19" selection-end-line="44" selection-end-column="19" />
-          <folding>
-            <element signature="e#0#57#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1007,13 +1036,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3444">
           <caret line="295" column="14" selection-start-line="295" selection-start-column="14" selection-end-line="295" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="21" selection-start-column="21" selection-end-column="21" />
         </state>
       </provider>
     </entry>
@@ -1095,13 +1117,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/vend_src/glfw/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7020">
-          <caret line="587" selection-start-line="587" selection-end-line="587" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/my_src/patterns/store_instances_dict.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="192">
@@ -1115,16 +1130,6 @@
           <caret line="226" lean-forward="true" selection-start-line="226" selection-end-line="226" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/windows.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="84">
-          <caret line="13" lean-forward="true" selection-start-line="13" selection-end-line="13" />
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1156,27 +1161,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="6" column="15" lean-forward="true" selection-start-line="6" selection-start-column="15" selection-end-line="6" selection-end-column="15" />
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tester.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="264">
           <caret line="31" column="11" selection-start-line="31" selection-start-column="11" selection-end-line="31" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/error.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2820">
-          <caret line="235" column="40" selection-start-line="235" selection-start-column="40" selection-end-line="235" selection-end-column="40" />
         </state>
       </provider>
     </entry>
@@ -1187,110 +1175,175 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/framebuffer.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="206">
-          <caret line="82" column="38" lean-forward="true" selection-start-line="82" selection-start-column="38" selection-end-line="82" selection-end-column="38" />
-          <folding>
-            <element signature="e#0#26#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/my_openGL/glfw_gl_tracker.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="182">
-          <caret line="806" column="18" selection-start-line="806" selection-start-column="18" selection-end-line="806" selection-end-column="18" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/testBRO.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="172">
-          <caret line="76" column="13" lean-forward="true" selection-start-line="76" selection-start-column="13" selection-end-line="76" selection-end-column="13" />
-          <folding>
-            <element signature="e#0#48#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewports.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="121">
-          <caret line="33" column="43" lean-forward="true" selection-start-line="33" selection-start-column="43" selection-end-line="33" selection-end-column="43" />
-          <folding>
-            <element signature="e#0#26#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main_window.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="110">
-          <caret line="33" column="56" lean-forward="true" selection-start-line="33" selection-start-column="56" selection-end-line="33" selection-end-column="56" />
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="277">
-          <caret line="230" column="8" selection-start-line="230" selection-start-column="8" selection-end-line="230" selection-end-column="8" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="684">
-          <caret line="75" column="52" lean-forward="true" selection-start-line="75" selection-start-column="52" selection-end-line="75" selection-end-column="52" />
-          <folding>
-            <element signature="e#0#43#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewport.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="96">
-          <caret line="8" column="19" lean-forward="true" selection-start-line="8" selection-start-column="19" selection-end-line="8" selection-end-column="19" />
-          <folding>
-            <element signature="e#0#48#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="229">
-          <caret line="810" column="35" lean-forward="true" selection-start-line="810" selection-start-column="35" selection-end-line="810" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#16#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="108">
+          <caret line="9" column="29" selection-start-line="9" selection-start-column="29" selection-end-line="9" selection-end-column="29" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/renderer_template.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="157">
-          <caret line="346" column="23" selection-start-line="346" selection-start-column="23" selection-end-line="346" selection-end-column="23" />
+        <state relative-caret-position="2521">
+          <caret line="345" column="22" selection-start-line="345" selection-start-column="22" selection-end-line="345" selection-end-column="22" />
           <folding>
             <element signature="e#0#70#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/mygui.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="109">
-          <caret line="11" column="11" selection-start-line="11" selection-start-column="11" selection-end-line="11" selection-end-column="11" />
+        <state relative-caret-position="96">
+          <caret line="10" column="8" lean-forward="true" selection-start-line="10" selection-start-column="8" selection-end-line="10" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="12">
+          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/BRO/testBRO.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="151">
+          <caret line="70" column="8" selection-start-line="70" selection-start-column="8" selection-end-line="70" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#48#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/unnamedGUI/box.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="257">
+          <caret line="56" column="14" lean-forward="true" selection-start-line="56" selection-start-column="14" selection-end-line="59" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#57#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewport.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="171">
+          <caret line="94" selection-start-line="94" selection-end-line="94" />
+          <folding>
+            <element signature="e#0#48#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vend_src/OpenGL/error.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="247">
+          <caret line="231" selection-start-line="231" selection-end-line="231" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/framebuffer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="355">
+          <caret line="76" selection-start-line="76" selection-end-line="76" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="171">
+          <caret line="44" selection-start-line="44" selection-end-line="44" />
+          <folding>
+            <element signature="e#0#43#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="5" selection-start-line="5" selection-end-line="5" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/renderbuffer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="199">
+          <caret line="27" selection-start-line="27" selection-end-line="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewports.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="189">
+          <caret line="30" lean-forward="true" selection-start-line="30" selection-end-line="30" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/windows.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="192">
+          <caret line="50" column="38" lean-forward="true" selection-start-line="50" selection-start-column="38" selection-end-line="50" selection-end-column="38" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vend_src/glfw/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="171">
+          <caret line="587" selection-start-line="587" selection-end-line="587" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="63">
+          <caret line="77" column="39" lean-forward="true" selection-start-line="77" selection-start-column="39" selection-end-line="77" selection-end-column="39" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main_window.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="600">
+          <caret line="74" selection-start-line="74" selection-end-line="74" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/my_openGL/glfw_gl_tracker.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-81">
+          <caret line="84" column="6" selection-start-line="84" selection-start-column="6" selection-end-line="84" selection-end-column="6" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="433" column="19" selection-start-line="433" selection-start-column="19" selection-end-line="433" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#16#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

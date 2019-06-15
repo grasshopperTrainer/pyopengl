@@ -1,1 +1,1 @@
-__all__ = ['component',]
+from .box import Button

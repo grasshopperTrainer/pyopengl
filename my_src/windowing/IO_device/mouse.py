@@ -1,4 +1,5 @@
 import glfw
+import weakref
 from patterns.store_instances_dict import SID
 from ..my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
@@ -56,23 +57,45 @@ class Mouse(SID):
 
     def _callback_exec(func):
 
+
         def wrapper(self, *args, **kwargs):
             name = func.__name__.split('_callback')[0]
+
+            operating_w = None
+            if self.window.get_current() != self.window:
+                operating_w = self.window.get_current()
+                self.window.make_window_current()
+
+            to_delete = []
             for n,callback in self._callbacks[name].items():
-                f, a, k, n, i = callback
-                f(*a, **k)
-                if i: # remove if instant
-                    del self._callbacks[name][n]
+                f, a, k, i, s, w = callback
+                if self.window.windows.has_window_named(w.name):
+                    f(*a, **k)
+                else:
+                    to_delete.append(n)
+                if s: # remove if instant
+                    to_delete.append(n)
             func(self, *args, **kwargs)
             self.any_callback()
+
+            for i in to_delete:
+                del self._callbacks[name][i]
+                # for i in self._callbacks[name].items():
+                #     print(i)
+                # del self._callbacks[name][i]
+            if operating_w != None:
+                operating_w.make_window_current()
         return wrapper
 
     def any_callback(self):
+        to_remove = []
         for n, callback in self._callbacks['any'].items():
-            f, a, k, n, i = callback
+            f, a, k, _, s,_ = callback
             f(*a, **k)
-            if i:  # remove if instant
-                del self._callbacks['any'][n]
+            if s:  # remove if instant
+                to_remove.append(n)
+        for i in to_remove:
+            del self._callbacks['any'][i]
 
     @_callback_exec
     def move_callback(self):
@@ -111,7 +134,7 @@ class Mouse(SID):
         pass
 
     def _callback_setter(func):
-        def wrapper(self, function, args: tuple = (), kwargs: dict = {}, name: str = 'unknown', instant=False):
+        def wrapper(self, function, args: tuple = (), kwargs: dict = {}, identifier: str = 'not_given', instant=False):
             if not callable(function):
                 raise TypeError
             if not isinstance(args, tuple):
@@ -125,58 +148,59 @@ class Mouse(SID):
             func_name = function.__qualname__
             callbacks = self._callbacks[callback_name]
             if func_name in callbacks:
-                f,a,k,n,i = callbacks[func_name]
+                f,a,k,n,i,w = callbacks[func_name]
                 if function.__code__ == f.__code__:
-                    exist = True
-                else:
-                    exist = False
-                    count = 0
-                    while True:
-                        func_name = f'{func_name}{count}'
-                        if func_name in callbacks:
-                            count += 1
-                        else:
-                            break
+                    if identifier == n:
+                        if all(a == b for a,b in zip(args,a)) and all(a==b for a,b, in zip(kwargs and k)):
+                            exist = True
+                count = 0
+                while True:
+                    temp_name = f'{func_name}{count}'
+                    if temp_name in callbacks:
+                        count += 1
+                    else:
+                        func_name = temp_name
+                        break
             if not exist:
-                self._callbacks[callback_name][func_name] = function, args, kwargs, name, instant
 
+                self._callbacks[callback_name][func_name] = function, args, kwargs, identifier, instant, weakref.proxy(self.window)
         return wrapper
 
     @_callback_setter
-    def set_any_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+    def set_any_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
         pass
     @_callback_setter
-    def set_move_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+    def set_move_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
         pass
     @_callback_setter
-    def set_enter_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+    def set_enter_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
         pass
     @_callback_setter
-    def set_exit_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+    def set_exit_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
         pass
     @_callback_setter
-    def set_button_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+    def set_button_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
         pass
     @_callback_setter
-    def set_button_press_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+    def set_button_press_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
         pass
     @_callback_setter
-    def set_button_release_callback(self, func, args:tuple=(), kwargs:dict={}, name:str ='unknown',instant=False):
+    def set_button_release_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str ='not_given',instant=False):
         pass
     @_callback_setter
-    def set_scroll_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+    def set_scroll_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
         pass
     @_callback_setter
-    def set_scroll_up_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+    def set_scroll_up_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
         pass
     @_callback_setter
-    def set_scroll_down_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+    def set_scroll_down_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
         pass
     @_callback_setter
-    def set_scroll_right_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+    def set_scroll_right_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
         pass
     @_callback_setter
-    def set_scroll_left_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown',instant=False):
+    def set_scroll_left_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
         pass
 
     def mouse_move_callback(self, context, xpos, ypos):
@@ -199,6 +223,8 @@ class Mouse(SID):
             self.button_press_callback()
         if action is 0:
             self._button_state[button] = False
+            print(self, context, button)
+            print(self.window)
             self.button_release_callback()
         self.button_callback()
 
@@ -293,7 +319,7 @@ class Mouse(SID):
 
         # connect callbacks
         for name, callbacks in source_window.mouse._callbacks.items():
-            callbacks[self] = (eval(f'self.{name}_callback'), (),{},'sys',False)
+            callbacks[self] = (eval(f'self.{name}_callback'), (),{},'sys',False, weakref.proxy(self.window))
 
     def reset_map_from_window(self):
         # remove callbacks
@@ -362,14 +388,49 @@ class Mouse(SID):
         self.window.myframe.bind()
         gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
         color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
+
         return self._window.myframe.render_unit_registry.object(color)
 
-    def set_object_selection_callback(self, selection, callback, func):
-        def callback_func():
-            print('object selection')
-            if self.cursor_object == selection:
-                func()
-        callback(callback_func)
+    def is_cursor_on_object(self, obj):
+        if self.cursor_object == obj:
+            return True
+
+    def is_object_pressed(self, obj, button=None):
+        if button is None:
+            if self.is_just_pressed:
+                if self.cursor_object == obj:
+                    return True
+        else:
+            if self.is_just_pressed and button in self.pressed_button:
+                if self.cursor_object == obj:
+                    return True
+        return False
+
+    def set_object_selection_callback(self, selection, callback, func, args:tuple=(), kwargs:dict={}, identifier="not_given"):
+        if callable(func):
+            def callback_func(func, args, kwargs):
+                if self.cursor_object == selection:
+                    func(*args,**kwargs)
+                    
+        # setting multiple
+        elif isinstance(func, tuple):
+            if not all(callable(x) for x in func):
+                raise
+            func_n = len(func)
+            if func_n != 1:
+                if len(args) == 0:
+                    args = [args,]*func_n
+                if isinstance(kwargs, dict):
+                    kwargs = [kwargs,]*func_n
+
+            def callback_func(func,args,kwargs):
+                if self.cursor_object == selection:
+                    for f,a,k in zip(func,args,kwargs):
+                        f(*a,**k)
+        else:
+            raise TypeError
+
+        callback(callback_func, args=(func, args, kwargs),identifier=identifier)
 
     def set_viewport_selection_callback(self, viewport, is_in, callback_state, func):
         def callback_func():

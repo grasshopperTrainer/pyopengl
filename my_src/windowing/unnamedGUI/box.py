@@ -1,10 +1,16 @@
 from ..renderer.renderer_template import Renderer_builder
 from patterns.update_check_descriptor import UCD
-from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+from ..window import Window
+# from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+# from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
 
 
-class Box:
+class Button():
     """
+    one renderer should have one shader.
+    but this can be called from several plces...
+    when initiating ... like first_rect = TestBRO()
+    how to make calling free???
     """
     c = Renderer_builder()
     c.use_shader(c.Shader('BRO_rectangle'))
@@ -25,9 +31,9 @@ class Box:
     _abs_width = UCD()
     _abs_height = UCD()
 
-    def __init__(self,posx, posy, width, height):
-        print('gui box')
+    def __init__(self,posx, posy, width, height, window:Window, viewport):
         self.unit = self.renderer.new_render_unit()
+
         self._posx = posx
         self._posy = posy
         self._width = width
@@ -38,14 +44,42 @@ class Box:
         self._abs_width = None
         self._abs_height = None
 
-        self._color1 = 1,1,1,1
-        self._color2 = 1,0,1,1
+        self._color1 = .1,.1,.1,1
+        self._color2 = 0,0,.5,1
         self._draw_color = self._color1
 
+        # self.unit.properties['u_fillcol'] = self._draw_color
+        self.unit.shader_attribute.resize(4)
+
+        self.window = window
+        self.viewport = viewport
+
+        window.mouse.set_object_selection_callback(
+            self.unit,
+            window.mouse.set_button_press_callback,
+            (viewport.open,self.switch_color))
+
     def draw(self):
-        self.unit.properties['a_position'][0:4] = self.vertex
-        self.unit.properties['u_fillcol'] = self._draw_color
+        # self.unit.properties['a_position'][0:4] = self.vertex
+        self.unit.shader_attribute.a_position = self.vertex
+        self.unit.shader_attribute.u_fillcol = self._draw_color
+        # print(self._draw_color)
+        # self.unit.properties['u_fillcol'] = self._draw_color
         self.renderer._draw_(self.unit)
+
+    @property
+    def color1(self):
+        return self._color1
+    @color1.setter
+    def color1(self, *rgba):
+        self._color1 = rgba
+
+    @property
+    def color2(self):
+        return self._color2
+    @color2.setter
+    def color2(self, *rgba):
+        self._color2 = rgba
 
     @property
     def vertex(self):
@@ -60,7 +94,8 @@ class Box:
             self._draw_color = self._color2
         else:
             self._draw_color = self._color1
-        # self.draw()
+        self.draw()
+
     @property
     def abs_posx(self):
         if isinstance(self._posx, float):

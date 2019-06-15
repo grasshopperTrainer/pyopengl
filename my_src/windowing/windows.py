@@ -8,7 +8,7 @@ class Windows:
     ^is this necessary?
     """
     windows = OrderedDict()
-    windows_z = dict()
+    # windows_z = dict()
     iter_count = 0
     _current_window = None
 
@@ -47,6 +47,7 @@ class Windows:
 
         other._name = key
         self.windows[key] = other
+        # self._current_window = other
         # self.set_window_z_position(other, 0)
 
     # iteration, return window object
@@ -80,19 +81,19 @@ class Windows:
         else:
             return False
 
-    @classmethod
-    def set_window_z_position(cls, window, z):
-        for l in cls.windows_z.values():
-            if window in l:
-                l.remove(window)
-                break
-
-        z = int(z)
-        if z not in cls.windows_z:
-            cls.windows_z[z] = []
-
-        cls.windows_z[z].append(window)
-
-    @classmethod
-    def get_window_z_position(cls):
-        return cls.windows_z
+    # @classmethod
+    # def set_window_z_position(cls, window, z):
+    #     for l in cls.windows_z.values():
+    #         if window in l:
+    #             l.remove(window)
+    #             break
+    #
+    #     z = int(z)
+    #     if z not in cls.windows_z:
+    #         cls.windows_z[z] = []
+    #
+    #     cls.windows_z[z].append(window)
+    #
+    # @classmethod
+    # def get_window_z_position(cls):
+    #     return cls.windows_z

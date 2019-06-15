@@ -86,8 +86,10 @@ class Window:
     def __new__(cls,*args,**kwargs):
         self = super().__new__(cls)
 
-        # cls._windows + self
-        return self
+        self.__init__(*args, **kwargs)
+        cls._windows + self
+        return weakref.proxy(self)
+        # return self
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
 
@@ -95,13 +97,14 @@ class Window:
         self._name = name
         self._monitor = monitor
 
-        self.windows + self
+        # self.windows + self
 
         Windows.set_current(self) # for init process may be needing which window is current
 
         # 1. generate contex first.
         # Do not mix order 1 and 2. There is automated vertex array operation during 2.
         if mother_window is not None:
+            print(mother_window._glfw_window)
             self._glfw_window = glfw.create_window(width, height, name, monitor, mother_window._glfw_window)
         else:
             self._glfw_window = glfw.create_window(width, height, name, monitor, None)
@@ -123,6 +126,7 @@ class Window:
             # this is a unique context wrapper and is a context identifier
             self._unique_glfw_context = GLFW_GL_tracker(self)
         GLFW_GL_tracker.set_current(self._unique_glfw_context)
+
         # customizable frame
         m = glfw.get_primary_monitor()
         _,_,max_width,max_height = glfw.get_monitor_workarea(m)
@@ -232,11 +236,20 @@ class Window:
         def wrapper(*args, **kwargs):
             name = func.__name__.split('_callback')[0]
             self = args[0]
+            to_delete = []
             for n, callback in self._callbacks[name].items():
-                f, a, k, n, i = callback
-                f(*a, **k)
-                if i:  # remove if instant
-                    del self._callbacks[name][n]
+                f, a, k, id, s, w = callback
+                try:
+                    f(*a, **k)
+                except:
+                    to_delete.append(n)
+                    print(Warning("can't run callback. callback deleted"))
+                if s:  # remove if instant
+                    to_delete.append(n)
+
+            for i in to_delete:
+                del self._callbacks[name][i]
+
             func(*args, **kwargs)
         return wrapper
 
@@ -293,20 +306,20 @@ class Window:
             func_name = function.__qualname__
             callbacks = self._callbacks[callback_name]
             if func_name in callbacks:
-                f, a, k, n, i = callbacks[func_name]
+                f,a,k,n,i,w = callbacks[func_name]
                 if function.__code__ == f.__code__:
                     exist = True
-                else:
-                    exist = False
-                    count = 0
-                    while True:
-                        func_name = f'{func_name}{count}'
-                        if func_name in callbacks:
-                            count += 1
-                        else:
-                            break
+
+                count = 0
+                while True:
+                    temp_name = f'{func_name}{count}'
+                    if temp_name in callbacks:
+                        count += 1
+                    else:
+                        func_name = temp_name
+                        break
             if not exist:
-                self._callbacks[callback_name][func_name] = function, args, kwargs, name, instant
+                self._callbacks[callback_name][func_name] = function, args, kwargs, name, instant, weakref.proxy(self)
 
         return wrapper
 
@@ -408,14 +421,19 @@ class Window:
 
         :return: None
         """
+        print(list(GLFW_GL_tracker._windows.items()))
         for window in self._windows:
             if self in window.children_windows:
                 window.children_windows.remove(self)
-
         glfw.make_context_current(None)
         glfw.destroy_window(self.glfw_window)
         GLFW_GL_tracker.remove(self)
         self._windows - self
+
+        if self.get_current() != self:
+            self.get_current().make_window_current()
+        print(list(GLFW_GL_tracker._windows.items()))
+        # raise
 
     def config_movable(self, set:bool):
         self._flag_movable = set
@@ -645,7 +663,7 @@ class Window:
             if cls._display_window():
                 # to give access to other windows through keyword 'windows'
                 for window in cls._windows: #type: Window
-
+                    # print(window)
                     #drawing
                     window.make_window_current()
                     # window.viewports[0].open()
@@ -665,6 +683,7 @@ class Window:
 
                     if window.myframe._flag_something_rendered:
                         window.make_window_current()
+                        print(window)
                         gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, window.myframe._frame_buffer._glindex)
                         gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # set source
 
@@ -798,8 +817,8 @@ class Window:
             print_message('Type error. Maintain attribute.')
 
     def make_window_current(self):
-        if self.windows.get_current() != self:
-            # TODO
+        # TODO
+        try:
             # if self.windows.get_current() != self:
             self.windows.set_current(self)
             # self.viewports[0].open()
@@ -809,7 +828,8 @@ class Window:
 
             GLFW_GL_tracker.set_current(self.unique_glfw_context)
             FBL.set_current(self._myframe)
-
+        except:
+            pass
 
     # @classmethod
     # def get_current_window(cls):
