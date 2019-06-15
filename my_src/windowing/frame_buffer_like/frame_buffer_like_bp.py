@@ -7,6 +7,10 @@ class FBL(SMI):
     from OpenGL
     """
     _current = None
+    def __new__(cls, *args, **kwargs):
+        self = super().__new__(cls)
+        FBL._current = self
+        return self
 
     @SMI.must_func
     @property

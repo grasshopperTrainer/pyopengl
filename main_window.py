@@ -5,15 +5,13 @@ from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 class Main_window(Window):
     def __init__(self):
         super().__init__(500,500,'main')
-        print('window init')
 
         self.rect = TestBRO(0,0,100,100)
         self.rect2 = TestBRO(100,100,200,200)
         self.mouse.set_object_selection_callback(self.rect.unit,self.mouse.set_button_press_callback,self.rect.switch_color)
-        self.viewports[0].camera.mode = 1
-        self.viewports[0].camera.lookat([0,0,0],[200,200,300])
 
-        self.viewports.new(0,0, 1., 100,'top_bar')
+        self.viewports.new(0,0,1.,50, 'menu_bar')
+        self.viewports.new(0,50, 1., 100,'top_bar')
         self.viewports.new(lambda x:x-400, 100, 400, lambda x:x-100,'side_bar')
         self.viewports.new(20,20,lambda x:x-40,lambda x:x-40,'center').set_min()
 
@@ -21,19 +19,25 @@ class Main_window(Window):
 
         self.top_bar = None
 
+        self.rect.draw()
+        self.rect2.draw()
+
     def _draw_(self):
-        if len(self.mouse.pressed_button) != 0 or self.is_resized:
-            self.viewports[0].open()
-            self.viewports[0].clear(0,1,1,0)
+        if self.is_resized:
+            print('resized')
+            self.viewports['default'].open().clear()
             self.rect.draw()
             self.rect2.draw()
-            if self.mouse.cursor_object == self.rect.unit:
-                if not self.windows.has_window_named('top_bar'):
-                    self.top_bar = Top_bar(self)
+            self.viewports['menu_bar'].open().clear(1,0,0,1)
+            self.viewports.close()
 
-        if self.top_bar !=None:
+        if self.mouse.is_any_pressed and self.mouse.cursor_object == self.rect.unit:
+            if not self.windows.has_window_named('top_bar'):
+                self.top_bar = Top_bar(self)
+
+        if self.top_bar != None:
             conditions = [
-                not self.mouse.is_in_viewport(self.viewports['center']),
+                self.mouse.is_in_viewport(self.viewports['top_bar']),
                 self.top_bar.flag_following,
                 self.mouse.is_in_window,
                 self.top_bar.mouse.is_just_released
@@ -44,7 +48,6 @@ class Main_window(Window):
                 self.top_bar.config_visible(False)
                 self.top_bar.pin_on_viewport(self, 'top_bar', 0)
                 self.top_bar.mouse.set_map_from_window(self, 'top_bar')
-                # self.top_bar.mouse.reset_map_from_window()
 
 
 class Top_bar(Window):
@@ -65,17 +68,20 @@ class Top_bar(Window):
         self.flag_follow_active = True
         self.flag_following = False
 
-        self.rect = TestBRO(0,0,100,100)
+        self.rect1 = TestBRO(0,0,100,100)
+        self.rect2 = TestBRO(100,0,100,100)
 
         self.viewports[0].open()
-        self.viewports[0].clear_instant(0,1,0,1)
+        self.viewports[0].clear(0,1,0,1)
+        self.rect1.draw()
+        self.rect2.draw()
 
     def _draw_(self):
+        # self.viewports[0].open()
         if len(self.keyboard.pressed_keys) != 0:
             print('bar key pressed')
-
-        def f(): print('top bar clicking',self.mouse.window_position)
-        self.mouse.set_button_press_callback(f)
+        if self.mouse.is_just_pressed and self.mouse.cursor_object == self.rect1.unit:
+            self.rect1.switch_color()
 
         if self.flag_follow_active:
             if not self.mouse.is_in_viewport(self.viewports['center']) and self.mouse.is_in_window and 0 in self.mouse.pressed_button:

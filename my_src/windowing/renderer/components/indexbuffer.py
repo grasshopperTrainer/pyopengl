@@ -49,7 +49,8 @@ class Indexbuffer(RenderComponent):
         # if self._flag_firstbuild:
         self._glindex = gl.glGenBuffers(1)
             # self._flag_firstbuild = False
-
+        if self._glindex == 2:
+            raise
         datasize = self.data.size * self.data.itemsize
         self.bind()
         gl.glBufferData(gl.GL_ELEMENT_ARRAY_BUFFER, datasize, self.data, self._glusage)

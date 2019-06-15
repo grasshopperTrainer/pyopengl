@@ -1,5 +1,5 @@
 from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
-# from windowing.windows import Windows
+from windowing.windows import Windows
 from ..my_openGL.glfw_gl_tracker import GLFW_GL_tracker
 from ..renderer import components as comp
 
@@ -247,6 +247,7 @@ class Renderer_template:
         # check for context first call
         glfw_context = GLFW_GL_tracker.get_current()
         reg = self._context_register
+        # print(list(glfw_context._windows.items()))
         if glfw_context not in reg:
             # generate class_singular gl components for the first call
             self._shader.build()
@@ -333,50 +334,38 @@ class Renderer_template:
                 self._texture.build()
             reg.append(glfw_context)
 
-    def _draw_(self, render_unit, fbl = None):
+    def _draw_(self, render_unit:Render_unit_temp, fbl = None):
         self._check_shader_build()
 
         # actual draw
-        fbo = FBL.get_current()
-        viewport = Viewport.get_current()
+        FBL.get_current().render_unit_registry.register(render_unit)
+        render_unit.bind()
 
-        fbo.render_unit_registry.register(render_unit)
-        # check initiated context
-        context = GLFW_GL_tracker.get_current()
+        if self.flag_draw:
+            # Automated condition can't be set
+            # for example) if first draw is ignored and second draw is run
+            # to have similar frame to swap, ignored first has to be drawn before second
+            # which is nonsence.
+            # To avoid this window drawn on has to check every renderer before any draw call is made
+            # and if any draw call is evaluated to be called all other draw call on window has to be called
 
-        render_unit.shader_attribute.PM = viewport.camera.PM
-        render_unit.shader_attribute.VM = viewport.camera.VM
-
-        if self.flag_draw or self.flag_run:
-            # load opengl states
-            render_unit.bind()
-
-            # if self.flag_run:
-            #     render_unit.update_variables()
-
-            if self.flag_draw:
-                # Automated condition can't be set
-                # for example) if first draw is ignored and second draw is run
-                # to have similar frame to swap, ignored first has to be drawn before second
-                # which is nonsence.
-                # To avoid this window drawn on has to check every renderer before any draw call is made
-                # and if any draw call is evaluated to be called all other draw call on window has to be called
-
-                # TODO BUT if viewport is consistent window could just copy from front buffer partially and paste it
-                #      on the current drawing(back) buffer. This won't effect another viewport beeing refreshed.
-                #      If this makes thing faster this is worth a strategy.
-                #      Implement this.
-                if True:
-
-                    ibo = render_unit.index_buffer
-                    if ibo.count != 0:  # draw a thing
-                        with fbo as fbo:
+            # TODO BUT if viewport is consistent window could just copy from front buffer partially and paste it
+            #      on the current drawing(back) buffer. This won't effect another viewport beeing refreshed.
+            #      If this makes thing faster this is worth a strategy.
+            #      Implement this.
+            if True:
+                ibo = render_unit.index_buffer
+                if ibo.count != 0:  # draw a thing
+                    with Windows.get_current():
+                       with FBL.get_current() as fbo:
+                            render_unit.shader_attribute.PM = Viewport.get_current().camera.PM
+                            render_unit.shader_attribute.VM = Viewport.get_current().camera.VM
                             # get id color
                             if hasattr(render_unit.shader_attribute,'u_id_color'):
                                 id = fbo.render_unit_registry.id_color(render_unit) + [1,]
                                 render_unit.shader_attribute.u_id_color = id # push color
                             gl.glDrawElements(self.drawmode, ibo.count, ibo.gldtype, None)
-                        # fbo.end()
+                    # fbo.end()
 
             # TODO is this unnecessary processing? checking?
             # self._unbind_global()

@@ -68,15 +68,21 @@ class Frame(FBL):
         if not self._flag_built:
             raise
         self._frame_buffer.bind()
+        gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+        # if clear is set
         if Viewport.get_current()._flag_clear:
             vp = Viewport.get_current()
+            # clear id color to black
             gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT1)
             gl.glClearColor(0,0,0,0)
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+            # clear ambient color
             gl.glClearColor(*vp.clear_color)
             gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT0)
             vp.fillbackground()
+            # reset draw buffer for comming drawing
             self.bindDrawBuffer()
+
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

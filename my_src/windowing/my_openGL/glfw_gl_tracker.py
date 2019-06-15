@@ -185,6 +185,8 @@ class GLFW_GL_tracker:
 
     @classmethod
     def get_current(cls):
+        if cls._current is None:
+            raise
         return cls._current
 
 class context_check:
@@ -263,6 +265,7 @@ class Trackable_openGL:
     GL_STENCIL_BITS = gl.GL_STENCIL_BITS
     GL_STENCIL_INDEX = gl.GL_STENCIL_INDEX
     GL_STENCIL_INDEX16 = gl.GL_STENCIL_INDEX16
+    GL_SCISSOR_BOX = gl.GL_SCISSOR_BOX
 
     # operation
     GL_KEEP = gl.GL_KEEP
@@ -799,6 +802,9 @@ class Trackable_openGL:
     def glStencilOp(cls,fail,zfail,zpass):
         gl.glStencilOp(fail,zfail,zpass)
 
+    @context_check
+    def glIsEnabled(self,cap):
+        return gl.glIsEnabled(cap)
 
 
 

@@ -30,6 +30,8 @@ class Viewports:
         self.__class__._current_viewport = viewport
 
     def close(self):
+        if self.current_viewport._flag_clear:
+            self.current_viewport.clear_instant()
         vp = self._viewports['default']
         self.make_viewport_current(vp)
         vp.open()
@@ -42,8 +44,8 @@ class Viewports:
 
     @property
     def current_viewport(self):
-        if self.__class__._current_viewport is None:
-            return self._viewports['default']
-
-        return self.__class__._current_viewport
-
+        # if self.__class__._current_viewport is None:
+        #     return self._viewports['default']
+        #
+        # return self.__class__._current_viewport
+        return Viewport.get_current()

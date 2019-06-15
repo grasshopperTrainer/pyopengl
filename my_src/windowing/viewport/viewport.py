@@ -41,22 +41,37 @@ class Viewport:
         # not going to clear right now because it may be meaningless
         # if nothing is drawn on viewport
         self._flag_clear = True
+
     def clear_instant(self, *color):
         if len(color) == 0:
-            color = self.DEF_CLEAR_COLOR
+            if self._clear_color is None:
+               color = self.DEF_CLEAR_COLOR
+            else:
+                color = self._clear_color
+        # clear window frame's
+        # with self._bound_fbl.myframe:
         gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER,self._bound_fbl.myframe._frame_buffer._glindex)
+
+        gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT1)
+        gl.glClearColor(0,0,0,0)
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+
         gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT0)
         gl.glClearColor(*color)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+
         gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
         gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
         self._bound_fbl.myframe._flag_something_rendered = True
+        self._flag_clear = False
+
     @property
     def clear_color(self):
         if self._clear_color is None:
             return self.DEF_CLEAR_COLOR
         else:
             return self._clear_color
+
     def fillbackground(self):
         # clear window by being called from (class)RenderUnit.draw_element()
         if self._flag_clear:
@@ -75,11 +90,9 @@ class Viewport:
             self._flag_clear = False
 
     def open(self, do_clip = True):
-        # if self._bound_fbl is not None:
-        #     FBL.set_current(self._bound_fbl)
         self.set_current(self)
 
-        with Windows.get_current():
+        with self._bound_fbl.myframe:
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
 
             gl.glViewport(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)

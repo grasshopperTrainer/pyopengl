@@ -11,6 +11,7 @@ class Windows:
     windows_z = dict()
     iter_count = 0
     _current_window = None
+
     def __init__(self):
         self.windows = self.__class__.windows # just a redirector
         self.iter_count = self.__class__.iter_count # just a redirector
@@ -43,9 +44,10 @@ class Windows:
                     break
         else:
             key = other.name
+
         other._name = key
         self.windows[key] = other
-        self.set_window_z_position(other, 0)
+        # self.set_window_z_position(other, 0)
 
     # iteration, return window object
     def __iter__(self):

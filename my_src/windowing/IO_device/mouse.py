@@ -35,7 +35,7 @@ class Mouse(SID):
         glfw.set_mouse_button_callback(self._window.glfw_window, self.mouse_button_callback)
         glfw.set_scroll_callback(self._window.glfw_window, self.mouse_scroll_callback)
 
-        self.instant_mouse_states = []
+        # self.instant_mouse_states = []
 
         self._button_state = {}
         self._cursor_state = {'onscreen':False,'moving':False}
@@ -49,16 +49,21 @@ class Mouse(SID):
 
         self._mapping_source = None
 
+        self._just_values = {
+            'pressed':False,
+            'released':False
+        }
+
     def _callback_exec(func):
-        def wrapper(*args, **kwargs):
+
+        def wrapper(self, *args, **kwargs):
             name = func.__name__.split('_callback')[0]
-            self = args[0]
             for n,callback in self._callbacks[name].items():
                 f, a, k, n, i = callback
                 f(*a, **k)
                 if i: # remove if instant
                     del self._callbacks[name][n]
-            func(*args, **kwargs)
+            func(self, *args, **kwargs)
             self.any_callback()
         return wrapper
 
@@ -83,9 +88,11 @@ class Mouse(SID):
         pass
     @_callback_exec
     def button_press_callback(self):
+        self._just_values['pressed'] = True
         pass
     @_callback_exec
     def button_release_callback(self):
+        self._just_values['released'] = True
         pass
     @_callback_exec
     def scroll_callback(self):
@@ -190,11 +197,9 @@ class Mouse(SID):
         if action is 1:
             self._button_state[button] = True
             self.button_press_callback()
-            self._just_pressed = True
         if action is 0:
             self._button_state[button] = False
             self.button_release_callback()
-            self._just_released = True
         self.button_callback()
 
     def mouse_scroll_callback(self, context, xoffset, yoffset):
@@ -209,32 +214,41 @@ class Mouse(SID):
             self.scroll_down_callback()
         self.scroll_callback()
 
-    def instant_press_button(self, button: int):
-        """
-        Triger one-time mouse button click action.
-        :param button: button index number
-        :return:
-        """
-        self._button_state[button] = True
-        # reset action
-        self.instant_mouse_states.append([self._button_state, button, False])
+    # def instant_press_button(self, button: int):
+    #     """
+    #     Triger one-time mouse button click action.
+    #     :param button: button index number
+    #     :return:
+    #     """
+    #     self._button_state[button] = True
+    #     # reset action
+    #     self.instant_mouse_states.append([self._button_state, button, False])
+    #
+    # def instant_mouse_onscreen(self):
+    #     self._flag_cursor_onscreen = True
+    #     self.instant_mouse_states.append([self._cursor_state,'onscreen', False])
 
-    def instant_mouse_onscreen(self):
-        self._flag_cursor_onscreen = True
-        self.instant_mouse_states.append([self._cursor_state,'onscreen', False])
-
-    def reset(self):
-        self._just_released = False
-        self._just_pressed = False
-
-        for type,key,state in self.instant_mouse_states:
-            type[key] = state
-        self.instant_mouse_states = []
+    def reset_per_frame(self):
+        for i in self._just_values:
+            self._just_values[i] = False
+        # for type,key,state in self.instant_mouse_states:
+        #     type[key] = state
+        # self.instant_mouse_states = []
         self._cursor_state['moving'] = False
-    @property
-    def is_just_released(self):
-        return self._just_released
 
+    def _get_just(func):
+        @property
+        def wrapper(self, *args, **kwargs):
+            name = func.__name__.replace('is_just_','')
+            return self._just_values[name]
+        return wrapper
+
+    @_get_just
+    def is_just_released(self):
+        pass
+    @_get_just
+    def is_just_pressed(self):
+        pass
     @property
     def pressed_button(self):
         return_list = []
@@ -345,10 +359,10 @@ class Mouse(SID):
         y = self._window.height - y
         self._window.make_window_current()
 
-        with self._window.myframe:
-            gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
-            color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
-            return self._window.myframe.render_unit_registry.object(color)
+        self.window.myframe.bind()
+        gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
+        color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
+        return self._window.myframe.render_unit_registry.object(color)
 
     def set_object_selection_callback(self, selection, callback, func):
         def callback_func():

@@ -26,12 +26,6 @@ from windowing.frame_buffer_like.renderable_image import Renderable_image
 from windowing.frame_buffer_like.frame import Frame
 from .windows import Windows
 
-class Test:
-    def __enter__(self):
-        return self
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
 
 class Window:
     """
@@ -80,10 +74,12 @@ class Window:
         """
         glfw.init()
         gl.context_specification_check() # check additional specification
+
     def __enter__(self):
+        if Viewport.get_current() not in self.viewports:
+            self.viewports[0].open()
         return self
-    def __enter__(self):
-        return self.myframe
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
@@ -91,7 +87,7 @@ class Window:
         self = super().__new__(cls)
 
         # cls._windows + self
-        return self # return proxy of generated object
+        return self
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
 
@@ -99,26 +95,9 @@ class Window:
         self._name = name
         self._monitor = monitor
 
-        # add this window to a group
-        # but if window is set to be singular
-        # evade window creation
         self.windows + self
 
         Windows.set_current(self) # for init process may be needing which window is current
-        # stores object name as an instance name
-        # f = inspect.currentframe().f_back
-        # self._instance_name = ''
-        # try:
-        #     while True:
-        #         code_context = inspect.getframeinfo(f).code_context[0]
-        #         if ' Window(' in code_context and '=' in code_context:
-        #             self._instance_name = code_context.split('=')[0].strip()
-        #             break
-        #         else:
-        #             f = f.f_back
-        # except:
-        #     print_message("can't grasp instance name", "error")
-        #     self._instance_name = 'unknown'
 
         # 1. generate contex first.
         # Do not mix order 1 and 2. There is automated vertex array operation during 2.
@@ -143,8 +122,7 @@ class Window:
         else:
             # this is a unique context wrapper and is a context identifier
             self._unique_glfw_context = GLFW_GL_tracker(self)
-
-
+        GLFW_GL_tracker.set_current(self._unique_glfw_context)
         # customizable frame
         m = glfw.get_primary_monitor()
         _,_,max_width,max_height = glfw.get_monitor_workarea(m)
@@ -227,7 +205,7 @@ class Window:
             'window_maximized':{},
             'window_iconify':{},
             'window_content_scale':{}
-                           }
+        }
 
         self._z_position = 0
 
@@ -443,10 +421,8 @@ class Window:
         self._flag_movable = set
 
     def config_iconified(self, set: bool=None):
-        print('iconify')
         if set is None:
             set = not glfw.get_window_attrib(self.glfw_window,glfw.ICONIFIED)
-            print(set)
         else:
             if set:
                 set = glfw.TRUE
@@ -586,7 +562,14 @@ class Window:
         target_window.copy_frame_from(self, src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y)
 
         def pin_on_viewport():
-            if self.myframe.flag_something_rendered or target_window.myframe.flag_something_rendered:
+            conditions = [
+                self.myframe.flag_something_rendered,
+                target_window.myframe.flag_something_rendered,
+                self.is_resized,
+                target_window.is_resized
+            ]
+            if any(conditions):
+                print('coppying')
                 src0x, src0y, srcw, srch = source_viewport.absolute_gl_values
                 src1x, src1y = [a + b for a, b in zip((src0x, src0y), (srcw, srch))]
                 dst0x, dst0y, dstw, dsth = target_viewport.absolute_gl_values
@@ -594,7 +577,7 @@ class Window:
                 target_window.copy_frame_from(self,src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y)
 
         target_window.set_post_draw_callback(pin_on_viewport,name='_pin_on_viewport')
-
+        self.set_post_draw_callback(pin_on_viewport,name='_pin_on_viewport')
 
     def initiation_post_glfw_setting(self):
         # default setting
@@ -618,10 +601,10 @@ class Window:
         gl.glEnable(gl.GL_SCISSOR_TEST)
         gl.glEnable(gl.GL_DEPTH_TEST)
         gl.glEnable(gl.GL_STENCIL_TEST)
-        a = gl.glGetIntegerv(gl.GL_SCISSOR_TEST)
-        b = gl.glGetIntegerv(gl.GL_DEPTH_TEST)
-        c = gl.glGetIntegerv(gl.GL_STENCIL_TEST)
-        if a.value + b.value + c.value != 3:
+        a = gl.glIsEnabled(gl.GL_SCISSOR_TEST)
+        b = gl.glIsEnabled(gl.GL_DEPTH_TEST)
+        c = gl.glIsEnabled(gl.GL_STENCIL_TEST)
+        if a + b + c != 3:
             raise Exception('enabling test problem')
 
         gl.glEnable(gl.GL_BLEND)
@@ -667,13 +650,25 @@ class Window:
                     window.make_window_current()
                     # window.viewports[0].open()
                     window.pre_draw_callback()
+                    # window.viewports[0].open()
                     window._draw_()
+                    # if window.viewports.current_viewport.name == 'menu_bar':
+                    #     print(window.viewports.current_viewport.name)
+                    #     exit()
+                    # if window.viewports.current_viewport.name != 'default':
+                    if window.viewports.current_viewport._flag_clear:
+                        print(f'{window} need instant clear')
+                        window.viewports.current_viewport.clear_instant()
+                        # window.viewports.current_viewport._flag_clear = False
+
                     window.post_draw_callback()
 
                     if window.myframe._flag_something_rendered:
                         window.make_window_current()
                         gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, window.myframe._frame_buffer._glindex)
                         gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # set source
+
+                        gl.glScissor(0,0,window.width, window.height) # reset scissor to copy all
 
                         gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, 0)
                         gl.glBlitFramebuffer(0, 0, window.width, window.height,
@@ -692,7 +687,7 @@ class Window:
                     # # UCD.reset_instance_descriptors_update(window)
                     # UCD.reset_instance_descriptors_update(*viewports.values())
                     # UCD.reset_instance_descriptors_update(*[v.camera for v in viewports.values()])
-                    window.mouse.reset()
+                    window.mouse.reset_per_frame()
                 # z_dict = sorted(cls._windows.get_window_z_position().items())
                 # for i,l in z_dict:
                 #     for w in l:
@@ -713,36 +708,8 @@ class Window:
         glfw.terminate()
 
     @classmethod
-    def run_multi_thread(cls):
-        raise DeprecationWarning('multi threading for windwing deprecated')
-        for window in cls._windows:
-            t = threading.Thread(target= window.thread_run)
-            window.thread = t
-            window.thread.start()
-
-        timer = Timer(cls._framerate_target,'event')
-        timer.set_init_position()
-        while cls._display_window(True):
-            timer.set_routine_start()
-            if cls._display_window(True):
-
-                if all([window._framerendered_flag for window in cls._windows]):
-                    glfw.poll_events()
-                    for window in cls._windows:
-                        window._framerendered_flag = False
-            else:
-                break
-            timer.set_routine_end()
-
-        glfw.terminate()
-        pass
-
-    @classmethod
     def print_framerate(cls, state: bool = True):
         cls._print_framerate = state
-
-
-
 
     @classmethod
     def _display_window(cls, multi_thread = False):
@@ -831,14 +798,17 @@ class Window:
             print_message('Type error. Maintain attribute.')
 
     def make_window_current(self):
-        # if self.windows.get_current() != self:
-        self.windows.set_current(self)
+        if self.windows.get_current() != self:
+            # TODO
+            # if self.windows.get_current() != self:
+            self.windows.set_current(self)
+            # self.viewports[0].open()
 
-        glfw.make_context_current(None)
-        glfw.make_context_current(self.glfw_window)
+            glfw.make_context_current(None)
+            glfw.make_context_current(self.glfw_window)
 
-        GLFW_GL_tracker.set_current(self.unique_glfw_context)
-        FBL.set_current(self._myframe)
+            GLFW_GL_tracker.set_current(self.unique_glfw_context)
+            FBL.set_current(self._myframe)
 
 
     # @classmethod
@@ -957,6 +927,8 @@ class Window:
     def is_singular(self):
         return self._flag_singular
 
+    def get_current(self):
+        return self._windows.get_current()
     # def follow_cursor(self):
     #     print(self.mouse.window_position)
 class Timer:
