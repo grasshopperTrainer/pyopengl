@@ -1,5 +1,5 @@
 from patterns.strict_method_implant import SMI
-
+import weakref
 class FBL(SMI):
     """
     this if mother of frame buffer-like class
@@ -50,7 +50,11 @@ class FBL(SMI):
         return cls._current
     @classmethod
     def set_current(cls, fbl):
-        if isinstance(fbl, FBL):
-            cls._current = fbl
-        else:
-            raise
+        # if isinstance(fbl, FBL):
+        try:
+            cls._current = weakref.proxy(fbl)
+        except:
+            cls._current = None
+
+        # else:
+        #     raise

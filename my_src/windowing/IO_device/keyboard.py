@@ -135,11 +135,32 @@ class Keyboard:
         event_list = ('action', 'press', 'release')
         self._event = dict(zip(event_list, len(event_list) * (None,)))
 
-        glfw.set_key_callback(self._window._glfw_window, self._callback_keyboard)
+        glfw.set_key_callback(self._window._glfw_window, self.key_callback)
+        glfw.set_char_callback(self._window._glfw_window,self.char_callback)
 
     def __call__(self, func):
-
         self._event['action'] = func
+
+    def delete(self):
+
+        self._window = None
+
+        repos = [
+            (glfw._key_callback_repository, self.key_callback),
+            (glfw._char_callback_repository, self.char_callback)
+        ]
+        for repo, func in repos:
+            to_delete = None
+            for n, f in repo.items():
+                if f[0] == func:
+                    to_delete = n
+
+            if to_delete != None:
+                del repo[to_delete]
+
+
+    def __del__(self):
+        print(f'gc, Keyboard {self}')
 
     def action(self, func):
         self._event['action'] = func
@@ -150,15 +171,16 @@ class Keyboard:
     def release(self, func):
         self._event['release'] = func
 
-    def _callback_keyboard(self, instance, key, scancode, action, mods):
+    def key_callback(self, instance, key, scancode, action, mods):
         if action is 1:
             self.pressed_keys.append(key)
-            self._window._context_scope.run(self._event['press'])
         if action is 0:
             self.pressed_keys.remove(key)
-            self._window._context_scope.run(self._event['release'])
 
-        self._window._context_scope.run(self._event['action'])
+
+    def char_callback(self, window, codepoint):
+        pass
+
 
     def trans(self, key):
         return self.__class__.str_num_dict[key]

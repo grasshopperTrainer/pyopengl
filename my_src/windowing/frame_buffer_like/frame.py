@@ -8,20 +8,20 @@ import numpy as np
 
 
 class Frame(FBL):
-    def __init__(self, width, height, window_binding):
+    def __init__(self, width, height):
         #typecheck
         if not isinstance(width, Number):
             raise TypeError
         if not isinstance(height, Number):
             raise TypeError
 
-        is_window_type = any([c.__name__ == 'Window' for c in window_binding.__class__.__mro__])
-        if not is_window_type:
-            if window_binding != None:
-                raise TypeError
+        # is_window_type = any([c.__name__ == 'Window' for c in window_binding.__class__.__mro__])
+        # if not is_window_type:
+        #     if window_binding != None:
+        #         raise TypeError
 
         self._size = width, height
-        self._window_binding = window_binding
+        # self._window_binding = window_binding
 
         self._frame_buffer = Framebuffer()
         self._color_attachments = []
@@ -36,6 +36,17 @@ class Frame(FBL):
         self._flag_something_rendered = False
 
         self._render_unit_registry = Render_object_registry(self)
+
+    def __del__(self):
+        print(f'gc, Frame {self}')
+
+    def delete(self):
+        print('deleting frame')
+        self._stencil_attachment.delete()
+        self._depth_attachment.delete()
+        for i in self._color_attachments:
+            i.delete()
+        self._frame_buffer.delete()
 
     def build(self):
         if not (len(self._color_attachments) != 0 or self._depth_attachment != None or self._stencil_attachment != None):

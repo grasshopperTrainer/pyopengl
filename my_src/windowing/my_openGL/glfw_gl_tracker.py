@@ -7,7 +7,8 @@ from collections import namedtuple
 
 import glfw.GLFW as glfw
 import OpenGL.GL as gl
-from windowing.windows import Windows
+# import OpenGL.
+# from windowing.windows import Windows
 
 class Object:
     def __init__(self, id, objects):
@@ -27,6 +28,7 @@ class Object:
         return targets
 
 class Objects:
+    _debug = True
     def __init__(self, name):
         self.name = name
         self.collection = {}
@@ -39,10 +41,13 @@ class Objects:
         try:
             id = int(id)
             self.collection[id] = Object(id, self)
+            self.dprint(f'gl, {self.name} {id} created')
         except:
-            id = list(id)
-            for i in id:
-                self.collection[int(i)] = Object(int(i),self)
+            ids = list(id)
+            for id in ids:
+                id = int(id)
+                self.collection[id] = Object(id,self)
+                self.dprint(f'gl, {self.name} {id} created')
 
     def binding(self, target):
         return self.targets[target].binding
@@ -61,8 +66,19 @@ class Objects:
         self.active = slot
 
     def remove(self, id):
-        del self.collection[id]
-
+        id = int(id)
+        # print(self.name, id, type(id), type(list(self.collection.keys())[0]), self.collection)
+        # print(self.collection[id])
+        try:
+            del self.collection[id]
+            self.dprint(f'gl, {self.name} {id} deleted')
+        except Exception as e:
+            self.dprint(f'gl, {self.name} {id} delete error')
+            raise
+    @classmethod
+    def dprint(cls, str):
+        if cls._debug:
+            print(str)
 
 class Target:
     def __init__(self, name):
@@ -104,6 +120,7 @@ class GLFW_GL_tracker:
     """
     # instance dict of the trackers bound with FBL(Window) object
     _windows = weakref.WeakKeyDictionary()
+    # _windows = {}
     _current = None
 
     def __init__(self, bound_object):
@@ -181,13 +198,15 @@ class GLFW_GL_tracker:
 
     @classmethod
     def set_current(cls, object):
-        cls._current = object
+        cls._current = weakref.proxy(object)
 
     @classmethod
     def get_current(cls):
         if cls._current is None:
             raise
         return cls._current
+
+
 
 class context_check:
     """
@@ -205,8 +224,9 @@ class context_check:
 
     def __get__(self, instance, owner):
         # checks whether current fbl has tracker within it
-        if Windows.get_current() not in GLFW_GL_tracker._windows:
-            raise Exception('Frame_buffer_like object not bound with trackable_GL')
+        # if Windows.get_current() not in GLFW_GL_tracker._windows:
+        #     print(list(GLFW_GL_tracker._windows.items()))
+        #     raise Exception('Frame_buffer_like object not bound with trackable_GL')
         # modified to insert Trackable_openGL type as cls
         return lambda *args,**kwargs: self.func(Trackable_openGL, *args, **kwargs)
 
@@ -227,7 +247,7 @@ class vao_related:
         if not Trackable_openGL._spec_vertex_array_shared:
 
             def func(*args, **kwargs):
-                window = Windows.get_current()
+                window = Windows.current()
                 windows = window.shared_windows + [window, ]
                 for win in windows:
                     win.make_window_current()
@@ -252,7 +272,9 @@ class Trackable_openGL:
     name of function, name of parameter, number of parameters is not recommended.
     Can cause confusion to general users referencing issued openGL specification.
     """
+    _debug = True
 
+    original_gl = gl
     # clear
     GL_COLOR_BUFFER_BIT = gl.GL_COLOR_BUFFER_BIT
     GL_DEPTH_BUFFER_BIT = gl.GL_DEPTH_BUFFER_BIT
@@ -526,11 +548,11 @@ class Trackable_openGL:
         gl.glFramebufferTexture(target, attachment, texture, level)
     @context_check
     def glDeleteFramebuffers(cls, n, framebuffers):
-        print('glDeleteFramebuffers=', n, framebuffers)
         cls.current()._frame_buffers.remove(framebuffers)
         if not isinstance(n, (tuple, list)):
-            framebuffers = [framebuffers]
+            framebuffers = [framebuffers,]
         gl.glDeleteFramebuffers(n, framebuffers)
+
     @context_check
     def glGetFramebufferParameteriv(self):
         gl.glGetFramebufferParameteriv()
@@ -709,9 +731,8 @@ class Trackable_openGL:
     def glDeleteRenderbuffers(cls, n, renderbuffers):
         cls.current()._render_buffers.remove(renderbuffers)
         if not isinstance(renderbuffers, (list,tuple)):
-            renderbuffers = [renderbuffers]
+            renderbuffers = [renderbuffers,]
         gl.glDeleteRenderbuffers(n, renderbuffers)
-
     @context_check
     def glBufferSubData(cls,target,offset,size,data):
         gl.glBufferSubData(target,offset,size,data)
@@ -807,14 +828,13 @@ class Trackable_openGL:
         return gl.glIsEnabled(cap)
 
 
-
     @classmethod
     def window(cls):
-        return Windows.get_current()
+        return Windows.current()
 
     @classmethod
     def current(cls):
-        return GLFW_GL_tracker._windows[Windows.get_current()] #type:GLFW_GL_tracker
+        return GLFW_GL_tracker.get_current() #type:GLFW_GL_tracker
 
     @classmethod
     def test(cls):

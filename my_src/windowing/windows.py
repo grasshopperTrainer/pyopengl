@@ -1,6 +1,8 @@
 from collections import OrderedDict
 import weakref
-
+from .my_openGL.glfw_gl_tracker import GLFW_GL_tracker
+from .frame_buffer_like.frame_buffer_like_bp import FBL
+import glfw
 class Windows:
     """
     Collector of Window objects.
@@ -27,8 +29,32 @@ class Windows:
     # removes from dict
     def __delattr__(self, item):
         self.windows.pop(item.name)
-    def __sub__(self, other):
-        del self.windows[other.name]
+
+    def __sub__(self, dwindow):
+
+        # clean relationship
+        for w in self.windows.values():
+            if dwindow == w._mother_window:
+                w._mother_window = None
+            if dwindow in w._children_windows:
+                w._children_windows.remove(dwindow)
+
+
+        # remove if global
+        if self.get_current() == dwindow:
+            self.set_current(None)
+        if FBL.get_current() == dwindow.myframe:
+            FBL.set_current(None)
+
+        # destroy sub components that has dwindow reference
+        dwindow._mouse.delete()
+        dwindow._keyboard.delete()
+
+        dwindow._viewports.delete()
+        # del dwindow._mouse
+
+        del self.windows[dwindow.name]
+
 
     # append to dict
     def __add__(self, other):
@@ -69,7 +95,10 @@ class Windows:
 
     @classmethod
     def set_current(cls, window):
-        cls._current_window = window
+        try:
+            cls._current_window = weakref.proxy(window)
+        except:
+            cls._current_window = window
     @classmethod
     def get_current(cls):
         return cls._current_window

@@ -63,6 +63,12 @@ class Texture_new(Texture):
     def unbind(self):
         gl.glActiveTexture(gl.GL_TEXTURE0)
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+    def delete(self):
+        gl.glDeleteTextures(1,self._glindex)
+    # def __del__(self):
+    #     if hasattr(self, '_glindex'):
+    #         self.delete()
+    #         del self._glindex
 
     @property
     def pixel_data(self):
@@ -185,6 +191,9 @@ class Texture_load(Texture):
 
     def delete(self):
         gl.glDeleteTextures(self._glindex)
+
+    def __del__(self):
+        self.delete()
 
     @property
     def pixel_data(self):

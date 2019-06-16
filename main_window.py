@@ -1,4 +1,5 @@
 from windowing.window import Window
+import glfw
 from windowing.renderer.BRO.testBRO import TestBRO
 from windowing.unnamedGUI import *
 
@@ -29,6 +30,21 @@ class Main_window(Window):
         self.y = False
         self.a = None
     def _draw_(self):
+        pos = glfw.get_cursor_pos(self.glfw_window)
+        if 0<pos[0]<100 and 0<pos[1]<100:
+            print('mouse on position')
+            self.a = Top_bar(self)
+        elif 400<pos[0]<500 and 0<pos[1]<100:
+
+            if self.a == None:
+                self.a = Top_bar(self)
+                # self.a = None
+            else:
+                self.a.config_window_close()
+                self.a = None
+                self.y = True
+                # exit()
+
         # print(self.windows.windows)
         # if self.mouse.is_object_pressed(self.rect.unit):
         #     if not self.windows.has_window_named('top_bar'):
@@ -51,28 +67,31 @@ class Main_window(Window):
         #         self.top_bar.config_visible(False)
         #         self.top_bar.pin_on_viewport(self, 'top_bar', 0)
         #         self.top_bar.mouse.set_map_from_window(self, 'top_bar')
-        if self.mouse.is_just_pressed:
-            if not self.y:
-                self.a = Top_bar(self)
-                self.y = True
+        # if self.mouse.is_just_pressed:
+        #     if not self.y:
+        #         self.a = Top_bar(self)
+        #         self.y = True
+        #
+        #     else:
+        #         self.y = False
+        #         self.a.config_window_close()
+        #         self.a = None
+        pass
 
-            else:
-                self.y = False
-                self.a.config_window_close()
-                self.a = None
-
-    def refresh_all(self):
-        self.viewports['default'].open().clear()
-        self.rect.draw()
-        self.rect2.draw()
-        self.viewports['menu_bar'].open().clear(1,0,0,1)
-        self.button0.draw()
-        self.viewports.close()
+    # def refresh_all(self):
+    #     self.viewports['default'].open().clear()
+    #     self.rect.draw()
+    #     self.rect2.draw()
+    #     self.viewports['menu_bar'].open().clear(1,0,0,1)
+    #     self.button0.draw()
+    #     self.viewports.close()
 
 class Top_bar(Window):
-    def __init__(self, master_window):
+    def __init__(self,mother):
         # self.config_visible(False)
-        super().__init__(1000,100, 'top_bar',None, master_window)
+        super().__init__(1000,100, 'top_bar',None, mother)
+
+        # print(self.load)
         # self.set_window_z_position(1)
         #
         # self.follow_window_iconify(master_window)
@@ -94,6 +113,7 @@ class Top_bar(Window):
         # self.viewports[0].clear(0,1,0,1)
         # self.rect1.draw()
         # self.rect2.draw()
+        pass
 
     def _draw_(self):
         # # self.viewports[0].open()

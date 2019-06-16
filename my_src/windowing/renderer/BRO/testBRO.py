@@ -1,5 +1,4 @@
 from ..renderer_template import Renderer_builder
-from patterns.update_check_descriptor import UCD
 from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
 
@@ -20,15 +19,6 @@ class TestBRO():
 
     renderer = c()
 
-    _posx = UCD()
-    _posy = UCD()
-    _width = UCD()
-    _height = UCD()
-
-    _abs_posx = UCD()
-    _abs_posy = UCD()
-    _abs_width = UCD()
-    _abs_height = UCD()
 
     def __init__(self,posx, posy, width, height):
         print('new rect',self)

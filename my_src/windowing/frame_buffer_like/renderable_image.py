@@ -4,10 +4,8 @@ from windowing.renderer.components.renderbuffer import Renderbuffer
 from windowing.renderer.components.texture import Texture_new
 from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
 from windowing.viewport.viewport import Viewport
-from patterns.update_check_descriptor import UCD
 
 class Renderable_image(FBL):
-    _size = UCD()
     def __init__(self, width, height):
         self._size = [width, height]
 

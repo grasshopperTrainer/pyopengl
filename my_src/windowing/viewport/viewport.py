@@ -1,4 +1,3 @@
-from patterns.update_check_descriptor import UCD
 from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 from .Camera import _Camera
 from collections import namedtuple
@@ -8,12 +7,9 @@ from ..windows import Windows
 class Viewport:
     _current = None
     DEF_CLEAR_COLOR = 0, 0, 0, 0
+    def __init__(self, x, y, width, height, window=None, name= None):
 
-
-
-    def __init__(self, x, y, width, height, fbl=None, name= None):
-
-        self._bound_fbl = fbl
+        self._window = window
         self._name = name
 
         self._posx = x
@@ -50,7 +46,7 @@ class Viewport:
                 color = self._clear_color
         # clear window frame's
         # with self._bound_fbl.myframe:
-        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER,self._bound_fbl.myframe._frame_buffer._glindex)
+        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, self._window.myframe._frame_buffer._glindex)
 
         gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT1)
         gl.glClearColor(0,0,0,0)
@@ -62,7 +58,7 @@ class Viewport:
 
         gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
         gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
-        self._bound_fbl.myframe._flag_something_rendered = True
+        self._window.myframe._flag_something_rendered = True
         self._flag_clear = False
 
     @property
@@ -92,7 +88,7 @@ class Viewport:
     def open(self, do_clip = True):
         self.set_current(self)
 
-        with self._bound_fbl.myframe:
+        with self._window.myframe:
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
 
             gl.glViewport(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
@@ -111,7 +107,7 @@ class Viewport:
             self.fillbackground()
     @property
     def abs_posx(self):
-        h = Windows.get_current().width if self._bound_fbl is None else self._bound_fbl.width
+        h = Windows.get_current().width if self._window is None else self._window.width
         if isinstance(self._posx, float):
             return int(self._posx * h)
         elif callable(self._posx):
@@ -141,7 +137,7 @@ class Viewport:
 
         :return:
         """
-        h = Windows.get_current().height if self._bound_fbl is None else self._bound_fbl.height
+        h = Windows.get_current().height if self._window is None else self._window.height
         if isinstance(self._posy, float):
             return int((1-self._posy) * h - self.abs_height)
         elif callable(self._posy):
@@ -151,7 +147,7 @@ class Viewport:
 
     @property
     def abs_width(self):
-        h = Windows.get_current().width if self._bound_fbl is None else self._bound_fbl.width
+        h = Windows.get_current().width if self._window is None else self._window.width
         if isinstance(self._width, float):
             return int(self._width * h)
         elif callable(self._width):
@@ -161,7 +157,7 @@ class Viewport:
 
     @property
     def abs_height(self):
-        h = Windows.get_current().height if self._bound_fbl is None else self._bound_fbl.height
+        h = Windows.get_current().height if self._window is None else self._window.height
         if isinstance(self._height, float):
             return int(self._height * h)
         elif callable(self._height):
@@ -175,7 +171,7 @@ class Viewport:
 
     @property
     def abs_glfw_posy(self):
-        h = Windows.get_current().height if self._bound_fbl is None else self._bound_fbl.height
+        h = Windows.get_current().height if self._window is None else self._window.height
         if isinstance(self._posy, float):
             return int(self._posy * h)
         elif callable(self._posy):
@@ -249,4 +245,5 @@ class Viewport:
     def set_current(cls, vp):
         cls._current = vp
 
-
+    def delete(self):
+        self._window = None

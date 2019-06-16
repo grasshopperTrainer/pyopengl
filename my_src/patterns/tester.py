@@ -1,47 +1,13 @@
-from patterns.update_check_descriptor import UCD
-from patterns.strict_method_implant import SMI
+class C:
+    def __init__(self):
+        self.a = 10
+    def __del__(self):
+        print('deleting')
+        print(self)
+        self.a = 20
 
-class A(SMI):
-
-
-    ddd = None
-    s = SMI.should_arg()
-
-    def a(self):
-        pass
-
-    def b(self):
-        pass
-
-
-    @SMI.should_func
-    def d(self):
-        pass
-
-    @SMI.should_func
-    @property
-    def p(self):
-        pass
-
-
-
-
-class B(A):
-    a = 10
-
-    def k(self):
-        pass
-    pass
-
-    def p(self):
-        pass
-
-    def s(self):
-        pass
-    @property
-    def kkk(self):
-        pass
-
-
-
-b = B()
+a = C()
+b = C()
+a.__del__()
+print(a.a)
+print(b.a)

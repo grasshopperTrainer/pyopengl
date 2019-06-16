@@ -55,15 +55,41 @@ class Mouse(SID):
             'released':False
         }
 
+    def delete(self):
+        print('deleting mouse')
+        # remove window footprint
+        self._window = None
+        # removing callbacks from a thing called by glfw.pollevent()
+        repos = [
+            (glfw._cursor_pos_callback_repository, self.mouse_move_callback),
+            (glfw._cursor_enter_callback_repository,self.mouse_enter_callback),
+            (glfw._mouse_button_callback_repository,self.mouse_button_callback),
+            (glfw._scroll_callback_repository,self.mouse_scroll_callback)
+        ]
+        for repo,func in repos:
+            to_delete = None
+            for n,f in repo.items():
+                if f[0] == func:
+                    to_delete = n
+
+            if to_delete != None:
+                del repo[to_delete]
+
+        # glfw.poll_events()
+        # glfw.post_empty_event()
+
+        # glfw.event
+
+        # exit()
+    def __del__(self):
+        print(f'gc, Mouse {self}')
+
     def _callback_exec(func):
-
-
         def wrapper(self, *args, **kwargs):
             name = func.__name__.split('_callback')[0]
-
             operating_w = None
-            if self.window.get_current() != self.window:
-                operating_w = self.window.get_current()
+            if self.window.current != self.window:
+                operating_w = self.window.current
                 self.window.make_window_current()
 
             to_delete = []

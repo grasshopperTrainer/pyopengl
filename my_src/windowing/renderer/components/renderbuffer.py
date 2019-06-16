@@ -30,8 +30,8 @@ class Renderbuffer(RenderComponent):
         self.bind()
         # initial setting
         gl.glRenderbufferStorage(gl.GL_RENDERBUFFER, self._internalformat, self._size[0],self._size[1])
-
         self.unbind()
+
     def rebuild(self, width, height):
         self._size = width, height
         self.delete()
@@ -45,3 +45,8 @@ class Renderbuffer(RenderComponent):
 
     def delete(self):
         gl.glDeleteRenderbuffers(1, self._glindex)
+        self._glindex = None
+
+    def __del__(self):
+        if self._glindex != None:
+            self.delete()

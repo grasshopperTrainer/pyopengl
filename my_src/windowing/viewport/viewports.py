@@ -36,6 +36,16 @@ class Viewports:
         self.make_viewport_current(vp)
         vp.open()
 
+    def delete(self):
+        for vp in self._viewports.values():
+            vp.delete()
+        # del self._viewports
+        # self._viewports = None
+        self._window = None
+
+    def __del__(self):
+        print(f'gc, Viewports {self}')
+
     def __getitem__(self, item) -> Viewport:
         if isinstance(item, str):
             return self._viewports[item]
@@ -44,8 +54,7 @@ class Viewports:
 
     @property
     def current_viewport(self):
-        # if self.__class__._current_viewport is None:
-        #     return self._viewports['default']
-        #
-        # return self.__class__._current_viewport
-        return Viewport.get_current()
+        if Viewport.get_current() is None:
+            return self._viewports['default']
+        else:
+            return Viewport.get_current()

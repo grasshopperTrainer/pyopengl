@@ -1,6 +1,6 @@
 from numbers import Number
 import ctypes
-
+import glfw
 import numpy as np
 from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 
@@ -81,3 +81,8 @@ class Framebuffer(RenderComponent):
 
     def delete(self):
         gl.glDeleteFramebuffers(1, self._glindex)
+        self._glindex = None
+
+    def __del__(self):
+        if self._glindex != None:
+            self.delete()

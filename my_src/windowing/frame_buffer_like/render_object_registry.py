@@ -51,3 +51,6 @@ class Render_object_registry:
         for o,i in self._collections.items():
             if i.id == id:
                 return o
+
+    def __del__(self):
+        print(f'gc, Render_object_registry {self}')
