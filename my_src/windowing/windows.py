@@ -10,6 +10,7 @@ class Windows:
     ^is this necessary?
     """
     windows = OrderedDict()
+    test_dic = weakref.WeakKeyDictionary()
     # windows_z = dict()
     iter_count = 0
     _current_window = None
@@ -32,27 +33,6 @@ class Windows:
 
     def __sub__(self, dwindow):
 
-        # clean relationship
-        for w in self.windows.values():
-            if dwindow == w._mother_window:
-                w._mother_window = None
-            if dwindow in w._children_windows:
-                w._children_windows.remove(dwindow)
-
-
-        # remove if global
-        if self.get_current() == dwindow:
-            self.set_current(None)
-        if FBL.get_current() == dwindow.myframe:
-            FBL.set_current(None)
-
-        # destroy sub components that has dwindow reference
-        dwindow._mouse.delete()
-        dwindow._keyboard.delete()
-
-        dwindow._viewports.delete()
-        # del dwindow._mouse
-
         del self.windows[dwindow.name]
 
 
@@ -73,6 +53,7 @@ class Windows:
 
         other._name = key
         self.windows[key] = other
+        self.test_dic[other] = key
         # self._current_window = other
         # self.set_window_z_position(other, 0)
 

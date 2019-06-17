@@ -26,7 +26,6 @@ class Main_window(Window):
         # self.refresh_all() # first draw all
         #
         # self.mouse.set_object_selection_callback(self.rect.unit,self.mouse.set_button_press_callback,(self.viewports[0].open,self.rect.switch_color))
-        # self.set_window_refresh_callback(self.refresh_all)
         self.y = False
         self.a = None
     def _draw_(self):
@@ -38,6 +37,7 @@ class Main_window(Window):
 
             if self.a == None:
                 self.a = Top_bar(self)
+                self.set_window_refresh_callback(self.a.p)
                 # self.a = None
             else:
                 self.a.config_window_close()
@@ -114,6 +114,8 @@ class Top_bar(Window):
         # self.rect1.draw()
         # self.rect2.draw()
         pass
+    def p(self):
+        print('this is window2 function')
 
     def _draw_(self):
         # # self.viewports[0].open()

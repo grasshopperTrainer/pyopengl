@@ -85,6 +85,7 @@ class Window:
         self.__init__(*args, **kwargs)
         cls._windows + self
         return weakref.proxy(self)
+        # return self
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
         print('initiating window')
@@ -172,19 +173,20 @@ class Window:
         self._keyboard = Keyboard(weakref.proxy(self))
         self._mouse = Mouse(self)
 
-        # follow closing of following windows
-        # set by follows_closing()
-
-        # drawing layers
-        # TODO integrate
-        # self._layers = Layers(self)
-
-        # flags for frame drawing and swapping
-        self._flag_just_resized = True
-
+        # # follow closing of following windows
+        # # set by follows_closing()
+        #
+        # # drawing layers
+        # # TODO integrate
+        # # self._layers = Layers(self)
+        #
+        # # flags for frame drawing and swapping
+        # self._flag_just_resized = True
+        #
         # viewport collection
         self._viewports = Viewports(self)
-        #
+        # #
+        self._callbacks_repo = weakref.WeakKeyDictionary()
         self._callbacks = {
             'pre_draw':{},
             'post_draw':{},
@@ -200,7 +202,8 @@ class Window:
         self.initiation_post_glfw_setting()
         self.initiation_gl_setting()
         self.initiation_window_setting()
-
+        #
+        # self._dell = False
 
     @property
     def mother_window(self):
@@ -226,18 +229,22 @@ class Window:
             name = func.__name__.split('_callback')[0]
             self = args[0]
             to_delete = []
-            for n, callback in self._callbacks[name].items():
-                f, a, k, id, s, w = callback
-                try:
-                    f(*a, **k)
-                except:
-                    to_delete.append(n)
-                    print(Warning("can't run callback. callback deleted"))
-                if s:  # remove if instant
-                    to_delete.append(n)
+            for dic in self._callbacks_repo.values():
+                for n, callback in dic[name].items():
+                    f, a, k, i, s = callback
+                    # try:
+                    if f() is None:
+                        to_delete.append(n)
+                    else:
+                        if s:  # remove if instant
+                            to_delete.append(n)
+                        f()(*a, **k)
+                    # except:
+                    #     to_delete.append(n)
+                    #     print(Warning("can't run callback. callback deleted"))
 
-            for i in to_delete:
-                del self._callbacks[name][i]
+                for i in to_delete:
+                    del dic[name][i]
 
             func(*args, **kwargs)
         return wrapper
@@ -282,57 +289,90 @@ class Window:
         pass
 
     def _callback_setter(func):
-        def wrapper(self, function, args: tuple = (), kwargs: dict = {}, name: str = 'unknown', instant=False):
+        def wrapper(self, function, args: tuple = (), kwargs: dict = {}, identifier: str = 'not_given', instant=False, deleter=None):
+            # type check
             if not callable(function):
                 raise TypeError
             if not isinstance(args, tuple):
                 raise TypeError
             if not isinstance(kwargs, dict):
                 raise TypeError
+
+            # name of callback
             callback_name = func.__name__.split('set_')[1].split('_callback')[0]
 
-            # check equal callback
+            # call dict by deleter
+            if deleter is None:
+                deleter = self
+            if deleter not in self._callbacks_repo:
+                callbacks_set = copy.deepcopy(self._callbacks)
+                if isinstance(deleter, weakref.ProxyType):
+                    # print(deleter)
+                    deleter = deleter.__repr__.__self__
+                    # print(weakref.getweakrefcount(deleter))
+                    # print(type(self._callbacks_repo))
+                self._callbacks_repo[deleter] = callbacks_set
+                # print(weakref.getweakrefcount(deleter))
+            else:
+                callbacks_set = self._callbacks_repo[deleter]
+
+            # check callback equality
             exist = False
             func_name = function.__qualname__
-            callbacks = self._callbacks[callback_name]
+
+            callbacks = callbacks_set[callback_name]
             if func_name in callbacks:
-                f,a,k,n,i,w = callbacks[func_name]
-                if function.__code__ == f.__code__:
-                    exist = True
+                f,a,k,i,s = callbacks[func_name]
+                if f() is None:
+                    pass
+                else:
+                    if function().__code__ == f.__code__:
+                        if identifier == i:
+                            exist = True
 
-                count = 0
-                while True:
-                    temp_name = f'{func_name}{count}'
-                    if temp_name in callbacks:
-                        count += 1
-                    else:
-                        func_name = temp_name
-                        break
+                    # make name for similar
+                    count = 0
+                    while True:
+                        temp_name = f'{func_name}{count}'
+                        if temp_name in callbacks:
+                            count += 1
+                        else:
+                            func_name = temp_name
+                            break
+
+            # if confirmed this is a new callback
             if not exist:
-                self._callbacks[callback_name][func_name] = function, args, kwargs, name, instant, weakref.proxy(self)
-
+                callbacks[func_name] = weakref.WeakMethod(function), args, kwargs, identifier, instant
+                # print('from setter')
+                # print(id(function))
+                # print(type(function.__self__))
+                # print(function.__self__.__getattribute__(function.__name__))
+                # print(function.__self__.__repr__())
+                # print(function,type(function))
+                # print(function.__repr__())
+                # print(weakref.ref(function))
         return wrapper
 
     @_callback_setter
-    def set_pre_draw_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown', instant = False):
+    def set_pre_draw_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
         pass
     @_callback_setter
-    def set_post_draw_callback(self, func, args:tuple=(), kwargs:dict={}, name:str='unknown', instant = False):
+    def set_post_draw_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
         pass
     @_callback_setter
-    def set_window_resize_callback(self, func, args:tuple = (), kwargs:dict={}, name:str='unknown', instant = False):
+    def set_window_resize_callback(self, func, args:tuple = (),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
         pass
     @_callback_setter
-    def set_window_close_callback(self, func, args:tuple=(),kwargs:dict={}, name:str='unknown', instant = False):
+    def set_window_close_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
         pass
     @_callback_setter
-    def set_window_pos_callback(self, func, args:tuple=(),kwargs:dict={}, name:str='unknown', instant = False):
+    def set_window_pos_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
         pass
     @_callback_setter
-    def set_window_iconify_callback(self, func, args:tuple=(),kwargs:dict={}, name:str='unknown', instant = False):
+    def set_window_iconify_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
         pass
     @_callback_setter
-    def set_window_refresh_callback(self, func=None, args:tuple=(),kwargs:dict={}, name:str='unknown', instant = False):
+    def set_window_refresh_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
         pass
     def set_window_refresh(self):
         self.window_refresh_callback(self.glfw_window)
@@ -405,20 +445,6 @@ class Window:
 
     def __del__(self):
         print(f'gc, Winodw {self}')
-        # before collecting make context current for gl deletings
-        self.make_window_current()
-
-        self.myframe.delete()
-
-        # finally remove window
-        glfw.destroy_window(self._glfw_window)
-
-        # if there is no window left, terminate
-        if len(self.windows) == 0:
-            glfw.terminate()
-
-
-
         # instant collection
         gc.collect()
 
@@ -461,6 +487,10 @@ class Window:
         # del self._mouse
         # del self._layers
         # remove window_callbacks
+        # before collecting make context current for gl deletings
+        self.make_window_current()
+        glfw.set_window_should_close(self.glfw_window, True)
+
         repos = [
             (glfw._framebuffer_size_callback_repository, self.window_resize_callback),
             (glfw._window_refresh_callback_repository, self.window_refresh_callback),
@@ -480,7 +510,37 @@ class Window:
             if to_delete != None:
                 del repo[to_delete]
 
+        # destroy sub components that has self reference
+        self._mouse.delete()
+        self._keyboard.delete()
+        self._viewports.delete()
+        self._myframe.delete()
+
+        # clean relationship
+        for w in self.windows.windows.values():
+            if self == w._mother_window:
+                w._mother_window = None
+            if self in w._children_windows:
+                w._children_windows.remove(self)
+
+        # remove if global
+        if Windows.get_current() == self:
+            Windows.set_current(None)
+        if FBL.get_current == self.myframe:
+            FBL.set_current(None)
+
+        # finally remove window
+        glfw.destroy_window(self._glfw_window)
         self._windows - self
+        self._glfw_window = None
+        # if there is no window left, terminate
+        if len(self.windows) == 0:
+            glfw.terminate()
+        self._dell = True
+
+
+        # del dwindow._mouse
+
         #
         # if self.get_current() != self:
         #     self.get_current().make_window_current()
@@ -735,6 +795,18 @@ class Window:
                     #     print(window.viewports.current_viewport.name)
                     #     exit()
                     # if window.viewports.current_viewport.name != 'default':
+                    # if window.name == 'main':
+                    #     print('repo',len(window._callbacks_repo))
+                    #     if len(window._callbacks_repo) != 0:
+                    #         print('repo',list(window._callbacks_repo.values())[0])
+                    #     if len(list(window._callbacks_repo.keys())) != 0:
+                    #         print(list(window._callbacks_repo.values())[0]['window_refresh']['Top_bar.p'][0])
+                    #         print('windows',list(window.windows.test_dic.keys()))
+                    #         print('windows',list(window.windows.test_dic.keys())[1].p)
+                    #         # exit()
+                    #     for i in window._callbacks_repo.items():
+                    #         print(i)
+                    #         print(i[0]._dell, i[0].viewports[0], i[0]._glfw_window)
                     if window.viewports.current_viewport._flag_clear:
                         print(f'{window} need instant clear')
                         window.viewports.current_viewport.clear_instant()
