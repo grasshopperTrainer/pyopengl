@@ -95,12 +95,15 @@ class Window:
 
         # self.windows + self
 
-        Windows.set_current(self) # for init process may be needing which window is current
 
         # 1. generate contex first.
         # Do not mix order 1 and 2. There is automated vertex array operation during 2.
         if mother_window is not None:
-            self._glfw_window = glfw.create_window(width, height, name, monitor, mother_window._glfw_window)
+            try:
+                self._glfw_window = glfw.create_window(width, height, name, monitor, mother_window._glfw_window)
+            except Exception as e:
+                raise e
+                exit()
         else:
             self._glfw_window = glfw.create_window(width, height, name, monitor, None)
         # glfw window creation error check
@@ -139,6 +142,7 @@ class Window:
         self._myframe.use_stencil_attachment(bitdepth=16)
         self._myframe.build()
 
+        Windows.set_current(self) # for init process may be needing which window is current
         #
         # # some info for resetting
         # # look at preset_window() for further usage
@@ -203,6 +207,7 @@ class Window:
         self.initiation_gl_setting()
         self.initiation_window_setting()
         #
+        self._flag_movable = True
         # self._dell = False
 
     @property
@@ -225,28 +230,38 @@ class Window:
     # def framerate(self, value):
     #     self._default_framerate_target = value
     def _callback_exec(func):
-        def wrapper(*args, **kwargs):
+        def wrapper(self, *args, **kwargs):
+            #
+            window_swap = None
+            if Windows.get_current() != None:
+                if Windows.get_current() != self:
+                    window_swap = Windows.get_current()
+                    Windows.set_current(self)
+                    self.make_window_current()
+
             name = func.__name__.split('_callback')[0]
-            self = args[0]
-            to_delete = []
             for dic in self._callbacks_repo.values():
+                to_delete = []
                 for n, callback in dic[name].items():
                     f, a, k, i, s = callback
                     # try:
-                    if f() is None:
-                        to_delete.append(n)
-                    else:
-                        if s:  # remove if instant
+                    if isinstance(f, weakref.ReferenceType):
+                        if f() is None:
                             to_delete.append(n)
-                        f()(*a, **k)
-                    # except:
-                    #     to_delete.append(n)
-                    #     print(Warning("can't run callback. callback deleted"))
+                        else:
+                            if s:  # remove if instant
+                                to_delete.append(n)
+                            else:
+                                f = f()
+                    f(*a, **k)
 
                 for i in to_delete:
                     del dic[name][i]
+            func(self, *args, **kwargs)
 
-            func(*args, **kwargs)
+            if window_swap != None:
+                Windows.set_current(window_swap)
+                window_swap.make_window_current()
         return wrapper
 
     @_callback_exec
@@ -322,13 +337,21 @@ class Window:
 
             callbacks = callbacks_set[callback_name]
             if func_name in callbacks:
-                f,a,k,i,s = callbacks[func_name]
-                if f() is None:
-                    pass
+                f, a, k, i, s = callbacks[func_name]
+                if isinstance(f, weakref.ReferenceType):
+                    if f() is None:
+                        check = False
+                    else:
+                        f = f()
+                        check = True
                 else:
-                    if function().__code__ == f.__code__:
+                    check = True
+
+                if check:
+                    if function.__code__ == f.__code__:
                         if identifier == i:
-                            exist = True
+                            if all(a == b for a,b in zip(a, args)) and all(a==b for a,b, in zip(k, kwargs)):
+                                exist = True
 
                     # make name for similar
                     count = 0
@@ -342,15 +365,11 @@ class Window:
 
             # if confirmed this is a new callback
             if not exist:
-                callbacks[func_name] = weakref.WeakMethod(function), args, kwargs, identifier, instant
-                # print('from setter')
-                # print(id(function))
-                # print(type(function.__self__))
-                # print(function.__self__.__getattribute__(function.__name__))
-                # print(function.__self__.__repr__())
-                # print(function,type(function))
-                # print(function.__repr__())
-                # print(weakref.ref(function))
+                if hasattr(function, '__self__'):
+                    callbacks[func_name] = weakref.WeakMethod(function), args, kwargs, identifier, instant
+                else:
+                    callbacks[func_name] = function, args, kwargs, identifier, instant
+
         return wrapper
 
     @_callback_setter
@@ -374,8 +393,8 @@ class Window:
     @_callback_setter
     def set_window_refresh_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
         pass
-    def set_window_refresh(self):
-        self.window_refresh_callback(self.glfw_window)
+    # def set_window_refresh(self):
+    #     self.window_refresh_callback(self.glfw_window)
 
     def _follow(func):
         def wrapper(self, *windows):
@@ -524,6 +543,7 @@ class Window:
                 w._children_windows.remove(self)
 
         # remove if global
+        # TODO ???
         if Windows.get_current() == self:
             Windows.set_current(None)
         if FBL.get_current == self.myframe:
@@ -712,8 +732,8 @@ class Window:
                 dst1x, dst1y = [a + b for a, b in zip((dst0x, dst0y), (dstw, dsth))]
                 target_window.copy_frame_from(self,src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y)
 
-        target_window.set_post_draw_callback(pin_on_viewport,name='_pin_on_viewport')
-        self.set_post_draw_callback(pin_on_viewport,name='_pin_on_viewport')
+        target_window.set_post_draw_callback(pin_on_viewport,identifier='_pin_on_viewport')
+        self.set_post_draw_callback(pin_on_viewport,identifier='_pin_on_viewport')
 
     def initiation_post_glfw_setting(self):
         # default setting
@@ -797,6 +817,7 @@ class Window:
                     # if window.viewports.current_viewport.name != 'default':
                     # if window.name == 'main':
                     #     print('repo',len(window._callbacks_repo))
+                    #     print('windows', len(window.windows.test_dic))
                     #     if len(window._callbacks_repo) != 0:
                     #         print('repo',list(window._callbacks_repo.values())[0])
                     #     if len(list(window._callbacks_repo.keys())) != 0:
@@ -952,12 +973,10 @@ class Window:
     def make_window_current(self):
         # TODO
         # if self.windows.get_current() != self:
-        self.windows.set_current(self)
-        # self.viewports[0].open()
-
         glfw.make_context_current(None)
         glfw.make_context_current(self.glfw_window)
 
+        Windows.set_current(self)
         GLFW_GL_tracker.set_current(self.unique_glfw_context)
         FBL.set_current(self._myframe)
 

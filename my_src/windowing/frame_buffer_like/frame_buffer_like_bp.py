@@ -44,15 +44,20 @@ class FBL(SMI):
     def end(self):
         pass
 
-
     @classmethod
     def get_current(cls):
-        return cls._current
+        if cls._current is None:
+            return None
+        else:
+            if cls._current() is None:
+                cls._current = None
+                return None
+            else:
+                return cls._current()
     @classmethod
     def set_current(cls, fbl):
-        # if isinstance(fbl, FBL):
         try:
-            cls._current = weakref.proxy(fbl)
+            cls._current = weakref.ref(fbl)
         except:
             cls._current = None
 

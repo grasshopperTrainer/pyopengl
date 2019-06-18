@@ -8,7 +8,7 @@ from collections import namedtuple
 import glfw.GLFW as glfw
 import OpenGL.GL as gl
 # import OpenGL.
-# from windowing.windows import Windows
+from windowing.windows import Windows
 
 class Object:
     def __init__(self, id, objects):
@@ -198,13 +198,20 @@ class GLFW_GL_tracker:
 
     @classmethod
     def set_current(cls, object):
-        cls._current = weakref.proxy(object)
+        if object is None:
+            cls._current = None
+        cls._current = weakref.ref(object)
 
     @classmethod
     def get_current(cls):
         if cls._current is None:
-            raise
-        return cls._current
+            return None
+        else:
+            if cls._current() is None:
+                cls._current = None
+                return None
+            else:
+                return cls._current()
 
 
 
@@ -247,7 +254,7 @@ class vao_related:
         if not Trackable_openGL._spec_vertex_array_shared:
 
             def func(*args, **kwargs):
-                window = Windows.current()
+                window = Windows.get_current()
                 windows = window.shared_windows + [window, ]
                 for win in windows:
                     win.make_window_current()

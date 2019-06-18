@@ -1,7 +1,11 @@
 import glfw
 import weakref
+import copy
+
 from patterns.store_instances_dict import SID
 from ..my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+from ..windows import Windows
+from ..callback_repository import Callback_repository
 
 class Position_registry:
     pass
@@ -14,21 +18,21 @@ class Mouse(SID):
     def __init__(self, window):
         self._window = window
 
-        self._scroll_offset = []
-        self._callbacks = {
-            'any' : {},
-            'move' : {},
-            'enter' : {},
-            'exit' : {},
-            'button' : {},
-            'button_press' : {},
-            'button_release' : {},
-            'scroll' : {},
-            'scroll_up' : {},
-            'scroll_down' : {},
-            'scroll_right' : {},
-            'scroll_left' : {}
-        }
+        self._callbacks_names = [
+            'any',
+            'move',
+            'enter',
+            'exit',
+            'button',
+            'button_press',
+            'button_release',
+            'scroll',
+            'scroll_up',
+            'scroll_down',
+            'scroll_right',
+            'scroll_left'
+        ]
+        self._callbacks_repo = Callback_repository(window, self._callbacks_names)
 
         glfw.set_input_mode(self._window.glfw_window, glfw.STICKY_MOUSE_BUTTONS, glfw.TRUE)
         glfw.set_cursor_pos_callback(self._window.glfw_window, self.mouse_move_callback)
@@ -38,6 +42,7 @@ class Mouse(SID):
 
         # self.instant_mouse_states = []
 
+        self._scroll_offset = []
         self._button_state = {}
         self._cursor_state = {'onscreen':False,'moving':False}
 
@@ -84,150 +89,56 @@ class Mouse(SID):
     def __del__(self):
         print(f'gc, Mouse {self}')
 
-    def _callback_exec(func):
-        def wrapper(self, *args, **kwargs):
-            name = func.__name__.split('_callback')[0]
-            operating_w = None
-            if self.window.current != self.window:
-                operating_w = self.window.current
-                self.window.make_window_current()
-
-            to_delete = []
-            for n,callback in self._callbacks[name].items():
-                f, a, k, i, s, w = callback
-                if self.window.windows.has_window_named(w.name):
-                    f(*a, **k)
-                else:
-                    to_delete.append(n)
-                if s: # remove if instant
-                    to_delete.append(n)
-            func(self, *args, **kwargs)
-            self.any_callback()
-
-            for i in to_delete:
-                del self._callbacks[name][i]
-                # for i in self._callbacks[name].items():
-                #     print(i)
-                # del self._callbacks[name][i]
-            if operating_w != None:
-                operating_w.make_window_current()
-        return wrapper
-
-    def any_callback(self):
-        to_remove = []
-        for n, callback in self._callbacks['any'].items():
-            f, a, k, _, s,_ = callback
-            f(*a, **k)
-            if s:  # remove if instant
-                to_remove.append(n)
-        for i in to_remove:
-            del self._callbacks['any'][i]
-
-    @_callback_exec
     def move_callback(self):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('move')
     def enter_callback(self):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('enter')
     def exit_callback(self):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('exit')
     def button_callback(self):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('button')
     def button_press_callback(self):
+        self._callbacks_repo.exec('button_press')
         self._just_values['pressed'] = True
-        pass
-    @_callback_exec
     def button_release_callback(self):
+        self._callbacks_repo.exec('button_release')
         self._just_values['released'] = True
-        pass
-    @_callback_exec
     def scroll_callback(self):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('scroll')
     def scroll_right_callback(self):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('scroll_right')
     def scroll_left_callback(self):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('scroll_left')
     def scroll_up_callback(self):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('scroll_up')
     def scroll_down_callback(self):
-        pass
+        self._callbacks_repo.exec('scroll_down')
 
-    def _callback_setter(func):
-        def wrapper(self, function, args: tuple = (), kwargs: dict = {}, identifier: str = 'not_given', instant=False):
-            if not callable(function):
-                raise TypeError
-            if not isinstance(args, tuple):
-                raise TypeError
-            if not isinstance(kwargs, dict):
-                raise TypeError
-            callback_name = func.__name__.split('set_')[1].split('_callback')[0]
 
-            # check equal callback
-            exist = False
-            func_name = function.__qualname__
-            callbacks = self._callbacks[callback_name]
-            if func_name in callbacks:
-                f,a,k,n,i,w = callbacks[func_name]
-                if function.__code__ == f.__code__:
-                    if identifier == n:
-                        if all(a == b for a,b in zip(args,a)) and all(a==b for a,b, in zip(kwargs and k)):
-                            exist = True
-                count = 0
-                while True:
-                    temp_name = f'{func_name}{count}'
-                    if temp_name in callbacks:
-                        count += 1
-                    else:
-                        func_name = temp_name
-                        break
-            if not exist:
-
-                self._callbacks[callback_name][func_name] = function, args, kwargs, identifier, instant, weakref.proxy(self.window)
-        return wrapper
-
-    @_callback_setter
-    def set_any_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
-        pass
-    @_callback_setter
-    def set_move_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
-        pass
-    @_callback_setter
-    def set_enter_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
-        pass
-    @_callback_setter
-    def set_exit_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
-        pass
-    @_callback_setter
-    def set_button_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
-        pass
-    @_callback_setter
-    def set_button_press_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
-        pass
-    @_callback_setter
-    def set_button_release_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str ='not_given',instant=False):
-        pass
-    @_callback_setter
-    def set_scroll_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
-        pass
-    @_callback_setter
-    def set_scroll_up_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
-        pass
-    @_callback_setter
-    def set_scroll_down_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
-        pass
-    @_callback_setter
-    def set_scroll_right_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
-        pass
-    @_callback_setter
-    def set_scroll_left_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False):
-        pass
+    def set_any_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False,deleter=None):
+        self._callbacks_repo.setter('any', func, args, kwargs, identifier, instant, deleter)
+    def set_move_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False,deleter=None):
+        self._callbacks_repo.setter('move', func, args, kwargs, identifier, instant, deleter)
+    def set_enter_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False,deleter=None):
+        self._callbacks_repo.setter('enter', func, args, kwargs, identifier, instant, deleter)
+    def set_exit_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False,deleter=None):
+        self._callbacks_repo.setter('exit', func, args, kwargs, identifier, instant, deleter)
+    def set_button_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False,deleter=None):
+        self._callbacks_repo.setter('button', func, args, kwargs, identifier, instant, deleter)
+    def set_button_press_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False,deleter=None):
+        self._callbacks_repo.setter('button_press', func, args, kwargs, identifier, instant, deleter)
+    def set_button_release_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str ='not_given',instant=False,deleter=None):
+        self._callbacks_repo.setter('button_release', func, args, kwargs, identifier, instant, deleter)
+    def set_scroll_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False,deleter=None):
+        self._callbacks_repo.setter('scroll', func, args, kwargs, identifier, instant, deleter)
+    def set_scroll_up_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False,deleter=None):
+        self._callbacks_repo.setter('scroll_up', func, args, kwargs, identifier, instant, deleter)
+    def set_scroll_down_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False,deleter=None):
+        self._callbacks_repo.setter('scroll_down', func, args, kwargs, identifier, instant, deleter)
+    def set_scroll_right_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False,deleter=None):
+        self._callbacks_repo.setter('scroll_right', func, args, kwargs, identifier, instant, deleter)
+    def set_scroll_left_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False,deleter=None):
+        self._callbacks_repo.setter('scroll_left', func, args, kwargs, identifier, instant, deleter)
 
     def mouse_move_callback(self, context, xpos, ypos):
         self.move_callback()
@@ -414,8 +325,9 @@ class Mouse(SID):
         self.window.myframe.bind()
         gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
         color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
+        obj = self._window.myframe.render_unit_registry.object(color)
 
-        return self._window.myframe.render_unit_registry.object(color)
+        return obj
 
     def is_cursor_on_object(self, obj):
         if self.cursor_object == obj:
@@ -450,7 +362,9 @@ class Mouse(SID):
                     kwargs = [kwargs,]*func_n
 
             def callback_func(func,args,kwargs):
+                print(self.cursor_object, selection)
                 if self.cursor_object == selection:
+                    print('object pressing')
                     for f,a,k in zip(func,args,kwargs):
                         f(*a,**k)
         else:

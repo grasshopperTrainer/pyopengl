@@ -1,6 +1,6 @@
 from collections import OrderedDict
 import weakref
-from .my_openGL.glfw_gl_tracker import GLFW_GL_tracker
+# from .my_openGL.glfw_gl_tracker import GLFW_GL_tracker
 from .frame_buffer_like.frame_buffer_like_bp import FBL
 import glfw
 class Windows:
@@ -76,13 +76,21 @@ class Windows:
 
     @classmethod
     def set_current(cls, window):
-        try:
-            cls._current_window = weakref.proxy(window)
-        except:
-            cls._current_window = window
+        if window is None:
+            cls._current_window = None
+        else:
+            cls._current_window = weakref.ref(window)
+
     @classmethod
     def get_current(cls):
-        return cls._current_window
+        if cls._current_window is None:
+            return None
+        else:
+            if cls._current_window() is None:
+                cls._current_window = None
+                return None
+            else:
+                return cls._current_window()
 
     @classmethod
     def has_window_named(cls, name):
