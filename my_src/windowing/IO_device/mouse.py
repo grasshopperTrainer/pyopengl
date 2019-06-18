@@ -18,7 +18,7 @@ class Mouse(SID):
     def __init__(self, window):
         self._window = window
 
-        self._callbacks_names = [
+        callbacks_names = [
             'any',
             'move',
             'enter',
@@ -32,7 +32,7 @@ class Mouse(SID):
             'scroll_right',
             'scroll_left'
         ]
-        self._callbacks_repo = Callback_repository(window, self._callbacks_names)
+        self._callbacks_repo = Callback_repository(window, callbacks_names)
 
         glfw.set_input_mode(self._window.glfw_window, glfw.STICKY_MOUSE_BUTTONS, glfw.TRUE)
         glfw.set_cursor_pos_callback(self._window.glfw_window, self.mouse_move_callback)
@@ -53,7 +53,7 @@ class Mouse(SID):
         self._just_released = False
         self._just_pressed = False
 
-        self._mapping_source = None
+        self._mapping_source = weakref.WeakValueDictionary()
 
         self._just_values = {
             'pressed':False,
@@ -89,6 +89,8 @@ class Mouse(SID):
     def __del__(self):
         print(f'gc, Mouse {self}')
 
+    def any_callback(self):
+        self._callbacks_repo.exec('any')
     def move_callback(self):
         self._callbacks_repo.exec('move')
     def enter_callback(self):
@@ -142,15 +144,18 @@ class Mouse(SID):
 
     def mouse_move_callback(self, context, xpos, ypos):
         self.move_callback()
+        self.any_callback()
         self._cursor_state['moving'] = True
 
 
     def mouse_enter_callback(self, context, entered):
         if entered:
             self.enter_callback()
+            self.any_callback()
             self._cursor_state['onscreen'] = True
         else:
             self.exit_callback()
+            self.any_callback()
             self._cursor_state['onscreen'] = False
 
     def mouse_button_callback(self, context, button, action, mods):
@@ -158,23 +163,29 @@ class Mouse(SID):
         if action is 1:
             self._button_state[button] = True
             self.button_press_callback()
+            self.any_callback()
         if action is 0:
             self._button_state[button] = False
             print(self, context, button)
             print(self.window)
             self.button_release_callback()
+            self.any_callback()
         self.button_callback()
 
     def mouse_scroll_callback(self, context, xoffset, yoffset):
         self._scroll_offset = xoffset, yoffset
         if xoffset >= 0:
             self.scroll_right_callback()
+            self.any_callback()
         else:
             self.scroll_left_callback()
+            self.any_callback()
         if yoffset >= 0:
             self.scroll_up_callback()
+            self.any_callback()
         else:
             self.scroll_down_callback()
+            self.any_callback()
         self.scroll_callback()
 
     # def instant_press_button(self, button: int):
@@ -238,9 +249,10 @@ class Mouse(SID):
     @property
     def window_position(self):
         # flipped to match openGL buffer order
-        if self._mapping_source != None and not self.window.is_focused:
-            wi, vp = self._mapping_source
+        if len(self._mapping_source) != 0 and not self.window.is_focused:
+            wi, vp = self._mapping_source['window'], self._mapping_source['viewport']
             ratio = wi.mouse.viewport_position(vp, True)
+
             size = self.window.size
             mapped = [a * b for a, b in zip(ratio, size)]
             return mapped
@@ -252,11 +264,13 @@ class Mouse(SID):
             source_viewport = source_window.viewports[source_viewport]
 
         # connect position
-        self._mapping_source = (source_window, source_viewport)
+        self._mapping_source['window'] = source_window
+        self._mapping_source['viewport'] = source_viewport
 
         # connect callbacks
-        for name, callbacks in source_window.mouse._callbacks.items():
-            callbacks[self] = (eval(f'self.{name}_callback'), (),{},'sys',False, weakref.proxy(self.window))
+        for n in source_window.mouse._callbacks_repo.callback_names:
+            # for func_set in self._callbacks_repo.get_callback_named(n):
+            source_window.mouse._callbacks_repo.setter(n, eval(f'self.{n}_callback'), deleter=self.window)
 
     def reset_map_from_window(self):
         # remove callbacks

@@ -25,7 +25,9 @@ from .frame_buffer_like.frame_buffer_like_bp import FBL
 from windowing.frame_buffer_like.renderable_image import Renderable_image
 from windowing.frame_buffer_like.frame import Frame
 from .windows import Windows
-
+from .callback_repository import Callback_repository
+from .deleter import Deleters
+import numpy as np
 
 class Window:
     """
@@ -116,12 +118,12 @@ class Window:
         # 2. store relationship between mother and children
         self._children_windows = weakref.WeakSet()
         if mother_window is not None:
-            self._mother_window = weakref.proxy(mother_window)  # type: Window
+            self._mother_window = weakref.ref(mother_window)  # type: Window
             mother_window._children_windows.add(self)
             # if window is shared share unique context too
             self._unique_glfw_context = mother_window.unique_glfw_context.give_tracker_to(self)
         else:
-            self._mother_window = mother_window  # type: Window
+            self._mother_window = None  # type: Window
             # this is a unique context wrapper and is a context identifier
             self._unique_glfw_context = GLFW_GL_tracker(self)
         GLFW_GL_tracker.set_current(self._unique_glfw_context)
@@ -191,28 +193,38 @@ class Window:
         self._viewports = Viewports(self)
         # #
         self._callbacks_repo = weakref.WeakKeyDictionary()
-        self._callbacks = {
-            'pre_draw':{},
-            'post_draw':{},
-            'window_resize':{},
-            'window_close':{},
-            'window_pos':{},
-            'window_refresh':{},
-            'window_focused':{},
-            'window_maximized':{},
-            'window_iconify':{},
-            'window_content_scale':{}
-        }
+        callback_names = [
+            'pre_draw',
+            'post_draw',
+            'window_resize',
+            'window_close',
+            'window_pos',
+            'window_refresh',
+            'window_focused',
+            'window_maximized',
+            'window_iconify',
+            'window_content_scale'
+        ]
+        self._callbacks_repo = Callback_repository(self,callback_names)
+
         self.initiation_post_glfw_setting()
         self.initiation_gl_setting()
         self.initiation_window_setting()
         #
         self._flag_movable = True
         # self._dell = False
+        self._deleter = Deleters()
 
     @property
     def mother_window(self):
-        return self._mother_window
+        if isinstance(self._mother_window, weakref.ReferenceType):
+            if self._mother_window() is None:
+                self._mother_window = None
+                return None
+            else:
+                return self._mother_window()
+        else:
+            return None
     @property
     def children_windows(self):
         return self._children_windows
@@ -223,178 +235,47 @@ class Window:
     def init_func(self):
         return self._init_func
 
-    # @property
-    # def framerate(self):
-    #     return self._default_framerate_target
-    # @framerate.setter
-    # def framerate(self, value):
-    #     self._default_framerate_target = value
-    def _callback_exec(func):
-        def wrapper(self, *args, **kwargs):
-            #
-            window_swap = None
-            if Windows.get_current() != None:
-                if Windows.get_current() != self:
-                    window_swap = Windows.get_current()
-                    Windows.set_current(self)
-                    self.make_window_current()
-
-            name = func.__name__.split('_callback')[0]
-            for dic in self._callbacks_repo.values():
-                to_delete = []
-                for n, callback in dic[name].items():
-                    f, a, k, i, s = callback
-                    # try:
-                    if isinstance(f, weakref.ReferenceType):
-                        if f() is None:
-                            to_delete.append(n)
-                        else:
-                            if s:  # remove if instant
-                                to_delete.append(n)
-                            else:
-                                f = f()
-                    f(*a, **k)
-
-                for i in to_delete:
-                    del dic[name][i]
-            func(self, *args, **kwargs)
-
-            if window_swap != None:
-                Windows.set_current(window_swap)
-                window_swap.make_window_current()
-        return wrapper
-
-    @_callback_exec
     def window_resize_callback(self, window, width, height):
+        self._callbacks_repo.exec('window_resize')
         if any(a < b for a,b in zip(self.myframe.size, self.size)):
             print('window, resize callback activated')
             self.myframe.rebuild(self.size)
         self._flag_just_resized = True
-
-    @_callback_exec
     def window_refresh_callback(self, window):
-        # copy from custom myframebuffer and draw it on window
-
+        self._callbacks_repo.exec('window_refresh')
         print(f'{self} refreshed')
-
-    @_callback_exec
     def pre_draw_callback(self):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('pre_draw')
     def post_draw_callback(self):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('post_draw')
     def window_pos_callback(self, window, x, y):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('window_pos')
     def window_close_callback(self,window):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('window_close')
     def window_focused_callback(self,window,focused):
+        self._callbacks_repo.exec('window_focused')
         print(f'{self} focused')
-        pass
-    @_callback_exec
     def window_iconify_callback(self, window, iconified):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('window_iconify')
     def window_content_scale_callback(self, xscale, yscale):
-        pass
-    @_callback_exec
+        self._callbacks_repo.exec('window_content_scale')
     def window_maximized_callback(self,window, maximized):
-        pass
+        self._callbacks_repo.exec('window_maximized')
 
-    def _callback_setter(func):
-        def wrapper(self, function, args: tuple = (), kwargs: dict = {}, identifier: str = 'not_given', instant=False, deleter=None):
-            # type check
-            if not callable(function):
-                raise TypeError
-            if not isinstance(args, tuple):
-                raise TypeError
-            if not isinstance(kwargs, dict):
-                raise TypeError
-
-            # name of callback
-            callback_name = func.__name__.split('set_')[1].split('_callback')[0]
-
-            # call dict by deleter
-            if deleter is None:
-                deleter = self
-            if deleter not in self._callbacks_repo:
-                callbacks_set = copy.deepcopy(self._callbacks)
-                if isinstance(deleter, weakref.ProxyType):
-                    # print(deleter)
-                    deleter = deleter.__repr__.__self__
-                    # print(weakref.getweakrefcount(deleter))
-                    # print(type(self._callbacks_repo))
-                self._callbacks_repo[deleter] = callbacks_set
-                # print(weakref.getweakrefcount(deleter))
-            else:
-                callbacks_set = self._callbacks_repo[deleter]
-
-            # check callback equality
-            exist = False
-            func_name = function.__qualname__
-
-            callbacks = callbacks_set[callback_name]
-            if func_name in callbacks:
-                f, a, k, i, s = callbacks[func_name]
-                if isinstance(f, weakref.ReferenceType):
-                    if f() is None:
-                        check = False
-                    else:
-                        f = f()
-                        check = True
-                else:
-                    check = True
-
-                if check:
-                    if function.__code__ == f.__code__:
-                        if identifier == i:
-                            if all(a == b for a,b in zip(a, args)) and all(a==b for a,b, in zip(k, kwargs)):
-                                exist = True
-
-                    # make name for similar
-                    count = 0
-                    while True:
-                        temp_name = f'{func_name}{count}'
-                        if temp_name in callbacks:
-                            count += 1
-                        else:
-                            func_name = temp_name
-                            break
-
-            # if confirmed this is a new callback
-            if not exist:
-                if hasattr(function, '__self__'):
-                    callbacks[func_name] = weakref.WeakMethod(function), args, kwargs, identifier, instant
-                else:
-                    callbacks[func_name] = function, args, kwargs, identifier, instant
-
-        return wrapper
-
-    @_callback_setter
     def set_pre_draw_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
-        pass
-    @_callback_setter
+        self._callbacks_repo.setter('pre_draw',func,args,kwargs,identifier,instant,deleter)
     def set_post_draw_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
-        pass
-    @_callback_setter
+        self._callbacks_repo.setter('post_draw',func,args,kwargs,identifier,instant,deleter)
     def set_window_resize_callback(self, func, args:tuple = (),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
-        pass
-    @_callback_setter
+        self._callbacks_repo.setter('wndow_resize',func,args,kwargs,identifier,instant,deleter)
     def set_window_close_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
-        pass
-    @_callback_setter
+        self._callbacks_repo.setter('window_close',func,args,kwargs,identifier,instant,deleter)
     def set_window_pos_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
-        pass
-    @_callback_setter
+        self._callbacks_repo.setter('window_pos',func,args,kwargs,identifier,instant,deleter)
     def set_window_iconify_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
-        pass
-    @_callback_setter
+        self._callbacks_repo.setter('window_iconify',func,args,kwargs,identifier,instant,deleter)
     def set_window_refresh_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
-        pass
-    # def set_window_refresh(self):
-    #     self.window_refresh_callback(self.glfw_window)
+        self._callbacks_repo.setter('window_refresh',func,args,kwargs,identifier,instant,deleter)
 
     def _follow(func):
         def wrapper(self, *windows):
@@ -465,7 +346,6 @@ class Window:
     def __del__(self):
         print(f'gc, Winodw {self}')
         # instant collection
-        gc.collect()
 
     # def __delattr__(self, item):
     #     try:
@@ -507,6 +387,8 @@ class Window:
         # del self._layers
         # remove window_callbacks
         # before collecting make context current for gl deletings
+        # self.__delattr__('pin_on_viewport')
+        # del self.pin_on_viewport
         self.make_window_current()
         glfw.set_window_should_close(self.glfw_window, True)
 
@@ -556,7 +438,10 @@ class Window:
         # if there is no window left, terminate
         if len(self.windows) == 0:
             glfw.terminate()
-        self._dell = True
+
+        self._deleter = None
+        gc.collect()
+
 
 
         # del dwindow._mouse
@@ -594,6 +479,24 @@ class Window:
         else:
             glfw.window_hint(glfw.ICONIFIED, set)
 
+    def config_maximize(self, set):
+        if set is None:
+            set = not glfw.get_window_attrib(self.glfw_window,glfw.ICONIFIED)
+        else:
+            if set:
+                set = glfw.TRUE
+            else:
+                set = glfw.FALSE
+
+        if hasattr(self, 'glfw_window'):
+
+            if set:
+                glfw.maximize_window(self.glfw_window)
+            else:
+                pass
+        else:
+            glfw.window_hint(glfw.MAXIMIZED, set)
+
     def config_focused(self, set:bool):
         if set:
             set = glfw.TRUE
@@ -615,16 +518,29 @@ class Window:
             set = glfw.FALSE
 
         if hasattr(self, 'glfw_window'):
+
             if set:
+                # return_window = None
+                # if Windows.get_current() != self:
+                #     return_window = Windows.get_current()
+                #     self.make_window_current()
+                # without opacity setting nothing will be shown
+                glfw.set_window_opacity(self.glfw_window, 0.9999)
                 glfw.show_window(self.glfw_window)
+
+                # if return_window != None:
+                #     Windows.set_current(return_window)
+                #     return_window.make_window_current()
             else:
                 glfw.hide_window(self.glfw_window)
         else:
             glfw.window_hint(glfw.VISIBLE, set)
-    # def show(self):
-    #     glfw.show_window(self.glfw_window)
-    # def hide(self):
-    #     glfw.hide_window(self.glfw_window)
+    def config_opacity(self, v):
+        if not hasattr(self, 'glfw_window'):
+            raise
+        # TODO 1.0 doesn't work may be a bug?
+        v = float(max(min(v, 0.9999), 0.0))
+        glfw.set_window_opacity(self.glfw_window, v)
 
     def _get_config(func):
         @property
@@ -696,14 +612,14 @@ class Window:
         # if copying id_color... color can be duplicated... how to make it not duplicate?
         # what if not blit but make native draw...
 
-    def pin_on_area(self, target_window, src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y):
-        target_window.copy_frame_from(self, src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y)
-
-        def pin_on_area():
-            if self.myframe.flag_something_rendered or target_window.myframe.flag_something_rendered:
-                target_window.copy_frame_from(self,src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y)
-
-        target_window.set_post_draw_callback(pin_on_area,name='_pin_on_area')
+    # def pin_on_area(self, target_window, src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y):
+    #     target_window.copy_frame_from(self, src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y)
+    #
+    #     def pin_on_area():
+    #         if self.myframe.flag_something_rendered or target_window.myframe.flag_something_rendered:
+    #             target_window.copy_frame_from(self,src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y)
+    #
+    #     target_window.set_post_draw_callback(pin_on_area,name='_pin_on_area')
 
     def pin_on_viewport(self, target_window, target_viewport:(int, str, Viewport), source_viewport:(int, str, Viewport)):
         if isinstance(target_viewport, (int, str)):
@@ -718,6 +634,7 @@ class Window:
         target_window.copy_frame_from(self, src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y)
 
         def pin_on_viewport():
+
             conditions = [
                 self.myframe.flag_something_rendered,
                 target_window.myframe.flag_something_rendered,
@@ -732,8 +649,15 @@ class Window:
                 dst1x, dst1y = [a + b for a, b in zip((dst0x, dst0y), (dstw, dsth))]
                 target_window.copy_frame_from(self,src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y)
 
-        target_window.set_post_draw_callback(pin_on_viewport,identifier='_pin_on_viewport')
-        self.set_post_draw_callback(pin_on_viewport,identifier='_pin_on_viewport')
+        target_window.set_post_draw_callback(pin_on_viewport,identifier=f'{self.name}_pin_on_viewport_{target_viewport.name}',deleter=target_viewport)
+        self.set_post_draw_callback(pin_on_viewport,identifier=f'{self.name}_pin_on_viewport_{target_viewport.name}',deleter=target_viewport)
+
+    def unpin_from_viewport(self, target_window, target_viewport):
+        # target_window._callbacks_repo.remove_by_deleter(target_viewport)
+        target_window._callbacks_repo.remove(target_viewport, f'{self.name}_pin_on_viewport_{target_viewport.name}')
+        self._callbacks_repo.remove(target_viewport, f'{self.name}_pin_on_viewport_{target_viewport.name}')
+        # exit()
+        # self._deleter.remove(target_viewport)
 
     def initiation_post_glfw_setting(self):
         # default setting
@@ -817,6 +741,8 @@ class Window:
                     # if window.viewports.current_viewport.name != 'default':
                     # if window.name == 'main':
                     #     print('repo',len(window._callbacks_repo))
+                    #     for i in window._callbacks_repo._callbacks_repo.values():
+                    #         print(i)
                     #     print('windows', len(window.windows.test_dic))
                     #     if len(window._callbacks_repo) != 0:
                     #         print('repo',list(window._callbacks_repo.values())[0])
@@ -939,7 +865,6 @@ class Window:
     @property
     def close_option(self):
         return self._close_option
-
 
 
     @close_option.setter

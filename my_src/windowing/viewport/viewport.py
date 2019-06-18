@@ -86,6 +86,8 @@ class Viewport:
             self._flag_clear = False
 
     def open(self, do_clip = True):
+        if Windows.get_current() != self._window:
+            self._window.make_window_current()
         self.set_current(self)
 
         with self._window.myframe:

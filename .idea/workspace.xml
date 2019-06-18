@@ -2,16 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8845630d-f53b-42f1-9947-fe08a9c9effb" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/my_src/windowing/callback_repository.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my_src/windowing/deleter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main_window.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_window.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/GUI_builder/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/GUI_builder/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/prohopper/tester.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/prohopper/tester.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my_src/windowing/my_openGL/glfw_gl_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/my_openGL/glfw_gl_tracker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/callback_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/callback_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my_src/windowing/viewport/viewport.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/viewport/viewport.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/window.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/window.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my_src/windowing/windows.py" beforeDir="false" afterPath="$PROJECT_DIR$/my_src/windowing/windows.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vend_src/glfw/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/vend_src/glfw/__init__.py" afterDir="false" />
     </list>
     <list id="7bbdcc47-e1ba-496a-aa74-c0bd87237871" name="1. Wrote custom frame for glfw Window. This is to extend function of window like mouse picking. As a result (class)Window and window drawing pipline has been fixed. Now things are not drawn directly on glfw default framebuffer(which is unaccessible), rather drawing on custom myframe and copied onto the window right before frame swap using glBlit." comment="" />
     <list id="4065d1bc-204e-4182-9fe0-52dae746ef17" name="1.reorganized relationship between Window - GLFW.context - FBL - Renderer - Render_unit." comment="" />
@@ -27,47 +27,14 @@
     <favorites_list name="pyopengl" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.50139797">
+    <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+        <leaf>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/my_openGL/glfw_gl_tracker.py">
+            <entry file="file://$PROJECT_DIR$/main_window.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="6228">
-                  <caret line="529" selection-start-line="529" selection-end-line="529" />
-                  <folding>
-                    <element signature="e#0#14#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/indexbuffer.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="672">
-                  <caret line="61" selection-start-line="61" selection-end-line="61" />
-                  <folding>
-                    <element signature="e#0#26#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/vend_src/glfw/__init__.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="7020">
-                  <caret line="587" selection-start-line="587" selection-end-line="587" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/main.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="96">
-                  <caret line="8" column="15" lean-forward="true" selection-start-line="8" selection-start-column="15" selection-end-line="8" selection-end-column="15" />
+                <state relative-caret-position="414">
+                  <caret line="72" column="38" lean-forward="true" selection-start-line="72" selection-start-column="38" selection-end-line="72" selection-end-column="38" />
                   <folding>
                     <element signature="e#0#35#0" expanded="true" />
                   </folding>
@@ -75,62 +42,27 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py">
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="316">
-                  <caret line="44" column="25" selection-start-line="44" selection-start-column="25" selection-end-line="44" selection-end-column="25" />
+                <state relative-caret-position="414">
+                  <caret line="655" column="40" lean-forward="true" selection-start-line="655" selection-start-column="40" selection-end-line="655" selection-end-column="40" />
                   <folding>
-                    <element signature="e#0#11#0" expanded="true" />
+                    <element signature="e#0#16#0" expanded="true" />
+                    <marker date="1560852807876" expanded="true" signature="2279:2316" ph="..." />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/callback_repository.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="72">
-                  <caret line="12" column="42" selection-start-line="12" selection-start-column="42" selection-end-line="12" selection-end-column="42" />
+                <state relative-caret-position="364">
+                  <caret line="223" column="39" selection-start-line="223" selection-start-column="39" selection-end-line="223" selection-end-column="39" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$USER_HOME$/.PyCharmCE2019.1/system/python_stubs/750648812/builtins.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="121">
-                  <caret line="734" column="8" selection-start-line="734" selection-start-column="8" selection-end-line="734" selection-end-column="8" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/test.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="96">
-                  <caret line="8" column="14" selection-start-line="8" selection-start-column="14" selection-end-line="8" selection-end-column="14" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/prohopper/tester.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="144">
-                  <caret line="12" selection-end-line="29" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/weakref.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="121">
-                  <caret line="49" selection-start-line="49" selection-end-line="49" />
                 </state>
               </provider>
             </entry>
@@ -138,39 +70,15 @@
         </leaf>
       </split-first>
       <split-second>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+        <leaf>
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="233">
-                  <caret line="354" selection-start-line="354" selection-end-line="354" />
+                <state relative-caret-position="100">
+                  <caret line="247" selection-start-line="247" selection-end-line="247" />
                   <folding>
                     <element signature="e#0#16#0" expanded="true" />
-                    <marker date="1560779516565" expanded="true" signature="2178:2215" ph="..." />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/windows.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="276">
-                  <caret line="27" selection-start-line="27" selection-end-line="27" />
-                  <folding>
-                    <element signature="e#0#35#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="648">
-                  <caret line="55" column="33" selection-start-line="55" selection-start-column="33" selection-end-line="55" selection-end-column="33" />
-                  <folding>
-                    <element signature="e#0#46#0" expanded="true" />
+                    <marker date="1560852807876" expanded="true" signature="2279:2316" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -190,8 +98,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>printind</find>
-      <find>GL_SCISSOR</find>
       <find>SCI</find>
       <find>weakref.proxy(</find>
       <find>Window</find>
@@ -217,9 +123,11 @@
       <find>rebuild</find>
       <find>0xC000041D</find>
       <find>dwindow</find>
-      <find>gc</find>
       <find>'unk</find>
       <find>'unknown'</find>
+      <find>gc</find>
+      <find>turnin</find>
+      <find>follow</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -254,8 +162,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/__init__.py" />
-        <option value="$PROJECT_DIR$/vend_src/OpenGL/raw/GL/VERSION/GL_3_0.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderable_image.py" />
         <option value="$PROJECT_DIR$/res/shader/BRO_rectangle.glsl" />
         <option value="$PROJECT_DIR$/my_src/virtual_scope/source_parser.py" />
@@ -292,18 +198,20 @@
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/components/renderbuffer.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/render_object_registry.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/IO_device/keyboard.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/viewport/viewport.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/viewport/viewports.py" />
         <option value="$PROJECT_DIR$/tester.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/windows.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/renderer/renderer_template.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/my_openGL/glfw_gl_tracker.py" />
+        <option value="$PROJECT_DIR$/my_src/GUI_builder/test.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/viewport/viewport.py" />
+        <option value="$PROJECT_DIR$/my_src/prohopper/tester.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/windows.py" />
+        <option value="$PROJECT_DIR$/vend_src/glfw/__init__.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/deleter.py" />
+        <option value="$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py" />
         <option value="$PROJECT_DIR$/main_window.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/window.py" />
-        <option value="$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py" />
-        <option value="$PROJECT_DIR$/my_src/GUI_builder/test.py" />
-        <option value="$PROJECT_DIR$/my_src/prohopper/tester.py" />
         <option value="$PROJECT_DIR$/my_src/windowing/callback_repository.py" />
       </list>
     </option>
@@ -321,42 +229,7 @@
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes>
-      <pane id="Scope" />
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
-              <item name="my_src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
-              <item name="my_src" type="462c0819:PsiDirectoryNode" />
-              <item name="patterns" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
-              <item name="my_src" type="462c0819:PsiDirectoryNode" />
-              <item name="windowing" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pyopengl" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pyopengl" type="462c0819:PsiDirectoryNode" />
-              <item name="vend_src" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-    </panes>
+    <panes />
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
@@ -809,7 +682,14 @@
       <option name="project" value="LOCAL" />
       <updated>1560770778286</updated>
     </task>
-    <option name="localTasksCounter" value="41" />
+    <task id="LOCAL-00041" summary="1. callback repository is seperated as a class.&#10;2. now, multiple callback function input possible.&#10;Callback executor will execute functions in a given order">
+      <created>1560816600578</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1560816600578</updated>
+    </task>
+    <option name="localTasksCounter" value="42" />
     <servers />
   </component>
   <component name="TodoView" selected-index="2">
@@ -830,7 +710,7 @@
       <window_info id="Favorites" order="2" sideWeight="0.6923077" side_tool="true" weight="0.2945014" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.113676734" />
-      <window_info active="true" anchor="bottom" x="684" y="29" width="410" height="660" id="Run" order="2" sideWeight="0.4988864" visible="true" weight="0.3181818" />
+      <window_info anchor="bottom" x="684" y="29" width="410" height="660" id="Run" order="2" sideWeight="0.4988864" weight="0.3846154" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.13986014" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -896,7 +776,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="revising render_unit_builder pipeline" />
     <MESSAGE value="building renderer builder" />
     <MESSAGE value="building render_object pipeline_builder and &#10;revising render_object pipeline itself" />
     <MESSAGE value="building pipeline and pipline_builder and&#10;finally something is drawn on the window&#10;&#10;and&#10;&#10;building trackable openGL object which represents unique glfw context(shared windows have same GL_tracker object and it stores information abount generated gl objects and currently bound and much more as it gets developed)" />
@@ -921,42 +800,21 @@
     <MESSAGE value="fixing memory leak. backup" />
     <MESSAGE value="!!! memory leak fix !!!&#10;&#10;Revised window deletion operation. Stratagy is to simply implement delete() function in window sub classes. delete() basically remove glfw, gl contents objects is holding and removes Window object holding by resetting argument as None(ex. self._window = None).&#10;&#10;Closing process goes through several steps by following several namespaces(?) &gt;&gt;&gt;&#10;1. Window().config_window_close() is called and some cleaning is done.&#10;2. By erasing reference of Window object at Windows.__sub__() garbage collection for Window object will be called&#10;3. and finally Window.__del__ is called by GC and rest of removal process continues.&#10;&#10;Now I'm thinking step #3 can be merged into step #2&#10;and have to test it with drawing functions." />
     <MESSAGE value="!!! memory leak fix !!!&#10;&#10;1. Saving and execution of glfw callback fixed to remove memory leak.&#10;Now callback function is set not to other GC in two steps.&#10;1) User can set deleter. All callback is stored under weakly referenced deleter,&#10;so when deleter if GCed whole collection of callbacks are removed automatically.&#10;2) callback function itself is saved as a weakMethod.&#10;i.e in case method's instance is GCed method is removed also -&gt; callback function will disappear.&#10;i.e in case instance's method is removed in any case -&gt; callback function will disappear.&#10;&#10;Need to study and use weakref more to automate object destruction." />
-    <option name="LAST_COMMIT_MESSAGE" value="!!! memory leak fix !!!&#10;&#10;1. Saving and execution of glfw callback fixed to remove memory leak.&#10;Now callback function is set not to other GC in two steps.&#10;1) User can set deleter. All callback is stored under weakly referenced deleter,&#10;so when deleter if GCed whole collection of callbacks are removed automatically.&#10;2) callback function itself is saved as a weakMethod.&#10;i.e in case method's instance is GCed method is removed also -&gt; callback function will disappear.&#10;i.e in case instance's method is removed in any case -&gt; callback function will disappear.&#10;&#10;Need to study and use weakref more to automate object destruction." />
+    <MESSAGE value="1. callback repository is seperated as a class.&#10;2. now, multiple callback function input possible.&#10;Callback executor will execute functions in a given order" />
+    <option name="LAST_COMMIT_MESSAGE" value="1. callback repository is seperated as a class.&#10;2. now, multiple callback function input possible.&#10;Callback executor will execute functions in a given order" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main_window.py</url>
-          <line>62</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main_window.py</url>
-          <line>72</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-      </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/glsl_input_type_builder.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="206">
-          <caret line="226" lean-forward="true" selection-start-line="226" selection-end-line="226" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/shader.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="12">
-          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="12">
@@ -1031,26 +889,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewport.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="9" column="45" selection-start-line="9" selection-start-column="45" selection-end-line="9" selection-end-column="45" />
-          <folding>
-            <element signature="e#0#70#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/framebuffer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="624">
-          <caret line="58" selection-start-line="58" selection-end-line="58" />
-          <folding>
-            <element signature="e#0#26#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/renderbuffer.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="420">
@@ -1096,16 +934,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="33" selection-start-line="33" selection-end-line="33" />
-          <folding>
-            <element signature="e#0#43#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/OpenGL/platform/baseplatform.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="498">
@@ -1145,16 +973,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="336">
           <caret line="28" column="18" selection-start-line="28" selection-start-column="18" selection-end-line="28" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main_window.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="25" column="43" selection-start-line="25" selection-start-column="43" selection-end-line="25" selection-end-column="43" />
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1205,28 +1023,105 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/vend_src/glfw/__init__.py">
+    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7020">
-          <caret line="587" selection-start-line="587" selection-end-line="587" />
+        <state relative-caret-position="96">
+          <caret line="8" column="14" selection-start-line="8" selection-start-column="14" selection-end-line="8" selection-end-column="14" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
+    <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/numpy/distutils/exec_command.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="233">
-          <caret line="354" selection-start-line="354" selection-end-line="354" />
+        <state relative-caret-position="888">
+          <caret line="80" selection-start-line="80" selection-end-line="80" />
           <folding>
-            <element signature="e#0#16#0" expanded="true" />
-            <marker date="1560779516565" expanded="true" signature="2178:2215" ph="..." />
+            <element signature="e#0#43#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/renderer/components/framebuffer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="924">
+          <caret line="83" column="28" selection-start-line="83" selection-start-column="28" selection-end-line="83" selection-end-column="28" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/viewport/viewport.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1020">
+          <caret line="89" column="27" selection-start-line="89" selection-start-column="27" selection-end-line="89" selection-end-column="27" />
+          <folding>
+            <element signature="e#0#70#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="10" selection-start-line="10" selection-end-line="10" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vend_src/glfw/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15780">
+          <caret line="1317" column="20" selection-start-line="1317" selection-start-column="20" selection-end-line="1317" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/weakref.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5100">
+          <caret line="439" selection-start-line="439" selection-end-line="439" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/prohopper/tester.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="72">
+          <caret line="6" selection-start-line="6" selection-end-line="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3048">
+          <caret line="261" column="8" selection-start-line="261" selection-start-column="8" selection-end-line="261" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharmCE2019.1/system/python_stubs/750648812/builtins.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3588">
+          <caret line="299" column="4" selection-start-line="299" selection-start-column="4" selection-end-line="299" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/deleter.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="192">
+          <caret line="16" column="16" selection-start-line="16" selection-start-column="16" selection-end-line="16" selection-end-column="16" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/windows.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="276">
-          <caret line="27" selection-start-line="27" selection-end-line="27" />
+        <state relative-caret-position="1152">
+          <caret line="100" selection-start-line="100" selection-end-line="100" />
           <folding>
             <element signature="e#0#35#0" expanded="true" />
           </folding>
@@ -1235,68 +1130,41 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/my_src/windowing/frame_buffer_like/frame_buffer_like_bp.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="648">
-          <caret line="55" column="33" selection-start-line="55" selection-start-column="33" selection-end-line="55" selection-end-column="33" />
+        <state relative-caret-position="432">
+          <caret line="37" column="12" selection-start-line="37" selection-start-column="12" selection-end-line="37" selection-end-column="12" />
           <folding>
             <element signature="e#0#46#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/weakref.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/callback_repository.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="121">
-          <caret line="49" selection-start-line="49" selection-end-line="49" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/IO_device/mouse.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="316">
-          <caret line="44" column="25" selection-start-line="44" selection-start-column="25" selection-end-line="44" selection-end-column="25" />
+        <state relative-caret-position="364">
+          <caret line="223" column="39" selection-start-line="223" selection-start-column="39" selection-end-line="223" selection-end-column="39" />
           <folding>
-            <element signature="e#0#11#0" expanded="true" />
+            <element signature="e#0#14#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/GUI_builder/test.py">
+    <entry file="file://$PROJECT_DIR$/main_window.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="96">
-          <caret line="8" column="14" selection-start-line="8" selection-start-column="14" selection-end-line="8" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharmCE2019.1/system/python_stubs/750648812/builtins.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="121">
-          <caret line="734" column="8" selection-start-line="734" selection-start-column="8" selection-end-line="734" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/prohopper/tester.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="12" selection-end-line="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="96">
-          <caret line="8" column="15" lean-forward="true" selection-start-line="8" selection-start-column="15" selection-end-line="8" selection-end-column="15" />
+        <state relative-caret-position="414">
+          <caret line="72" column="38" lean-forward="true" selection-start-line="72" selection-start-column="38" selection-end-line="72" selection-end-column="38" />
           <folding>
             <element signature="e#0#35#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/my_src/windowing/callback_repository.py">
+    <entry file="file://$PROJECT_DIR$/my_src/windowing/window.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="12" column="42" selection-start-line="12" selection-start-column="42" selection-end-line="12" selection-end-column="42" />
+        <state relative-caret-position="414">
+          <caret line="655" column="40" lean-forward="true" selection-start-line="655" selection-start-column="40" selection-end-line="655" selection-end-column="40" />
           <folding>
-            <element signature="e#0#14#0" expanded="true" />
+            <element signature="e#0#16#0" expanded="true" />
+            <marker date="1560852807876" expanded="true" signature="2279:2316" ph="..." />
           </folding>
         </state>
       </provider>

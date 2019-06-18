@@ -45,20 +45,26 @@ class Main_window(Window):
         #         # exit()
 
         # print(self.windows.windows)
-        # if self.mouse.is_object_pressed(self.rect.unit):
-        #     if not self.windows.has_window_named('top_bar'):
-        #         self.top_bar = Top_bar(self)
-        #     else:
-        #         self.top_bar.config_window_close()
-        #         self.top_bar = None
-        #         self.refresh_all()
+        if self.mouse.is_object_pressed(self.rect.unit):
+            if not self.windows.has_window_named('top_bar'):
+                self.top_bar = Top_bar(self)
+            else:
+                if self.top_bar.flag_follow_active:
+                    self.top_bar.config_window_close()
+                    self.top_bar = None
+                else:
+                    self.top_bar.unpin_from_viewport(self, self.viewports['top_bar'])
+                    self.top_bar.config_visible(True)
+                    self.top_bar.flag_follow_active = True
+                self.refresh_all()
 
         if self.top_bar != None:
             conditions = [
                 self.mouse.is_in_viewport(self.viewports['top_bar']),
                 self.top_bar.flag_following,
                 self.mouse.is_in_window,
-                self.top_bar.mouse.is_just_released
+                self.top_bar.mouse.is_just_released,
+                self.top_bar.flag_follow_active
             ]
             if all(conditions):
                 self.top_bar.move_to(self.get_vertex(0),(0,0))
@@ -77,8 +83,9 @@ class Main_window(Window):
         self.viewports.close()
 
 class Top_bar(Window):
+
     def __init__(self,mother):
-        # self.config_visible(False)
+        self.config_visible(False)
         super().__init__(1000,100, 'top_bar',None, mother)
 
         # self.set_window_z_position(1)

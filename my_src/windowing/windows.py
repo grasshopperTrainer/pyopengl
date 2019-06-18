@@ -98,20 +98,3 @@ class Windows:
             return True
         else:
             return False
-
-    # @classmethod
-    # def set_window_z_position(cls, window, z):
-    #     for l in cls.windows_z.values():
-    #         if window in l:
-    #             l.remove(window)
-    #             break
-    #
-    #     z = int(z)
-    #     if z not in cls.windows_z:
-    #         cls.windows_z[z] = []
-    #
-    #     cls.windows_z[z].append(window)
-    #
-    # @classmethod
-    # def get_window_z_position(cls):
-    #     return cls.windows_z
