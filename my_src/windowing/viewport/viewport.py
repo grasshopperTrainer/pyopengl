@@ -1,4 +1,4 @@
-from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
 from .Camera import _Camera
 from collections import namedtuple
 from ..frame_buffer_like.frame_buffer_like_bp import FBL
@@ -18,10 +18,10 @@ class Viewport:
         self._height = height
 
         self._camera = _Camera(self)
-
-        gl.glClearColor(*self.DEF_CLEAR_COLOR)
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-        gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+        with window.glfw_context as gl:
+            gl.glClearColor(*self.DEF_CLEAR_COLOR)
+            gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+            gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
 
         self._flag_clear = None
         self._clear_color = None
@@ -29,6 +29,8 @@ class Viewport:
         self.set_current(self)
 
         self._iter_count = 0
+
+
 
     def clear(self, *color):
         # if clear is called, save clear color
@@ -45,19 +47,20 @@ class Viewport:
             else:
                 color = self._clear_color
         # clear window frame's
-        # with self._bound_fbl.myframe:
-        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, self._window.myframe._frame_buffer._glindex)
+        with self._window.glfw_context as gl:
+            with FBL.get_current():
+                gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, self._window.myframe._frame_buffer._glindex)
 
-        gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT1)
-        gl.glClearColor(0,0,0,0)
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+                gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT1)
+                gl.glClearColor(0,0,0,0)
+                gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
-        gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT0)
-        gl.glClearColor(*color)
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+                gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT0)
+                gl.glClearColor(*color)
+                gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
-        gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
-        gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
+                gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+                gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
         self._window.myframe._flag_something_rendered = True
         self._flag_clear = False
 
@@ -76,26 +79,28 @@ class Viewport:
             else:
                 color = self._clear_color
 
-            gl.glClearColor(*color)
-            gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-            gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
-            gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
+            # with self._window as win:
+            with Unique_glfw_context.get_current() as gl:
+                gl.glClearColor(*color)
+                gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+                gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+                gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
 
             # clear just once
             # only allowed again if self.clear() is called again
             self._flag_clear = False
 
     def open(self, do_clip = True):
-        if Windows.get_current() != self._window:
-            self._window.make_window_current()
         self.set_current(self)
+        self._window.viewports.set_latest(self)
 
-        with self._window.myframe:
-            gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+        with self._window.glfw_context as gl:
+            with self._window.myframe:
+                gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
 
-            gl.glViewport(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
-            if do_clip:
-                gl.glScissor(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
+                gl.glViewport(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
+                if do_clip:
+                    gl.glScissor(self.abs_posx, self.abs_posy, self.abs_width, self.abs_height)
 
         return self
 

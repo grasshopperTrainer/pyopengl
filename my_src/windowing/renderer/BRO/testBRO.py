@@ -1,6 +1,6 @@
 from ..renderer_template import Renderer_builder
-from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
-from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
+from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
+from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
 
 
 class TestBRO():
@@ -20,7 +20,7 @@ class TestBRO():
     renderer = c()
 
 
-    def __init__(self,posx, posy, width, height):
+    def __init__(self,posx, posy, width, height, col1=None, col2=None):
         print('new rect',self)
         self.unit = self.renderer.new_render_unit()
 
@@ -34,8 +34,15 @@ class TestBRO():
         self._abs_width = None
         self._abs_height = None
 
-        self._color1 = 1,1,0,1
-        self._color2 = 1,0,1,1
+        if col1 is None:
+            self._color1 = 1,1,0,1
+        else:
+            self._color1 = col1
+        if col2 is None:
+            self._color2 = 1,0,1,1
+        else:
+            self._color2 = col2
+
         self._draw_color = self._color1
 
         # self.unit.properties['u_fillcol'] = self._draw_color
@@ -47,6 +54,7 @@ class TestBRO():
         self.unit.shader_attribute.u_fillcol = self._draw_color
         # print(self._draw_color)
         # self.unit.properties['u_fillcol'] = self._draw_color
+
         self.renderer._draw_(self.unit)
 
 
@@ -59,11 +67,14 @@ class TestBRO():
         return a,b,c,d
 
     def switch_color(self):
+        print('debug, switching color from', self._draw_color)
         if self._draw_color == self._color1:
             self._draw_color = self._color2
         else:
             self._draw_color = self._color1
+        print('debug, switching color to', self._draw_color)
         self.draw()
+
     @property
     def abs_posx(self):
         if isinstance(self._posx, float):

@@ -3,7 +3,7 @@ import weakref
 import copy
 
 from patterns.store_instances_dict import SID
-from ..my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+# from ..my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 from ..windows import Windows
 from ..callback_repository import Callback_repository
 
@@ -166,8 +166,8 @@ class Mouse(SID):
             self.any_callback()
         if action is 0:
             self._button_state[button] = False
-            print(self, context, button)
-            print(self.window)
+            # print(self, context, button)
+            # print(self.window)
             self.button_release_callback()
             self.any_callback()
         self.button_callback()
@@ -336,10 +336,10 @@ class Mouse(SID):
         y = self._window.height - y
         self._window.make_window_current()
 
-        self.window.myframe.bind()
-        gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
-        color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
-        obj = self._window.myframe.render_unit_registry.object(color)
+        with self._window.glfw_context as gl:
+            gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
+            color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
+            obj = self._window.myframe.render_unit_registry.object(color)
 
         return obj
 

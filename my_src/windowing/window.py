@@ -6,8 +6,8 @@ from collections import OrderedDict
 from time import sleep
 from time import time
 
-from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
-from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
+# from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
+from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
 
 import glfw as glfw
 # import glfw.GLFW as GLFW
@@ -72,15 +72,19 @@ class Window:
         :return: None
         """
         glfw.init()
-        gl.context_specification_check() # check additional specification
+        Unique_glfw_context.context_specification_check() # check additional specification
 
     def __enter__(self):
-        if Viewport.get_current() not in self.viewports:
-            self.viewports[0].open()
+        if Windows.get_current() != self:
+            self._temp_return_window = Windows.get_current()
+            self.make_window_current()
+
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+        if self._temp_return_window != None:
+            self._temp_return_window.make_window_current()
+            self._temp_return_window = None
 
     def __new__(cls,*args,**kwargs):
         self = super().__new__(cls)
@@ -94,7 +98,7 @@ class Window:
         self._size = width, height
         self._name = name
         self._monitor = monitor
-
+        self._temp_return_window = None
         # self.windows + self
 
 
@@ -121,13 +125,14 @@ class Window:
             self._mother_window = weakref.ref(mother_window)  # type: Window
             mother_window._children_windows.add(self)
             # if window is shared share unique context too
-            self._unique_glfw_context = mother_window.unique_glfw_context.give_tracker_to(self)
+            self._unique_glfw_context = mother_window.glfw_context.give_tracker_to(self)
         else:
             self._mother_window = None  # type: Window
             # this is a unique context wrapper and is a context identifier
-            self._unique_glfw_context = GLFW_GL_tracker(self)
-        GLFW_GL_tracker.set_current(self._unique_glfw_context)
+            self._unique_glfw_context = Unique_glfw_context(self)
+        Unique_glfw_context.set_current(self._unique_glfw_context)
 
+        Windows.set_current(self) # for init process may be needing which window is current
         # customizable frame
         # TODO frame is leaking memory!!!!!
         m = glfw.get_primary_monitor()
@@ -142,9 +147,8 @@ class Window:
         # use basig depth and stencil
         self._myframe.use_depth_attachment(bitdepth=32)
         self._myframe.use_stencil_attachment(bitdepth=16)
-        self._myframe.build()
+        self._myframe.build(self.glfw_context)
 
-        Windows.set_current(self) # for init process may be needing which window is current
         #
         # # some info for resetting
         # # look at preset_window() for further usage
@@ -214,6 +218,12 @@ class Window:
         self._flag_movable = True
         # self._dell = False
         self._deleter = Deleters()
+        self._flag_window_close = False
+
+    def handle_close(self):
+        if self._flag_window_close:
+            self._callbacks_repo.exec('window_close')
+            self._close_window()
 
     @property
     def mother_window(self):
@@ -225,6 +235,7 @@ class Window:
                 return self._mother_window()
         else:
             return None
+
     @property
     def children_windows(self):
         return self._children_windows
@@ -251,7 +262,9 @@ class Window:
     def window_pos_callback(self, window, x, y):
         self._callbacks_repo.exec('window_pos')
     def window_close_callback(self,window):
-        self._callbacks_repo.exec('window_close')
+        self._flag_window_close = True
+
+
     def window_focused_callback(self,window,focused):
         self._callbacks_repo.exec('window_focused')
         print(f'{self} focused')
@@ -291,7 +304,7 @@ class Window:
     @_follow
     def follow_window_close(self, *windows):
         for w in windows:
-            w.set_window_close_callback(self.config_window_close)
+            w.set_window_close_callback(self._close_window)
 
 
     # def (self, window):
@@ -389,59 +402,8 @@ class Window:
         # before collecting make context current for gl deletings
         # self.__delattr__('pin_on_viewport')
         # del self.pin_on_viewport
-        self.make_window_current()
-        glfw.set_window_should_close(self.glfw_window, True)
 
-        repos = [
-            (glfw._framebuffer_size_callback_repository, self.window_resize_callback),
-            (glfw._window_refresh_callback_repository, self.window_refresh_callback),
-            (glfw._window_pos_callback_repository, self.window_pos_callback),
-            (glfw._window_focus_callback_repository, self.window_focused_callback),
-            (glfw._window_iconify_callback_repository, self.window_iconify_callback),
-            (glfw._window_close_callback_repository, self.window_close_callback),
-            (glfw._window_content_scale_callback_repository, self.window_content_scale_callback),
-            (glfw._window_maximize_callback_repository, self.window_maximized_callback)
-        ]
-        for repo, func in repos:
-            to_delete = None
-            for n, f in repo.items():
-                if f[0] == func:
-                    to_delete = n
-
-            if to_delete != None:
-                del repo[to_delete]
-
-        # destroy sub components that has self reference
-        self._mouse.delete()
-        self._keyboard.delete()
-        self._viewports.delete()
-        self._myframe.delete()
-
-        # clean relationship
-        for w in self.windows.windows.values():
-            if self == w._mother_window:
-                w._mother_window = None
-            if self in w._children_windows:
-                w._children_windows.remove(self)
-
-        # remove if global
-        # TODO ???
-        if Windows.get_current() == self:
-            Windows.set_current(None)
-        if FBL.get_current == self.myframe:
-            FBL.set_current(None)
-
-        # finally remove window
-        glfw.destroy_window(self._glfw_window)
-        self._windows - self
-        self._glfw_window = None
-        # if there is no window left, terminate
-        if len(self.windows) == 0:
-            glfw.terminate()
-
-        self._deleter = None
-        gc.collect()
-
+        self._flag_window_close = True
 
 
         # del dwindow._mouse
@@ -457,6 +419,58 @@ class Window:
         # for i in rf:
         #     print(i)
         # raise
+    def _close_window(self):
+        print(f'{self} close window')
+        with self:
+            repos = [
+                (glfw._framebuffer_size_callback_repository, self.window_resize_callback),
+                (glfw._window_refresh_callback_repository, self.window_refresh_callback),
+                (glfw._window_pos_callback_repository, self.window_pos_callback),
+                (glfw._window_focus_callback_repository, self.window_focused_callback),
+                (glfw._window_iconify_callback_repository, self.window_iconify_callback),
+                (glfw._window_close_callback_repository, self.window_close_callback),
+                (glfw._window_content_scale_callback_repository, self.window_content_scale_callback),
+                (glfw._window_maximize_callback_repository, self.window_maximized_callback)
+            ]
+            for repo, func in repos:
+                to_delete = None
+                for n, f in repo.items():
+                    if f[0] == func:
+                        to_delete = n
+
+                if to_delete != None:
+                    del repo[to_delete]
+
+            # destroy sub components that has self reference
+            self._mouse.delete()
+            self._keyboard.delete()
+            self._viewports.delete()
+            self._myframe.delete()
+
+            # clean relationship
+            for w in self.windows.windows.values():
+                if self == w._mother_window:
+                    w._mother_window = None
+                if self in w._children_windows:
+                    w._children_windows.remove(self)
+
+            # remove if global
+            # TODO ???
+            if Windows.get_current() == self:
+                Windows.set_current(None)
+            if FBL.get_current == self.myframe:
+                FBL.set_current(None)
+
+            # finally remove window
+            glfw.destroy_window(self._glfw_window)
+            self._windows - self
+            self._glfw_window = None
+            # if there is no window left, terminate
+            if len(self.windows) == 0:
+                glfw.terminate()
+
+            self._deleter = None
+            gc.collect()
 
     def config_movable(self, set:bool):
         self._flag_movable = set
@@ -594,17 +608,17 @@ class Window:
             elif callable(v):
                 args[n] = int(v(ref))
         src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y = args.values()
+        with dst.glfw_context as gl:
+            gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, src.myframe._frame_buffer._glindex)
+            gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # set source
 
-        gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, src.myframe._frame_buffer._glindex)
-        gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # set source
+            gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, dst.myframe._frame_buffer._glindex) # set target
+            gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT0)
 
-        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, dst.myframe._frame_buffer._glindex) # set target
-        gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT0)
-
-        gl.glBlitFramebuffer(src0x, src0y, src1x, src1y,
-                             dst0x, dst0y, dst1x, dst1y,
-                             gl.GL_COLOR_BUFFER_BIT,
-                             gl.GL_LINEAR)
+            gl.glBlitFramebuffer(src0x, src0y, src1x, src1y,
+                                 dst0x, dst0y, dst1x, dst1y,
+                                 gl.GL_COLOR_BUFFER_BIT,
+                                 gl.GL_LINEAR)
         dst.myframe.flag_something_rendered = True
 
         # how to combine object detection?
@@ -678,21 +692,22 @@ class Window:
         # g.swap_interval(60)
 
     def initiation_gl_setting(self):
-        gl.glEnable(gl.GL_SCISSOR_TEST)
-        gl.glEnable(gl.GL_DEPTH_TEST)
-        gl.glEnable(gl.GL_STENCIL_TEST)
-        a = gl.glIsEnabled(gl.GL_SCISSOR_TEST)
-        b = gl.glIsEnabled(gl.GL_DEPTH_TEST)
-        c = gl.glIsEnabled(gl.GL_STENCIL_TEST)
-        if a + b + c != 3:
-            raise Exception('enabling test problem')
+        with self.glfw_context as gl:
+            gl.glEnable(gl.GL_SCISSOR_TEST)
+            gl.glEnable(gl.GL_DEPTH_TEST)
+            gl.glEnable(gl.GL_STENCIL_TEST)
+            a = gl.glIsEnabled(gl.GL_SCISSOR_TEST)
+            b = gl.glIsEnabled(gl.GL_DEPTH_TEST)
+            c = gl.glIsEnabled(gl.GL_STENCIL_TEST)
+            if a + b + c != 3:
+                raise Exception('enabling test problem')
 
-        gl.glEnable(gl.GL_BLEND)
-        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+            gl.glEnable(gl.GL_BLEND)
+            gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-        gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
-        gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+            gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+            gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
+            gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
 
     def initiation_window_setting(self):
         # self._viewports.new(0, 0, 1.0, 1.0, 'default')
@@ -754,25 +769,26 @@ class Window:
                     #     for i in window._callbacks_repo.items():
                     #         print(i)
                     #         print(i[0]._dell, i[0].viewports[0], i[0]._glfw_window)
-                    if window.viewports.current_viewport._flag_clear:
+                    if window.viewports._latest_viewport._flag_clear:
                         print(f'{window} need instant clear')
-                        window.viewports.current_viewport.clear_instant()
+                        window.viewports._latest_viewport.clear_instant()
                         # window.viewports.current_viewport._flag_clear = False
 
                     window.post_draw_callback()
 
                     if window.myframe._flag_something_rendered:
                         window.make_window_current()
-                        gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, window.myframe._frame_buffer._glindex)
-                        gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # set source
+                        with window.glfw_context as gl:
+                            gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, window.myframe._frame_buffer._glindex)
+                            gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # set source
 
-                        gl.glScissor(0,0,window.width, window.height) # reset scissor to copy all
+                            gl.glScissor(0,0,window.width, window.height) # reset scissor to copy all
 
-                        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, 0)
-                        gl.glBlitFramebuffer(0, 0, window.width, window.height,
-                                             0, 0, window.width, window.height,
-                                             gl.GL_COLOR_BUFFER_BIT,
-                                             gl.GL_LINEAR)
+                            gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, 0)
+                            gl.glBlitFramebuffer(0, 0, window.width, window.height,
+                                                 0, 0, window.width, window.height,
+                                                 gl.GL_COLOR_BUFFER_BIT,
+                                                 gl.GL_LINEAR)
 
                         # window.buffer_swap_callback()
                         glfw.swap_buffers(window.glfw_window)
@@ -797,15 +813,18 @@ class Window:
                 # print(glfw._callback_repositories)
                 # print(len(GLFW_GL_tracker._windows))
                 # print(len(glfw._window_focus_callback_repository))
+                for window in cls._windows:
+                    window.handle_close()
+                if len(cls._windows) == 0:
+                    break
+
             else:
                 break
 
             timer.set_routine_end()
             if timer.framecount == framecount:
                 break
-
-        # TODO fix ↓
-        # Shader.deleteProgram()
+        glfw.terminate()
 
     @classmethod
     def print_framerate(cls, state: bool = True):
@@ -898,12 +917,13 @@ class Window:
     def make_window_current(self):
         # TODO
         # if self.windows.get_current() != self:
-        glfw.make_context_current(None)
-        glfw.make_context_current(self.glfw_window)
+        if self.glfw_window != None:
+            glfw.make_context_current(None)
+            glfw.make_context_current(self.glfw_window)
 
-        Windows.set_current(self)
-        GLFW_GL_tracker.set_current(self.unique_glfw_context)
-        FBL.set_current(self._myframe)
+            Windows.set_current(self)
+            Unique_glfw_context.set_current(self.glfw_context)
+            FBL.set_current(self._myframe)
 
     # @classmethod
     # def get_current_window(cls):
@@ -961,7 +981,7 @@ class Window:
         return o
 
     @property
-    def unique_glfw_context(self):
+    def glfw_context(self):
         return self._unique_glfw_context
     @property
     def myframe(self):
@@ -1083,8 +1103,8 @@ class Timer:
                 #     print(f'{self._name}: framerate: {round(self._current_framerate)}')
 
         target = 1/self._frametarget
-        rendering_time = glfw.get_time()
 
+        rendering_time = glfw.get_time()
         # if self._print_framerate_drawing:
         #     if self._framecount % self._frametarget is 0:
         #         try:

@@ -1,7 +1,7 @@
 from ..renderer.renderer_template import Renderer_builder
 from patterns.update_check_descriptor import UCD
 from ..window import Window
-# from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+# from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
 # from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
 
 

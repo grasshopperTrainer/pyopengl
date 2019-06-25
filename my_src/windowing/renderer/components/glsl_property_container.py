@@ -3,7 +3,7 @@ from numpy.lib.recfunctions import merge_arrays, append_fields
 import weakref
 import copy
 
-from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+# from windowing.my_openGL.unique_glfw_context import Trackable_openGL as gl
 
 
 class _Block:

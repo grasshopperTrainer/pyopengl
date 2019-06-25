@@ -1,16 +1,17 @@
 import os
 
-from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+# from windowing.my_openGL.unique_glfw_context import Trackable_openGL as gl
+from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
 import numpy as np
 from PIL import Image
 
 from .component_bp import RenderComponent
-
+from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
 
 class Texture(RenderComponent):
-    _default_internalformat = gl.GL_RGBA8
-    _default_format = gl.GL_RGBA
-    _default_type = gl.GL_UNSIGNED_BYTE
+    _default_internalformat = Unique_glfw_context.GL_RGBA8
+    _default_format = Unique_glfw_context.GL_RGBA
+    _default_type = Unique_glfw_context.GL_UNSIGNED_BYTE
 
 
 class Texture_new(Texture):
@@ -23,32 +24,42 @@ class Texture_new(Texture):
         self._format = None
         self._type = None
 
-    def build(self):
+        self._glindex = None
+        self._context = None
 
-        self._glindex = gl.glGenTextures(1)
+    def build(self, context):
+        if context is None:
+            self._context = Unique_glfw_context.get_current()
+        else:
+            self._context = context
 
-        self.bind()
+        with self._context as gl:
+            self._glindex = gl.glGenTextures(1)
 
-        # basic setup
-        gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
-        gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
-        gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_REPEAT)
-        gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_REPEAT)
-        # gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_R, gl.GL_REPEAT)
-        # gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_GENERATE_MIPMAP, gl.GL_TRUE)
+            gl.glActiveTexture(gl.GL_TEXTURE0 + self._slot)
+            gl.glBindTexture(gl.GL_TEXTURE_2D, self._glindex)
+
+            # basic setup
+            gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+            gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+            gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_REPEAT)
+            gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_REPEAT)
+            # gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_R, gl.GL_REPEAT)
+            # gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_GENERATE_MIPMAP, gl.GL_TRUE)
 
 
-        gl.glTexImage2D(gl.GL_TEXTURE_2D,
-                        0,
-                        self.internalformat,
-                        self._size[0],
-                        self._size[1],
-                        0,
-                        self.format,
-                        self.type,
-                        None)
+            gl.glTexImage2D(gl.GL_TEXTURE_2D,
+                            0,
+                            self.internalformat,
+                            self._size[0],
+                            self._size[1],
+                            0,
+                            self.format,
+                            self.type,
+                            None)
 
-        self.unbind()
+            gl.glActiveTexture(gl.GL_TEXTURE0)
+            gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
     def rebuild(self,width, height):
         self._size = width, height
@@ -57,18 +68,30 @@ class Texture_new(Texture):
         self.build()
 
     def bind(self):
-        gl.glActiveTexture(gl.GL_TEXTURE0 + self._slot)
-        gl.glBindTexture(gl.GL_TEXTURE_2D, self._glindex)
+        with self._context as gl:
+            gl.glActiveTexture(gl.GL_TEXTURE0 + self._slot)
+            gl.glBindTexture(gl.GL_TEXTURE_2D, self._glindex)
 
     def unbind(self):
-        gl.glActiveTexture(gl.GL_TEXTURE0)
-        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+        with self._context as gl:
+            gl.glActiveTexture(gl.GL_TEXTURE0)
+            gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+
     def delete(self):
-        gl.glDeleteTextures(1,self._glindex)
+        if self._glindex != None:
+            with self._context as gl:
+                gl.glDeleteTextures(1,self._glindex)
+            self._glindex = None
+            self._context = None
+
     # def __del__(self):
     #     if hasattr(self, '_glindex'):
     #         self.delete()
     #         del self._glindex
+
+    def __del__(self):
+        if self._glindex != None:
+            self.delete()
 
     @property
     def pixel_data(self):
@@ -84,7 +107,11 @@ class Texture_new(Texture):
             self.__class__._repository = value
 
     def delete(self):
-        gl.glDeleteTextures(1, self._glindex)
+        if self._glindex != None:
+            with self._context as gl:
+                gl.glDeleteTextures(self._glindex)
+            self._glindex = None
+            self._context = None
 
     @property
     def internalformat(self):
@@ -127,6 +154,7 @@ class Texture_load(Texture):
         self._slot = slot
 
         self._glindex = None
+        self._context = None
 
         # in if file is given as a full path
         if '/' in file:
@@ -148,52 +176,67 @@ class Texture_load(Texture):
         except:
             raise FileNotFoundError("can't load file")
 
-    def build(self):
-        self._glindex = np.array(gl.glGenTextures(1), np.uint8)
+    def build(self, context):
+        if context is None:
+            self._context = Unique_glfw_context.get_current()
+        else:
+            self._context = context
 
-        self.bind()
-        # basic setup
-        gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
-        gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
-        gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_REPEAT)
-        gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_REPEAT)
-        # gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_GENERATE_MIPMAP, gl.GL_TRUE)
+        with self._context as gl:
+            self._glindex = np.array(gl.glGenTextures(1), np.uint8)
+
+            gl.glActiveTexture(gl.GL_TEXTURE0 + self._slot)
+            gl.glBindTexture(gl.GL_TEXTURE_2D, self._glindex)
+            # basic setup
+            gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+            gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+            gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_REPEAT)
+            gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_REPEAT)
+            # gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_GENERATE_MIPMAP, gl.GL_TRUE)
 
 
-        internalformat = 0
-        data_type = None
+            internalformat = 0
+            data_type = None
 
-        if self.image.mode == 'RGBA':
-            internalformat = gl.GL_RGBA8
-            format = gl.GL_RGBA
-        elif self.image.mode == 'RGB':
-            internalformat = gl.GL_RGB8
-            format = gl.GL_RGB
+            if self.image.mode == 'RGBA':
+                internalformat = gl.GL_RGBA8
+                format = gl.GL_RGBA
+            elif self.image.mode == 'RGB':
+                internalformat = gl.GL_RGB8
+                format = gl.GL_RGB
 
-        if self.pixel_data.dtype == 'uint8':
-            data_type = gl.GL_UNSIGNED_BYTE
+            if self.pixel_data.dtype == 'uint8':
+                data_type = gl.GL_UNSIGNED_BYTE
 
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, internalformat,
-                        self.image.width, self.image.height,
-                        0, format, data_type, self.pixel_data)
+            gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, internalformat,
+                            self.image.width, self.image.height,
+                            0, format, data_type, self.pixel_data)
 
-        # remove image data from memory
-        self.image.config_window_close()
+            # remove image data from memory
+            self.image.config_window_close()
 
-        self.unbind()
+            gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+
 
     def bind(self):
-        gl.glActiveTexture(gl.GL_TEXTURE0 + self._slot)
-        gl.glBindTexture(gl.GL_TEXTURE_2D, self._glindex)
+        with self._context as gl:
+            gl.glActiveTexture(gl.GL_TEXTURE0 + self._slot)
+            gl.glBindTexture(gl.GL_TEXTURE_2D, self._glindex)
 
     def unbind(self):
-        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+        with self._context as gl:
+            gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
     def delete(self):
-        gl.glDeleteTextures(self._glindex)
+        if self._glindex != None:
+            with self._context as gl:
+                gl.glDeleteTextures(self._glindex)
+            self._glindex = None
+            self._context = None
 
     def __del__(self):
-        self.delete()
+        if self._glindex != None:
+            self.delete()
 
     @property
     def pixel_data(self):

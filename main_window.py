@@ -3,7 +3,7 @@ import glfw
 from windowing.renderer.BRO.testBRO import TestBRO
 from windowing.unnamedGUI import *
 
-from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
 
 class Main_window(Window):
     def __init__(self):
@@ -102,20 +102,20 @@ class Top_bar(Window):
         self.flag_follow_active = True
         self.flag_following = False
 
-        self.rect1 = TestBRO(0,0,100,100)
-        self.rect2 = TestBRO(100,0,100,100)
+        self.rect1 = TestBRO(0,0,100,100,(1,1,1,1),(0,0,0,1))
+
+        print('debug, preset color', self.rect1._color1, self.rect1._color2)
 
         self.viewports[0].open()
         self.viewports[0].clear(0,1,0,1)
         self.rect1.draw()
-        self.rect2.draw()
         pass
 
     def _draw_(self):
         # self.viewports[0].open()
-        if len(self.keyboard.pressed_keys) != 0:
-            print('bar key pressed')
         if self.mouse.is_just_pressed and self.mouse.cursor_object == self.rect1.unit:
+            print('debug, object press detected')
+            self.viewports[0].open()
             self.rect1.switch_color()
 
         if self.flag_follow_active:

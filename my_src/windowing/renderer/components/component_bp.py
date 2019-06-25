@@ -1,5 +1,6 @@
 import numpy as np
-from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+from windowing.my_openGL.unique_glfw_context import Unique_glfw_context as gl
+
 class RenderComponent:
     # def __new__(cls, *args, **kwargs):
     #     if len(args) + len(kwargs) == 0:
@@ -11,7 +12,7 @@ class RenderComponent:
     #         return ins
 
     @classmethod
-    def build(cls):
+    def build(cls, *args, **kwargs):
         pass
     @classmethod
     def bind(cls):
@@ -19,6 +20,12 @@ class RenderComponent:
     @classmethod
     def unbind(cls):
         pass
+
+    @property
+    def is_built(self):
+        if self._glindex is None:
+            return False
+        return True
 
     @staticmethod
     def _dtype_to_gltype(dtype: np.dtype):

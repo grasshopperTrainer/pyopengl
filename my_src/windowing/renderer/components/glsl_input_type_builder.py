@@ -1,8 +1,8 @@
 import weakref
 import numpy as np
 import copy
-from ...my_openGL.glfw_gl_tracker import Trackable_openGL as gl
-
+# from ...my_openGL.unique_glfw_context import Trackable_openGL as gl
+from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
 
 class glsl_attribute:
 
@@ -33,15 +33,17 @@ class glsl_attribute:
         if not np.array_equal(self._dict[instance][self._name], value):
             try:
                 self._dict[instance][self._name] = value
+                # print(id(self._dict[instance[self._name]]))
             except:
                 self._dict[instance][self._name] = value.flatten('F')
 
             if self._kind == 0:
-                instance._attribute_update_que.append(self._name)
+                # instance._attribute_update_que.append(self._name)
                 self.push_attribute(instance)
             else:
                 self.push_uniform(instance)
-                instance._uniform_update_que.append(self)
+                # instance._uniform_update_que.append(self)
+
 
     def set_array(self,instance, array):
         self._dict[instance] = array
@@ -63,7 +65,9 @@ class glsl_attribute:
             off = start_off + buffer.itemsize * i
             element = data[i]
             size = element.itemsize * element.size
-            gl.glBufferSubData(gl.GL_ARRAY_BUFFER, off, size, element)
+
+            with Unique_glfw_context.get_current() as gl:
+                gl.glBufferSubData(gl.GL_ARRAY_BUFFER, off, size, element)
 
 class vector(glsl_attribute):
     _dtype = np.float32
@@ -74,29 +78,19 @@ class vector(glsl_attribute):
         d = self._dict[instance][self._name][0]
         t = d.dtype.kind
         l = self._location
-
-        instance.shader.bind()
-        exec(f'gl.glUniform{n}{t}v({l},{c},d)')
-
-        # pass
+        instance._shader.bind()
+        with instance._context as gl:
+            exec(f'gl.glUniform{n}{t}v({l},{c},d)')
 
 class vec2(vector):
     _n = 2
     _dict = weakref.WeakKeyDictionary()
 
-
-
-
-
 class vec3(vector):
     _n = 3
 
-    pass
-
 class vec4(vector):
     _n = 4
-
-    pass
 
 class matrix(glsl_attribute):
 
@@ -106,8 +100,9 @@ class matrix(glsl_attribute):
         l = self._location
         c = 1
         t = d.dtype.kind
-        instance.shader.bind()
-        exec(f'gl.glUniformMatrix{n}{t}v({l},{c},False,d)')
+        instance._shader.bind()
+        with instance._context as gl:
+            exec(f'gl.glUniformMatrix{n}{t}v({l},{c},False,d)')
 
 class mat4(matrix):
     _n = 16
@@ -147,11 +142,10 @@ class GLSL_input_type_builder:
     def __new__(cls, *args, **kwargs):
         glsl_type = type(f'shader_object{cls._count}', (GLSL_input_type_template,), {'kkk':10})
 
-        if len(args) != 3:
+        if len(args) != 2:
             raise
-        glsl_type.shader = args[0]
-        vertex = args[1].splitlines()
-        fragment = args[2].splitlines()
+        vertex = args[0].splitlines()
+        fragment = args[1].splitlines()
 
         att_dict = {'vertex': vertex,'fragment': fragment}
         att_args = []
@@ -204,18 +198,19 @@ class GLSL_input_type_builder:
 
         return glsl_type #type: GLSL_input_type_template
 
-    def __init__(self,shader, vertex_str, fragment_str):
-        pass
 
 class GLSL_input_type_template:
 
     _flag_uniform_location_validated = False
     _att_dict = None
 
-    def __init__(self,vertex_array, vertex_buffer):
+    def __init__(self,vertex_array, vertex_buffer, shader):
+        if not  vertex_buffer._context == vertex_buffer._context == shader._context:
+            raise
+        self._context = vertex_buffer._context
         self._vertex_array = vertex_array
         self._vertex_buffer = vertex_buffer
-
+        self._shader = shader
         # copy buffer structure
         self._attribute_buffer = self.__class__._attribute_buffer.copy()
         self._uniform_buffer = self.__class__._uniform_buffer.copy()
