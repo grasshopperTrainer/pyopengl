@@ -207,7 +207,10 @@ class Callback_repository:
             del self._callbacks_repo[deleter]
 
     def remove(self, deleter= None, identifier=None):
-        if deleter != None:
+        if deleter == None:
+            # TODO
+            pass
+        else:
             if deleter in self._callbacks_repo:
                 if identifier is None:
                     del self._callbacks_repo[deleter]
@@ -225,6 +228,4 @@ class Callback_repository:
                             named_tuple_list.pop(to_delete)
                         # print('after')
                         # print('name and list', n, named_tuple_list)
-        else:
-            # TODO
-            pass
+

@@ -2,6 +2,7 @@ from windowing.window import Window
 import glfw
 from windowing.renderer.BRO.testBRO import TestBRO
 from windowing.unnamedGUI import *
+import numpy as np
 
 from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
 
@@ -12,20 +13,27 @@ class Main_window(Window):
         self.rect = TestBRO(0,0,100,100)
         self.rect2 = TestBRO(100,100,200,200)
 
-        menu = self.viewports.new(0,0,1.,50, 'menu_bar')
+        # menu = self.viewports.new(0,0,1.,50, 'menu_bar')
         self.viewports.new(0,50, 1., 100,'top_bar')
         self.viewports.new(lambda x:x-400, 100, 400, lambda x:x-100,'side_bar')
         self.viewports.new(20,20,lambda x:x-40,lambda x:x-40,'center').set_min()
 
         self.flag_topbar_created = False
-
         self.top_bar = None
 
-        self.button0 = Button(0,0,100,50, self, menu)
+        # ui menu bar
+        self.background = Filled_box(0,0,1.0,1.)
+        self.background.fill_color = 1,0,0,1
+        self.button0 = Button_click(0, 0, 100, 50)
+        self.button1 = Button_hover(0, 0, 100, 50)
+        self.button2 = Button_pressing(0, 0, 200, 50)
+        self.test_block = Block(0,lambda x:x-50,1.0,50, window=self, viewport=self.viewports[0])
+        self.test_block.append_horizontal(self.background, self.button0, self.button1, self.button2)
+        self.test_block.align_horrizontal(self.button0, self.button1, self.button2)
 
         self.refresh_all() # first draw all
         self.set_window_refresh_callback(self.refresh_all)
-        self.mouse.set_object_selection_callback(self.rect.unit,self.mouse.set_button_press_callback,(self.viewports[0].open,self.rect.switch_color))
+        self.mouse.set_object_selection_callback(self.rect.unit,self.mouse.set_button_press_callback,self.rect.switch_color,None)
 
     def _draw_(self):
         # pos = glfw.get_cursor_pos(self.glfw_window)
@@ -44,7 +52,10 @@ class Main_window(Window):
         #         self.y = True
         #         # exit()
 
-        # print(self.windows.windows)
+        #     self.refresh_all()
+        if self.mouse.is_any_object_pressed():
+            self.refresh_all()
+
         if self.mouse.is_object_pressed(self.rect.unit):
             if not self.windows.has_window_named('top_bar'):
                 self.top_bar = Top_bar(self)
@@ -56,7 +67,7 @@ class Main_window(Window):
                     self.top_bar.unpin_from_viewport(self, self.viewports['top_bar'])
                     self.top_bar.config_visible(True)
                     self.top_bar.flag_follow_active = True
-                self.refresh_all()
+                    self.refresh_all()
 
         if self.top_bar != None:
             conditions = [
@@ -78,8 +89,8 @@ class Main_window(Window):
         self.viewports['default'].open().clear()
         self.rect.draw()
         self.rect2.draw()
-        self.viewports['menu_bar'].open().clear(1,0,0,1)
-        self.button0.draw()
+        # self.viewports['menu_bar'].open().clear(1,0,0,1)
+        self.test_block.draw()
         self.viewports.close()
 
 class Top_bar(Window):

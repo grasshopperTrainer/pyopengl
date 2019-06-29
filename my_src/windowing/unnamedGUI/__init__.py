@@ -1,1 +1,1 @@
-from .box import Button
+from .box import *

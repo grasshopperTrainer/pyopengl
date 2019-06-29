@@ -6,7 +6,7 @@ from patterns.store_instances_dict import SID
 # from ..my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 from ..windows import Windows
 from ..callback_repository import Callback_repository
-
+from typing import Union, Tuple, Any, Callable, Dict, Optional
 class Position_registry:
     pass
     def new(self):
@@ -141,12 +141,13 @@ class Mouse(SID):
         self._callbacks_repo.setter('scroll_right', func, args, kwargs, identifier, instant, deleter)
     def set_scroll_left_callback(self, func, args:tuple=(), kwargs:dict={}, identifier:str='not_given',instant=False,deleter=None):
         self._callbacks_repo.setter('scroll_left', func, args, kwargs, identifier, instant, deleter)
+    def set_in_area_callback(self):
+        pass
 
     def mouse_move_callback(self, context, xpos, ypos):
         self.move_callback()
         self.any_callback()
         self._cursor_state['moving'] = True
-
 
     def mouse_enter_callback(self, context, entered):
         if entered:
@@ -258,6 +259,21 @@ class Mouse(SID):
             return mapped
         else:
             return glfw.get_cursor_pos(self._window.glfw_window)
+    @property
+    def window_position_gl(self):
+        # flipped to match openGL buffer order
+        if len(self._mapping_source) != 0 and not self.window.is_focused:
+            wi, vp = self._mapping_source['window'], self._mapping_source['viewport']
+            ratio = wi.mouse.viewport_position(vp, True)
+
+            size = self.window.size
+            mapped = [a * b for a, b in zip(ratio, size)]
+            return mapped
+        else:
+            glfw_coordinate = glfw.get_cursor_pos(self._window.glfw_window)
+            gl_coordintate = glfw_coordinate[0], self._window.height - glfw_coordinate[1]
+            return gl_coordintate
+
 
     def set_map_from_window(self, source_window, source_viewport):
         if isinstance(source_viewport, (int, str)):
@@ -291,7 +307,7 @@ class Mouse(SID):
         if not reparameterize:
             return x-a1, yy-a2
         else:
-            w,h = viewport.abs_width,viewport.abs_height
+            w,h = viewport.pixel_width, viewport.pixel_height
             return (x-a0)/w, (y-a1)/h
 
     @property
@@ -334,7 +350,7 @@ class Mouse(SID):
     def cursor_object(self):
         x,y = self.window_position
         y = self._window.height - y
-        self._window.make_window_current()
+        # self._window.make_window_current()
 
         with self._window.glfw_context as gl:
             gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
@@ -358,33 +374,114 @@ class Mouse(SID):
                     return True
         return False
 
-    def set_object_selection_callback(self, selection, callback, func, args:tuple=(), kwargs:dict={}, identifier="not_given"):
-        if callable(func):
-            def callback_func(func, args, kwargs):
-                if self.cursor_object == selection:
-                    func(*args,**kwargs)
-                    
-        # setting multiple
-        elif isinstance(func, tuple):
-            if not all(callable(x) for x in func):
-                raise
-            func_n = len(func)
-            if func_n != 1:
-                if len(args) == 0:
-                    args = [args,]*func_n
-                if isinstance(kwargs, dict):
-                    kwargs = [kwargs,]*func_n
-
-            def callback_func(func,args,kwargs):
-                print(self.cursor_object, selection)
-                if self.cursor_object == selection:
-                    print('object pressing')
-                    for f,a,k in zip(func,args,kwargs):
-                        f(*a,**k)
+    def is_any_object_pressed(self):
+        if self.is_just_pressed and self.cursor_object != None:
+            return True
         else:
-            raise TypeError
+            return False
 
-        callback(callback_func, args=(func, args, kwargs),identifier=identifier)
+    def set_object_selection_callback(self, selection, callback,
+                                      func_true: Tuple[Optional[Callable[...,Any]], Optional[Tuple], Optional[Dict]],
+                                      func_false: Tuple[Optional[Callable[...,Any]], Optional[Tuple], Optional[Dict]],
+                                      identifier="not_given", deleter=None):
+
+        # data structure check
+        if isinstance(func_true, (list, tuple)):
+            func_true = list(func_true)
+            if callable(func_true[0]):
+                pass
+            elif func_true[0] is None:
+                func_true[0] = lambda *x, **y:x
+            else:
+                raise
+
+            if isinstance(func_true[1], tuple):
+                pass
+            elif func_true[1] is None:
+                func_true[1] = ()
+            else:
+                raise
+
+            if isinstance(func_true[2], dict):
+                pass
+            elif func_true[2] is None:
+                func_true[2] = {}
+            else:
+                raise
+        elif callable(func_true):
+            func_true = [func_true, (), {}]
+        elif func_true is None:
+            func_true = [lambda *x, **y:x, (), {}]
+        else:
+            raise
+
+        if isinstance(func_false, (list, tuple)):
+            func_false = list(func_false)
+            if callable(func_false[0]):
+                pass
+            elif func_false[0] is None:
+                func_false[0] = lambda *x, **y: x
+            else:
+                raise
+
+            if isinstance(func_false[1], tuple):
+                pass
+            elif func_false[1] is None:
+                func_false[1] = ()
+            else:
+                raise
+
+            if isinstance(func_false[2], dict):
+                pass
+            elif func_false[2] is None:
+                func_false[2] = {}
+            else:
+                raise
+        elif callable(func_false):
+            func_false = [func_false, (), {}]
+        elif func_false == None:
+            func_false = [lambda *x,**y: x, (), {}]
+        else:
+            raise
+
+        #
+        # if (callable(func_true) or func_true is None) and (callable(func_false) or func_false is None):
+        #     def callback_func(func, args, kwargs):
+        #         if self.cursor_object == selection:
+        #             func(*args,**kwargs)
+        #
+        #     raise
+        # # setting multiple
+        # elif isinstance(func, tuple):
+        #     if not all(callable(x) for x in func):
+        #         raise
+        #     func_n = len(func)
+        #     if func_n != 1:
+        #         if len(args) == 0:
+        #             args = [args,]*func_n
+        #         if isinstance(kwargs, dict):
+        #             kwargs = [kwargs,]*func_n
+        #
+        #     def callback_func(func,args,kwargs):
+        #         print(self.cursor_object, selection)
+        #         if self.cursor_object == selection:
+        #             print('object pressing')
+        #             for f,a,k in zip(func,args,kwargs):
+        #                 f(*a,**k)
+        #         else:
+        #             for f,a,k in zip(func,args, kwargs):
+        #                 f(*a,**k)
+        # else:
+        #     raise TypeError
+
+        def object_selection_callback(func_true, args_true, kwargs_true,
+                                      func_false, args_false, kwargs_false):
+            if self.cursor_object == selection:
+                func_true(*args_true, **kwargs_true)
+            else:
+                func_false(*args_false, **kwargs_false)
+
+        callback(object_selection_callback, args=(*func_true, *func_false),identifier=identifier, deleter=deleter)
 
     def set_viewport_selection_callback(self, viewport, is_in, callback_state, func):
         def callback_func():
@@ -401,6 +498,17 @@ class Mouse(SID):
             return True
         else:
             return False
+
+    def is_in_area(self, bottom_left, top_right):
+        window_pos = self.window_position_gl
+        if bottom_left[0] <= window_pos[0] <= top_right[0]:
+            if bottom_left[1] <= window_pos[1] <= top_right[1]:
+                return True
+        return False
+
+
+    def remove_callback(self, deleter, identifier, callback_kind):
+        self._callbacks_repo.remove(deleter, identifier)
 
     @property
     def is_in_window(self):

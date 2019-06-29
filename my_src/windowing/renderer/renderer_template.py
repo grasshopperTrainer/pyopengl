@@ -495,19 +495,19 @@ class Renderer_template:
                 if ibo.count != 0:  # draw a thing
                     with render_unit._context as gl:
                         with FBL.get_current() as fbo:
-                            print(gl)
-                            print(fbo)
-                            print('llllllllllll')
-                            print(render_unit._shader._glindex)
-                            print(render_unit._vertex_array._glindex)
-                            print(render_unit._vertex_buffer._glindex)
-                            print(render_unit._index_buffer._glindex)
-                            print('llllllllllll')
-
-                            print(Viewport.get_current())
-                            print(render_unit.shader_attribute)
-                            print(render_unit.shader_attribute.u_fillcol)
-                            print(id(render_unit.shader_attribute.u_fillcol))
+                            # print(gl)
+                            # print(fbo)
+                            # print('llllllllllll')
+                            # print(render_unit._shader._glindex)
+                            # print(render_unit._vertex_array._glindex)
+                            # print(render_unit._vertex_buffer._glindex)
+                            # print(render_unit._index_buffer._glindex)
+                            # print('llllllllllll')
+                            #
+                            # print(Viewport.get_current())
+                            # print(render_unit.shader_attribute)
+                            # print(render_unit.shader_attribute.u_fillcol)
+                            # print(id(render_unit.shader_attribute.u_fillcol))
                             render_unit.shader_attribute.PM = Viewport.get_current().camera.PM
                             render_unit.shader_attribute.VM = Viewport.get_current().camera.VM
                             # get id color

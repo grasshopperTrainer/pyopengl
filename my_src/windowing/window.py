@@ -219,11 +219,15 @@ class Window:
         # self._dell = False
         self._deleter = Deleters()
         self._flag_window_close = False
+        self._flag_just_resized = True
 
     def handle_close(self):
         if self._flag_window_close:
             self._callbacks_repo.exec('window_close')
             self._close_window()
+            if len(Windows.windows) == 0:
+                return True
+            return False
 
     @property
     def mother_window(self):
@@ -252,6 +256,7 @@ class Window:
             print('window, resize callback activated')
             self.myframe.rebuild(self.size)
         self._flag_just_resized = True
+        gc.collect()
     def window_refresh_callback(self, window):
         self._callbacks_repo.exec('window_refresh')
         print(f'{self} refreshed')
@@ -738,92 +743,88 @@ class Window:
         while True:
             # gc.collect()
             timer.set_routine_start()
-            if cls._display_window():
-                # to give access to other windows through keyword 'windows'
-                for window in cls._windows: #type: Window
-                    # gc.collect()
+            # if cls._display_window():
+            # to give access to other windows through keyword 'windows'
+            for window in cls._windows: #type: Window
+                # gc.collect()
 
-                    # print(window)
-                    #drawing
+                # print(window)
+                #drawing
+                window.make_window_current()
+                # window.viewports[0].open()
+                window.pre_draw_callback()
+                # window.viewports[0].open()
+                window._draw_()
+                # if window.viewports.current_viewport.name == 'menu_bar':
+                #     print(window.viewports.current_viewport.name)
+                #     exit()
+                # if window.viewports.current_viewport.name != 'default':
+                # if window.name == 'main':
+                #     print('repo',len(window._callbacks_repo))
+                #     for i in window._callbacks_repo._callbacks_repo.values():
+                #         print(i)
+                #     print('windows', len(window.windows.test_dic))
+                #     if len(window._callbacks_repo) != 0:
+                #         print('repo',list(window._callbacks_repo.values())[0])
+                #     if len(list(window._callbacks_repo.keys())) != 0:
+                #         print(list(window._callbacks_repo.values())[0]['window_refresh']['Top_bar.p'][0])
+                #         print('windows',list(window.windows.test_dic.keys()))
+                #         print('windows',list(window.windows.test_dic.keys())[1].p)
+                #         # exit()
+                #     for i in window._callbacks_repo.items():
+                #         print(i)
+                #         print(i[0]._dell, i[0].viewports[0], i[0]._glfw_window)
+                if window.viewports._latest_viewport._flag_clear:
+                    print(f'{window} need instant clear')
+                    window.viewports._latest_viewport.clear_instant()
+                    # window.viewports.current_viewport._flag_clear = False
+
+                window.post_draw_callback()
+
+                if window.myframe._flag_something_rendered:
                     window.make_window_current()
-                    # window.viewports[0].open()
-                    window.pre_draw_callback()
-                    # window.viewports[0].open()
-                    window._draw_()
-                    # if window.viewports.current_viewport.name == 'menu_bar':
-                    #     print(window.viewports.current_viewport.name)
-                    #     exit()
-                    # if window.viewports.current_viewport.name != 'default':
-                    # if window.name == 'main':
-                    #     print('repo',len(window._callbacks_repo))
-                    #     for i in window._callbacks_repo._callbacks_repo.values():
-                    #         print(i)
-                    #     print('windows', len(window.windows.test_dic))
-                    #     if len(window._callbacks_repo) != 0:
-                    #         print('repo',list(window._callbacks_repo.values())[0])
-                    #     if len(list(window._callbacks_repo.keys())) != 0:
-                    #         print(list(window._callbacks_repo.values())[0]['window_refresh']['Top_bar.p'][0])
-                    #         print('windows',list(window.windows.test_dic.keys()))
-                    #         print('windows',list(window.windows.test_dic.keys())[1].p)
-                    #         # exit()
-                    #     for i in window._callbacks_repo.items():
-                    #         print(i)
-                    #         print(i[0]._dell, i[0].viewports[0], i[0]._glfw_window)
-                    if window.viewports._latest_viewport._flag_clear:
-                        print(f'{window} need instant clear')
-                        window.viewports._latest_viewport.clear_instant()
-                        # window.viewports.current_viewport._flag_clear = False
+                    with window.glfw_context as gl:
+                        gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, window.myframe._frame_buffer._glindex)
+                        gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # set source
 
-                    window.post_draw_callback()
+                        gl.glScissor(0,0,window.width, window.height) # reset scissor to copy all
 
-                    if window.myframe._flag_something_rendered:
-                        window.make_window_current()
-                        with window.glfw_context as gl:
-                            gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, window.myframe._frame_buffer._glindex)
-                            gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # set source
+                        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, 0)
+                        gl.glBlitFramebuffer(0, 0, window.width, window.height,
+                                             0, 0, window.width, window.height,
+                                             gl.GL_COLOR_BUFFER_BIT,
+                                             gl.GL_LINEAR)
 
-                            gl.glScissor(0,0,window.width, window.height) # reset scissor to copy all
+                    # window.buffer_swap_callback()
+                    glfw.swap_buffers(window.glfw_window)
+                # window.mouse_posed = False
+                window.myframe.flag_something_rendered = False
+                window._flag_just_resized = False
 
-                            gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, 0)
-                            gl.glBlitFramebuffer(0, 0, window.width, window.height,
-                                                 0, 0, window.width, window.height,
-                                                 gl.GL_COLOR_BUFFER_BIT,
-                                                 gl.GL_LINEAR)
+                # viewports = window.viewports._viewports
+                #
+                window.mouse.reset_per_frame()
+            # z_dict = sorted(cls._windows.get_window_z_position().items())
+            # for i,l in z_dict:
+            #     for w in l:
+            #         w.config_focused(True)
+            #         w.config_focused(False)
 
-                        # window.buffer_swap_callback()
-                        glfw.swap_buffers(window.glfw_window)
-                    # window.mouse_posed = False
-                    window.myframe.flag_something_rendered = False
-                    window._flag_just_resized = False
-
-                    # viewports = window.viewports._viewports
-                    #
-                    window.mouse.reset_per_frame()
-                # z_dict = sorted(cls._windows.get_window_z_position().items())
-                # for i,l in z_dict:
-                #     for w in l:
-                #         w.config_focused(True)
-                #         w.config_focused(False)
-
-                glfw.poll_events()
-                # for i in glfw._callback_repositories:
-                #     print(i)
-                #     for ii in i.items():
-                #         print(ii)
-                # print(glfw._callback_repositories)
-                # print(len(GLFW_GL_tracker._windows))
-                # print(len(glfw._window_focus_callback_repository))
-                for window in cls._windows:
-                    window.handle_close()
-                if len(cls._windows) == 0:
-                    break
-
-            else:
+            glfw.poll_events()
+            # for i in glfw._callback_repositories:
+            #     print(i)
+            #     for ii in i.items():
+            # print(len(glfw._window_focus_callback_repository))
+            to_break = False
+            for window in cls._windows:
+                to_break = window.handle_close()
+            if to_break:
                 break
 
             timer.set_routine_end()
             if timer.framecount == framecount:
                 break
+
         glfw.terminate()
 
     @classmethod
