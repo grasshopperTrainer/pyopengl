@@ -22,14 +22,56 @@ class Main_window(Window):
         self.top_bar = None
 
         # ui menu bar
-        self.background = Filled_box(0,0,1.0,1.)
-        self.background.fill_color = 1,0,0,1
-        self.button0 = Button_click(0, 0, 100, 50)
-        self.button1 = Button_hover(0, 0, 100, 50)
-        self.button2 = Button_pressing(0, 0, 200, 50)
-        self.test_block = Block(0,lambda x:x-50,1.0,50, window=self, viewport=self.viewports[0])
-        self.test_block.append_horizontal(self.background, self.button0, self.button1, self.button2)
-        self.test_block.align_horrizontal(self.button0, self.button1, self.button2)
+        self.button0 = Button_click(0, 0, 50, 50)
+        self.button1 = Button_click(0, 0, 50, 50)
+        self.button2 = Button_click(0, 0, 50, 50)
+
+        self.button0_list = Block(0, 0,50,-200,self,self.viewports[0])
+        self.button0_list.fill_color = 1,0,0,1
+        self.button0_list.set_reference(self.button0)
+
+        self.button0_list_buttons = []
+        for i in range(5):
+            height = 50
+            button = Button_hover(0,-(i+1)*height ,1.0,height)
+            button.disable_draw()
+            self.button0_list.set_children(button)
+            # self.button0_list_buttons.append(Button_hover(0,-i*height,1.0,-50*(i+1)))
+
+        # self.button0_list_buttons[0].set_reference(self.button0_list)
+        # print(self.button0_list_buttons[0].vertex())
+        # self.button0_list.align_vertical(*self.button0_list_buttons)
+        # right buttons
+        self.button_close = Button_hover_press(lambda x:x-50,0,50,50)
+        self.button_maximize = Button_hover_press(lambda x:x-100,0,50,50)
+        self.button_iconize = Button_hover_press(lambda x:x-150,0,50,50)
+
+        # Button_hover_press.state
+        self.menu_block = Block(0, lambda x: x - 50, 1.0, 50, window=self, viewport=self.viewports[0])
+        self.menu_block.fill_color = 0,1,0,1
+        self.menu_block.set_children(self.button0, self.button1, self.button2,
+                                          self.button_close, self.button_maximize, self.button_iconize)
+        self.menu_block.align_horrizontal(self.button0, self.button1, self.button2)
+
+        self.button0.set_1_just_callback(lambda: (self.button0_list.enable_draw(),self.button0_list.draw(),print(self.button0.vertex())))
+        self.button0.set_0_just_callback(lambda: (self.button0_list.disable_draw(),self.refresh_all()))
+
+        self.button_close.set_1_just_callback(
+            lambda :self.config_window_close(),
+            identifier='window_close',
+            deleter=self.button_close
+        )
+        self.button_maximize.set_1_just_callback(
+            lambda :self.config_maximize(not self.is_maximized),
+            identifier='window_maximize',
+            deleter=self.button_close
+        )
+        self.button_iconize.set_1_just_callback(
+            lambda :self.config_iconified(True),
+            identifier='window_iconify',
+            deleter=self.button_close
+        )
+
 
         self.refresh_all() # first draw all
         self.set_window_refresh_callback(self.refresh_all)
@@ -53,8 +95,8 @@ class Main_window(Window):
         #         # exit()
 
         #     self.refresh_all()
-        if self.mouse.is_any_object_pressed():
-            self.refresh_all()
+        # if self.mouse.is_any_object_pressed():
+        #     self.refresh_all()
 
         if self.mouse.is_object_pressed(self.rect.unit):
             if not self.windows.has_window_named('top_bar'):
@@ -86,11 +128,12 @@ class Main_window(Window):
         pass
 
     def refresh_all(self):
+        print('refreshing')
         self.viewports['default'].open().clear()
         self.rect.draw()
         self.rect2.draw()
         # self.viewports['menu_bar'].open().clear(1,0,0,1)
-        self.test_block.draw()
+        self.menu_block.draw()
         self.viewports.close()
 
 class Top_bar(Window):

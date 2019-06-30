@@ -221,6 +221,8 @@ class Window:
         self._flag_window_close = False
         self._flag_just_resized = True
 
+        self._previous_window_size = glfw.get_window_size(self.glfw_window)
+
     def handle_close(self):
         if self._flag_window_close:
             self._callbacks_repo.exec('window_close')
@@ -255,8 +257,10 @@ class Window:
         if any(a < b for a,b in zip(self.myframe.size, self.size)):
             print('window, resize callback activated')
             self.myframe.rebuild(self.size)
+
         self._flag_just_resized = True
         gc.collect()
+
     def window_refresh_callback(self, window):
         self._callbacks_repo.exec('window_refresh')
         print(f'{self} refreshed')
@@ -512,7 +516,7 @@ class Window:
             if set:
                 glfw.maximize_window(self.glfw_window)
             else:
-                pass
+                glfw.restore_window(self.glfw_window)
         else:
             glfw.window_hint(glfw.MAXIMIZED, set)
 
@@ -578,6 +582,16 @@ class Window:
     @_get_config
     def is_focused(self):
         pass
+    @_get_config
+    def is_maximized(self):
+        pass
+    @_get_config
+    def is_iconifier(self):
+        pass
+    @property
+    def is_resized(self):
+        return self._flag_just_resized
+
 
     def is_child_of(self, mother):
         if mother is self._mother_window:
@@ -951,9 +965,7 @@ class Window:
         self._size = glfw.get_framebuffer_size(self.glfw_window)
         return self._size
 
-    @property
-    def is_resized(self):
-        return self._flag_just_resized
+
 
     @property
     def master_window(self):

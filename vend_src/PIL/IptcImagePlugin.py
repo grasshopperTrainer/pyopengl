@@ -99,7 +99,7 @@ class IptcImageFile(ImageFile.ImageFile):
                 tagdata = None
             if tag in self.info:
                 if isinstance(self.info[tag], list):
-                    self.info[tag].append(tagdata)
+                    self.info[tag].insert(tagdata)
                 else:
                     self.info[tag] = [self.info[tag], tagdata]
             else:

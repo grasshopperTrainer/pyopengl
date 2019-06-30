@@ -919,7 +919,7 @@ def getchunks(im, **params):
     def append(fp, cid, *data):
         data = b"".join(data)
         crc = o32(_crc32(data, _crc32(cid)))
-        fp.append((cid, data, crc))
+        fp.insert((cid, data, crc))
 
     fp = collector()
 

@@ -108,7 +108,7 @@ def _save(im, fp, filename, save_all=False):
             image_refs.append(existing_pdf.next_object_id(0))
             page_refs.append(existing_pdf.next_object_id(0))
             contents_refs.append(existing_pdf.next_object_id(0))
-            existing_pdf.pages.append(page_refs[-1])
+            existing_pdf.pages.insert(page_refs[-1])
 
     #
     # catalog and list of pages

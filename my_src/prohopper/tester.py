@@ -1,12 +1,8 @@
-class A:
-    def a(self):
-        pass
 
-    def b(self):
+def f():
+    print('kkk')
+    pass
 
-        del self.a
+k = lambda : f() if False else None
 
-
-k = A()
-
-k.b()
+k()

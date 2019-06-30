@@ -1,10 +1,12 @@
 from ..renderer.renderer_template import Renderer_builder
 from patterns.update_check_descriptor import UCD
 from ..window import Window
+from ..callback_repository import Callback_repository
 # from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
 # from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
 import weakref
 from collections import namedtuple
+
 
 
 class Box:
@@ -34,6 +36,9 @@ class Box:
         else:
             self._viewport = None
 
+        self._children = []
+        self._flag_draw = True
+
     def draw(self):
         pass
 
@@ -52,14 +57,17 @@ class Box:
         if len(index) == 0:
             index = 0,1,2,3
 
+        width = self.pixel_width
+        height = self.pixel_height
+
         if 0 in index:
             vertex_list.append((self.pixel_posx, self.pixel_posy))
         if 1 in index:
-            vertex_list.append((self.pixel_posx + self.pixel_width, self.pixel_posy))
+            vertex_list.append((self.pixel_posx + width, self.pixel_posy))
         if 2 in index:
-            vertex_list.append((self.pixel_posx + self.pixel_width, self.pixel_posy + self.pixel_height))
+            vertex_list.append((self.pixel_posx + width, self.pixel_posy + height))
         if 3 in index:
-            vertex_list.append((self.pixel_posx, self.pixel_posy + self.pixel_height))
+            vertex_list.append((self.pixel_posx, self.pixel_posy + height))
 
         if len(index) == 1:
             return vertex_list[0]
@@ -67,27 +75,31 @@ class Box:
 
     @property
     def pixel_posx(self):
+        result = None
         if isinstance(self._posx, float):
-            return self._posx*self._reference.pixel_width
+            result =  self._posx*self._reference.pixel_width
         elif callable(self._posx):
-            return self._posx(self._reference.pixel_width)
+            result = self._posx(self._reference.pixel_width)
         else:
-            if isinstance(self._reference, Box):
-                return self._posx + self._reference.pixel_posx
-            return self._posx
+            result = self._posx
 
+        if isinstance(self._reference, Box):
+            return result + self._reference.pixel_posx
+
+        return result
 
     @property
     def pixel_posy(self):
+        result = None
         if isinstance(self._posy, float):
-            return self._posy*self._reference.pixel_height
+            result = self._posy*self._reference.pixel_height
         elif callable(self._posy):
-            return self._posy(self._reference.pixel_height)
+            result = self._posy(self._reference.pixel_height)
         else:
-            if isinstance(self._reference, Box):
-                return self._posy + self._reference.pixel_posy
-            return self._posy
-
+            result = self._posy
+        if isinstance(self._reference, Box):
+            return result + self._reference.pixel_posy
+        return result
 
     @property
     def pixel_width(self):
@@ -130,6 +142,7 @@ class Box:
                 return self._viewport()
 
     def set_window(self, window):
+        self._window = weakref.ref(window)
         pass
 
     def set_viewport(self, viewport):
@@ -138,12 +151,41 @@ class Box:
     def set_reference(self, ref):
         self._reference = ref
 
+        if ref.window != None:
+            self.set_window(ref.window)
+        if ref.viewport != None:
+            self.set_viewport(ref.viewport)
+
+        ref._children.append(self)
+
+    def set_children(self, *ref):
+        for box in ref:
+            if self._window != None:
+                box.set_window(self.window)
+            if self._viewport != None:
+                box.set_viewport(self.viewport)
+
+            self._children.append(box)
+            box._reference = self
+
     def copy(self):
         """
         copy for new position and size
         :return:
         """
         pass
+
+    def disable_draw(self):
+        self._flag_draw = False
+        for box in self._children:
+            box.disable_draw()
+    def enable_draw(self):
+        self._flag_draw = True
+        for box in self._children:
+            box.enable_draw()
+    def switch_draw_state(self):
+        self._flag_draw = not self._flag_draw
+
 
 class Filled_box(Box):
     """
@@ -153,7 +195,7 @@ class Filled_box(Box):
             how to make calling free???
             """
     c = Renderer_builder()
-    c.use_shader(c.Shader('BRO_rectangle'))
+    c.use_shader(c.Shader('basic_gui_box'))
     c.use_triangle_strip_draw()
     c.use_index_buffer(c.Indexbuffer((0, 1, 3, 3, 1, 2)))
 
@@ -183,219 +225,109 @@ class Filled_box(Box):
         self._fill_color = rgba
 
     def draw(self):
-        if self.viewport != None:
-            self.viewport.open()
-        self._unit.shader_attribute.a_position = self.vertex()
-        self._unit.shader_attribute.u_fillcol = self._fill_color
+        if self._flag_draw:
+            if self.viewport != None:
+                self.viewport.open()
+            self._unit.shader_attribute.a_position = self.vertex()
+            self._unit.shader_attribute.u_fillcol = self._fill_color
 
-        self.renderer._draw_(self._unit)
+            self.renderer._draw_(self._unit)
 
-class Block(Box):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._children = []
+class Block(Filled_box):
+    def __init__(self, posx, posy, width, height, window=None, viewport=None):
+        super().__init__(posx,posy,width,height, window, viewport)
 
-    def append_horizontal(self, *boxes, row = 0):
-        """
+        callbacks = ['state_change']
+        self._callback_repo = Callback_repository(window, callbacks)
 
-        :param boxes:
-        :param absolute_pos:
-        :return:
-        """
-        if len(self._children) < row + 1:
-            for i in range(row + 1 - len(self._children)):
-                self._children.append([])
-
-        row = self._children[row]
-
-        for box in boxes:
-            if isinstance(box, Box):
-                if self._window != None:
-                    box.set_window(self.window)
-                if self._viewport != None:
-                    box.set_viewport(self.viewport)
-                box.set_reference(self)
-
-                row.append(box)
-            else:
-                raise
+    # def append_horizontal(self, *boxes, row = 0):
+    #     """
+    #     :param boxes:
+    #     :param absolute_pos:
+    #     :return:
+    #     """
+    #     if len(self._children) < row + 1:
+    #         for i in range(row + 1 - len(self._children)):
+    #             self._children.append([])
+    #
+    #     row = self._children[row]
+    #     print(self._children,row)
+    #     for box in boxes:
+    #         if isinstance(box, Box):
+    #             if self._window != None:
+    #                 box.set_window(self.window)
+    #             if self._viewport != None:
+    #                 box.set_viewport(self.viewport)
+    #             box.set_reference(self)
+    #
+    #             # row.append(box)
+    #         else:
+    #             raise
+    #     print(row)
+    #     print(self._children)
+    #     exit()
 
     def draw(self):
-        print('from block', self._window)
-        for row in self._children:
-            for child in row:
-                child.draw()
+        super().draw()
+        print('drawing block')
+        print(self._children)
+        print(id(self._children))
+        for child in self._children:
+            child.draw()
+        # else:
+        #     for child in self._children:
+        #         print('child draw', child)
+        #         child.draw()
 
     def set_vertical(self, *boxes):
         pass
 
-    def align_horrizontal(self, *objects_to_align, bottom_top=0, rows: (tuple, list) = None):
-        if rows == None:
-            rows_to_align = self._children
+    def set_state_change(self):
+        pass
+
+    def align_horrizontal(self, *objects, bottom_top=0):
+
+        if len(objects) == 0:
+            objects = self._children
+        # print(objects)
+        # exit()
+        # reference vertice for alignment
+        if bottom_top == 0:
+            ref_pos = [a-b for a,b in zip(objects[0].vertex(1), self.vertex(0))]
         else:
-            rows_to_align = []
-            for i in rows:
-                rows_to_align.append(self._children[i])
-        for row in rows_to_align:
+            ref_pos = [a-b for a,b in zip(objects[0].vertex(2), self.vertex(0))]
 
-            boxes = []
-            if len(objects_to_align) != 0:
-                for i in objects_to_align:
-                    if i in row:
-                        boxes.append(i)
-            else:
-                boxes = row
-
-            # reference vertice for alignment
+        for child in objects[1:]:
             if bottom_top == 0:
-                ref_pos = [a-b for a,b in zip(boxes[0].vertex(1), self.vertex(0))]
+                child._posx, child._posy = ref_pos
+                ref_pos = [a-b for a,b in zip(child.vertex(1), self.vertex(0))]
             else:
-                ref_pos = [a-b for a,b in zip(boxes[0].vertex(2), self.vertex(0))]
+                dist = [a-b for a,b in zip(ref_pos, child.vertex(3))]
+                child._posx, child._posy = [int(a+b) for a,b in zip(dist, child.vertex(0))]
+                ref_pos = [a-b for a,b in zip(child.vertex(2), self.vertex(0))]
 
-            for child in boxes[1:]:
-                if bottom_top == 0:
-                    child._posx, child._posy = ref_pos
-                    ref_pos = [a-b for a,b in zip(child.vertex(1), self.vertex(0))]
-                else:
-                    dist = [a-b for a,b in zip(ref_pos, child.vertex(3))]
-                    child._posx, child._posy = [int(a+b) for a,b in zip(dist, child.vertex(0))]
-                    ref_pos = [a-b for a,b in zip(child.vertex(2), self.vertex(0))]
+    def align_vertical(self, *objects_to_align, left_right = 0, offset = (0,0)):
+        print('aligning vertical')
+        print(self.vertex())
+        print(self.pixel_posx, self.pixel_posy, self.pixel_width,self.pixel_height)
+        print()
+        ref_pos = [a+b for a,b in zip(self.vertex(0), offset)]
+        for object in objects_to_align:
+            object.set_reference(self)
+            # print(object._posx, object._posy)
+            # print(object.vertex())
+            # object._posx, object._posy = ref_pos
+            # print(object._posx, object._posy)
+            # print(object.vertex())
+            # if left_right == 0:
+            #     ref_pos = object.pixel_width, object.pixel_height
+            #
+            # elif left_right == 1:
+            #     # ref_pos = object.vertex(2)
+            #     pass
 
+class Block_expandable(Block):
 
-# class _Button(Filled_box):
-#     """
-#         one renderer should have one shader.
-#         but this can be called from several plces...
-#         when initiating ... like first_rect = TestBRO()
-#         how to make calling free???
-#         """
-#     c = Renderer_builder()
-#     c.use_shader(c.Shader('BRO_rectangle'))
-#     c.use_triangle_strip_draw()
-#     c.use_index_buffer(c.Indexbuffer((0, 1, 3, 3, 1, 2)))
-#
-#     c.use_render_unit(vao=True, vbo=True)
-#
-#     renderer = c()
-
-
-class _Button(Filled_box):
-    def __init__(self,posx,posy,width,height,window=None,viewport=None):
-        super().__init__(posx,posy,width,height,window,viewport)
-
-        self._color1 = 1, 1, 1, 1
-        self._color2 = 0, 0, 0, 1
-
-        self._flag_use_button = True
-
-        self.set_window(window)
-
-    @property
-    def color1(self):
-        return self._color1
-
-    @color1.setter
-    def color1(self, *rgba):
-        self._color1 = rgba
-
-    @property
-    def color2(self):
-        return self._color2
-
-    @color2.setter
-    def color2(self, *rgba):
-        self._color2 = rgba
-
-    def switch_color(self):
-        pass
-
-    def set_window(self, window):
-        if window != None:
-            # remove callback of previous window
-            if self.window != None:
-                self.window.mouse.remove_callback(identifier=self)
-            # assign new window
-            self._window = weakref.ref(window)
-
-            window.set_pre_draw_callback(
-                func=self.switch_color,
-                identifier=self,
-                deleter=self
-            )
-
-# few pre_built buttons
-class Button_click(_Button):
-
-    def switch_color(self):
-        if self.window != None and self.window.is_focused:
-            if self.window.mouse.is_in_area(*self.vertex(0,2)):
-                if self.window.mouse.is_just_pressed:
-                    if self.fill_color == self._color1:
-                        self.fill_color = self._color2
-                    else:
-                        self.fill_color = self._color1
-                    self.draw()
-
-class Button_hover(_Button):
-    def __init__(self,posx,posy,width,height,window=None,viewport=None):
-        super().__init__(posx,posy,width,height,window,viewport)
-        self._target_frame_count = 5
-        self._accumulate_frame_count = 0
-
-    def switch_color(self):
-        if self.window != None and self.window.is_focused:
-            mouse = self.window.mouse
-            if mouse.is_in_area(*self.vertex(0,2)):
-                if self._accumulate_frame_count == self._target_frame_count:
-                    if self.fill_color == self.color1:
-                        self.fill_color = self.color2
-                        self.draw()
-                else:
-                    self._accumulate_frame_count += 1
-
-            elif self.fill_color == self.color2:
-                self._accumulate_frame_count = 0
-                self.fill_color = self.color1
-                self.draw()
-    @property
-    def target_frame_count(self):
-        return self._target_frame_count
-    @target_frame_count.setter
-    def target_frame_count(self, count:int):
-        count = int(count)
-        self._target_frame_count = count
+    pass
 
 
-class Button_pressing(_Button):
-
-    def __init__(self,posx,posy,width,height,window=None,viewport=None):
-        super().__init__(posx,posy,width,height,window,viewport)
-        self._buttons_to_respond = [0,]
-
-    def switch_color(self):
-        if self.window != None and self.window.is_focused:
-            mouse = self.window.mouse
-            if mouse.is_in_area(*self.vertex(0,2)):
-                if mouse.is_any_pressed:
-                    for button in self._buttons_to_respond:
-                        if button in mouse.pressed_button:
-                            self.fill_color = self.color2
-                            self.draw()
-                            break
-
-                elif self.fill_color != self.color1:
-                    self.fill_color = self.color1
-                    self.draw()
-
-            elif self.fill_color != self.color1:
-                self.fill_color = self.color1
-                self.draw()
-        pass
-
-    @property
-    def buttons_to_respond(self):
-        return self._buttons_to_respond
-    @buttons_to_respond.setter
-    def buttons_to_respond(self, *buttons:int):
-        int_buttons = [int(i) for i in buttons]
-        self._buttons_to_respond = int_buttons
