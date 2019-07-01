@@ -28,6 +28,7 @@ from .windows import Windows
 from .callback_repository import Callback_repository
 from .deleter import Deleters
 import numpy as np
+from .matryoshka_coordinate_system import Record_change_value
 
 class Window:
     """
@@ -263,7 +264,6 @@ class Window:
 
     def window_refresh_callback(self, window):
         self._callbacks_repo.exec('window_refresh')
-        print(f'{self} refreshed')
     def pre_draw_callback(self):
         self._callbacks_repo.exec('pre_draw')
     def post_draw_callback(self):
@@ -825,6 +825,8 @@ class Window:
             #         w.config_focused(False)
 
             glfw.poll_events()
+
+            Record_change_value.reset_all()
             # for i in glfw._callback_repositories:
             #     print(i)
             #     for ii in i.items():

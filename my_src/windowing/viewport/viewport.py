@@ -3,19 +3,33 @@ from .Camera import _Camera
 from collections import namedtuple
 from ..frame_buffer_like.frame_buffer_like_bp import FBL
 from ..windows import Windows
+from ..matryoshka_coordinate_system import Record_change_value
+import weakref
 
 class Viewport:
+    posx = Record_change_value()
+    posy= Record_change_value()
+    width = Record_change_value()
+    height = Record_change_value()
+
+    _pixel_width = Record_change_value()
+    _pixel_height = Record_change_value()
+
     _current = None
     DEF_CLEAR_COLOR = 0, 0, 0, 0
     def __init__(self, x, y, width, height, window=None, name= None):
 
+        self._flag_coordinate_updated = True
+        self._children = weakref.WeakSet()
+        self._vertex = [(),(),(),()]
+
         self._window = window
         self._name = name
 
-        self._posx = x
-        self._posy = y
-        self._width = width
-        self._height = height
+        self.posx = x
+        self.posy = y
+        self.width = width
+        self.height = height
 
         self._camera = _Camera(self)
         with window.glfw_context as gl:
@@ -116,12 +130,12 @@ class Viewport:
     @property
     def pixel_posx(self):
         h = Windows.get_current().width if self._window is None else self._window.width
-        if isinstance(self._posx, float):
-            return int(self._posx * h)
-        elif callable(self._posx):
-            return int(self._posx(h))
+        if isinstance(self.posx, float):
+            return int(self.posx * h)
+        elif callable(self.posx):
+            return int(self.posx(h))
         else:
-            return self._posx
+            return self.posx
 
     @property
     def pixel_posy(self):
@@ -146,32 +160,34 @@ class Viewport:
         :return:
         """
         h = Windows.get_current().height if self._window is None else self._window.height
-        if isinstance(self._posy, float):
-            return int((1-self._posy) * h - self.pixel_height)
-        elif callable(self._posy):
-            return int(h - self._posy(h) - self.pixel_height)
+        if isinstance(self.posy, float):
+            return int((1-self.posy) * h - self.pixel_height)
+        elif callable(self.posy):
+            return int(h - self.posy(h) - self.pixel_height)
         else:
-            return int(h - self._posy - self.pixel_height)
+            return int(h - self.posy - self.pixel_height)
 
     @property
     def pixel_width(self):
         h = Windows.get_current().width if self._window is None else self._window.width
-        if isinstance(self._width, float):
-            return int(self._width * h)
-        elif callable(self._width):
-            return int(self._width(h))
+        if isinstance(self.width, float):
+            self._pixel_width =  int(self.width * h)
+        elif callable(self.width):
+            self._pixel_width = int(self.width(h))
         else:
-            return self._width
+            self._pixel_width = self.width
+        return self._pixel_width
 
     @property
     def pixel_height(self):
         h = Windows.get_current().height if self._window is None else self._window.height
-        if isinstance(self._height, float):
-            return int(self._height * h)
-        elif callable(self._height):
-            return int(self._height(h))
+        if isinstance(self.height, float):
+            self._pixel_height = int(self.height * h)
+        elif callable(self.height):
+            self._pixel_height = int(self.height(h))
         else:
-            return self._height
+            self._pixel_height = self.height
+        return self._pixel_height
 
     @property
     def glfw_posx(self):
@@ -180,12 +196,12 @@ class Viewport:
     @property
     def glfw_posy(self):
         h = Windows.get_current().height if self._window is None else self._window.height
-        if isinstance(self._posy, float):
-            return int(self._posy * h)
-        elif callable(self._posy):
-            return int(self._posy(h))
+        if isinstance(self.posy, float):
+            return int(self.posy * h)
+        elif callable(self.posy):
+            return int(self.posy(h))
         else:
-            return int(self._posy)
+            return int(self.posy)
 
     @property
     def glfw_width(self):
@@ -207,6 +223,7 @@ class Viewport:
         :param vertex: index of a vertex 0,1,2,3
         :return: tuple(x,y)
         """
+
         result = []
         for i in index:
             if i == 0:
@@ -224,9 +241,6 @@ class Viewport:
         else:
             return result
 
-    def get_vertex_from_screen(self, index):
-        raise
-        pass
 
     def set_min(self):
         pass

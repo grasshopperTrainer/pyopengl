@@ -22,25 +22,21 @@ class Main_window(Window):
         self.top_bar = None
 
         # ui menu bar
-        self.button0 = Button_click(0, 0, 50, 50)
-        self.button1 = Button_click(0, 0, 50, 50)
-        self.button2 = Button_click(0, 0, 50, 50)
+        self.button0 = Button_press(0., 0., 50, 50)
+        self.button1 = Button_press(50, 0., 50, 50)
+        self.button2 = Button_press(100, 0., 50, 50)
 
-        self.button0_list = Block(0, 0,50,-200,self,self.viewports[0])
+        self.button0_list = Block(0., 0.,50,-200,self,self.viewports[0])
         self.button0_list.fill_color = 1,0,0,1
         self.button0_list.set_reference(self.button0)
 
         self.button0_list_buttons = []
         for i in range(5):
             height = 50
-            button = Button_hover(0,-(i+1)*height ,1.0,height)
-            button.disable_draw()
+            button = Button_hover_press(0,-(i+1)*height ,1.0,height)
+            button.disable_all_draw()
             self.button0_list.set_children(button)
-            # self.button0_list_buttons.append(Button_hover(0,-i*height,1.0,-50*(i+1)))
 
-        # self.button0_list_buttons[0].set_reference(self.button0_list)
-        # print(self.button0_list_buttons[0].vertex())
-        # self.button0_list.align_vertical(*self.button0_list_buttons)
         # right buttons
         self.button_close = Button_hover_press(lambda x:x-50,0,50,50)
         self.button_maximize = Button_hover_press(lambda x:x-100,0,50,50)
@@ -51,10 +47,10 @@ class Main_window(Window):
         self.menu_block.fill_color = 0,1,0,1
         self.menu_block.set_children(self.button0, self.button1, self.button2,
                                           self.button_close, self.button_maximize, self.button_iconize)
-        self.menu_block.align_horrizontal(self.button0, self.button1, self.button2)
+        # self.menu_block.align_horrizontal(self.button0, self.button1, self.button2)
 
-        self.button0.set_1_just_callback(lambda: (self.button0_list.enable_draw(),self.button0_list.draw(),print(self.button0.vertex())))
-        self.button0.set_0_just_callback(lambda: (self.button0_list.disable_draw(),self.refresh_all()))
+        self.button0.set_1_just_callback(lambda: (self.button0_list.enable_all_draw(), self.button0_list.draw(), print(self.button0.vertex())))
+        self.button0.set_0_just_callback(lambda: (self.button0_list.reset_all_state(), self.button0_list.disable_all_draw(), self.refresh_all()))
 
         self.button_close.set_1_just_callback(
             lambda :self.config_window_close(),

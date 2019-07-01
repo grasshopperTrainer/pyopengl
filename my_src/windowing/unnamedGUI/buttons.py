@@ -12,7 +12,6 @@ class _Button(Filled_box):
         self.set_window(window)
 
         self._flag_use_button = True
-        self._flag_state = False
 
         self._callback_repo = None
 
@@ -57,6 +56,13 @@ class _Button(Filled_box):
             callbacks = ['0just','1just','2just', '0','1','2']
             self._callback_repo = Callback_repository(window, callbacks)
 
+    def reset_all_state(self):
+        self._flag_state = 0
+        self.set_fill_color(*self._color0)
+        for box in self._children:
+            box.reset_all_state()
+
+
     def set_0_just_callback(self, function, args=(), kwargs={},instant=False, identifier='not_given', deleter=None):
         if self._window != None:
             self._callback_repo.setter('0just',function,args,kwargs,identifier, instant, deleter)
@@ -74,7 +80,7 @@ class _Button(Filled_box):
             self._callback_repo.setter('2',function,args,kwargs,identifier, instant, deleter)
 
 # few pre_built buttons
-class Button_click(_Button):
+class Button_press(_Button):
     def __init__(self,posx,posy,width,height,window=None,viewport=None):
         super().__init__(posx,posy,width,height,window,viewport)
         self._buttons_to_respond = [0,]
@@ -119,7 +125,7 @@ class Button_click(_Button):
         self._flag_config_false_click = set
 
 
-class Button_pressing(Button_click):
+class Button_pressing(Button_press):
     def switch_color(self):
         if self.window != None and self.window.is_focused:
             mouse = self.window.mouse
@@ -206,7 +212,7 @@ class Button_hover(_Button):
         self._hover_target_frame_count = count
 
 
-class Button_hover_press(Button_hover, Button_click):
+class Button_hover_press(Button_hover, Button_press):
     def __init__(self,posx,posy,width,height,window=None,viewport=None):
         super().__init__(posx,posy,width,height,window,viewport)
 

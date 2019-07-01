@@ -6,21 +6,16 @@ from ..callback_repository import Callback_repository
 # from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
 import weakref
 from collections import namedtuple
-
-
+from ..matryoshka_coordinate_system import Record_change_value
 
 class Box:
+
+    posx = Record_change_value()
+    posy = Record_change_value()
+    width = Record_change_value()
+    height = Record_change_value()
+
     def __init__(self, posx, posy, width, height, window=None, viewport=None):
-
-        self._posx = posx
-        self._posy = posy
-        self._width = width
-        self._height = height
-
-        self._abs_posx = None
-        self._abs_posy = None
-        self._abs_width = None
-        self._abs_height = None
 
         self._reference = None
 
@@ -33,11 +28,21 @@ class Box:
         if viewport != None:
             self._viewport = weakref.ref(viewport)
             self._reference = viewport
+            viewport._children.add(self)
         else:
             self._viewport = None
 
-        self._children = []
+        self._children = weakref.WeakSet()
         self._flag_draw = True
+        self._flag_state = 0
+
+        self._flag_coordinate_updated = True
+        self._vertex = [(),(),(),()]
+
+        self.posx = posx
+        self.posy = posy
+        self.width = width
+        self.height = height
 
     def draw(self):
         pass
@@ -45,7 +50,7 @@ class Box:
     @property
     def size(self):
         i = namedtuple('original_size', ['posx','posy','width','height'])
-        return i(self._posx, self._posy, self._width, self._height)
+        return i(self.posx, self.posy, self.width, self.height)
     @property
     def pixel_size(self):
         i = namedtuple('pixel_size', ['posx','posy','width','height'])
@@ -53,21 +58,32 @@ class Box:
 
     def vertex(self, *index):
         vertex_list = []
-
         if len(index) == 0:
             index = 0,1,2,3
 
-        width = self.pixel_width
-        height = self.pixel_height
+        # call to check change?
+        # self.posx, self.posy, self.width, self.height
 
-        if 0 in index:
-            vertex_list.append((self.pixel_posx, self.pixel_posy))
-        if 1 in index:
-            vertex_list.append((self.pixel_posx + width, self.pixel_posy))
-        if 2 in index:
-            vertex_list.append((self.pixel_posx + width, self.pixel_posy + height))
-        if 3 in index:
-            vertex_list.append((self.pixel_posx, self.pixel_posy + height))
+        # recalculate and save
+        if self._flag_coordinate_updated:
+            print('dkdkdkdk')
+            x = self.pixel_posx
+            y = self.pixel_posy
+            width = self.pixel_width
+            height = self.pixel_height
+
+
+            self._vertex[0] = (x, y)
+            self._vertex[1] = (x + width, y)
+            self._vertex[2] = (x + width, y + height)
+            self._vertex[3] = (x, y + height)
+
+            self._flag_coordinate_updated = False
+        else:
+            pass
+
+        for i in index:
+            vertex_list.append(self._vertex[i])
 
         if len(index) == 1:
             return vertex_list[0]
@@ -76,50 +92,50 @@ class Box:
     @property
     def pixel_posx(self):
         result = None
-        if isinstance(self._posx, float):
-            result =  self._posx*self._reference.pixel_width
-        elif callable(self._posx):
-            result = self._posx(self._reference.pixel_width)
+        if isinstance(self.posx, float):
+            result = self.posx * self._reference.pixel_width
+        elif callable(self.posx):
+            result = self.posx(self._reference.pixel_width)
         else:
-            result = self._posx
-
+            result = self.posx
         if isinstance(self._reference, Box):
             return result + self._reference.pixel_posx
-
         return result
 
     @property
     def pixel_posy(self):
         result = None
-        if isinstance(self._posy, float):
-            result = self._posy*self._reference.pixel_height
-        elif callable(self._posy):
-            result = self._posy(self._reference.pixel_height)
+        if isinstance(self.posy, float):
+            result = self.posy * self._reference.pixel_height
+        elif callable(self.posy):
+            result = self.posy(self._reference.pixel_height)
         else:
-            result = self._posy
+            result = self.posy
         if isinstance(self._reference, Box):
             return result + self._reference.pixel_posy
         return result
 
     @property
     def pixel_width(self):
-        if isinstance(self._width, float):
-            return self._width*self._reference.pixel_width
-        elif callable(self._width):
-            return self._width(self._reference.pixel_width)
+        if isinstance(self.width, float):
+            return self.width * self._reference.pixel_width
+        elif callable(self.width):
+            return self.width(self._reference.pixel_width)
         else:
-            return self._width
+            return self.width
 
 
     @property
     def pixel_height(self):
-        if isinstance(self._height, float):
-            return self._height*self._reference.pixel_height
-        elif callable(self._height):
-            return self._height(self._reference.pixel_height)
+        if isinstance(self.height, float):
+            return self.height * self._reference.pixel_height
+        elif callable(self.height):
+            return self.height(self._reference.pixel_height)
         else:
-            return self._height
-
+            return self.height
+    @property
+    def pixel_size(self):
+        return self.pixel_width, self.pixel_height
 
     @property
     def window(self):
@@ -147,6 +163,7 @@ class Box:
 
     def set_viewport(self, viewport):
         self._viewport = weakref.ref(viewport)
+        viewport._children.add(self)
 
     def set_reference(self, ref):
         self._reference = ref
@@ -156,7 +173,7 @@ class Box:
         if ref.viewport != None:
             self.set_viewport(ref.viewport)
 
-        ref._children.append(self)
+        ref._children.add(self)
 
     def set_children(self, *ref):
         for box in ref:
@@ -165,8 +182,9 @@ class Box:
             if self._viewport != None:
                 box.set_viewport(self.viewport)
 
-            self._children.append(box)
             box._reference = self
+
+            self._children.add(box)
 
     def copy(self):
         """
@@ -175,17 +193,28 @@ class Box:
         """
         pass
 
-    def disable_draw(self):
+    def reset_state(self):
+        self._flag_state = 0
+
+    def reset_all_state(self):
+        self._flag_state = 0
+        for box in self._children:
+            box.reset_all_state()
+
+    def disable_all_draw(self):
         self._flag_draw = False
         for box in self._children:
-            box.disable_draw()
-    def enable_draw(self):
+            box.disable_all_draw()
+
+    def enable_all_draw(self):
         self._flag_draw = True
         for box in self._children:
-            box.enable_draw()
-    def switch_draw_state(self):
-        self._flag_draw = not self._flag_draw
+            box.enable_all_draw()
 
+    def switch_all_draw(self):
+        self._flag_draw = not self._flag_draw
+        for box in self._children:
+            box.switch_all_draw()
 
 class Filled_box(Box):
     """
@@ -222,6 +251,11 @@ class Filled_box(Box):
         return self._unit
 
     def set_fill_color(self, *rgba):
+        if len(rgba) != 4:
+            raise
+        elif not all([isinstance(c, (int, float)) for c in rgba]):
+            raise
+
         self._fill_color = rgba
 
     def draw(self):
@@ -234,6 +268,7 @@ class Filled_box(Box):
             self.renderer._draw_(self._unit)
 
 class Block(Filled_box):
+    # TODO maybe need do-not-color
     def __init__(self, posx, posy, width, height, window=None, viewport=None):
         super().__init__(posx,posy,width,height, window, viewport)
 
@@ -269,9 +304,6 @@ class Block(Filled_box):
 
     def draw(self):
         super().draw()
-        print('drawing block')
-        print(self._children)
-        print(id(self._children))
         for child in self._children:
             child.draw()
         # else:
@@ -285,46 +317,49 @@ class Block(Filled_box):
     def set_state_change(self):
         pass
 
-    def align_horrizontal(self, *objects, bottom_top=0):
-
-        if len(objects) == 0:
-            objects = self._children
-        # print(objects)
-        # exit()
-        # reference vertice for alignment
-        if bottom_top == 0:
-            ref_pos = [a-b for a,b in zip(objects[0].vertex(1), self.vertex(0))]
-        else:
-            ref_pos = [a-b for a,b in zip(objects[0].vertex(2), self.vertex(0))]
-
-        for child in objects[1:]:
-            if bottom_top == 0:
-                child._posx, child._posy = ref_pos
-                ref_pos = [a-b for a,b in zip(child.vertex(1), self.vertex(0))]
-            else:
-                dist = [a-b for a,b in zip(ref_pos, child.vertex(3))]
-                child._posx, child._posy = [int(a+b) for a,b in zip(dist, child.vertex(0))]
-                ref_pos = [a-b for a,b in zip(child.vertex(2), self.vertex(0))]
-
-    def align_vertical(self, *objects_to_align, left_right = 0, offset = (0,0)):
-        print('aligning vertical')
-        print(self.vertex())
-        print(self.pixel_posx, self.pixel_posy, self.pixel_width,self.pixel_height)
-        print()
-        ref_pos = [a+b for a,b in zip(self.vertex(0), offset)]
-        for object in objects_to_align:
-            object.set_reference(self)
-            # print(object._posx, object._posy)
-            # print(object.vertex())
-            # object._posx, object._posy = ref_pos
-            # print(object._posx, object._posy)
-            # print(object.vertex())
-            # if left_right == 0:
-            #     ref_pos = object.pixel_width, object.pixel_height
-            #
-            # elif left_right == 1:
-            #     # ref_pos = object.vertex(2)
-            #     pass
+    # def align_horrizontal(self, *objects, bottom_top=0):
+    #
+    #     if len(objects) == 0:
+    #         objects = self._children
+    #     # print(objects)
+    #     # exit()
+    #     # reference vertice for alignment
+    #     if bottom_top == 0:
+    #         ref_pos = [a-b for a,b in zip(objects[0].vertex(1), self.vertex(0))]
+    #     else:
+    #         ref_pos = [a-b for a,b in zip(objects[0].vertex(2), self.vertex(0))]
+    #
+    #     for child in objects[1:]:
+    #         if bottom_top == 0:
+    #             child.posx, child.posy = [a/b for a,b in zip(ref_pos, self.pixel_size)]
+    #             # print(self.vertex())
+    #             # print(ref_pos)
+    #             # exit()
+    #             ref_pos = [a-b for a,b in zip(child.vertex(1), self.vertex(0))]
+    #         else:
+    #             dist = [a-b for a,b in zip(ref_pos, child.vertex(3))]
+    #             child.posx, child.posy = [int(a+b) for a,b in zip(dist, child.vertex(0))]
+    #             ref_pos = [a-b for a,b in zip(child.vertex(2), self.vertex(0))]
+    #
+    # def align_vertical(self, *objects_to_align, left_right = 0, offset = (0,0)):
+    #     # print('aligning vertical')
+    #     # print(self.vertex())
+    #     # print(self.pixel_posx, self.pixel_posy, self.pixel_width,self.pixel_height)
+    #     # print()
+    #     ref_pos = [a+b for a,b in zip(self.vertex(0), offset)]
+    #     for object in objects_to_align:
+    #         object.set_reference(self)
+    #         # print(object._posx, object._posy)
+    #         # print(object.vertex())
+    #         # object._posx, object._posy = ref_pos
+    #         # print(object._posx, object._posy)
+    #         # print(object.vertex())
+    #         # if left_right == 0:
+    #         #     ref_pos = object.pixel_width, object.pixel_height
+    #         #
+    #         # elif left_right == 1:
+    #         #     # ref_pos = object.vertex(2)
+    #         #     pass
 
 class Block_expandable(Block):
 
