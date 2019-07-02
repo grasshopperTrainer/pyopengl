@@ -12,6 +12,7 @@ class Viewports:
         # which is whole window 2D space between 0 to width&height
 
         default = self.new(0, 0, 1.0, 1.0, 'default')
+
         default.camera.mode = 2
         default.camera.move(0, 0, 1)
         # have it as base

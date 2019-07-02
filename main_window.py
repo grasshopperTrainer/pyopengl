@@ -14,10 +14,12 @@ class Main_window(Window):
         self.rect2 = TestBRO(100,100,200,200)
 
         # menu = self.viewports.new(0,0,1.,50, 'menu_bar')
-        self.viewports.new(0,50, 1., 100,'top_bar')
+        self.viewports.new(0, lambda x:x - 150, 1., 100,'top_bar')
         self.viewports.new(lambda x:x-400, 100, 400, lambda x:x-100,'side_bar')
         self.viewports.new(20,20,lambda x:x-40,lambda x:x-40,'center').set_min()
-
+        # print(self.viewports[1].vertex())
+        # print(self.viewports[1].get_glfw_vertex(0, 1, 2, 3))
+        # exit()
         self.flag_topbar_created = False
         self.top_bar = None
 
@@ -28,14 +30,14 @@ class Main_window(Window):
 
         self.button0_list = Block(0., 0.,50,-200,self,self.viewports[0])
         self.button0_list.fill_color = 1,0,0,1
-        self.button0_list.set_reference(self.button0)
+        self.button0_list.is_child_of(self.button0)
 
         self.button0_list_buttons = []
         for i in range(5):
             height = 50
             button = Button_hover_press(0,-(i+1)*height ,1.0,height)
             button.disable_all_draw()
-            self.button0_list.set_children(button)
+            self.button0_list.is_mother_of(button)
 
         # right buttons
         self.button_close = Button_hover_press(lambda x:x-50,0,50,50)
@@ -44,11 +46,15 @@ class Main_window(Window):
 
         # Button_hover_press.state
         self.menu_block = Block(0, lambda x: x - 50, 1.0, 50, window=self, viewport=self.viewports[0])
+        # print(self.menu_block.mother)
+        # exit()
         self.menu_block.fill_color = 0,1,0,1
-        self.menu_block.set_children(self.button0, self.button1, self.button2,
+        self.menu_block.is_mother_of(self.button0, self.button1, self.button2,
                                           self.button_close, self.button_maximize, self.button_iconize)
         # self.menu_block.align_horrizontal(self.button0, self.button1, self.button2)
-
+        # print(self.menu_block.vertex())
+        # print(self.button0.vertex())
+        # exit()
         self.button0.set_1_just_callback(lambda: (self.button0_list.enable_all_draw(), self.button0_list.draw(), print(self.button0.vertex())))
         self.button0.set_0_just_callback(lambda: (self.button0_list.reset_all_state(), self.button0_list.disable_all_draw(), self.refresh_all()))
 
@@ -108,6 +114,7 @@ class Main_window(Window):
                     self.refresh_all()
 
         if self.top_bar != None:
+            # TODO extra processing for looking all conditions at once
             conditions = [
                 self.mouse.is_in_viewport(self.viewports['top_bar']),
                 self.top_bar.flag_following,

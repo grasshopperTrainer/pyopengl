@@ -3,33 +3,19 @@ from .Camera import _Camera
 from collections import namedtuple
 from ..frame_buffer_like.frame_buffer_like_bp import FBL
 from ..windows import Windows
-from ..matryoshka_coordinate_system import Record_change_value
+from ..matryoshka_coordinate_system import Matryoshka_coordinate_system
 import weakref
 
-class Viewport:
-    posx = Record_change_value()
-    posy= Record_change_value()
-    width = Record_change_value()
-    height = Record_change_value()
-
-    _pixel_width = Record_change_value()
-    _pixel_height = Record_change_value()
+class Viewport(Matryoshka_coordinate_system):
 
     _current = None
     DEF_CLEAR_COLOR = 0, 0, 0, 0
     def __init__(self, x, y, width, height, window=None, name= None):
+        super().__init__(x,y,width,height)
+        self.is_child_of(window)
 
-        self._flag_coordinate_updated = True
-        self._children = weakref.WeakSet()
-        self._vertex = [(),(),(),()]
-
-        self._window = window
+        # self._window = window
         self._name = name
-
-        self.posx = x
-        self.posy = y
-        self.width = width
-        self.height = height
 
         self._camera = _Camera(self)
         with window.glfw_context as gl:
@@ -43,8 +29,6 @@ class Viewport:
         self.set_current(self)
 
         self._iter_count = 0
-
-
 
     def clear(self, *color):
         # if clear is called, save clear color
@@ -106,134 +90,60 @@ class Viewport:
 
     def open(self, do_clip = True):
 
-        with self._window.glfw_context as gl:
-            with self._window.myframe:
+        with self.mother.glfw_context as gl:
+            with self.mother.myframe:
                 gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
-                if self.get_current() != self or self._window.is_resized:
-                    gl.glViewport(self.pixel_posx, self.pixel_posy, self.pixel_width, self.pixel_height)
+                if self.get_current() != self or self.mother.is_resized:
+                    # print(self.pixel_x,self.pixel_y,self.pixel_w,self.pixel_h)
+                    # print(self.x_changed, self.ref_pixel_w_changed, self._ref_pixel_w, self._ref_pixel_w())
+                    # print(self.mother)
+                    gl.glViewport(self.pixel_x, self.pixel_y, self.pixel_w, self.pixel_h)
                     if do_clip:
-                        gl.glScissor(self.pixel_posx, self.pixel_posy, self.pixel_width, self.pixel_height)
+                        gl.glScissor(self.pixel_x, self.pixel_y, self.pixel_w, self.pixel_h)
 
                     self.set_current(self)
-                    self._window.viewports.set_latest(self)
+                    self.mother.viewports.set_latest(self)
 
         return self
 
     @property
     def absolute_gl_values(self):
         n = namedtuple('pixel_coordinates',['posx','posy','width','height'])
-        return n(self.pixel_posx, self.pixel_posy, self.pixel_width, self.pixel_height)
+        return n(self.pixel_x, self.pixel_y, self.pixel_w, self.pixel_h)
 
     def close(self):
         if self._flag_clear:
             self.fillbackground()
-    @property
-    def pixel_posx(self):
-        h = Windows.get_current().width if self._window is None else self._window.width
-        if isinstance(self.posx, float):
-            return int(self.posx * h)
-        elif callable(self.posx):
-            return int(self.posx(h))
-        else:
-            return self.posx
 
-    @property
-    def pixel_posy(self):
-        """
-        flipin from glfw to gl coordinate
-        glfw:
-        (0,0)----(w,0)
-        |           |
-        |           |
-        |           |
-        |           |
-        (0,h)---(w,h)
-
-        gl:
-        (0,h)----(w,h)
-        |           |
-        |           |
-        |           |
-        |           |
-        (0,0)---(w,0)
-
-        :return:
-        """
-        h = Windows.get_current().height if self._window is None else self._window.height
-        if isinstance(self.posy, float):
-            return int((1-self.posy) * h - self.pixel_height)
-        elif callable(self.posy):
-            return int(h - self.posy(h) - self.pixel_height)
-        else:
-            return int(h - self.posy - self.pixel_height)
-
-    @property
-    def pixel_width(self):
-        h = Windows.get_current().width if self._window is None else self._window.width
-        if isinstance(self.width, float):
-            self._pixel_width =  int(self.width * h)
-        elif callable(self.width):
-            self._pixel_width = int(self.width(h))
-        else:
-            self._pixel_width = self.width
-        return self._pixel_width
-
-    @property
-    def pixel_height(self):
-        h = Windows.get_current().height if self._window is None else self._window.height
-        if isinstance(self.height, float):
-            self._pixel_height = int(self.height * h)
-        elif callable(self.height):
-            self._pixel_height = int(self.height(h))
-        else:
-            self._pixel_height = self.height
-        return self._pixel_height
-
-    @property
-    def glfw_posx(self):
-        return self.pixel_posx
-
-    @property
-    def glfw_posy(self):
-        h = Windows.get_current().height if self._window is None else self._window.height
-        if isinstance(self.posy, float):
-            return int(self.posy * h)
-        elif callable(self.posy):
-            return int(self.posy(h))
-        else:
-            return int(self.posy)
-
-    @property
-    def glfw_width(self):
-        return self.pixel_width
-    @property
-    def glfw_height(self):
-        return self.pixel_height
-
-    def get_vertex_from_window(self, *index):
+    def get_glfw_vertex(self, *index):
         """
         Returns coordinate relative to window coordinate.
         Index goes anti-clockwise begining from top left.
 
-        0-------3
+        0-------1
         ｜     ｜
         ｜     ｜
-        1-------2
+        3-------2
 
         :param vertex: index of a vertex 0,1,2,3
         :return: tuple(x,y)
         """
+        x = self.pixel_x
+        # flippin y axis
+        y = self.mother.h - (self.pixel_y + self.pixel_h)
+        w = self.pixel_w
+        h = self.pixel_h
 
         result = []
         for i in index:
             if i == 0:
-                result.append((self.glfw_posx, self.glfw_posy))
+                result.append((x,y))
             elif i == 1:
-                result.append((self.glfw_posx, self.glfw_posy + self.glfw_height))
+                result.append((x+w, y))
             elif i == 2:
-                result.append((self.glfw_posx + self.glfw_width, self.glfw_posy + self.glfw_height))
+                result.append((x+w, y+h))
             elif i == 3:
-                result.append((self.glfw_posx + self.glfw_width, self.glfw_posy))
+                result.append((x, y+h))
             else:
                 raise
         if len(result) == 1:
@@ -258,7 +168,7 @@ class Viewport:
 
     @property
     def abs_size(self):
-        return [self.pixel_width, self.pixel_height]
+        return [self.pixel_w, self.pixel_h]
 
     @classmethod
     def get_current(cls):

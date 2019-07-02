@@ -28,9 +28,9 @@ from .windows import Windows
 from .callback_repository import Callback_repository
 from .deleter import Deleters
 import numpy as np
-from .matryoshka_coordinate_system import Record_change_value
+from .matryoshka_coordinate_system import Record_change_value, Matryoshka_coordinate_system
 
-class Window:
+class Window(Matryoshka_coordinate_system):
     """
     Main class for window creation.
 
@@ -95,6 +95,7 @@ class Window:
         # return self
 
     def __init__(self, width, height, name, monitor = None, mother_window = None):
+        super().__init__(0,0,width,height)
         print('initiating window')
         self._size = width, height
         self._name = name
@@ -260,6 +261,7 @@ class Window:
             self.myframe.rebuild(self.size)
 
         self._flag_just_resized = True
+        self.w, self.h = width, height
         gc.collect()
 
     def window_refresh_callback(self, window):
@@ -618,7 +620,7 @@ class Window:
                 'dst1x': dst1x, 'dst1y': dst1y}
         for n, v in args.items():
             ref = src if 'src' in n else dst
-            ref = ref.width if 'x' in n else ref.height
+            ref = ref.w if 'x' in n else ref.h
 
             if isinstance(v, int):
                 args[n] = int(v)
@@ -801,11 +803,11 @@ class Window:
                         gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, window.myframe._frame_buffer._glindex)
                         gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # set source
 
-                        gl.glScissor(0,0,window.width, window.height) # reset scissor to copy all
+                        gl.glScissor(0,0,window.w, window.h) # reset scissor to copy all
 
                         gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, 0)
-                        gl.glBlitFramebuffer(0, 0, window.width, window.height,
-                                             0, 0, window.width, window.height,
+                        gl.glBlitFramebuffer(0, 0, window.w, window.h,
+                                             0, 0, window.w, window.h,
                                              gl.GL_COLOR_BUFFER_BIT,
                                              gl.GL_LINEAR)
 
@@ -826,7 +828,6 @@ class Window:
 
             glfw.poll_events()
 
-            Record_change_value.reset_all()
             # for i in glfw._callback_repositories:
             #     print(i)
             #     for ii in i.items():
@@ -955,17 +956,10 @@ class Window:
         return self._viewports #type:Viewports
 
     @property
-    def width(self):
-        return self.size[0]
-
-    @property
-    def height(self):
-        return self.size[1]
-
-    @property
     def size(self):
-        self._size = glfw.get_framebuffer_size(self.glfw_window)
-        return self._size
+        return self.pixel_w, self.pixel_h
+        # self._size = glfw.get_framebuffer_size(self.glfw_window)
+        # return self._size
 
 
 

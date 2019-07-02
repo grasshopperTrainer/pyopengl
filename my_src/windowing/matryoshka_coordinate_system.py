@@ -1,5 +1,13 @@
 import weakref
 
+
+class Value:
+    def __init__(self, value):
+        self._v = value
+    @property
+    def value(self):
+        return self._v
+
 class Record_change_value:
     _instance_set = weakref.WeakSet()
     _rest_called = False
@@ -7,7 +15,6 @@ class Record_change_value:
     def __init__(self):
         self._dict = weakref.WeakKeyDictionary()
         self._instance_set.add(self)
-        pass
 
     def __set__(self, instance, value):
         # three ways to define coordinate value
@@ -15,128 +22,122 @@ class Record_change_value:
             raise
 
         if instance not in self._dict:
-            self._dict[instance] = [None, False]
+            self._dict[instance] = Value(None)
 
         # set value changed only if value input value is actucally different
-        if self._dict[instance][0] != value:
-            self._dict[instance][0] = value
-            self._dict[instance][1] = True
+        if self._dict[instance].value != value:
+            self._dict[instance] = Value(value)
+            instance.make_updated_all()
         # else:
         #     self._dict[instance][1] = False
 
     def __get__(self, instance, owner):
-        v = self._dict[instance][0]
-        return v
+        if instance is None:
+            return self
+        else:
+            v = self._dict[instance].value
+            return v
+    def get_ref(self, instance):
+        return weakref.ref(self._dict[instance])
 
-    @classmethod
-    def reset_all(cls):
-        for ins in cls._instance_set:
-            for lis in ins._dict.values():
-                lis[1] = False
-
+class Hollow_mother:
+    def __init__(self):
+        self.pixel_x = 0
+        self.pixel_y = 0
+        self.pixel_w = 1
+        self.pixel_h = 1
+        self.cls = self
+        self._pixel_w = self
+        self._pixel_h = self
+        self._pixel_x = self
+        self._pixel_y = self
     def is_changed(self, instance):
-        return self._dict[instance][1]
+        return False
+    def __call__(self, *args, **kwargs):
+        return self
 
-
-# class Hollow_mother:
-#     pixel_x = 0
-#     pixel_y = 0
-#     pixel_w = 1
-#     pixel_h = 1
-#
 class Matryoshka_coordinate_system:
     x = Record_change_value()
     y = Record_change_value()
     w = Record_change_value()
     h = Record_change_value()
 
-    _pixel_x = Record_change_value()
-    _pixel_y = Record_change_value()
-    _pixel_w = Record_change_value()
-    _pixel_h = Record_change_value()
-
+    # _vertex = Record_change_value()
+    #
+    # _pixel_x = Record_change_value()
+    # _pixel_y = Record_change_value()
+    # _pixel_w = Record_change_value()
+    # _pixel_h = Record_change_value()
 
     def __init__(self,posx,posy,width,height):
-        self.cls = self.__class__
+        self._children = weakref.WeakSet()
 
         self.x = posx
         self.y = posy
         self.w = width
         self.h = height
 
-        self._pixel_x = None
-        self._pixel_y = None
-        self._pixel_w = None
-        self._pixel_h = None
+        # self._pixel_x = posx
+        # self._pixel_y = posy
+        # self._pixel_w = width
+        # self._pixel_h = height
 
         self._vertex = [(),(),(),()]
 
-        self._mother = None
-        self._children = weakref.WeakSet()
+        self._mother = Hollow_mother()
 
+
+        self._flag_update = True
 
     @property
     def pixel_x(self):
-        if any(self.cls.x.is_changed(self),
-               self.mother.cls._pixel_w.is_changed(self.mother),
-               self.mother.cls._pixel_x.is_changed(self.mother)):
-            result = None
-            if isinstance(self.x, float):
-                result = self.x * self.mother.pixel_w
-            elif callable(self.x):
-                result = self.x(self.mother.pixel_w)
-            else:
-                result = self.x
+        if isinstance(self.x, float):
+            result = int(self.x * self.mother.pixel_w)
+        elif callable(self.x):
+            result = int(self.x(self.mother.pixel_w))
+        else:
+            result = self.x
 
-            self._pixel_x = result + self.mother.pixel_x
+        result = result + self.mother.pixel_x
 
-        return self._pixel_x
+        return result
 
     @property
     def pixel_y(self):
-        if any(self.cls.y.is_changed(self),
-               self.mother.cls._pixel_h.is_changed(self.mother),
-               self.mother.cls._pixel_y.is_changed(self.mother)):
-            result = None
-            if isinstance(self.y, float):
-                result = self.y * self.mother.pixel_h
-            elif callable(self.y):
-                result = self.y(self.mother.pixel_h)
-            else:
-                result = self.y
+        if isinstance(self.y, float):
+            result = int(self.y * self.mother.pixel_h)
+        elif callable(self.y):
+            result = int(self.y(self.mother.pixel_h))
+        else:
+            result = self.y
 
-            self._pixel_y = result + self.mother.pixel_y
+        result = result + self.mother.pixel_y
 
-        return self._pixel_y
+        return result
 
     @property
     def pixel_w(self):
-        if any(self.cls.w.is_changed(self),
-               self.mother.cls._pixel_w.is_changed(self.mother)):
-            if isinstance(self.w, float):
-                self._pixel_w = self.w * self.mother.pixel_w
-            elif callable(self.w):
-                self._pixel_w = self.w(self.mother.pixel_w)
-            else:
-                self._pixel_w = self.w
-
-        return self._pixel_w
+        if isinstance(self.w, float):
+            result = int(self.w * self.mother.pixel_w)
+        elif callable(self.w):
+            result = int(self.w(self.mother.pixel_w))
+        else:
+            result = self.w
+        return result
 
     @property
     def pixel_h(self):
-        if any(self.cls.h.is_changed(self),
-               self.mother.cls._pixel_h.is_changed(self.mother)):
-            if isinstance(self.h, float):
-                self._pixel_h = self.h * self.mother.pixel_h
-            elif callable(self.h):
-                self._pixel_h = self.h(self.mother.pixel_h)
-            else:
-                self._pixel_h = self.h
+        if isinstance(self.h, float):
+            result = int(self.h * self.mother.pixel_h)
+        elif callable(self.h):
+            result = int(self.h(self.mother.pixel_h))
+        else:
+            result = self.h
 
-        return self._pixel_h
+        return result
 
-    @property
     def vertex(self, *index):
+
         vertex_list = []
         if len(index) == 0:
             index = 0, 1, 2, 3
@@ -145,22 +146,18 @@ class Matryoshka_coordinate_system:
         # self.posx, self.posy, self.width, self.height
 
         # recalculate and save
-        if any(self.cls._pixel_x.is_changed(self),
-               self.cls._pixel_y.is_changed(self),
-               self.cls._pixel_h.is_changed(self),
-               self.cls._pixel_w.is_changed(self)):
+        if self._flag_updated:
+            print('need to refresh vertex')
+            x = self.pixel_x
+            y = self.pixel_y
+            width = self.pixel_w
+            height = self.pixel_h
 
-            x = self._pixel_x
-            y = self._pixel_y
-            width = self._pixel_w
-            height = self._pixel_h
+            new_vertex = (x, y), (x + width, y), (x + width, y + height), (x, y + height)
+            self._vertex = new_vertex
 
-            self._vertex[0] = (x, y)
-            self._vertex[1] = (x + width, y)
-            self._vertex[2] = (x + width, y + height)
-            self._vertex[3] = (x, y + height)
+            self._flag_updated = False
 
-            self._flag_coordinate_updated = False
         else:
             pass
 
@@ -170,19 +167,29 @@ class Matryoshka_coordinate_system:
         if len(index) == 1:
             return vertex_list[0]
         return vertex_list
+    def make_updated_all(self):
+        self._flag_updated = True
+        for child in self._children:
+            child.make_updated_all()
 
-
-    def make_mother_of(self, *objects):
+    def is_mother_of(self, *objects):
         for child in objects:
-            child.make_child_of(self)
+            self._children.add(child)
+            child.is_child_of(self)
 
-    def make_child_of(self, object):
-        self._mother = weakref.ref(object)
+    def is_child_of(self, mother):
+        self._mother = weakref.ref(mother)
+        mother._children.add(self)
+        # self._ref_pixel_x = mother.__class__._pixel_x.get_ref(mother)
+        # self._ref_pixel_y = mother.__class__._pixel_y.get_ref(mother)
+        # self._ref_pixel_w = mother.__class__._pixel_w.get_ref(mother)
+        # self._ref_pixel_h = mother.__class__._pixel_h.get_ref(mother)
+
 
     @property
     def mother(self):
-        if self._mother is None:
-            return None
+        if isinstance(self._mother, Hollow_mother):
+            return self._mother
         return self._mother()
 
     @property

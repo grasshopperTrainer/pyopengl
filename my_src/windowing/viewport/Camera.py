@@ -20,9 +20,9 @@ class _Camera:
         self._far = 100
         # render range of xy plane
         self._left = 0
-        self._right = viewport.pixel_width
+        self._right = viewport.pixel_w
         self._bottom = 0
-        self._top = viewport.pixel_height
+        self._top = viewport.pixel_h
 
         self.scale_factor = [1,1,1]
 
@@ -150,9 +150,9 @@ class _Camera:
             self._far = 100
             # render range of xy plane
             self._left = 0
-            self._right = self._viewport.pixel_width
+            self._right = self._viewport.pixel_w
             self._bottom = 0
-            self._top = self._viewport.pixel_height
+            self._top = self._viewport.pixel_h
         else:
             self._near = 1
             self._far = 1000000
@@ -175,16 +175,16 @@ class _Camera:
         # need to find correct filter condition
         if True:
             vp = self._viewport
-            if vp.pixel_height == 0 or vp.pixel_height == 0:
+            if vp.pixel_h == 0 or vp.pixel_h == 0:
                 return
 
             if self._mode == 0 or self._mode == 1:
                 if major == 'v':
-                    ratio = vp.pixel_width / vp.pixel_height
+                    ratio = vp.pixel_w / vp.pixel_h
                     distance = self._top - self._bottom
                     self._right, self._left = distance * ratio / 2, -distance * ratio / 2
                 elif major == 'h':
-                    ratio = vp.pixel_height / vp.pixel_width
+                    ratio = vp.pixel_h / vp.pixel_w
                     distance = self._right - self._left
                     self._top, self._bottom = distance * ratio / 2, -distance * ratio / 2
                 else:
@@ -226,9 +226,9 @@ class _Camera:
                 # self.near = 0
                 # self.far = 100
                 # self.left = 0
-                self._right = self._viewport.pixel_width * self.scale_factor[0]
+                self._right = self._viewport.pixel_w * self.scale_factor[0]
                 # self.bottom = 0
-                self._top = self._viewport.pixel_height * self.scale_factor[1]
+                self._top = self._viewport.pixel_h * self.scale_factor[1]
 
                 n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
                 # if self._viewport._mother.window.name == 'third':

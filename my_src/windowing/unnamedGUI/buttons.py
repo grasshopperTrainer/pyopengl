@@ -36,15 +36,16 @@ class _Button(Filled_box):
         self._color1 = rgba
 
     def switch_color(self):
+
         pass
 
     def set_window(self, window):
         if window != None:
+            self._window = weakref.ref(window)
             # remove callback of previous window
             if self.window != None:
                 self.window.mouse.remove_callback(identifier=self)
             # assign new window
-            self._window = weakref.ref(window)
 
             window.set_post_draw_callback(
                 func= lambda : self.switch_color() if self._flag_draw else None,
@@ -88,6 +89,7 @@ class Button_press(_Button):
 
     def switch_color(self):
         if self.window != None:
+
             mouse = self.window.mouse
             if mouse.is_in_area(*self.vertex(0,2)):
                 if mouse.is_just_pressed:
@@ -222,6 +224,7 @@ class Button_hover_press(Button_hover, Button_press):
 
     def switch_color(self):
         if self.window != None and self.window.is_focused:
+
             mouse = self.window.mouse
 
             if self._click_accumulate_frame_count != 0:

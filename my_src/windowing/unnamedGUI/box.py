@@ -6,185 +6,49 @@ from ..callback_repository import Callback_repository
 # from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
 import weakref
 from collections import namedtuple
-from ..matryoshka_coordinate_system import Record_change_value
+from ..matryoshka_coordinate_system import Matryoshka_coordinate_system
 
-class Box:
-
-    posx = Record_change_value()
-    posy = Record_change_value()
-    width = Record_change_value()
-    height = Record_change_value()
+class Box(Matryoshka_coordinate_system):
 
     def __init__(self, posx, posy, width, height, window=None, viewport=None):
-
-        self._reference = None
+        super().__init__(posx,posy,width,height)
 
         if window != None:
             self._window = weakref.ref(window)
-            self._reference = window
         else:
-            self._window = None #type:Window
+            self._window = None
 
         if viewport != None:
             self._viewport = weakref.ref(viewport)
-            self._reference = viewport
-            viewport._children.add(self)
         else:
             self._viewport = None
 
-        self._children = weakref.WeakSet()
+        if viewport == None:
+            if window != None:
+                self.is_child_of(window)
+        else:
+            self.is_child_of(viewport)
+
         self._flag_draw = True
         self._flag_state = 0
 
-        self._flag_coordinate_updated = True
-        self._vertex = [(),(),(),()]
-
-        self.posx = posx
-        self.posy = posy
-        self.width = width
-        self.height = height
 
     def draw(self):
         pass
 
-    @property
-    def size(self):
-        i = namedtuple('original_size', ['posx','posy','width','height'])
-        return i(self.posx, self.posy, self.width, self.height)
-    @property
-    def pixel_size(self):
-        i = namedtuple('pixel_size', ['posx','posy','width','height'])
-        return i(self.pixel_posx, self.pixel_posy,self.pixel_width, self.pixel_height)
+    def is_mother_of(self, *objects):
+        super().is_mother_of(*objects)
+        for child in objects:
+            child.set_window(self.window)
+            child.set_viewport(self.viewport)
 
-    def vertex(self, *index):
-        vertex_list = []
-        if len(index) == 0:
-            index = 0,1,2,3
-
-        # call to check change?
-        # self.posx, self.posy, self.width, self.height
-
-        # recalculate and save
-        if self._flag_coordinate_updated:
-            print('dkdkdkdk')
-            x = self.pixel_posx
-            y = self.pixel_posy
-            width = self.pixel_width
-            height = self.pixel_height
-
-
-            self._vertex[0] = (x, y)
-            self._vertex[1] = (x + width, y)
-            self._vertex[2] = (x + width, y + height)
-            self._vertex[3] = (x, y + height)
-
-            self._flag_coordinate_updated = False
-        else:
-            pass
-
-        for i in index:
-            vertex_list.append(self._vertex[i])
-
-        if len(index) == 1:
-            return vertex_list[0]
-        return vertex_list
-
-    @property
-    def pixel_posx(self):
-        result = None
-        if isinstance(self.posx, float):
-            result = self.posx * self._reference.pixel_width
-        elif callable(self.posx):
-            result = self.posx(self._reference.pixel_width)
-        else:
-            result = self.posx
-        if isinstance(self._reference, Box):
-            return result + self._reference.pixel_posx
-        return result
-
-    @property
-    def pixel_posy(self):
-        result = None
-        if isinstance(self.posy, float):
-            result = self.posy * self._reference.pixel_height
-        elif callable(self.posy):
-            result = self.posy(self._reference.pixel_height)
-        else:
-            result = self.posy
-        if isinstance(self._reference, Box):
-            return result + self._reference.pixel_posy
-        return result
-
-    @property
-    def pixel_width(self):
-        if isinstance(self.width, float):
-            return self.width * self._reference.pixel_width
-        elif callable(self.width):
-            return self.width(self._reference.pixel_width)
-        else:
-            return self.width
-
-
-    @property
-    def pixel_height(self):
-        if isinstance(self.height, float):
-            return self.height * self._reference.pixel_height
-        elif callable(self.height):
-            return self.height(self._reference.pixel_height)
-        else:
-            return self.height
-    @property
-    def pixel_size(self):
-        return self.pixel_width, self.pixel_height
-
-    @property
-    def window(self):
-        if self._window == None:
-            return None
-        else:
-            if self._window() == None:
-                return None
-            else:
-                return self._window()
-
-    @property
-    def viewport(self):
-        if self._viewport == None:
-            return None
-        else:
-            if self._viewport() == None:
-                return None
-            else:
-                return self._viewport()
-
-    def set_window(self, window):
-        self._window = weakref.ref(window)
-        pass
+    # def set_window(self, window):
+    #     if window != None:
+    #         self._window = weakref.ref(window)
 
     def set_viewport(self, viewport):
-        self._viewport = weakref.ref(viewport)
-        viewport._children.add(self)
-
-    def set_reference(self, ref):
-        self._reference = ref
-
-        if ref.window != None:
-            self.set_window(ref.window)
-        if ref.viewport != None:
-            self.set_viewport(ref.viewport)
-
-        ref._children.add(self)
-
-    def set_children(self, *ref):
-        for box in ref:
-            if self._window != None:
-                box.set_window(self.window)
-            if self._viewport != None:
-                box.set_viewport(self.viewport)
-
-            box._reference = self
-
-            self._children.add(box)
+        if viewport != None:
+            self._viewport = weakref.ref(viewport)
 
     def copy(self):
         """
@@ -215,6 +79,18 @@ class Box:
         self._flag_draw = not self._flag_draw
         for box in self._children:
             box.switch_all_draw()
+
+    @property
+    def viewport(self):
+        if self._viewport != None:
+            return self._viewport()
+        return None
+
+    @property
+    def window(self):
+        if self._window != None:
+            return self._window()
+        return None
 
 class Filled_box(Box):
     """

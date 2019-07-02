@@ -271,7 +271,7 @@ class Mouse(SID):
             return mapped
         else:
             glfw_coordinate = glfw.get_cursor_pos(self._window.glfw_window)
-            gl_coordintate = glfw_coordinate[0], self._window.height - glfw_coordinate[1]
+            gl_coordintate = glfw_coordinate[0], self._window.h - glfw_coordinate[1]
             return gl_coordintate
 
 
@@ -303,11 +303,11 @@ class Mouse(SID):
 
     def viewport_position(self, viewport:'Viewport', reparameterize:bool):
         x,y = self.window_position
-        a0,a1 = viewport.get_vertex_from_window(0)
+        a0,a1 = viewport.get_glfw_vertex(0)
         if not reparameterize:
             return x-a1, yy-a2
         else:
-            w,h = viewport.pixel_width, viewport.pixel_height
+            w,h = viewport.pixel_w, viewport.pixel_h
             return (x-a0)/w, (y-a1)/h
 
     @property
@@ -349,7 +349,7 @@ class Mouse(SID):
     @property
     def cursor_object(self):
         x,y = self.window_position
-        y = self._window.height - y
+        y = self._window.h - y
         # self._window.make_window_current()
 
         with self._window.glfw_context as gl:
@@ -491,8 +491,8 @@ class Mouse(SID):
         state(callback_func)
 
     def is_in_viewport(self, viewport):
-        a = viewport.get_vertex_from_window(0)
-        b = viewport.get_vertex_from_window(2)
+        a,b = viewport.get_glfw_vertex(0, 2)
+
         x,y = self.window_position
         if a[0]< x < b[0] and a[1] < y < b[1]:
             return True
@@ -507,7 +507,7 @@ class Mouse(SID):
         return False
 
 
-    def remove_callback(self, deleter, identifier, callback_kind):
+    def remove_callback(self, deleter=None, identifier=None):
         self._callbacks_repo.remove(deleter, identifier)
 
     @property
