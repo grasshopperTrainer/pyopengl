@@ -144,6 +144,8 @@ class Unique_glfw_context:
 
         self._temp_windows = []
 
+        self._render_unit_stack = set()
+
     def give_tracker_to(self, window):
         """
         Stores new Window object and returns self.
@@ -178,6 +180,11 @@ class Unique_glfw_context:
         #     print(i.collection)
         #     print()
         pass
+
+    def stack_render_unit(self, unit):
+        self._render_unit_stack.add(unit)
+    def render_unit_stack_reset(self):
+        self._render_unit_stack = set()
 
     @classmethod
     def remove(cls, window):

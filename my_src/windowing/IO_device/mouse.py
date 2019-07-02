@@ -252,7 +252,7 @@ class Mouse(SID):
         # flipped to match openGL buffer order
         if len(self._mapping_source) != 0 and not self.window.is_focused:
             wi, vp = self._mapping_source['window'], self._mapping_source['viewport']
-            ratio = wi.mouse.viewport_position(vp, True)
+            ratio = wi.mouse.viewport_local_position(vp, True)
 
             size = self.window.size
             mapped = [a * b for a, b in zip(ratio, size)]
@@ -264,7 +264,7 @@ class Mouse(SID):
         # flipped to match openGL buffer order
         if len(self._mapping_source) != 0 and not self.window.is_focused:
             wi, vp = self._mapping_source['window'], self._mapping_source['viewport']
-            ratio = wi.mouse.viewport_position(vp, True)
+            ratio = wi.mouse.viewport_local_position(vp, True)
 
             size = self.window.size
             mapped = [a * b for a, b in zip(ratio, size)]
@@ -301,14 +301,16 @@ class Mouse(SID):
         pos = [a+b for a,b in zip(self.window.get_vertex(0), self.window_position)]
         return pos
 
-    def viewport_position(self, viewport:'Viewport', reparameterize:bool):
+    def viewport_local_position(self, viewport: 'Viewport', reparameterize:bool):
         x,y = self.window_position
         a0,a1 = viewport.get_glfw_vertex(0)
         if not reparameterize:
             return x-a1, yy-a2
         else:
             w,h = viewport.pixel_w, viewport.pixel_h
-            return (x-a0)/w, (y-a1)/h
+            x = (x-a0)/w if w != 0 else 0
+            y = (y-a1)/h if h != 0 else 0
+            return x,y
 
     @property
     def is_any_pressed(self):

@@ -38,6 +38,9 @@ class Frame(FBL):
         self._render_unit_registry = Render_object_registry(self)
         self._context = None
 
+        self._render_stack = []
+
+
     def __del__(self):
         print(f'gc, Frame {self}')
 

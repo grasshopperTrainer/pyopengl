@@ -28,7 +28,7 @@ from .windows import Windows
 from .callback_repository import Callback_repository
 from .deleter import Deleters
 import numpy as np
-from .matryoshka_coordinate_system import Record_change_value, Matryoshka_coordinate_system
+from .matryoshka_coordinate_system import Area_definer, Matryoshka_coordinate_system
 
 class Window(Matryoshka_coordinate_system):
     """
@@ -790,12 +790,19 @@ class Window(Matryoshka_coordinate_system):
                 #     for i in window._callbacks_repo.items():
                 #         print(i)
                 #         print(i[0]._dell, i[0].viewports[0], i[0]._glfw_window)
-                if window.viewports._latest_viewport._flag_clear:
-                    print(f'{window} need instant clear')
-                    window.viewports._latest_viewport.clear_instant()
-                    # window.viewports.current_viewport._flag_clear = False
+                # if window.viewports._latest_viewport._flag_clear:
+                #     print(f'{window} need instant clear')
+                #     window.viewports._latest_viewport.clear_instant()
+                #     # window.viewports.current_viewport._flag_clear = False
 
                 window.post_draw_callback()
+
+                to_render = window.glfw_context._render_unit_stack:
+                if len(to_render) != None:
+
+                for i in window.glfw_context._render_unit_stack:
+                    print(i)
+                window.glfw_context.render_unit_stack_reset()
 
                 if window.myframe._flag_something_rendered:
                     window.make_window_current()

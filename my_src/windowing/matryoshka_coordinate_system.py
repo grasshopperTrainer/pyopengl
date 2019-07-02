@@ -1,14 +1,6 @@
 import weakref
 
-
-class Value:
-    def __init__(self, value):
-        self._v = value
-    @property
-    def value(self):
-        return self._v
-
-class Record_change_value:
+class Area_definer:
     _instance_set = weakref.WeakSet()
     _rest_called = False
 
@@ -22,11 +14,11 @@ class Record_change_value:
             raise
 
         if instance not in self._dict:
-            self._dict[instance] = Value(None)
+            self._dict[instance] = None
 
         # set value changed only if value input value is actucally different
-        if self._dict[instance].value != value:
-            self._dict[instance] = Value(value)
+        if self._dict[instance] != value:
+            self._dict[instance] = value
             instance.make_updated_all()
         # else:
         #     self._dict[instance][1] = False
@@ -35,32 +27,20 @@ class Record_change_value:
         if instance is None:
             return self
         else:
-            v = self._dict[instance].value
+            v = self._dict[instance]
             return v
-    def get_ref(self, instance):
-        return weakref.ref(self._dict[instance])
 
 class Hollow_mother:
-    def __init__(self):
-        self.pixel_x = 0
-        self.pixel_y = 0
-        self.pixel_w = 1
-        self.pixel_h = 1
-        self.cls = self
-        self._pixel_w = self
-        self._pixel_h = self
-        self._pixel_x = self
-        self._pixel_y = self
-    def is_changed(self, instance):
-        return False
-    def __call__(self, *args, **kwargs):
-        return self
+        pixel_x = 0
+        pixel_y = 0
+        pixel_w = 1
+        pixel_h = 1
 
 class Matryoshka_coordinate_system:
-    x = Record_change_value()
-    y = Record_change_value()
-    w = Record_change_value()
-    h = Record_change_value()
+    x = Area_definer()
+    y = Area_definer()
+    w = Area_definer()
+    h = Area_definer()
 
     # _vertex = Record_change_value()
     #
@@ -84,7 +64,7 @@ class Matryoshka_coordinate_system:
 
         self._vertex = [(),(),(),()]
 
-        self._mother = Hollow_mother()
+        self._mother = Hollow_mother
 
 
         self._flag_update = True
@@ -180,11 +160,6 @@ class Matryoshka_coordinate_system:
     def is_child_of(self, mother):
         self._mother = weakref.ref(mother)
         mother._children.add(self)
-        # self._ref_pixel_x = mother.__class__._pixel_x.get_ref(mother)
-        # self._ref_pixel_y = mother.__class__._pixel_y.get_ref(mother)
-        # self._ref_pixel_w = mother.__class__._pixel_w.get_ref(mother)
-        # self._ref_pixel_h = mother.__class__._pixel_h.get_ref(mother)
-
 
     @property
     def mother(self):
