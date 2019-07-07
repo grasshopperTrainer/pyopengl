@@ -3,7 +3,7 @@ import numpy as np
 import copy
 # from ...my_openGL.unique_glfw_context import Trackable_openGL as gl
 from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
-
+from windowing.windows import Windows
 class glsl_attribute:
 
     def __init__(self, kind, name, location):
@@ -78,6 +78,7 @@ class vector(glsl_attribute):
         d = self._dict[instance][self._name][0]
         t = d.dtype.kind
         l = self._location
+
         instance._shader.bind()
         with instance._context as gl:
             exec(f'gl.glUniform{n}{t}v({l},{c},d)')

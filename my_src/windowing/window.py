@@ -77,15 +77,18 @@ class Window(Matryoshka_coordinate_system):
 
     def __enter__(self):
         if Windows.get_current() != self:
-            self._temp_return_window = Windows.get_current()
             self.make_window_current()
-
-        return self
+        # if Windows.get_current() != self:
+        #     self._temp_return_window = Windows.get_current()
+        #     self.make_window_current()
+        #
+        # return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self._temp_return_window != None:
-            self._temp_return_window.make_window_current()
-            self._temp_return_window = None
+        # if self._temp_return_window != None:
+        #     self._temp_return_window.make_window_current()
+        #     self._temp_return_window = None
+        pass
 
     def __new__(cls,*args,**kwargs):
         self = super().__new__(cls)
@@ -224,6 +227,8 @@ class Window(Matryoshka_coordinate_system):
         self._flag_just_resized = True
 
         self._previous_window_size = glfw.get_window_size(self.glfw_window)
+
+        self.make_window_current()
 
     def handle_close(self):
         if self._flag_window_close:
@@ -762,48 +767,101 @@ class Window(Matryoshka_coordinate_system):
             # if cls._display_window():
             # to give access to other windows through keyword 'windows'
             for window in cls._windows: #type: Window
-                # gc.collect()
 
-                # print(window)
-                #drawing
                 window.make_window_current()
-                # window.viewports[0].open()
                 window.pre_draw_callback()
-                # window.viewports[0].open()
                 window._draw_()
-                # if window.viewports.current_viewport.name == 'menu_bar':
-                #     print(window.viewports.current_viewport.name)
-                #     exit()
-                # if window.viewports.current_viewport.name != 'default':
-                # if window.name == 'main':
-                #     print('repo',len(window._callbacks_repo))
-                #     for i in window._callbacks_repo._callbacks_repo.values():
-                #         print(i)
-                #     print('windows', len(window.windows.test_dic))
-                #     if len(window._callbacks_repo) != 0:
-                #         print('repo',list(window._callbacks_repo.values())[0])
-                #     if len(list(window._callbacks_repo.keys())) != 0:
-                #         print(list(window._callbacks_repo.values())[0]['window_refresh']['Top_bar.p'][0])
-                #         print('windows',list(window.windows.test_dic.keys()))
-                #         print('windows',list(window.windows.test_dic.keys())[1].p)
-                #         # exit()
-                #     for i in window._callbacks_repo.items():
-                #         print(i)
-                #         print(i[0]._dell, i[0].viewports[0], i[0]._glfw_window)
-                # if window.viewports._latest_viewport._flag_clear:
-                #     print(f'{window} need instant clear')
-                #     window.viewports._latest_viewport.clear_instant()
-                #     # window.viewports.current_viewport._flag_clear = False
-
                 window.post_draw_callback()
+                window.mouse.reset_per_frame()
 
-                to_render = window.glfw_context._render_unit_stack:
-                if len(to_render) != None:
+            glfw.poll_events()
 
-                for i in window.glfw_context._render_unit_stack:
-                    print(i)
-                window.glfw_context.render_unit_stack_reset()
+            for context in Unique_glfw_context._instances:
+                if len(context._render_unit_stack) != 0:
+                    sorted_data = {}
+                    for unit, frame, viewport, layer in context._render_unit_stack:
+                        # TODO can this be moved to where it is set sotred?
+                        # 1.sort by frame_buffer
+                        if frame not in sorted_data.keys():
+                            sorted_data[frame] = {}
 
+                        # 2.sort by viewport
+                        if viewport not in sorted_data[frame]:
+                            sorted_data[frame][viewport] = {}
+
+                        # 3.sort by layer
+                        if layer not in sorted_data[frame][viewport]:
+                            sorted_data[frame][viewport][layer] = []
+
+                        sorted_data[frame][viewport][layer].append(unit)
+
+                    # 4.then draw in order
+                    with context as gl:
+
+                        for frame, viewports in sorted_data.items():
+                            gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, frame._frame_buffer._glindex)
+
+                            attachments = [gl.GL_COLOR_ATTACHMENT0 + i for i in range(len(frame._color_attachments))]
+                            gl.glDrawBuffers(len(frame._color_attachments), attachments)
+
+                            for vp,layers in viewports.items():
+
+                                gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+                                gl.glViewport(*vp.pixel_values)
+                                gl.glScissor(*vp.pixel_values)
+
+                                # TODO can clearing be a unit of render_unit stack?
+                                if vp._flag_clear:
+                                    gl.glClearColor(*vp.clear_color)
+                                    gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+                                    gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
+
+                                    gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT1)
+                                    gl.glClearColor(0,0,0,0)
+                                    gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+
+                                    attachments = [gl.GL_COLOR_ATTACHMENT0 + i for i in
+                                                   range(len(frame._color_attachments))]
+                                    gl.glDrawBuffers(len(frame._color_attachments), attachments)
+
+                                    vp._flag_clear = False
+                                    pass
+
+                                positive_layers = []
+                                negative_layers = []
+                                layers = sorted(layers.items())
+                                if layers[0][0] < 0:
+                                    for i,v in enumerate(layers):
+                                        if v[0] >= 0:
+                                            negative_layers = layers[:i]
+                                            positive_layers = layers[i:]
+                                            break
+                                else:
+                                    positive_layers = layers
+
+                                for i in (positive_layers, negative_layers):
+                                    for ii, units in i:
+                                        for unit in units:
+                                            frame._flag_something_rendered = True
+
+                                            unit.bind()
+
+                                            if hasattr(unit.shader_attribute, 'PM'):
+                                                unit.shader_attribute.PM = vp.camera.PM
+                                            if hasattr(unit.shader_attribute, 'VM'):
+                                                unit.shader_attribute.VM = vp.camera.VM
+                                            if hasattr(unit.shader_attribute, 'u_id_color'):
+                                                color_id = frame.render_unit_registry.register(unit)
+                                                unit.shader_attribute.u_id_color = color_id  # push color
+
+                                            # TODO how to store drawing conditing inside unit?
+                                            gl.glDrawElements(gl.GL_TRIANGLE_STRIP, unit.index_buffer.count, unit.index_buffer.gldtype, None)
+
+                    context.render_unit_stack_reset()
+
+            # copy myframe to window default
+            for window in cls._windows:
+                # if window.myframe._flag_something_rendered:
                 if window.myframe._flag_something_rendered:
                     window.make_window_current()
                     with window.glfw_context as gl:
@@ -818,27 +876,11 @@ class Window(Matryoshka_coordinate_system):
                                              gl.GL_COLOR_BUFFER_BIT,
                                              gl.GL_LINEAR)
 
-                    # window.buffer_swap_callback()
                     glfw.swap_buffers(window.glfw_window)
-                # window.mouse_posed = False
                 window.myframe.flag_something_rendered = False
                 window._flag_just_resized = False
 
-                # viewports = window.viewports._viewports
-                #
-                window.mouse.reset_per_frame()
-            # z_dict = sorted(cls._windows.get_window_z_position().items())
-            # for i,l in z_dict:
-            #     for w in l:
-            #         w.config_focused(True)
-            #         w.config_focused(False)
 
-            glfw.poll_events()
-
-            # for i in glfw._callback_repositories:
-            #     print(i)
-            #     for ii in i.items():
-            # print(len(glfw._window_focus_callback_repository))
             to_break = False
             for window in cls._windows:
                 to_break = window.handle_close()
@@ -946,9 +988,9 @@ class Window(Matryoshka_coordinate_system):
             glfw.make_context_current(None)
             glfw.make_context_current(self.glfw_window)
 
-            Windows.set_current(self)
-            Unique_glfw_context.set_current(self.glfw_context)
-            FBL.set_current(self._myframe)
+        Windows.set_current(self)
+        # Unique_glfw_context.set_current(self.glfw_context)
+        FBL.set_current(self._myframe)
 
     # @classmethod
     # def get_current_window(cls):

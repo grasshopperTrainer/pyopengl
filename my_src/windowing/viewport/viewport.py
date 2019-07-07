@@ -9,7 +9,7 @@ import weakref
 class Viewport(Matryoshka_coordinate_system):
 
     _current = None
-    DEF_CLEAR_COLOR = 0, 0, 0, 0
+    DEF_CLEAR_COLOR = 0, 0, 0, 1
     def __init__(self, x, y, width, height, window=None, name= None):
         super().__init__(x,y,width,height)
         self.is_child_of(window)
@@ -24,11 +24,18 @@ class Viewport(Matryoshka_coordinate_system):
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
 
         self._flag_clear = None
-        self._clear_color = None
+        self._clear_color = self.DEF_CLEAR_COLOR
 
         self.set_current(self)
 
         self._iter_count = 0
+
+    def __enter__(self):
+        self.set_current(self)
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
 
     def clear(self, *color):
         # if clear is called, save clear color
@@ -69,6 +76,12 @@ class Viewport(Matryoshka_coordinate_system):
         else:
             return self._clear_color
 
+    @property
+    def clear_color(self):
+        if self._clear_color is None:
+            return self.DEF_CLEAR_COLOR
+        return self._clear_color
+
     def fillbackground(self):
         # clear window by being called from (class)RenderUnit.draw_element()
         if self._flag_clear:
@@ -88,32 +101,33 @@ class Viewport(Matryoshka_coordinate_system):
             # only allowed again if self.clear() is called again
             self._flag_clear = False
 
-    def open(self, do_clip = True):
+    # def open(self, do_clip = True):
+    #
+    #     with self.mother.glfw_context as gl:
+    #         with self.mother.myframe:
+    #             gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
+    #             if self.get_current() != self or self.mother.is_resized:
+    #                 # print(self.pixel_x,self.pixel_y,self.pixel_w,self.pixel_h)
+    #                 # print(self.x_changed, self.ref_pixel_w_changed, self._ref_pixel_w, self._ref_pixel_w())
+    #                 # print(self.mother)
+    #                 gl.glViewport(self.pixel_x, self.pixel_y, self.pixel_w, self.pixel_h)
+    #                 if do_clip:
+    #                     gl.glScissor(self.pixel_x, self.pixel_y, self.pixel_w, self.pixel_h)
+    #
+    #                 self.set_current(self)
+    #                 self.mother.viewports.set_latest(self)
+    #
+    #     return self
 
-        with self.mother.glfw_context as gl:
-            with self.mother.myframe:
-                gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
-                if self.get_current() != self or self.mother.is_resized:
-                    # print(self.pixel_x,self.pixel_y,self.pixel_w,self.pixel_h)
-                    # print(self.x_changed, self.ref_pixel_w_changed, self._ref_pixel_w, self._ref_pixel_w())
-                    # print(self.mother)
-                    gl.glViewport(self.pixel_x, self.pixel_y, self.pixel_w, self.pixel_h)
-                    if do_clip:
-                        gl.glScissor(self.pixel_x, self.pixel_y, self.pixel_w, self.pixel_h)
-
-                    self.set_current(self)
-                    self.mother.viewports.set_latest(self)
-
-        return self
+    # def close(self):
+    #     if self._flag_clear:
+    #         self.fillbackground()
 
     @property
     def absolute_gl_values(self):
         n = namedtuple('pixel_coordinates',['posx','posy','width','height'])
         return n(self.pixel_x, self.pixel_y, self.pixel_w, self.pixel_h)
 
-    def close(self):
-        if self._flag_clear:
-            self.fillbackground()
 
     def get_glfw_vertex(self, *index):
         """

@@ -137,11 +137,11 @@ class Filled_box(Box):
     def draw(self):
         if self._flag_draw:
             if self.viewport != None:
-                self.viewport.open()
-            self._unit.shader_attribute.a_position = self.vertex()
-            self._unit.shader_attribute.u_fillcol = self._fill_color
+                with self.viewport:
+                    self._unit.shader_attribute.a_position = self.vertex()
+                    self._unit.shader_attribute.u_fillcol = self._fill_color
 
-            self.renderer._draw_(self._unit)
+                    self.renderer._draw_(self._unit)
 
 class Block(Filled_box):
     # TODO maybe need do-not-color

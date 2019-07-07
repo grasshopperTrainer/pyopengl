@@ -7,13 +7,14 @@ class _Button(Filled_box):
         super().__init__(posx,posy,width,height,window,viewport)
 
         self._color0 = 1, 1, 1, 1
-        self._color1 = 0, 0, 0, 1
+        self._color1 = .5, .5, .5, 1
+        self.fill_color = self._color0
 
         self.set_window(window)
 
         self._flag_use_button = True
 
-        self._callback_repo = None
+        # self._callback_repo = Callback_repository
 
     @property
     def state(self):
@@ -89,7 +90,6 @@ class Button_press(_Button):
 
     def switch_color(self):
         if self.window != None:
-
             mouse = self.window.mouse
             if mouse.is_in_area(*self.vertex(0,2)):
                 if mouse.is_just_pressed:
@@ -176,35 +176,27 @@ class Button_hover(_Button):
         self._hover_accumulate_frame_count = 0
 
     def switch_color(self):
-        if self.window != None and self.window.is_focused:
+        if self.window != None:
             mouse = self.window.mouse
             if mouse.is_in_area(*self.vertex(0,2)):
-                if self._hover_accumulate_frame_count == self._hover_target_frame_count:
-                    if self.fill_color == self.color0:
-
-                        if self._window != None:
-                            self._callback_repo.exec('1just')
-
-                        self.fill_color = self.color1
-                        self._flag_state = True
-                        self.draw()
-
+                if self._flag_state == 0:
+                    if self._hover_accumulate_frame_count != self._hover_target_frame_count:
+                        self._hover_accumulate_frame_count += 1
                     else:
-                        if self._window != None:
-                            self._callback_repo.exec('1')
+                        self.fill_color = self.color1
+                        self._flag_state = 1
+                        self.draw()
+                elif self._flag_state == 1:
+                    pass
+            else:
+                if self._flag_state == 1:
+                    self._hover_accumulate_frame_count = 0
+                    self.fill_color = self.color0
+                    self._flag_state = 0
+                    self.draw()
+                elif self._flag_state == 0:
+                    pass
 
-                else:
-                    self._hover_accumulate_frame_count += 1
-
-            elif self.fill_color == self.color1:
-
-                if self._window != None:
-                    self._callback_repo.exec('0')
-
-                self._hover_accumulate_frame_count = 0
-                self.fill_color = self.color0
-                self._flag_state = False
-                self.draw()
     @property
     def hover_target_frame_count(self):
         return self._hover_target_frame_count

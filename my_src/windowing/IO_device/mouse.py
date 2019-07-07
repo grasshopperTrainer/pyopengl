@@ -355,6 +355,7 @@ class Mouse(SID):
         # self._window.make_window_current()
 
         with self._window.glfw_context as gl:
+            gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, self._window.myframe._frame_buffer._glindex)
             gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
             color = gl.glReadPixels(x,y,1,1,gl.GL_RGB,gl.GL_UNSIGNED_BYTE)
             obj = self._window.myframe.render_unit_registry.object(color)

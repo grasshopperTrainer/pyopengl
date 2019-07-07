@@ -29,4 +29,7 @@
 # b = {10,20}
 # print(list(a))
 
-print(lambda)
+a = {0:[1,2,3], 2:[2,3,4], 1:[1], -1:[10], -2:22}
+print(a)
+print(sorted(a.items()))
+print(a)

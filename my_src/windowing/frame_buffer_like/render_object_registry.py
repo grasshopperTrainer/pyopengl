@@ -30,6 +30,7 @@ class Render_object_registry:
                 self._collections[object] = self._structure(id, False)
         else:
             raise TypeError
+        return self.id_color(object)
 
     def id(self, object):
         return self._collections[object].id
@@ -38,7 +39,7 @@ class Render_object_registry:
         inte = self._collections[object].id
         inte = format(inte,'06x')
         color= [int(f'0x{inte[i*2:i*2+2]}',16)/255 for i in range(3)]
-        return color
+        return color + [1,]
 
     def color_id(self, color):
         hex = bytearray(color).hex()

@@ -88,21 +88,21 @@ class Frame(FBL):
         # FBL.set_current(self)
         if self._context is None:
             raise
-
-        with self._context as gl:
-            self._frame_buffer.bind()
-            # if clear is set
-            if Viewport.get_current()._flag_clear:
-                vp = Viewport.get_current()
-                # clear all color attachment color
-                self.bindDrawBuffer()
-                vp.fillbackground()
-                # clear id color to black
-                gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT1)
-                gl.glClearColor(0,0,0,0)
-                gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-                self.bindDrawBuffer()
-                # reset draw buffer for comming drawing
+        FBL.set_current(self)
+        # with self._context as gl:
+        #     self._frame_buffer.bind()
+        #     # if clear is set
+        #     if Viewport.get_current()._flag_clear:
+        #         vp = Viewport.get_current()
+        #         # clear all color attachment color
+        #         self.bindDrawBuffer()
+        #         vp.fillbackground()
+        #         # clear id color to black
+        #         gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT1)
+        #         gl.glClearColor(0,0,0,0)
+        #         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+        #         self.bindDrawBuffer()
+        #         # reset draw buffer for comming drawing
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -116,7 +116,8 @@ class Frame(FBL):
             gl.glDrawBuffers(len(self._color_attachments), at)
 
     def bind(self):
-        pass
+        self._frame_buffer.bind()
+        self.bindDrawBuffer()
 
     def unbind(self):
         pass

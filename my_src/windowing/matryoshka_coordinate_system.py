@@ -77,7 +77,7 @@ class Matryoshka_coordinate_system:
             result = int(self.x(self.mother.pixel_w))
         else:
             result = self.x
-
+        # print(self._mother)
         result = result + self.mother.pixel_x
 
         return result
@@ -115,6 +115,9 @@ class Matryoshka_coordinate_system:
             result = self.h
 
         return result
+    @property
+    def pixel_values(self):
+        return self.pixel_x, self.pixel_y, self.pixel_w, self.pixel_h
 
     def vertex(self, *index):
 
@@ -163,9 +166,14 @@ class Matryoshka_coordinate_system:
 
     @property
     def mother(self):
-        if isinstance(self._mother, Hollow_mother):
+        if isinstance(self._mother, weakref.ReferenceType):
+            if self._mother() is None:
+                self._mother = Hollow_mother
+                return self._mother
+            else:
+                return self._mother()
+        else:
             return self._mother
-        return self._mother()
 
     @property
     def children(self):

@@ -166,7 +166,11 @@ class Render_unit_temp:
         else:
             if not self._texture.is_built:
                 raise
-
+        # print(self._vertex_array._glindex)
+        # print(self._vertex_buffer._glindex)
+        # print(self._index_buffer._glindex)
+        #
+        # exit()
     def __del__(self):
         if self._use_my_index_buffer:
             self._index_buffer.delete()
@@ -229,6 +233,10 @@ class Render_unit_temp:
     @property
     def shader_attribute(self):
         return self._shader_attribute
+
+    def report_to_stack(self):
+        self._context.stack_render_unit((self, FBL.get_current(), Viewport.get_current(), 0))
+
 
 class Renderer_template:
     """
@@ -475,8 +483,8 @@ class Renderer_template:
         # self._check_shader_build()
 
         # actual draw
-        FBL.get_current().render_unit_registry.register(render_unit)
-        render_unit.bind()
+        # FBL.get_current().render_unit_registry.register(render_unit)
+        # render_unit.bind()
 
         if self.flag_draw:
             # Automated condition can't be set
@@ -493,14 +501,10 @@ class Renderer_template:
             if True:
                 ibo = render_unit.index_buffer
                 if ibo.count != 0:  # draw a thing
-                    with render_unit._context as gl:
-                        with FBL.get_current() as fbo:
-
-                            #TODO testing render object stacking
-                            gl.stack_render_unit(render_unit)
+                    render_unit.report_to_stack()
                             # print(render_unit._context)
                             # exit()
-
+                            #
                             # render_unit.shader_attribute.PM = Viewport.get_current().camera.PM
                             # render_unit.shader_attribute.VM = Viewport.get_current().camera.VM
                             # # get id color

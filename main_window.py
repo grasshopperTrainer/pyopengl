@@ -3,6 +3,7 @@ import glfw
 from windowing.renderer.BRO.testBRO import TestBRO
 from windowing.unnamedGUI import *
 import numpy as np
+from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
 
 from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
 
@@ -10,8 +11,7 @@ class Main_window(Window):
     def __init__(self):
         super().__init__(500,500,'main')
 
-        self.rect = TestBRO(0,0,100,100)
-        self.rect2 = TestBRO(100,100,200,200)
+        # self.rect2 = TestBRO(100,100,200,200)
 
         # menu = self.viewports.new(0,0,1.,50, 'menu_bar')
         self.viewports.new(0, lambda x:x - 150, 1., 100,'top_bar')
@@ -23,61 +23,64 @@ class Main_window(Window):
         self.flag_topbar_created = False
         self.top_bar = None
 
-        # ui menu bar
-        self.button0 = Button_press(0., 0., 50, 50)
-        self.button1 = Button_press(50, 0., 50, 50)
-        self.button2 = Button_press(100, 0., 50, 50)
+        self.rect = Button_hover(0,0,100,100,self,self.viewports[0])
+        # # ui menu bar
+        # self.button0 = Button_press(0., 0., 50, 50)
+        # self.button1 = Button_press(50, 0., 50, 50)
+        # self.button2 = Button_press(100, 0., 50, 50)
+        #
+        # self.button0_list = Block(0., 0.,50,-200,self,self.viewports[0])
+        # self.button0_list.fill_color = 1,0,0,1
+        # self.button0_list.is_child_of(self.button0)
+        #
+        # self.button0_list_buttons = []
+        # for i in range(5):
+        #     height = 50
+        #     button = Button_hover_press(0,-(i+1)*height ,1.0,height)
+        #     button.disable_all_draw()
+        #     self.button0_list.is_mother_of(button)
+        #
+        # # right buttons
+        # self.button_close = Button_hover_press(lambda x:x-50,0,50,50)
+        # self.button_maximize = Button_hover_press(lambda x:x-100,0,50,50)
+        # self.button_iconize = Button_hover_press(lambda x:x-150,0,50,50)
+        #
+        # # Button_hover_press.state
+        # self.menu_block = Block(0, lambda x: x - 50, 1.0, 50, window=self, viewport=self.viewports[0])
+        # # print(self.menu_block.mother)
+        # # exit()
+        # self.menu_block.fill_color = 0,1,0,1
+        # self.menu_block.is_mother_of(self.button0, self.button1, self.button2,
+        #                                   self.button_close, self.button_maximize, self.button_iconize)
+        # # self.menu_block.align_horrizontal(self.button0, self.button1, self.button2)
+        # # print(self.menu_block.vertex())
+        # # print(self.button0.vertex())
+        # # exit()
+        # self.button0.set_1_just_callback(lambda: (self.button0_list.enable_all_draw(), self.button0_list.draw(), print(self.button0.vertex())))
+        # self.button0.set_0_just_callback(lambda: (self.button0_list.reset_all_state(), self.button0_list.disable_all_draw(), self.refresh_all()))
+        #
+        # self.button_close.set_1_just_callback(
+        #     lambda :self.config_window_close(),
+        #     identifier='window_close',
+        #     deleter=self.button_close
+        # )
+        # self.button_maximize.set_1_just_callback(
+        #     lambda :self.config_maximize(not self.is_maximized),
+        #     identifier='window_maximize',
+        #     deleter=self.button_close
+        # )
+        # self.button_iconize.set_1_just_callback(
+        #     lambda :self.config_iconified(True),
+        #     identifier='window_iconify',
+        #     deleter=self.button_close
+        # )
 
-        self.button0_list = Block(0., 0.,50,-200,self,self.viewports[0])
-        self.button0_list.fill_color = 1,0,0,1
-        self.button0_list.is_child_of(self.button0)
-
-        self.button0_list_buttons = []
-        for i in range(5):
-            height = 50
-            button = Button_hover_press(0,-(i+1)*height ,1.0,height)
-            button.disable_all_draw()
-            self.button0_list.is_mother_of(button)
-
-        # right buttons
-        self.button_close = Button_hover_press(lambda x:x-50,0,50,50)
-        self.button_maximize = Button_hover_press(lambda x:x-100,0,50,50)
-        self.button_iconize = Button_hover_press(lambda x:x-150,0,50,50)
-
-        # Button_hover_press.state
-        self.menu_block = Block(0, lambda x: x - 50, 1.0, 50, window=self, viewport=self.viewports[0])
-        # print(self.menu_block.mother)
-        # exit()
-        self.menu_block.fill_color = 0,1,0,1
-        self.menu_block.is_mother_of(self.button0, self.button1, self.button2,
-                                          self.button_close, self.button_maximize, self.button_iconize)
-        # self.menu_block.align_horrizontal(self.button0, self.button1, self.button2)
-        # print(self.menu_block.vertex())
-        # print(self.button0.vertex())
-        # exit()
-        self.button0.set_1_just_callback(lambda: (self.button0_list.enable_all_draw(), self.button0_list.draw(), print(self.button0.vertex())))
-        self.button0.set_0_just_callback(lambda: (self.button0_list.reset_all_state(), self.button0_list.disable_all_draw(), self.refresh_all()))
-
-        self.button_close.set_1_just_callback(
-            lambda :self.config_window_close(),
-            identifier='window_close',
-            deleter=self.button_close
-        )
-        self.button_maximize.set_1_just_callback(
-            lambda :self.config_maximize(not self.is_maximized),
-            identifier='window_maximize',
-            deleter=self.button_close
-        )
-        self.button_iconize.set_1_just_callback(
-            lambda :self.config_iconified(True),
-            identifier='window_iconify',
-            deleter=self.button_close
-        )
-
-
-        self.refresh_all() # first draw all
-        self.set_window_refresh_callback(self.refresh_all)
-        self.mouse.set_object_selection_callback(self.rect.unit,self.mouse.set_button_press_callback,self.rect.switch_color,None)
+        with self.viewports['default']:
+            self.viewports['default'].clear(1,0,0,1)
+            self.rect.draw()
+        # self.refresh_all() # first draw all
+        # self.set_window_refresh_callback(self.refresh_all)
+        # self.mouse.set_object_selection_callback(self.rect.unit,self.mouse.set_button_press_callback,self.rect.switch_color,None)
 
     def _draw_(self):
         # pos = glfw.get_cursor_pos(self.glfw_window)
@@ -100,13 +103,15 @@ class Main_window(Window):
         # if self.mouse.is_any_object_pressed():
         #     self.refresh_all()
 
-        if self.mouse.is_object_pressed(self.rect.unit):
+        if self.mouse.is_in_area([0,0,],[100,100]) and self.mouse.is_just_pressed:
             if not self.windows.has_window_named('top_bar'):
                 self.top_bar = Top_bar(self)
+                pass
             else:
                 if self.top_bar.flag_follow_active:
                     self.top_bar.config_window_close()
                     self.top_bar = None
+                    print('top bar removed')
                 else:
                     self.top_bar.unpin_from_viewport(self, self.viewports['top_bar'])
                     self.top_bar.config_visible(True)
@@ -132,19 +137,43 @@ class Main_window(Window):
 
     def refresh_all(self):
         print('refreshing')
-        self.viewports['default'].open().clear()
-        self.rect.draw()
-        self.rect2.draw()
+
+            # self.rect2.draw()
         # self.viewports['menu_bar'].open().clear(1,0,0,1)
-        self.menu_block.draw()
-        self.viewports.close()
+        #     self.menu_block.draw()
+            # self.viewports.close()
 
 class Top_bar(Window):
 
     def __init__(self,mother):
         self.config_visible(False)
         super().__init__(1000,100, 'top_bar',None, mother)
+        # print('[result of debuging unshared vertex array]')
+        # print('of mother')
+        # vao = mother.glfw_context._vertex_arrays
+        # vaos = vao.collection
+        # print(vaos)
+        #
+        # print()
+        # print('bound targets')
+        # for i in vaos.values():
+        #     print(i.attributes)
+        #     # print(i.bound_targets)
+        #     # for ii in i.bound_targets:
+        #     #     print(ii.name)
+        #     #     print(ii.object)
+        # print()
+        #
+        # print('of this')
 
+        vao = self.glfw_context._vertex_arrays
+        vaos = vao.collection
+        print(vaos)
+        for i in vaos.values():
+            print(i.attributes)
+        print(vao.targets)
+
+        # exit()
         # self.set_window_z_position(1)
 
         self.follow_window_iconify(mother)
@@ -158,34 +187,42 @@ class Top_bar(Window):
 
         self.flag_follow_active = True
         self.flag_following = False
-
-        self.rect1 = TestBRO(0,0,100,100,(1,1,1,1),(0,0,0,1))
-
-        print('debug, preset color', self.rect1._color1, self.rect1._color2)
-
-        self.viewports[0].open()
-        self.viewports[0].clear(0,1,0,1)
-        self.rect1.draw()
-        pass
+        #
+        # self.rect1 = Button_hover(0,0,100,100,self,self.viewports[0])
+        #
+        # # print('debug, preset color', self.rect1._color1, self.rect1._color2)
+        #
+        # with self.viewports[0]:
+        #     self.viewports[0].clear(0,1,1,1)
+        #
+        #     # self.viewports[0].open()
+        #     # self.viewports[0].clear(0,1,0,1)
+        #     self.rect1.draw()
+        #     # print(Window._windows.get_current())
+        #     # print(FBL.get_current())
+        #     # exit()
+        # pass
 
     def _draw_(self):
         # self.viewports[0].open()
-        if self.mouse.is_just_pressed and self.mouse.cursor_object == self.rect1.unit:
-            print('debug, object press detected')
-            self.viewports[0].open()
-            self.rect1.switch_color()
+        # if self.mouse.is_just_pressed and self.mouse.cursor_object == self.rect1.unit:
+        #     print('debug, object press detected')
+            # self.viewports[0].open()
+            # with self.viewports[0]:
+            #     self.rect1.switch_color()
 
-        if self.flag_follow_active:
-            if not self.mouse.is_in_viewport(self.viewports['center']) and self.mouse.is_in_window and 0 in self.mouse.pressed_button:
-                if not self.flag_following:
-                    self.flag_following = True
-                    self.ref_window_pos = self.mouse.window_position
-
-            if self.flag_following:
-                self.move_to(self.mouse.screen_position,self.ref_window_pos)
-
-            if not self.mouse.is_any_pressed:
-                if self.flag_following:
-                    self.flag_following = False
+        # if self.flag_follow_active:
+        #     if not self.mouse.is_in_viewport(self.viewports['center']) and self.mouse.is_in_window and 0 in self.mouse.pressed_button:
+        #         if not self.flag_following:
+        #             self.flag_following = True
+        #             self.ref_window_pos = self.mouse.window_position
+        #
+        #     if self.flag_following:
+        #         self.move_to(self.mouse.screen_position,self.ref_window_pos)
+        #
+        #     if not self.mouse.is_any_pressed:
+        #         if self.flag_following:
+        #             self.flag_following = False
+        # pass
         pass
 
