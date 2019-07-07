@@ -16,10 +16,7 @@ class Vertexbuffer(RenderComponent):
         self._context = None
 
     def build(self, context=None):
-        if context is None:
-            self._context = Unique_glfw_context.get_current()
-        else:
-            self._context = context
+        self._context = context
 
         with self._context as gl:
             self._glindex = gl.glGenBuffers(1)

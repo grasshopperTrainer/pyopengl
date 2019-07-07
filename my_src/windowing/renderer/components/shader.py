@@ -175,10 +175,6 @@ class Shader(RenderComponent):
     #             n = list(d.keys())[i]
     #             v = d[n][0]
     #             gl.glDeleteProgram(v)
-    def deepcopy(self):
-        new_shader = copy.deepcopy(self)
-        return new_shader
-
     def bind(self):
         with self._context as gl:
             gl.glUseProgram(self.glindex)

@@ -83,6 +83,7 @@ class Main_window(Window):
         # self.mouse.set_object_selection_callback(self.rect.unit,self.mouse.set_button_press_callback,self.rect.switch_color,None)
 
     def _draw_(self):
+
         # pos = glfw.get_cursor_pos(self.glfw_window)
         # if 0<pos[0]<100 and 0<pos[1]<100:
         #     print('mouse on position')
@@ -145,7 +146,7 @@ class Main_window(Window):
 
 class Top_bar(Window):
 
-    def __init__(self,mother):
+    def __init__(self, mother):
         self.config_visible(False)
         super().__init__(1000,100, 'top_bar',None, mother)
         # print('[result of debuging unshared vertex array]')
@@ -165,13 +166,6 @@ class Top_bar(Window):
         # print()
         #
         # print('of this')
-
-        vao = self.glfw_context._vertex_arrays
-        vaos = vao.collection
-        print(vaos)
-        for i in vaos.values():
-            print(i.attributes)
-        print(vao.targets)
 
         # exit()
         # self.set_window_z_position(1)

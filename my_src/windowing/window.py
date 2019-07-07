@@ -776,8 +776,9 @@ class Window(Matryoshka_coordinate_system):
 
             glfw.poll_events()
 
-            for context in Unique_glfw_context._instances:
+            for context in Unique_glfw_context.get_instances():
                 if len(context._render_unit_stack) != 0:
+                    print(context._render_unit_stack)
                     sorted_data = {}
                     for unit, frame, viewport, layer in context._render_unit_stack:
                         # TODO can this be moved to where it is set sotred?
@@ -800,7 +801,6 @@ class Window(Matryoshka_coordinate_system):
 
                         for frame, viewports in sorted_data.items():
                             gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, frame._frame_buffer._glindex)
-
                             attachments = [gl.GL_COLOR_ATTACHMENT0 + i for i in range(len(frame._color_attachments))]
                             gl.glDrawBuffers(len(frame._color_attachments), attachments)
 
@@ -989,7 +989,7 @@ class Window(Matryoshka_coordinate_system):
             glfw.make_context_current(self.glfw_window)
 
         Windows.set_current(self)
-        # Unique_glfw_context.set_current(self.glfw_context)
+        Unique_glfw_context.set_current(self.glfw_context)
         FBL.set_current(self._myframe)
 
     # @classmethod

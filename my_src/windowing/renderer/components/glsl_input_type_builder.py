@@ -32,7 +32,11 @@ class glsl_attribute:
             self._dict[instance] = {}
         if not np.array_equal(self._dict[instance][self._name], value):
             try:
-                self._dict[instance][self._name] = value
+                if len(self._dict[instance][self._name]) != len(value):
+                    self._dict[instance].resize(4, refcheck=False)
+                    self._dict[instance][self._name] = value
+                else:
+                    self._dict[instance][self._name] = value
                 # print(id(self._dict[instance[self._name]]))
             except:
                 self._dict[instance][self._name] = value.flatten('F')
@@ -233,6 +237,13 @@ class GLSL_input_type_template:
         self._vertex_buffer.unbind()
         self._flag_resized = True
 
+    def copy(self, vao, vbo, shader):
+        new = self.__class__(vao, vbo, shader)
+        new._attribute_buffer = self._attribute_buffer
+        new._uniform_buffer = self._uniform_buffer
+        new.resize(len(new._attribute_buffer))
+
+        return new
     # @classmethod
     # def validate_uniform_location(cls):
     #     mark = None

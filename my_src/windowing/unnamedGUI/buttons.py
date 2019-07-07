@@ -185,6 +185,7 @@ class Button_hover(_Button):
                     else:
                         self.fill_color = self.color1
                         self._flag_state = 1
+                        # print("kkkkkkkkkkkkkkk")
                         self.draw()
                 elif self._flag_state == 1:
                     pass
