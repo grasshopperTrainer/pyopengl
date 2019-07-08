@@ -107,7 +107,7 @@ class UCD():
             p = self.get_this_properties(function.__self__)
             l = p['pre_get_callback']
             if function not in l:
-                l.append((function,input))
+                l.insert((function, input))
         else:
             raise TypeError('input is not a callable')
 

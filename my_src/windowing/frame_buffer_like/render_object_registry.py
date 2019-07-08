@@ -1,6 +1,6 @@
 import weakref
 from collections import namedtuple
-from windowing.renderer.renderer_template import Render_unit
+from windowing.renderer.renderer_template import Renderer_template
 
 class Render_object_registry:
 
@@ -20,7 +20,7 @@ class Render_object_registry:
         if self._counter ^ self._counter_max == 0  and len(self._candidate) == 0:
             raise IndexError('register is fully filled')
 
-        if isinstance(object, Render_unit):
+        if isinstance(object, Renderer_template):
             if object not in self._collections:
                 if len(self._candidate) == 0:
                     id = self._counter
@@ -30,6 +30,7 @@ class Render_object_registry:
                 self._collections[object] = self._structure(id, False)
         else:
             raise TypeError
+        return self.id_color(object)
 
     def id(self, object):
         return self._collections[object].id
@@ -38,7 +39,7 @@ class Render_object_registry:
         inte = self._collections[object].id
         inte = format(inte,'06x')
         color= [int(f'0x{inte[i*2:i*2+2]}',16)/255 for i in range(3)]
-        return color
+        return color + [1,]
 
     def color_id(self, color):
         hex = bytearray(color).hex()
@@ -51,3 +52,6 @@ class Render_object_registry:
         for o,i in self._collections.items():
             if i.id == id:
                 return o
+
+    def __del__(self):
+        print(f'gc, Render_object_registry {self}')

@@ -1,6 +1,8 @@
 from collections import OrderedDict
 import weakref
-
+# from .my_openGL.glfw_gl_tracker import GLFW_GL_tracker
+from .frame_buffer_like.frame_buffer_like_bp import FBL
+import glfw
 class Windows:
     """
     Collector of Window objects.
@@ -8,8 +10,11 @@ class Windows:
     ^is this necessary?
     """
     windows = OrderedDict()
+    test_dic = weakref.WeakKeyDictionary()
+    # windows_z = dict()
     iter_count = 0
     _current_window = None
+
     def __init__(self):
         self.windows = self.__class__.windows # just a redirector
         self.iter_count = self.__class__.iter_count # just a redirector
@@ -24,26 +29,33 @@ class Windows:
 
     # removes from dict
     def __delattr__(self, item):
-        self.windows.pop(item.instance_name)
-    def __sub__(self, other):
-        del self.windows[other.instance_name]
+        self.windows.pop(item.name)
+
+    def __sub__(self, dwindow):
+
+        del self.windows[dwindow.name]
+
 
     # append to dict
     def __add__(self, other):
         # check name unique
-        if other.instance_name in self.windows.keys():
+        if other.name in self.windows.keys():
             count = 1
             keys = self.windows.keys()
             while True:
-                key = other.instance_name+str(count)
+                key = other.name+str(count)
                 if key in keys:
                     count += 1
                 else:
                     break
         else:
-            key = other.instance_name
-        other._instance_name = key
+            key = other.name
+
+        other._name = key
         self.windows[key] = other
+        self.test_dic[other] = key
+        # self._current_window = other
+        # self.set_window_z_position(other, 0)
 
     # iteration, return window object
     def __iter__(self):
@@ -64,7 +76,25 @@ class Windows:
 
     @classmethod
     def set_current(cls, window):
-        cls._current_window = window
+        if window is None:
+            cls._current_window = None
+        else:
+            cls._current_window = weakref.ref(window)
+
     @classmethod
     def get_current(cls):
-        return cls._current_window
+        if cls._current_window is None:
+            return None
+        else:
+            if cls._current_window() is None:
+                cls._current_window = None
+                return None
+            else:
+                return cls._current_window()
+
+    @classmethod
+    def has_window_named(cls, name):
+        if name in cls.windows:
+            return True
+        else:
+            return False

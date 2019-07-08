@@ -211,7 +211,7 @@ class ImageDraw(object):
 
     def shape(self, shape, fill=None, outline=None):
         """(Experimental) Draw a shape."""
-        shape.close()
+        shape.config_window_close()
         ink, fill = self._getink(outline, fill)
         if fill is not None:
             self.draw.draw_outline(shape, fill, 1)

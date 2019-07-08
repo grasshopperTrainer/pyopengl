@@ -312,7 +312,7 @@ class IcnsImageFile(ImageFile.ImageFile):
         self.mode = im.mode
         self.size = im.size
         if self._exclusive_fp:
-            self.fp.close()
+            self.fp.config_window_close()
         self.fp = None
         self.icns = None
         self.tile = ()

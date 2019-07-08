@@ -180,7 +180,7 @@ class ImImageFile(ImageFile.ImageFile):
                 # combined into a list of strings.
                 if k == COMMENT:
                     if k in self.info:
-                        self.info[k].append(v)
+                        self.info[k].insert(v)
                     else:
                         self.info[k] = [v]
                 else:
@@ -295,7 +295,7 @@ class ImImageFile(ImageFile.ImageFile):
     def _close__fp(self):
         try:
             if self.__fp != self.fp:
-                self.__fp.close()
+                self.__fp.config_window_close()
         except AttributeError:
             pass
         finally:

@@ -1,5 +1,5 @@
 from windowing.window import Window
-from windowing.unnamedGUI.box import Box
+from windowing.unnamedGUI.box import _Button
 import weakref
 
 class Test_gui:
@@ -11,10 +11,10 @@ class Test_gui:
             top = Window(1000,200,'top bar', None,None)
             @top.init
             def kkk():
-                from windowing.unnamedGUI.box import Box
-                box1 = Box(0,0,100,100)
-                box2 = Box(100,0,100,100)
-                box3 = Box(200,0,100,100)
+                from windowing.unnamedGUI.box import _Button
+                box1 = _Button(0, 0, 100, 100)
+                box2 = _Button(100, 0, 100, 100)
+                box3 = _Button(200, 0, 100, 100)
 
             @top.draw
             def kkk():

@@ -1,6 +1,5 @@
 import numpy as np
 
-from patterns.update_check_descriptor import UCD
 from ..frame_buffer_like.frame_buffer_like_bp import FBL
 
 class _Camera:
@@ -10,15 +9,6 @@ class _Camera:
     to form ViewMatrix(VM) and ProjectionMatrix(PM).
     VM and PM is referenced by (class) RenderUnit.update_variables and passed to opengl shader.
     """
-    near = UCD()
-    far = UCD()
-    left = UCD()
-    right = UCD()
-    bottom = UCD()
-    top = UCD()
-
-    VM = UCD() # View Matrix
-    PM = UCD() # Projection Matrix
 
     def __init__(self, viewport):
         self._viewport = viewport
@@ -30,16 +20,15 @@ class _Camera:
         self._far = 100
         # render range of xy plane
         self._left = 0
-        self._right = viewport.abs_width
+        self._right = viewport.pixel_w
         self._bottom = 0
-        self._top = viewport.abs_height
+        self._top = viewport.pixel_h
 
         self.scale_factor = [1,1,1]
 
         # to make PM just in time set refresh function
-        self.PM.set_pre_get_callback(self.build_PM)
-        self.PM = np.eye(4)
-        self.VM = np.eye(4)
+        self._PM = np.eye(4)
+        self._VM = np.eye(4)
 
     @property
     def near(self):
@@ -70,7 +59,7 @@ class _Camera:
         # move camera
         matrix = np.eye(4)
         matrix[:, 3] = -x, -y, -z, 1
-        self.VM = matrix.dot(self.VM)
+        self._VM = matrix.dot(self._VM)
 
     def rotate(self, x, y, z, radian=False):
         if radian:
@@ -161,9 +150,9 @@ class _Camera:
             self._far = 100
             # render range of xy plane
             self._left = 0
-            self._right = self._viewport.abs_width
+            self._right = self._viewport.pixel_w
             self._bottom = 0
-            self._top = self._viewport.abs_height
+            self._top = self._viewport.pixel_h
         else:
             self._near = 1
             self._far = 1000000
@@ -173,23 +162,29 @@ class _Camera:
             self._bottom = -1
 
         self.build_PM()
+    @property
+    def PM(self):
+        self.build_PM()
+        return self._PM
+    @property
+    def VM(self):
+        return self._VM
 
     def build_PM(self, major='v'):
 
         # need to find correct filter condition
         if True:
             vp = self._viewport
-            if vp.abs_height == 0 or vp.abs_height == 0:
+            if vp.pixel_h == 0 or vp.pixel_h == 0:
                 return
 
             if self._mode == 0 or self._mode == 1:
                 if major == 'v':
-                    ratio = vp.abs_width/vp.abs_height
+                    ratio = vp.pixel_w / vp.pixel_h
                     distance = self._top - self._bottom
                     self._right, self._left = distance * ratio / 2, -distance * ratio / 2
-
                 elif major == 'h':
-                    ratio = vp.abs_height/vp.abs_width
+                    ratio = vp.pixel_h / vp.pixel_w
                     distance = self._right - self._left
                     self._top, self._bottom = distance * ratio / 2, -distance * ratio / 2
                 else:
@@ -198,14 +193,14 @@ class _Camera:
                 n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
                 if self._mode == 0:
                     if r == -l and t == -b:
-                        self.PM = np.array(
+                        self._PM = np.array(
                             [[1 / r, 0, 0, 0],
                              [0, 1 / t, 0, 0],
                              [0, 0, -2 / (f - n), -(f + n) / (f - n)],
                              [0, 0, 0, 1]])
 
                     else:
-                        self.PM = np.array(
+                        self._PM = np.array(
                             [[2 / (r - l), 0, 0, -(r + l) / (r - l)],
                              [0, 2 / (t - b), 0, -(t + b) / (t - b)],
                              [0, 0, -2 / (f - n), -(f + n) / (f - n)],
@@ -213,14 +208,14 @@ class _Camera:
 
                 else:
                     if r == -l and t == -b:
-                        self.PM = np.array(
+                        self._PM = np.array(
                             [[n / r, 0, 0, 0],
                              [0, n / t, 0, 0],
                              [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
                              [0, 0, -1, 0]])
 
                     else:
-                        self.PM = np.array(
+                        self._PM = np.array(
                             [[2 * n / (r - l), 0, (r + l) / (r - l), 0],
                              [0, 2 * n / (t - b), (t + b) / (t - b), 0],
                              [0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)],
@@ -231,15 +226,15 @@ class _Camera:
                 # self.near = 0
                 # self.far = 100
                 # self.left = 0
-                # self.right = self._viewport.abs_width*self.scale_factor[0]
+                self._right = self._viewport.pixel_w * self.scale_factor[0]
                 # self.bottom = 0
-                # self.top = self._viewport.abs_height*self.scale_factor[1]
+                self._top = self._viewport.pixel_h * self.scale_factor[1]
 
                 n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
                 # if self._viewport._mother.window.name == 'third':
                 #     print('windowsize', self._viewport._mother.window.size)
                 #     print(n,f,l,r,b,t)
-                self.PM = np.array(
+                self._PM = np.array(
                     [[2 / (r - l), 0, 0, -(r + l) / (r - l)],
                      [0, 2 / (t - b), 0, -(t + b) / (t - b)],
                      [0, 0, -2 / (f - n), -(f + n) / (f - n)],

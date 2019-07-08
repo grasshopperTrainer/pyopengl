@@ -1,98 +1,242 @@
 from ..renderer.renderer_template import Renderer_builder
 from patterns.update_check_descriptor import UCD
-from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+from ..window import Window
+from ..callback_repository import Callback_repository
+# from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
+# from windowing.my_openGL.glfw_gl_tracker import GLFW_GL_tracker
+import weakref
+from collections import namedtuple
+from ..matryoshka_coordinate_system import Matryoshka_coordinate_system
 
+class Box(Matryoshka_coordinate_system):
 
-class Box:
-    """
-    """
-    c = Renderer_builder()
-    c.use_shader(c.Shader('BRO_rectangle'))
-    c.use_triangle_strip_draw()
-    c.use_index_buffer(c.Indexbuffer((0,1,3,3,1,2)))
+    def __init__(self, posx, posy, width, height, window=None, viewport=None):
+        super().__init__(posx,posy,width,height)
 
-    c.use_render_unit(vao=True, vbo=True)
+        if window != None:
+            self._window = weakref.ref(window)
+        else:
+            self._window = None
 
-    renderer = c()
+        if viewport != None:
+            self._viewport = weakref.ref(viewport)
+        else:
+            self._viewport = None
 
-    _posx = UCD()
-    _posy = UCD()
-    _width = UCD()
-    _height = UCD()
+        if viewport == None:
+            if window != None:
+                self.is_child_of(window)
+        else:
+            self.is_child_of(viewport)
 
-    _abs_posx = UCD()
-    _abs_posy = UCD()
-    _abs_width = UCD()
-    _abs_height = UCD()
+        self._flag_draw = True
+        self._flag_state = 0
 
-    def __init__(self,posx, posy, width, height):
-        print('gui box')
-        self.unit = self.renderer.new_render_unit()
-        self._posx = posx
-        self._posy = posy
-        self._width = width
-        self._height = height
-
-        self._abs_posx = None
-        self._abs_posy = None
-        self._abs_width = None
-        self._abs_height = None
-
-        self._color1 = 1,1,1,1
-        self._color2 = 1,0,1,1
-        self._draw_color = self._color1
 
     def draw(self):
-        self.unit.properties['a_position'][0:4] = self.vertex
-        self.unit.properties['u_fillcol'] = self._draw_color
-        self.renderer._draw_(self.unit)
+        pass
+
+    def is_mother_of(self, *objects):
+        super().is_mother_of(*objects)
+        for child in objects:
+            child.set_window(self.window)
+            child.set_viewport(self.viewport)
+
+    # def set_window(self, window):
+    #     if window != None:
+    #         self._window = weakref.ref(window)
+
+    def set_viewport(self, viewport):
+        if viewport != None:
+            self._viewport = weakref.ref(viewport)
+
+    def copy(self):
+        """
+        copy for new position and size
+        :return:
+        """
+        pass
+
+    def reset_state(self):
+        self._flag_state = 0
+
+    def reset_all_state(self):
+        self._flag_state = 0
+        for box in self._children:
+            box.reset_all_state()
+
+    def disable_all_draw(self):
+        self._flag_draw = False
+        for box in self._children:
+            box.disable_all_draw()
+
+    def enable_all_draw(self):
+        self._flag_draw = True
+        for box in self._children:
+            box.enable_all_draw()
+
+    def switch_all_draw(self):
+        self._flag_draw = not self._flag_draw
+        for box in self._children:
+            box.switch_all_draw()
 
     @property
-    def vertex(self):
-        a = self.abs_posx, self.abs_posy
-        b = self.abs_posx+self.abs_width, self.abs_posy
-        c = self.abs_posx+self.abs_width, self.abs_posy+self.abs_height
-        d = self.abs_posx, self.abs_posy+self.abs_height
-        return a,b,c,d
-
-    def switch_color(self):
-        if self._draw_color == self._color1:
-            self._draw_color = self._color2
-        else:
-            self._draw_color = self._color1
-        # self.draw()
-    @property
-    def abs_posx(self):
-        if isinstance(self._posx, float):
-            self._abs_posx = self._posx*1
-            return self._abs_posx
-        else:
-            self._abs_posx = self._posx
-            return self._abs_posx
+    def viewport(self):
+        if self._viewport != None:
+            return self._viewport()
+        return None
 
     @property
-    def abs_posy(self):
-        if isinstance(self._posy, float):
-            self._abs_posy = self._posy*1
-            return self._abs_posy
-        else:
-            self._abs_posy = self._posy
-            return self._abs_posy
+    def window(self):
+        if self._window != None:
+            return self._window()
+        return None
+
+class Filled_box(Box):
+    """
+            one renderer should have one shader.
+            but this can be called from several plces...
+            when initiating ... like first_rect = TestBRO()
+            how to make calling free???
+            """
+    renderer = Renderer_builder()
+    renderer.use_shader(renderer.Shader('basic_gui_box'))
+    renderer.use_triangle_strip_draw()
+    renderer.use_index_buffer(renderer.Indexbuffer((0, 1, 3, 3, 1, 2)))
+
+    renderer.use_render_unit(vao=True, vbo=True)
+
+    def __init__(self,posx, posy, width, height, window=None, viewport=None):
+        super().__init__(posx, posy, width, height, window, viewport)
+
+        self._unit = self.renderer()
+        self._unit.shader_io.resize(4)
+
+        self._fill_color = 1,1,1,1
 
     @property
-    def abs_width(self):
-        if isinstance(self._width, float):
-            self._abs_width = self._width*1
-            return self._abs_width
-        else:
-            self._abs_width = self._width
-            return self._abs_width
-
+    def fill_color(self):
+        return self._fill_color
+    @fill_color.setter
+    def fill_color(self, color):
+        self._fill_color = color
     @property
-    def abs_height(self):
-        if isinstance(self._height, float):
-            self._abs_height = self._height*1
-            return self._abs_posx
-        else:
-            self._abs_height = self._height
-            return self._height
+    def unit(self):
+        return self._unit
+
+    def set_fill_color(self, *rgba):
+        if len(rgba) != 4:
+            raise
+        elif not all([isinstance(c, (int, float)) for c in rgba]):
+            raise
+
+        self._fill_color = rgba
+
+    def draw(self):
+        if self._flag_draw:
+            if self.viewport != None:
+                with self.viewport:
+                    self._unit.shader_io.a_position = self.vertex()
+                    self._unit.shader_io.u_fillcol = self._fill_color
+
+                    self._unit._draw_()
+
+class Block(Filled_box):
+    # TODO maybe need do-not-color
+    def __init__(self, posx, posy, width, height, window=None, viewport=None):
+        super().__init__(posx,posy,width,height, window, viewport)
+
+        callbacks = ['state_change']
+        self._callback_repo = Callback_repository(window, callbacks)
+
+    # def append_horizontal(self, *boxes, row = 0):
+    #     """
+    #     :param boxes:
+    #     :param absolute_pos:
+    #     :return:
+    #     """
+    #     if len(self._children) < row + 1:
+    #         for i in range(row + 1 - len(self._children)):
+    #             self._children.append([])
+    #
+    #     row = self._children[row]
+    #     print(self._children,row)
+    #     for box in boxes:
+    #         if isinstance(box, Box):
+    #             if self._window != None:
+    #                 box.set_window(self.window)
+    #             if self._viewport != None:
+    #                 box.set_viewport(self.viewport)
+    #             box.set_reference(self)
+    #
+    #             # row.append(box)
+    #         else:
+    #             raise
+    #     print(row)
+    #     print(self._children)
+    #     exit()
+
+    def draw(self):
+        super().draw()
+        for child in self._children:
+            child.draw()
+        # else:
+        #     for child in self._children:
+        #         print('child draw', child)
+        #         child.draw()
+
+    def set_vertical(self, *boxes):
+        pass
+
+    def set_state_change(self):
+        pass
+
+    # def align_horrizontal(self, *objects, bottom_top=0):
+    #
+    #     if len(objects) == 0:
+    #         objects = self._children
+    #     # print(objects)
+    #     # exit()
+    #     # reference vertice for alignment
+    #     if bottom_top == 0:
+    #         ref_pos = [a-b for a,b in zip(objects[0].vertex(1), self.vertex(0))]
+    #     else:
+    #         ref_pos = [a-b for a,b in zip(objects[0].vertex(2), self.vertex(0))]
+    #
+    #     for child in objects[1:]:
+    #         if bottom_top == 0:
+    #             child.posx, child.posy = [a/b for a,b in zip(ref_pos, self.pixel_size)]
+    #             # print(self.vertex())
+    #             # print(ref_pos)
+    #             # exit()
+    #             ref_pos = [a-b for a,b in zip(child.vertex(1), self.vertex(0))]
+    #         else:
+    #             dist = [a-b for a,b in zip(ref_pos, child.vertex(3))]
+    #             child.posx, child.posy = [int(a+b) for a,b in zip(dist, child.vertex(0))]
+    #             ref_pos = [a-b for a,b in zip(child.vertex(2), self.vertex(0))]
+    #
+    # def align_vertical(self, *objects_to_align, left_right = 0, offset = (0,0)):
+    #     # print('aligning vertical')
+    #     # print(self.vertex())
+    #     # print(self.pixel_posx, self.pixel_posy, self.pixel_width,self.pixel_height)
+    #     # print()
+    #     ref_pos = [a+b for a,b in zip(self.vertex(0), offset)]
+    #     for object in objects_to_align:
+    #         object.set_reference(self)
+    #         # print(object._posx, object._posy)
+    #         # print(object.vertex())
+    #         # object._posx, object._posy = ref_pos
+    #         # print(object._posx, object._posy)
+    #         # print(object.vertex())
+    #         # if left_right == 0:
+    #         #     ref_pos = object.pixel_width, object.pixel_height
+    #         #
+    #         # elif left_right == 1:
+    #         #     # ref_pos = object.vertex(2)
+    #         #     pass
+
+class Block_expandable(Block):
+
+    pass
+
+

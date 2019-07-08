@@ -1,0 +1,1696 @@
+import weakref
+import inspect
+import numpy as np
+import ctypes
+from collections import namedtuple
+import contextlib
+
+import glfw
+
+import OpenGL.GL as gl
+# import OpenGL.
+from windowing.windows import Windows
+
+class Hollow_context:
+    def __getattribute__(self, item):
+        return lambda *x,**y: x
+
+class Object:
+    def __init__(self, id, objects):
+        self.id = id
+        self.objects = objects
+        self.attributes = {}
+
+    def new_attribute(self, pname, value):
+        self.attributes[pname] = value
+    def append_attribute(self, pname, value):
+        if pname not in self.attributes:
+            self.attributes[pname] = []
+        if not isinstance(self.attributes[pname], list):
+            self.attributes[pname] = [self.attributes[pname], ]
+
+        self.attributes[pname].append(value)
+
+    @property
+    def bound_targets(self):
+        targets = []
+        for n,t in self.objects.targets.items():
+            if t.object == self:
+                targets.append(t)
+        return targets
+
+class Objects:
+    _debug = True
+    def __init__(self, name):
+        self.name = name
+        self.collection = {}
+        self.targets = {}
+        self.slots = {}
+        self.active = None
+
+        self.collection[0] = Object(0, self)
+        self.bind(0)
+
+    def generate(self, id):
+        try:
+            id = int(id)
+            self.collection[id] = Object(id, self)
+            # if self.name == 'vertex_arrays' and id == 2:
+            #     raise
+            self.dprint(f'gl, {self.name} {id} created')
+        except:
+            ids = list(id)
+            for id in ids:
+                id = int(id)
+                self.collection[id] = Object(id,self)
+                self.dprint(f'gl, {self.name} {id} created')
+
+    def binding(self, target = None):
+        # if target not in self.targets:
+        #     print(self.targets[None])
+        #     raise
+        # print(self.targets[None].id)
+        if target not in self.targets:
+            class Hollow:
+                id = None
+            return Hollow
+        return self.targets[target]
+
+    def bind(self, id, target = None):
+        """
+        None is for general binding.
+        Else are for specific target.
+
+        :param id:
+        :param target:
+        :return:
+        """
+        # if target not in self.targets:
+        #     self.targets[target] = self.collection[id]
+        # else:
+        self.targets[target] = self.collection[id]
+
+        self.active = self.collection[id]
+        # self.active = self.collection[id]
+        # if self.active is not None:
+        #     self.targets[self.active].bind(self.collection[id])
+
+    def activate_slot(self, slot):
+        if slot not in self.targets:
+            self.targets[slot] = Target(slot)
+        self.active = slot
+
+    def remove(self, ids):
+        if not isinstance(ids, (tuple, list)):
+            ids = [ids, ]
+        for id in ids:
+            id = int(id)
+            # print(self.name, id, type(id), type(list(self.collection.keys())[0]), self.collection)
+            # print(self.collection[id])
+            try:
+                del self.collection[id]
+                self.dprint(f'gl, {self.name} {id} deleted')
+            except Exception as e:
+                self.dprint(f'gl, {self.name} {id} delete error')
+                raise
+    @classmethod
+    def dprint(cls, str):
+        if cls._debug:
+            print(str)
+
+class Vertex_arrays:
+    _debug = True
+
+    def __init__(self, name):
+        self.collection = {}
+        self.bound = None
+
+    def generate(self, id):
+        self.collection[id] = {'vertex_buffer':None, 'index_buffer':None}
+
+    @property
+    def binding(self, target):
+        pass
+
+    def bind(self, id, target=None):
+        self.bound = id
+
+    def remove(self, ids):
+        pass
+
+class Target:
+    def __init__(self, name):
+        self.name = name
+        self.object = None
+
+    def bind(self, object):
+        if isinstance(object, Object):
+            self.object = object
+        else:
+            raise
+
+    @property
+    def binding(self):
+        return self.object
+
+    def __str__(self):
+        return f'<target object of {self.name}>'
+
+class Unique_glfw_context:
+    """
+    Stores opengl binding state.
+
+    Please store the object withint glfw.contex wrapping class object
+    as a representation of unique glfw.context.
+
+    There are two main purpose of the class.
+    1. To store gl info such as generated buffers and currently bound
+    buffers and other info good to be logged.
+
+    2. This object represents a unique glfw context, meaning shared
+    glfw contexts will contain one GL_tracker object. The characteristics
+    of uniqueness is built for the reasons:
+        1) Couldn't find a way to extract unique glfw object(with unique id,
+           ex) glfw.get_current_context() doesn't return glfw context object
+           generated by glfw.create_window()).
+        2) Think glfw.context doesn't store its other shared contexts.
+
+    """
+    # instance dict of the trackers bound with FBL(Window) object
+    _windows = weakref.WeakKeyDictionary()
+    _instances = weakref.WeakSet()
+    # _windows = {}
+    _current = None
+
+    @classmethod
+    def get_instances(cls):
+        to_remove = []
+        for context in cls._instances:
+            if len(context.get_shared_windows()) == 0:
+                to_remove.append(context)
+        for i in to_remove:
+            cls._instances.remove(i)
+
+        return cls._instances
+
+    def __init__(self, bound_object):
+        # store instance
+        self.__class__._windows[bound_object] = self
+        self._instances.add(self)
+        self._render_buffers = Objects('render_buffers')
+        self._textures = Objects('textures')
+        self._frame_buffers = Objects('frame_buffers')
+        self._programs = Objects('programs')
+        self._shaders = Objects('shaders')
+        self._buffers = Objects('buffers')
+        self._vertex_arrays = Objects('vertex_arrays')
+
+        self._temp_windows = []
+
+        self._render_unit_stack = set()
+
+    def give_tracker_to(self, window):
+        """
+        Stores new Window object and returns self.
+        Different windows sharing one tracker means
+        their glfw.context is shared.
+
+        :param window: fbl.window object to give to
+        :return: object of tracker
+        """
+        self._windows[window] = self
+        if not self._spec_vertex_array_shared:
+            print('copying vertex array')
+            glfw.make_context_current(window.glfw_window)
+            for vao in self._vertex_arrays.collection.values():
+                attributes = vao.attributes
+                if vao.id != 0:
+                    while True:
+                        index = gl.glGenVertexArrays(1)
+                        if index == vao.id:
+                            break
+                    # TODO seems like this is useless, need to build tester for this?
+                    # gl.glBindVertexArray(vao.id)
+                    # for i in vao.attributes.items():
+                    #     print(i)
+                    # if gl.GL_ARRAY_BUFFER in attributes:
+                    #     gl.glBindBuffer(gl.GL_ARRAY_BUFFER, attributes[gl.GL_ARRAY_BUFFER])
+                    # # if self.glVertexAttribPointer in attributes:
+                    # #     for index, values in attributes[self.glVertexAttribPointer].items():
+                    # #         gl.glEnableVertexAttribArray(index)
+                    # #         gl.glVertexAttribPointer(*values)
+                    # if gl.GL_ELEMENT_ARRAY_BUFFER in attributes:
+                    #     gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, attributes[gl.GL_ELEMENT_ARRAY_BUFFER])
+
+            # gl.glBindVertexArray(0)
+            # exit()
+            # exit()
+
+            # remove unexistant
+            index_list = list(self._vertex_arrays.collection.keys())
+            index_list.sort()
+            last = index_list[-1]
+            range_index = set(range(last+1))
+            to_remove = range_index.difference(set(index_list))
+            gl.glDeleteVertexArrays(len(to_remove), list(to_remove))
+
+        return self
+
+    def print_current_binding(self):
+        print(f'current binding of glfw context {self}')
+        print(f'    program           : {self._programs.binding().id}')
+        print(f'    vertex array      : {self._vertex_arrays.binding().id}')
+        print(f'    index buffer      : {self._buffers.binding(gl.GL_ELEMENT_ARRAY_BUFFER).id}')
+        print(f'    vertex buffer     : {self._buffers.binding(gl.GL_ARRAY_BUFFER).id}')
+        print(f'    frame buffer draw : {self._frame_buffers.binding(gl.GL_DRAW_FRAMEBUFFER).id}')
+        print(f'                 read : {self._frame_buffers.binding(gl.GL_READ_FRAMEBUFFER).id}')
+        print(f'    render buffer     : {self._render_buffers.binding().id}')
+        print(f'    texture           : {self._textures.binding()}')
+
+    def print_full_info(self):
+        # print()
+        # windows = []
+        # for w,c in self.__class__._windows.items():
+        #     if c is self:
+        #         windows.append(w)
+        # print(f"OpenGL CONTEXT INFO of {'window' if len(windows) == 1 else 'windows'}:")
+        # windows = str([i.name for i in windows])
+        # print(f'{windows: >{len(windows)+4}}')
+        # print()
+        #
+        # for i in self.objet_list:
+        #     for ii in i.format_generated():
+        #         print(ii)
+        #     print(i.collection)
+        #     print()
+        pass
+
+    def stack_render_unit(self, unit):
+        self._render_unit_stack.add(unit)
+    def render_unit_stack_reset(self):
+        self._render_unit_stack = set()
+    @property
+    def instances(self):
+        return list(self._instances)
+
+    @classmethod
+    def remove(cls, window):
+        del cls._windows[window]
+
+    @classmethod
+    def set_current(cls, object):
+        if object is None:
+            cls._current = None
+        cls._current = weakref.ref(object)
+
+    @classmethod
+    def get_current(cls):
+        if cls._current is None:
+            return None
+        else:
+            if cls._current() is None:
+                cls._current = None
+                return None
+            else:
+                return cls._current()
+
+    def get_shared_windows(self):
+        window_list = []
+        for w,c in self._windows.items():
+            if c == self:
+                window_list.append(w)
+        return window_list
+
+    def __str__(self):
+        return f'gl context of glfw window{"s"} {[i.__str__() for i in self.get_shared_windows()]}'
+
+    def __enter__(self):
+        # if Windows.get_current() is None:
+        #     # return Hollow_context()
+        #     for w,c in self._windows.items():
+        #         if c == self:
+        #             w.make_window_current()
+        #             return self
+        #     return Hollow_context()
+        #
+        # elif Windows.get_current() not in self.get_shared_windows():
+        #     self._temp_windows.append(Windows.get_current())
+        self.set_current(self)
+        if len(self.get_shared_windows()) != 0:
+            win = self.get_shared_windows()[0]
+            if Windows.get_current() != win:
+                win.make_window_current()
+            return self #type:Unique_glfw_context
+        else:
+            return Hollow_context()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # if len(self._temp_windows) != 0:
+        #     win_to_restore = self._temp_windows.pop(-1)
+        #     if win_to_restore != None:
+        #         win_to_restore.make_window_current()
+        pass
+
+    """
+        Collection of openGL functions and constants.
+        Will be appended as other functions gets needed.
+
+        *WARNING
+        Be conservative modifying openGL functions in any ways.
+        This binder class is built primarily to hijack openGL function call and
+        log info with glfw context. Some automation can be made but modifying
+        name of function, name of parameter, number of parameters is not recommended.
+        Can cause confusion to general users referencing issued openGL specification.
+        """
+    _debug = True
+
+    original_gl = gl
+    # clear
+    GL_COLOR_BUFFER_BIT = gl.GL_COLOR_BUFFER_BIT
+    GL_DEPTH_BUFFER_BIT = gl.GL_DEPTH_BUFFER_BIT
+    GL_STENCIL_BUFFER_BIT = gl.GL_STENCIL_BUFFER_BIT
+
+    # test glEnable...
+    GL_SCISSOR_TEST = gl.GL_SCISSOR_TEST
+    GL_DEPTH_TEST = gl.GL_DEPTH_TEST
+    GL_STENCIL_TEST = gl.GL_STENCIL_TEST
+    GL_STENCIL_BITS = gl.GL_STENCIL_BITS
+    GL_STENCIL_INDEX = gl.GL_STENCIL_INDEX
+    GL_STENCIL_INDEX16 = gl.GL_STENCIL_INDEX16
+    GL_SCISSOR_BOX = gl.GL_SCISSOR_BOX
+
+    # operation
+    GL_KEEP = gl.GL_KEEP
+    GL_ZERO = gl.GL_ZERO
+    GL_REPLACE = gl.GL_REPLACE
+    GL_INCR = gl.GL_INCR
+    GL_INCR_WRAP = gl.GL_INCR_WRAP
+    GL_DECR = gl.GL_DECR
+    GL_DECR_WRAP = gl.GL_DECR_WRAP
+    GL_INVERT = gl.GL_INVERT
+    # functions ex) stencil
+    GL_NEVER = gl.GL_NEVER
+    GL_LESS = gl.GL_LESS
+    GL_LEQUAL = gl.GL_LEQUAL
+    GL_GREATER = gl.GL_GREATER
+    GL_GEQUAL = gl.GL_GEQUAL
+    GL_EQUAL = gl.GL_EQUAL
+    GL_NOTEQUAL = gl.GL_NOTEQUAL
+    GL_ALWAYS = gl.GL_ALWAYS
+
+    # color blending
+    GL_BLEND = gl.GL_BLEND
+    GL_SRC_ALPHA = gl.GL_SRC_ALPHA
+    GL_ONE_MINUS_SRC_ALPHA = gl.GL_ONE_MINUS_SRC_ALPHA
+
+    # draw setting
+    GL_DYNAMIC_DRAW = gl.GL_DYNAMIC_DRAW
+    GL_STATIC_DRAW = gl.GL_STATIC_DRAW
+
+    # element_draw modes
+    GL_TRIANGLE_STRIP = gl.GL_TRIANGLE_STRIP
+
+    # value types
+    GL_TRUE = gl.GL_TRUE
+    GL_FALSE = gl.GL_FALSE
+
+    GL_UNSIGNED_BYTE = gl.GL_UNSIGNED_BYTE
+    GL_UNSIGNED_SHORT = gl.GL_UNSIGNED_SHORT
+    GL_UNSIGNED_INT = gl.GL_UNSIGNED_INT
+
+    GL_INT = gl.GL_INT
+    GL_FLOAT = gl.GL_FLOAT
+
+    # shader
+    GL_VERTEX_SHADER = gl.GL_VERTEX_SHADER
+    GL_FRAGMENT_SHADER = gl.GL_FRAGMENT_SHADER
+    GL_COMPILE_STATUS = gl.GL_COMPILE_STATUS
+
+    # array buffer
+    GL_ARRAY_BUFFER = gl.GL_ARRAY_BUFFER
+    GL_ARRAY_BUFFER_BINDING = gl.GL_ARRAY_BUFFER_BINDING
+    GL_ELEMENT_ARRAY_BUFFER = gl.GL_ELEMENT_ARRAY_BUFFER
+    GL_ELEMENT_ARRAY_BUFFER_BINDING = gl.GL_ELEMENT_ARRAY_BUFFER_BINDING
+
+    # frame buffer
+    GL_FRAMEBUFFER = gl.GL_FRAMEBUFFER
+    GL_DRAW_FRAMEBUFFER = gl.GL_DRAW_FRAMEBUFFER
+    GL_READ_FRAMEBUFFER = gl.GL_READ_FRAMEBUFFER
+    GL_FRAMEBUFFER_COMPLETE = gl.GL_FRAMEBUFFER_COMPLETE
+    GL_DEPTH_ATTACHMENT = gl.GL_DEPTH_ATTACHMENT
+    GL_STENCIL_ATTACHMENT = gl.GL_STENCIL_ATTACHMENT
+
+    #
+    GL_RENDERBUFFER = gl.GL_RENDERBUFFER
+
+    # get_string
+    GL_VERSION = gl.GL_VERSION
+    GL_VENDOR = gl.GL_VENDOR
+    GL_RENDERER = gl.GL_RENDERER
+
+    # texture format
+    GL_RGBA = gl.GL_RGBA
+    GL_RGB = gl.GL_RGB
+    GL_RGBA8 = gl.GL_RGBA8
+    GL_R = gl.GL_R
+
+    # depth stencil internal format
+    GL_DEPTH_COMPONENT = gl.GL_DEPTH_COMPONENT
+    GL_DEPTH_COMPONENT16 = gl.GL_DEPTH_COMPONENT16
+    GL_DEPTH_COMPONENT24 = gl.GL_DEPTH_COMPONENT24
+    GL_DEPTH_COMPONENT32 = gl.GL_DEPTH_COMPONENT32
+    GL_DEPTH_COMPONENT32F = gl.GL_DEPTH_COMPONENT32F
+
+    GL_STENCIL_COMPONENTS = gl.GL_STENCIL_COMPONENTS
+    GL_DEPTH24_STENCIL8 = gl.GL_DEPTH24_STENCIL8
+    GL_DEPTH32F_STENCIL8 = gl.GL_DEPTH32F_STENCIL8
+
+    GL_DEPTH_STENCIL = gl.GL_DEPTH_STENCIL
+    GL_STENCIL_INDEX1 = gl.GL_STENCIL_INDEX1
+    GL_STENCIL_INDEX4 = gl.GL_STENCIL_INDEX4
+    GL_STENCIL_INDEX8 = gl.GL_STENCIL_INDEX8
+    GL_STENCIL_INDEX16 = gl.GL_STENCIL_INDEX16
+
+    #
+    GL_BACK = gl.GL_BACK
+    GL_FRONT = gl.GL_FRONT
+    GL_FRONT_AND_BACK = gl.GL_FRONT_AND_BACK
+
+    # texture setting
+    GL_TEXTURE_2D = gl.GL_TEXTURE_2D
+    GL_TEXTURE_MIN_FILTER = gl.GL_TEXTURE_MIN_FILTER
+    GL_TEXTURE_MAG_FILTER = gl.GL_TEXTURE_MAG_FILTER
+    GL_TEXTURE_WRAP_S = gl.GL_TEXTURE_WRAP_S
+    GL_TEXTURE_WRAP_T = gl.GL_TEXTURE_WRAP_T
+    GL_TEXTURE_WRAP_R = gl.GL_TEXTURE_WRAP_R
+    GL_LINEAR = gl.GL_LINEAR
+    GL_REPEAT = gl.GL_REPEAT
+
+    GL_CURRENT_PROGRAM = gl.GL_CURRENT_PROGRAM
+    GL_ELEMENT_ARRAY_BUFFER_BINDING = gl.GL_ELEMENT_ARRAY_BUFFER_BINDING
+
+    GL_MAX_DRAW_BUFFERS = gl.GL_MAX_DRAW_BUFFERS
+    # texture slot
+    GL_TEXTURE0 = gl.GL_TEXTURE0
+    for i in range(1, 31):
+        exec(f'GL_TEXTURE{i} = gl.GL_TEXTURE{i}')
+
+    GL_COLOR_ATTACHMENT0 = gl.GL_COLOR_ATTACHMENT0
+    for i in range(1, 15):
+        exec(f'GL_COLOR_ATTACHMENT{i} = gl.GL_COLOR_ATTACHMENT{i}')
+    GL_MAX_COLOR_ATTACHMENTS = gl.GL_MAX_COLOR_ATTACHMENTS
+
+    # vertex array parameter
+    GL_VERTEX_ARRAY_BUFFER_BINDING = gl.GL_VERTEX_ARRAY_BUFFER_BINDING
+    GL_VERTEX_ARRAY_SIZE = gl.GL_VERTEX_ARRAY_SIZE
+    GL_VERTEX_ARRAY_BINDING = gl.GL_VERTEX_ARRAY_BINDING
+
+    GL_VERTEX_ARRAY_POINTER = gl.GL_VERTEX_ARRAY_POINTER
+
+    # for IDE hinting
+    _spec_buffer_shared = None
+    _spec_vertex_array_shared = None
+    _spec_shader_shared = None
+    _spec_program_shared = None
+    _spec_texture_shared = None
+    _spec_render_buffer_shared = None
+    _spec_frame_buffer_shared = None
+
+    @classmethod
+    def context_specification_check(cls):
+        """
+        Checks glfw, openGL operation and stores some info as class argument.
+
+        *Run once before creating any other glfw contexts.
+
+        :return: None
+        """
+
+        # checking shared openGL components under shared glfw contexts
+        # glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 4)
+        # glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
+        # glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
+
+        glfw.window_hint(glfw.VISIBLE, glfw.FALSE)  # don't show
+        first_win = glfw.create_window(10, 10, 'first', None, None)  # two test windows
+        second_win = glfw.create_window(10, 10, 'second', None, first_win)
+        glfw.window_hint(glfw.VISIBLE, glfw.TRUE)  # invalidate for real operation
+
+        objects = []
+        for w in first_win, second_win:
+            glfw.make_context_current(w)
+            d = {}
+            objects.append(d)
+            d['buffer'] = gl.glGenBuffers(1)
+            d['vertex_array'] = gl.glGenVertexArrays(1)
+            d['program'] = gl.glCreateProgram()
+            d['shader'] = gl.glCreateShader(gl.GL_VERTEX_SHADER)
+            d['texture'] = gl.glGenTextures(1)
+            d['render_buffer'] = gl.glGenRenderbuffers(1)
+            d['frame_buffer'] = gl.glGenFramebuffers(1)
+
+        print()
+        print('CONTEXT SPECIFICATION RESULT:')
+        longest_name_length = 0
+        for i in objects[0].keys():
+            if len(i) > longest_name_length:
+                longest_name_length = len(i)
+
+        # comparison: same value means component not shared between shared context
+        for f, s in zip(objects[0].items(), objects[1].items()):
+            name = f[0]
+            exec(f'cls._spec_{name}_shared = True if f[1] != s[1] else False')
+            result = 'SHARED' if f[1] != s[1] else 'NOT_SHARED'
+            print(f'    {name}{" " * (longest_name_length - len(name))} is {result}')
+
+        # check program use shared
+        false_source = '#version 430\nvoid main() {}'
+        glfw.make_context_current(first_win)
+        vs = gl.glCreateShader(gl.GL_VERTEX_SHADER)
+        gl.glShaderSource(vs, false_source)
+        gl.glCompileShader(vs)
+        fs = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
+        gl.glShaderSource(fs, false_source)
+        gl.glCompileShader(fs)
+
+        p = objects[0]['program']
+        gl.glAttachShader(p,vs)
+        gl.glAttachShader(p,fs)
+        gl.glLinkProgram(p)
+        gl.glValidateProgram(p)
+        gl.glDeleteShader(vs)
+        gl.glDeleteShader(fs)
+        gl.glUseProgram(p)
+
+        first_binding = ctypes.c_int()
+        gl.glGetIntegerv(gl.GL_CURRENT_PROGRAM,first_binding)
+        glfw.make_context_current(second_win)
+        secound_binding = ctypes.c_int()
+        gl.glGetIntegerv(gl.GL_CURRENT_PROGRAM,secound_binding)
+
+        cls._spec_program_use_shared = False if first_binding != secound_binding else True
+
+
+        # generate version, renderer info
+        cls._spec_version = gl.glGetString(gl.GL_VERSION)
+        cls._spec_renderer = gl.glGetString(gl.GL_RENDERER)
+        cls._spec_vendor = gl.glGetString(gl.GL_VENDOR)
+
+        # from the bug of intel graphics, need this mark to trigger extra ibo binding
+        cls._spec_vao_stores_ibo = False
+        # TODO write down test to verify whether GL_ELEMENT_ARRAY_BUFFER can be
+        #   bound with VAO. Don't know how yet.
+
+        # remove tester contexts
+        glfw.destroy_window(first_win)
+        glfw.destroy_window(second_win)
+
+        cls.byte_attribute_dict = {}
+        for key, value in cls.__dict__.items():
+            if key[:3] == 'GL_':
+                cls.byte_attribute_dict[int(value)] = value
+
+
+    def glGenBuffers(self, n, buffers=None):
+        index = gl.glGenBuffers(n, buffers)
+        self._buffers.generate(index)
+        return index
+
+    def glDeleteBuffers(self, buffers):
+        if not isinstance(buffers, (list, tuple)):
+            buffers = [buffers, ]
+        self._buffers.remove(buffers)
+        gl.glDeleteBuffers(len(buffers),buffers)
+        # print('+++++++++')
+        # print(self)
+        # raise
+    # frame buffer
+
+    def glGenFramebuffers(self, n, framebuffers=None):
+        index = gl.glGenFramebuffers(n, framebuffers)
+        self._frame_buffers.generate(index)
+        return index
+
+    def _enforce_vao_share(func):
+        def wrapper(self, *args, **kwargs):
+            if self._spec_vertex_array_shared:
+                return func(self, *args, **kwargs)
+
+            else:
+                current_window = Windows.get_current()
+                windows = self.get_shared_windows()
+                if current_window in windows:
+                    windows.remove(current_window)
+                if len(windows) != 0:
+                    for win in windows:
+                        win.make_window_current()
+                        func(self, *args, **kwargs)
+
+                current_window.make_window_current()
+                return func(self, *args, **kwargs)
+
+        return wrapper
+
+    def _enforce_program_use_share(func):
+        def wrapper(self, *args, **kwargs):
+            if self._spec_program_use_shared:
+                return func(self, *args, **kwargs)
+
+            else:
+                current_window = Windows.get_current()
+                windows = self.get_shared_windows()
+                if current_window in windows:
+                    windows.remove(current_window)
+
+                if len(windows) != 0:
+                    for win in windows:
+                        win.make_window_current()
+                        func(self, *args, **kwargs)
+
+                current_window.make_window_current()
+                return func(self, *args, **kwargs)
+
+        return wrapper
+
+    def _enforce_program_creation_share(func):
+        def wrapper(self, *args, **kwargs):
+            if self._spec_program_shared:
+                return func(self, *args, **kwargs)
+
+            else:
+                current_window = Windows.get_current()
+                windows = self.get_shared_windows()
+                if current_window in windows:
+                    windows.remove(current_window)
+                if len(windows) != 0:
+                    for win in windows:
+                        win.make_window_current()
+                        func(self, *args, **kwargs)
+
+                current_window.make_window_current()
+                return func(self, *args, **kwargs)
+
+        return wrapper
+
+
+    @_enforce_vao_share
+    def glBindFramebuffer(self, target, framebuffer):
+        """
+        Bind frrame buffer.
+        GL_FRAMEBUFFER is equivalent to binding to both GL_DRAW_FRAMEBUFFER and GL_READ_FRAMEBUFFER
+
+        :param target: GL_FRAMEBUFFER, GL_DRAW_FRAMEBUFFER, GL_READ_FRAMEBUFFER
+        :param framebuffer: gl_object(index-like value)
+        :return: None
+        """
+        if target == gl.GL_FRAMEBUFFER:
+            self._frame_buffers.bind(framebuffer, gl.GL_DRAW_FRAMEBUFFER)
+            self._frame_buffers.bind(framebuffer, gl.GL_READ_FRAMEBUFFER)
+            self._frame_buffers.bind(framebuffer, gl.GL_FRAMEBUFFER)
+        else:
+            self._frame_buffers.bind(framebuffer, target)
+
+        gl.glBindFramebuffer(target, framebuffer)
+    def glGetUniformfv(self, program, location, return_n):
+        v = (gl.GLfloat*return_n)()
+        gl.glGetUniformfv(program, location, v)
+        return list(v)
+    def glGetnUniformfv(self, program, location, bufsize):
+        v = ctypes.c_float()
+        gl.glGetnUniformfv(program, location, bufsize, v)
+        return v
+
+    def glCheckFramebufferStatus(self, target):
+        result = gl.glCheckFramebufferStatus(target)
+        self._frame_buffers.binding(target).new_attribute('status', cls.byte_attribute_dict[result])
+        return result
+
+
+    def glFramebufferRenderbuffer(self, target, attachment, renderbuffertarget, renderbuffer):
+        # log frame buffer
+        fbo = self._frame_buffers
+        rbo = self._render_buffers.collection[renderbuffer]
+        # print(rbo.attributes, rbo.id)
+        # print(self.current()._render_buffers.targets)
+        # print(rbo.id, renderbuffer)
+        # if rbo.id != renderbuffer:
+        #     raise
+        fbo.binding(target).new_attribute(attachment, rbo)
+
+        gl.glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer)
+
+
+    def glFramebufferTexture(self, target, attachment, texture, level):
+        # log frame buffer
+        fbo = self._frame_buffers
+        fbo.binding(target).new_attribute(attachment,
+                                          {'object': self._textures.collection[texture], 'level': level})
+
+        gl.glFramebufferTexture(target, attachment, texture, level)
+
+
+    def glDeleteFramebuffers(self, n, framebuffers):
+        if not isinstance(n, (tuple, list)):
+            framebuffers = [framebuffers, ]
+        self._frame_buffers.remove(framebuffers)
+        gl.glDeleteFramebuffers(n, framebuffers)
+
+
+    def glGetFramebufferParameteriv(self):
+        gl.glGetFramebufferParameteriv()
+
+    # read, draw buffer
+
+    def glDrawBuffer(self, mode):
+        gl.glDrawBuffer(mode)
+    def glDrawBuffers(self, n, bufs):
+        gl.glDrawBuffers(n, bufs)
+
+
+    def glReadBuffer(self, mode):
+        gl.glReadBuffer(mode)
+
+
+    @_enforce_vao_share
+    def glGenVertexArrays(self, n, arrays=None):
+        index = gl.glGenVertexArrays(n, arrays)
+        print('eeeeeeeeeeeeeee', Windows.get_current(), index)
+        print(glfw.get_current_context())
+        print('eeeeeeeeeeeeeee', )
+        self._vertex_arrays.generate(index)
+        return index
+
+
+    @_enforce_vao_share
+    def glBindVertexArray(self, array):
+        self._vertex_arrays.bind(array)
+        gl.glBindVertexArray(array)
+
+
+    @_enforce_vao_share
+    def glEnableVertexAttribArray(self, index):
+        gl.glEnableVertexAttribArray(index)
+        if self._vertex_arrays.binding().id != 0:
+            if self._buffers.binding(gl.GL_ARRAY_BUFFER).id != 0:
+                attributes = self._vertex_arrays.binding().attributes
+                if self.glEnableVertexAttribArray not in attributes:
+                    attributes[self.glEnableVertexAttribArray] = set()
+                attributes[self.glEnableVertexAttribArray].add(index)
+
+
+
+    @_enforce_vao_share
+    def glVertexAttribPointer(self, index, type, size, normalized, stride, pointer):
+        gl.glVertexAttribPointer(index, type, size, normalized, stride, pointer)
+        if self._vertex_arrays.binding().id != 0:
+            if self._buffers.binding(gl.GL_ARRAY_BUFFER).id != 0:
+                attributes = self._vertex_arrays.binding().attributes
+                if self.glVertexAttribPointer not in attributes:
+                    attributes[self.glVertexAttribPointer] = {}
+                attributes[self.glVertexAttribPointer][index] = (index, type,size,normalized,stride, pointer)
+
+
+    @_enforce_vao_share
+    def glBindBuffer(self, target, buffer):
+        self._buffers.bind(buffer, target)
+        try:
+            gl.glBindBuffer(target, buffer)
+        except:
+            print(self)
+            print(gl.glGenBuffers(1))
+            exit()
+        # print(target, buffer)
+        # self.print_current_binding()
+        # exit()
+        # for saving binding info
+        if self._vertex_arrays.active.id != 0:
+            if int(buffer) != 0:
+                self._vertex_arrays.active.new_attribute(target, buffer)
+
+    def glBufferData(self, target, size, data, usage):
+        # TODO is automated size calculation good?
+        gl.glBufferData(target, size, data, usage)
+
+    @_enforce_program_creation_share
+    def glCreateProgram(self):
+        index = gl.glCreateProgram()
+        self._programs.generate(index)
+
+        return index
+
+    @_enforce_program_use_share
+    def glUseProgram(self, program):
+        self._programs.bind(program)
+        gl.glUseProgram(program)
+
+
+    def glCreateShader(self, type):
+        index = gl.glCreateShader(type)
+        self._shaders.generate(index)
+
+        return index
+
+    def glClearColor(self, r, g, b, a):
+        gl.glClearColor(r, g, b, a)
+
+    def glClear(self, mask):
+        gl.glClear(mask)
+
+
+    def glEnable(self, cap):
+        gl.glEnable(cap)
+    def glDisable(self, cap):
+        gl.glDisable(cap)
+
+    def glBlendFunc(self, sfactor, dfactor):
+        gl.glBlendFunc(sfactor, dfactor)
+
+
+    def glViewport(self, x, y, width, height):
+        gl.glViewport(x, y, width, height)
+
+
+    def glScissor(self, x, y, width, height):
+        gl.glScissor(x, y, width, height)
+
+
+    def glShaderSource(self, shader, count, string=None, length=None):
+        gl.glShaderSource(shader, count, string, length)
+
+
+    def glCompileShader(self, shader):
+        gl.glCompileShader(shader)
+
+
+    def glGetShaderiv(self, shader, pname, param=None):
+        return gl.glGetShaderiv(shader, pname)
+
+
+    def glAttachShader(self, program, shader):
+        gl.glAttachShader(program, shader)
+
+
+    def glLinkProgram(self, program):
+        self._programs.collection[program].new_attribute('linked', True)
+        gl.glLinkProgram(program)
+
+
+    def glValidateProgram(self, program):
+        self._programs.collection[program].new_attribute('validated', True)
+        gl.glValidateProgram(program)
+
+
+    def glDeleteShader(self, shader):
+        gl.glDeleteShader(shader)
+        self._shaders.remove(shader)
+
+
+    def glBindAttribLocation(self, program, index, name):
+        gl.glBindAttribLocation(program, index, name)
+
+
+    def glGetUniformLocation(self, program, name):
+        index = gl.glGetUniformLocation(program, name)
+        return index
+
+
+    def glGenTextures(self, n, textures=None):
+        index = gl.glGenTextures(n, textures)
+        self._textures.generate(index)
+        return index
+
+
+    def glTexParameter(self, target, pname, parameter):
+        gl.glTexParameter(target, pname, parameter)
+        self._textures.binding(target).new_attribute(pname, parameter)
+
+
+    def glTexImage2D(self, target, level, internalformat, width, height, border, format, type, pixels):
+        gl.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels)
+
+
+    def glActiveTexture(self, texture):
+        gl.glActiveTexture(texture)
+        slot = self.byte_attribute_dict[texture]
+        self._textures.activate_slot(slot)
+
+
+    def glBindTexture(self, target, texture):
+        self._textures.bind(texture, target)
+        gl.glBindTexture(target, texture)
+
+    def glDeleteProgram(self, program):
+        self._programs.remove(program)
+        gl.glDeleteProgram(program)
+
+    @_enforce_vao_share
+    def glDeleteVertexArrays(self, vertex_arrays):
+        if not isinstance(vertex_arrays, (list, tuple)):
+            vertex_arrays = [vertex_arrays, ]
+        self._vertex_arrays.remove(vertex_arrays)
+        gl.glDeleteVertexArrays(len(vertex_arrays), vertex_arrays)
+
+    def glDeleteTextures(self, textures):
+        if not isinstance(textures, (tuple, list)):
+            textures = [textures]
+        self._textures.remove(textures)
+        try:
+            # don't know why but it throws error
+            gl.glDeleteTextures(len(textures), textures)
+        except:
+            gl.glDeleteTextures(textures)
+
+
+    def glDeleteRenderbuffers(self, n, renderbuffers):
+        if not isinstance(renderbuffers, (list, tuple)):
+            renderbuffers = [renderbuffers, ]
+        self._render_buffers.remove(renderbuffers)
+        gl.glDeleteRenderbuffers(n, renderbuffers)
+
+
+
+    def glBufferSubData(self, target, offset, size, data):
+        gl.glBufferSubData(target, offset, size, data)
+
+
+    def glUniformMatrix4fv(self, location, count, transpose, value):
+        gl.glUniformMatrix4fv(location, count, transpose, value)
+
+    # uniform input
+    @_enforce_program_use_share
+    def glUniform4fv(self, location, count, value):
+        gl.glUniform4fv(location, count, value)
+
+    @_enforce_program_use_share
+    def glUniform1i(self, location, v0):
+        gl.glUniform1i(location, v0)
+
+    @_enforce_program_use_share
+    def glUniform3fv(self, location, count, value):
+        gl.glUniform3fv(location, count, value)
+
+    @_enforce_program_use_share
+    def glDrawElements(self, mode, count, type, indices):
+        gl.glDrawElements(mode, count, type, indices)
+
+    # pixel read blit
+
+    def glReadPixels(self, x, y, width, height, format = gl.GL_RGBA, type = gl.GL_UNSIGNED_BYTE, pixels=None):
+        return gl.glReadPixels(x, y, width, height, format, type, pixels)
+
+
+    def glBlitFramebuffer(self, srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter):
+        gl.glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
+
+
+    def glGetIntegerv(self, pname):
+        data = ctypes.c_int()
+        gl.glGetIntegerv(pname, data)
+        return data
+
+
+    def glGetString(self, name):
+        return gl.glGetString(name)
+
+
+    def glGetShaderInfoLog(self, shader):
+        return gl.glGetShaderInfoLog(shader)
+
+    # render buffer
+
+    def glGenRenderbuffers(self, n, renderbuffers=None):
+        id = gl.glGenRenderbuffers(n, renderbuffers)
+        self._render_buffers.generate(id)
+        return id
+
+
+    def glBindRenderbuffer(self, target, renderbuffer):
+        """
+
+        :param target: ignore as it's always GL_RENDERBUFFER
+        :param renderbuffer: openGL object
+        :return:
+        """
+        self._render_buffers.bind(renderbuffer, target)
+        gl.glBindRenderbuffer(target, renderbuffer)
+
+
+    def glRenderbufferStorage(self, target, internalformat, width, height):
+        # TODO log data info too?
+        gl.glRenderbufferStorage(target, internalformat, width, height)
+
+    # texture
+
+    def glGetTexImage(self, target, level, format, type, array):
+        result = gl.glGetTexImage(target, level, format, type, array)
+        return result
+
+    # stencil
+
+    def glStencilMask(self, mask):
+        gl.glStencilMask(mask)
+
+
+    def glStencilFunc(self, func, ref, mask):
+        gl.glStencilFunc(func, ref, mask)
+
+
+    def glStencilOp(self, fail, zfail, zpass):
+        gl.glStencilOp(fail, zfail, zpass)
+
+
+    def glIsEnabled(self, cap):
+        return gl.glIsEnabled(cap)
+
+#
+# class context_check:
+#     """
+#     Decorator for all openGL functions.
+#
+#     Wanted to hijack everty classmethod calls through magic method
+#     \but couldn't find one.
+#
+#     The class does one thing : check if openGL function are called while current
+#     bound 'glfw.context wrapping object'(ex)Window) has a tracker to log to.
+#     """
+#
+#     def __init__(self, func):
+#         self.func = func
+#
+#     def __get__(self, instance, owner):
+#         # checks whether current fbl has tracker within it
+#         # if Windows.get_current() not in GLFW_GL_tracker._windows:
+#         #     print(list(GLFW_GL_tracker._windows.items()))
+#         #     raise Exception('Frame_buffer_like object not bound with trackable_GL')
+#         # modified to insert Trackable_openGL type as cls
+#         return lambda *args,**kwargs: self.func(Trackable_openGL, *args, **kwargs)
+#
+# class vao_related:
+#     """
+#     Decorator for vao_related functions.
+#     If glfw context doesn't support vertex array sharing this function will trigger
+#     to make all shared windows have same vertex array shape, operations by
+#     calling shared windows through assigned 'shared_windows' argument.
+#
+#     Built as a type to postpone calling? - if not problem with
+#     feeding type(Trackabl_openGL) as an argument.
+#     """
+#     def __init__(self, func):
+#         self.func = func
+#
+#     def __call__(self, *args, **kwargs):
+#         if not Trackable_openGL._spec_vertex_array_shared:
+#
+#             def func(*args, **kwargs):
+#                 window = Windows.get_current()
+#                 windows = window.shared_windows + [window, ]
+#                 for win in windows:
+#                     win.make_window_current()
+#                     return_v = self.func(*args, **kwargs)
+#                 return return_v
+#
+#             return func(*args, **kwargs)
+#
+#         else:
+#             return self.func(*args, **kwargs)
+#
+#
+# class Trackable_openGL:
+#     """
+#     Collection of openGL functions and constants.
+#     Will be appended as other functions gets needed.
+#
+#     *WARNING
+#     Be conservative modifying openGL functions in any ways.
+#     This binder class is built primarily to hijack openGL function call and
+#     log info with glfw context. Some automation can be made but modifying
+#     name of function, name of parameter, number of parameters is not recommended.
+#     Can cause confusion to general users referencing issued openGL specification.
+#     """
+#     _debug = True
+#
+#     original_gl = gl
+#     # clear
+#     GL_COLOR_BUFFER_BIT = gl.GL_COLOR_BUFFER_BIT
+#     GL_DEPTH_BUFFER_BIT = gl.GL_DEPTH_BUFFER_BIT
+#     GL_STENCIL_BUFFER_BIT = gl.GL_STENCIL_BUFFER_BIT
+#
+#     # test glEnable...
+#     GL_SCISSOR_TEST = gl.GL_SCISSOR_TEST
+#     GL_DEPTH_TEST = gl.GL_DEPTH_TEST
+#     GL_STENCIL_TEST = gl.GL_STENCIL_TEST
+#     GL_STENCIL_BITS = gl.GL_STENCIL_BITS
+#     GL_STENCIL_INDEX = gl.GL_STENCIL_INDEX
+#     GL_STENCIL_INDEX16 = gl.GL_STENCIL_INDEX16
+#     GL_SCISSOR_BOX = gl.GL_SCISSOR_BOX
+#
+#     # operation
+#     GL_KEEP = gl.GL_KEEP
+#     GL_ZERO = gl.GL_ZERO
+#     GL_REPLACE = gl.GL_REPLACE
+#     GL_INCR = gl.GL_INCR
+#     GL_INCR_WRAP = gl.GL_INCR_WRAP
+#     GL_DECR = gl.GL_DECR
+#     GL_DECR_WRAP = gl.GL_DECR_WRAP
+#     GL_INVERT = gl.GL_INVERT
+#     # functions ex) stencil
+#     GL_NEVER = gl.GL_NEVER
+#     GL_LESS = gl.GL_LESS
+#     GL_LEQUAL = gl.GL_LEQUAL
+#     GL_GREATER = gl.GL_GREATER
+#     GL_GEQUAL = gl.GL_GEQUAL
+#     GL_EQUAL = gl.GL_EQUAL
+#     GL_NOTEQUAL = gl.GL_NOTEQUAL
+#     GL_ALWAYS = gl.GL_ALWAYS
+#
+#     # color blending
+#     GL_BLEND = gl.GL_BLEND
+#     GL_SRC_ALPHA = gl.GL_SRC_ALPHA
+#     GL_ONE_MINUS_SRC_ALPHA = gl.GL_ONE_MINUS_SRC_ALPHA
+#
+#     # draw setting
+#     GL_DYNAMIC_DRAW = gl.GL_DYNAMIC_DRAW
+#     GL_STATIC_DRAW = gl.GL_STATIC_DRAW
+#
+#     # element_draw modes
+#     GL_TRIANGLE_STRIP = gl.GL_TRIANGLE_STRIP
+#
+#     # value types
+#     GL_TRUE = gl.GL_TRUE
+#     GL_FALSE = gl.GL_FALSE
+#
+#     GL_UNSIGNED_BYTE = gl.GL_UNSIGNED_BYTE
+#     GL_UNSIGNED_SHORT = gl.GL_UNSIGNED_SHORT
+#     GL_UNSIGNED_INT = gl.GL_UNSIGNED_INT
+#
+#     GL_INT = gl.GL_INT
+#     GL_FLOAT = gl.GL_FLOAT
+#
+#
+#     # shader
+#     GL_VERTEX_SHADER = gl.GL_VERTEX_SHADER
+#     GL_FRAGMENT_SHADER = gl.GL_FRAGMENT_SHADER
+#     GL_COMPILE_STATUS = gl.GL_COMPILE_STATUS
+#
+#     # array buffer
+#     GL_ARRAY_BUFFER = gl.GL_ARRAY_BUFFER
+#     GL_ARRAY_BUFFER_BINDING = gl.GL_ARRAY_BUFFER_BINDING
+#     GL_ELEMENT_ARRAY_BUFFER = gl.GL_ELEMENT_ARRAY_BUFFER
+#     GL_ELEMENT_ARRAY_BUFFER_BINDING = gl.GL_ELEMENT_ARRAY_BUFFER_BINDING
+#
+#     # frame buffer
+#     GL_FRAMEBUFFER = gl.GL_FRAMEBUFFER
+#     GL_DRAW_FRAMEBUFFER = gl.GL_DRAW_FRAMEBUFFER
+#     GL_READ_FRAMEBUFFER = gl.GL_READ_FRAMEBUFFER
+#     GL_FRAMEBUFFER_COMPLETE = gl.GL_FRAMEBUFFER_COMPLETE
+#     GL_DEPTH_ATTACHMENT = gl.GL_DEPTH_ATTACHMENT
+#     GL_STENCIL_ATTACHMENT = gl.GL_STENCIL_ATTACHMENT
+#
+#     #
+#     GL_RENDERBUFFER = gl.GL_RENDERBUFFER
+#
+#
+#
+#     # get_string
+#     GL_VERSION = gl.GL_VERSION
+#     GL_VENDOR = gl.GL_VENDOR
+#     GL_RENDERER = gl.GL_RENDERER
+#
+#     # texture format
+#     GL_RGBA = gl.GL_RGBA
+#     GL_RGB = gl.GL_RGB
+#     GL_RGBA8 = gl.GL_RGBA8
+#     GL_R = gl.GL_R
+#
+#     # depth stencil internal format
+#     GL_DEPTH_COMPONENT = gl.GL_DEPTH_COMPONENT
+#     GL_DEPTH_COMPONENT16 = gl.GL_DEPTH_COMPONENT16
+#     GL_DEPTH_COMPONENT24 = gl.GL_DEPTH_COMPONENT24
+#     GL_DEPTH_COMPONENT32 = gl.GL_DEPTH_COMPONENT32
+#     GL_DEPTH_COMPONENT32F = gl.GL_DEPTH_COMPONENT32F
+#
+#     GL_STENCIL_COMPONENTS = gl.GL_STENCIL_COMPONENTS
+#     GL_DEPTH24_STENCIL8 = gl.GL_DEPTH24_STENCIL8
+#     GL_DEPTH32F_STENCIL8 = gl.GL_DEPTH32F_STENCIL8
+#
+#     GL_DEPTH_STENCIL = gl.GL_DEPTH_STENCIL
+#     GL_STENCIL_INDEX1 = gl.GL_STENCIL_INDEX1
+#     GL_STENCIL_INDEX4  = gl.GL_STENCIL_INDEX4
+#     GL_STENCIL_INDEX8 = gl.GL_STENCIL_INDEX8
+#     GL_STENCIL_INDEX16 = gl.GL_STENCIL_INDEX16
+#
+#     #
+#     GL_BACK = gl.GL_BACK
+#     GL_FRONT = gl.GL_FRONT
+#     GL_FRONT_AND_BACK = gl.GL_FRONT_AND_BACK
+#
+#
+#     # texture setting
+#     GL_TEXTURE_2D = gl.GL_TEXTURE_2D
+#     GL_TEXTURE_MIN_FILTER = gl.GL_TEXTURE_MIN_FILTER
+#     GL_TEXTURE_MAG_FILTER = gl.GL_TEXTURE_MAG_FILTER
+#     GL_TEXTURE_WRAP_S = gl.GL_TEXTURE_WRAP_S
+#     GL_TEXTURE_WRAP_T = gl.GL_TEXTURE_WRAP_T
+#     GL_TEXTURE_WRAP_R = gl.GL_TEXTURE_WRAP_R
+#     GL_LINEAR = gl.GL_LINEAR
+#     GL_REPEAT = gl.GL_REPEAT
+#
+#     GL_MAX_DRAW_BUFFERS = gl.GL_MAX_DRAW_BUFFERS
+#     # texture slot
+#     GL_TEXTURE0 = gl.GL_TEXTURE0
+#     for i in range(1,31):
+#         exec(f'GL_TEXTURE{i} = gl.GL_TEXTURE{i}')
+#
+#     GL_COLOR_ATTACHMENT0 = gl.GL_COLOR_ATTACHMENT0
+#     for i in range(1, 15):
+#         exec(f'GL_COLOR_ATTACHMENT{i} = gl.GL_COLOR_ATTACHMENT{i}')
+#     GL_MAX_COLOR_ATTACHMENTS = gl.GL_MAX_COLOR_ATTACHMENTS
+#
+#     # vertex array parameter
+#     GL_VERTEX_ARRAY_BUFFER_BINDING = gl.GL_VERTEX_ARRAY_BUFFER_BINDING
+#     GL_VERTEX_ARRAY_SIZE = gl.GL_VERTEX_ARRAY_SIZE
+#     GL_VERTEX_ARRAY_BINDING = gl.GL_VERTEX_ARRAY_BINDING
+#
+#     GL_VERTEX_ARRAY_POINTER = gl.GL_VERTEX_ARRAY_POINTER
+#
+#     # for IDE hinting
+#     _spec_buffer_shared = None
+#     _spec_vertex_array_shared = None
+#     _spec_shader_shared = None
+#     _spec_program_shared = None
+#     _spec_texture_shared = None
+#     _spec_render_buffer_shared = None
+#     _spec_frame_buffer_shared = None
+#     @classmethod
+#     def context_specification_check(cls):
+#         """
+#         Checks glfw, openGL operation and stores some info as class argument.
+#
+#         *Run once before creating any other glfw contexts.
+#
+#         :return: None
+#         """
+#
+#         # checking shared openGL components under shared glfw contexts
+#
+#
+#         glfw.glfwWindowHint(glfw.GLFW_VISIBLE, glfw.GLFW_FALSE) # don't show
+#         first_win = glfw.glfwCreateWindow(10, 10, 'first', None, None) # two test windows
+#         second_win = glfw.glfwCreateWindow(10, 10, 'second', None, first_win)
+#         glfw.glfwWindowHint(glfw.GLFW_VISIBLE, glfw.GLFW_TRUE) # invalidate for real operation
+#
+#         objects = []
+#         for w in first_win,second_win:
+#             glfw.glfwMakeContextCurrent(w)
+#             d = {}
+#             objects.append(d)
+#             d['buffer'] = gl.glGenBuffers(1)
+#             d['vertex_array'] = gl.glGenVertexArrays(1)
+#             d['program'] = gl.glCreateProgram()
+#             d['shader'] = gl.glCreateShader(gl.GL_VERTEX_SHADER)
+#             d['texture'] = gl.glGenTextures(1)
+#             d['render_buffer'] = gl.glGenRenderbuffers(1)
+#             d['frame_buffer'] = gl.glGenFramebuffers(1)
+#
+#         print()
+#         print('CONTEXT SPECIFICATION RESULT:')
+#         longest_name_length = 0
+#         for i in objects[0].keys():
+#             if len(i)> longest_name_length:
+#                 longest_name_length = len(i)
+#
+#         # comparison: same value means component not shared between shared context
+#         for f,s in zip(objects[0].items(),objects[1].items()):
+#             name = f[0]
+#             exec(f'cls._spec_{name}_shared = True if f[1] != s[1] else False')
+#             result = 'SHARED' if f[1] != s[1] else 'NOT_SHARED'
+#             print(f'    {name}{" "*(longest_name_length - len(name))} is {result}')
+#
+#
+#         # generate version, renderer info
+#         cls._spec_version = gl.glGetString(gl.GL_VERSION)
+#         cls._spec_renderer = gl.glGetString(gl.GL_RENDERER)
+#         cls._spec_vendor = gl.glGetString(gl.GL_VENDOR)
+#
+#         # from the bug of intel graphics, need this mark to trigger extra ibo binding
+#         cls.vao_stores_ibo = False
+#         # TODO write down test to verify whether GL_ELEMENT_ARRAY_BUFFER can be
+#         #   bound with VAO. Don't know how yet.
+#
+#         # remove tester contexts
+#         glfw.glfwDestroyWindow(first_win)
+#         glfw.glfwDestroyWindow(second_win)
+#
+#         cls.byte_attribute_dict = {}
+#         for key, value in cls.__dict__.items():
+#             if key[:3] == 'GL_':
+#                 cls.byte_attribute_dict[int(value)] = value
+#
+#     @context_check
+#     def glGenBuffers(cls,n,buffers=None):
+#         index = gl.glGenBuffers(n, buffers)
+#         cls.current()._buffers.generate(index)
+#         return index
+#
+#     # frame buffer
+#     @context_check
+#     def glGenFramebuffers(cls, n, framebuffers=None):
+#         index =  gl.glGenFramebuffers(n,framebuffers)
+#         cls.current()._frame_buffers.generate(index)
+#         return index
+#     @context_check
+#     def glBindFramebuffer(cls,target, framebuffer):
+#         """
+#         Bind frrame buffer.
+#         GL_FRAMEBUFFER is equivalent to binding to both GL_DRAW_FRAMEBUFFER and GL_READ_FRAMEBUFFER
+#
+#         :param target: GL_FRAMEBUFFER, GL_DRAW_FRAMEBUFFER, GL_READ_FRAMEBUFFER
+#         :param framebuffer: gl_object(index-like value)
+#         :return: None
+#         """
+#         if target == gl.GL_FRAMEBUFFER:
+#             cls.current()._frame_buffers.bind(framebuffer, gl.GL_DRAW_FRAMEBUFFER)
+#             cls.current()._frame_buffers.bind(framebuffer, gl.GL_READ_FRAMEBUFFER)
+#             cls.current()._frame_buffers.bind(framebuffer, gl.GL_FRAMEBUFFER)
+#         else:
+#             cls.current()._frame_buffers.bind(framebuffer, target)
+#
+#         gl.glBindFramebuffer(target, framebuffer)
+#     @context_check
+#     def glCheckFramebufferStatus(cls, target):
+#         result = gl.glCheckFramebufferStatus(target)
+#         cls.current()._frame_buffers.binding(target).set_attribute('status',cls.byte_attribute_dict[result])
+#         return result
+#     @context_check
+#     def glFramebufferRenderbuffer(cls, target, attachment, renderbuffertarget, renderbuffer):
+#         # log frame buffer
+#         fbo = cls.current()._frame_buffers
+#         rbo = cls.current()._render_buffers.collection[renderbuffer]
+#         # print(rbo.attributes, rbo.id)
+#         # print(cls.current()._render_buffers.targets)
+#         # print(rbo.id, renderbuffer)
+#         # if rbo.id != renderbuffer:
+#         #     raise
+#         fbo.binding(target).set_attribute(attachment, rbo)
+#
+#         gl.glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer)
+#     @context_check
+#     def glFramebufferTexture(cls, target, attachment, texture, level):
+#         # log frame buffer
+#         fbo = cls.current()._frame_buffers
+#         fbo.binding(target).set_attribute(attachment, {'object':cls.current()._textures.collection[texture], 'level':level})
+#
+#         gl.glFramebufferTexture(target, attachment, texture, level)
+#     @context_check
+#     def glDeleteFramebuffers(cls, n, framebuffers):
+#         cls.current()._frame_buffers.remove(framebuffers)
+#         if not isinstance(n, (tuple, list)):
+#             framebuffers = [framebuffers,]
+#         gl.glDeleteFramebuffers(n, framebuffers)
+#
+#     @context_check
+#     def glGetFramebufferParameteriv(self):
+#         gl.glGetFramebufferParameteriv()
+#
+#     # read, draw buffer
+#     @context_check
+#     def glDrawBuffer(cls,mode):
+#         gl.glDrawBuffer(mode)
+#     @context_check
+#     def glDrawBuffers(cls, n, bufs):
+#         gl.glDrawBuffers(n, bufs)
+#     @context_check
+#     def glReadBuffer(cls, mode):
+#         gl.glReadBuffer(mode)
+#
+#
+#     @context_check
+#     @vao_related
+#     def glGenVertexArrays(cls, n, arrays=None):
+#         index = gl.glGenVertexArrays(n, arrays)
+#         cls.current()._vertex_arrays.generate(index)
+#         return index
+#
+#     @context_check
+#     @vao_related
+#     def glBindVertexArray(cls, array):
+#         cls.current()._vertex_arrays.bind(array)
+#         gl.glBindVertexArray(array)
+#
+#     @context_check
+#     @vao_related
+#     def glEnableVertexAttribArray(cls, index):
+#         gl.glEnableVertexAttribArray(index)
+#
+#     @context_check
+#     @vao_related
+#     def glVertexAttribPointer(cls, index, type, size, normalized, stride, pointer):
+#         gl.glVertexAttribPointer(index, type, size, normalized, stride, pointer)
+#
+#     @context_check
+#     @vao_related
+#     def glBindBuffer(cls, target, buffer):
+#         cls.current()._buffers.bind(buffer, target)
+#
+#         gl.glBindBuffer(target, buffer)
+#
+#     @context_check
+#     def glBufferData(cls, target, size, data, usage):
+#         # TODO is automated size calculation good?
+#         gl.glBufferData(target, size, data, usage)
+#
+#     @context_check
+#     def glCreateProgram(cls):
+#         index = gl.glCreateProgram()
+#         cls.current()._programs.generate(index)
+#
+#         return index
+#
+#     @context_check
+#     def glUseProgram(cls, program):
+#         cls.current()._programs.bind(program)
+#         gl.glUseProgram(program)
+#
+#     @context_check
+#     def glCreateShader(cls, type):
+#         index = gl.glCreateShader(type)
+#         cls.current()._shaders.generate(index)
+#
+#         return index
+#
+#     @context_check
+#     def glClearColor(cls,r,g,b,a):
+#         gl.glClearColor(r,g,b,a)
+#
+#     @context_check
+#     def glClear(cls, mask):
+#         gl.glClear(mask)
+#
+#     @context_check
+#     def glEnable(cls, cap):
+#         gl.glEnable(cap)
+#
+#     @context_check
+#     def glBlendFunc(cls, sfactor,dfactor):
+#         gl.glBlendFunc(sfactor,dfactor)
+#
+#     @context_check
+#     def glViewport(cls,x,y,width,height):
+#         gl.glViewport(x,y,width,height)
+#
+#     @context_check
+#     def glScissor(cls,x,y,width,height):
+#         gl.glScissor(x,y,width,height)
+#
+#     @context_check
+#     def glShaderSource(cls, shader, count, string=None, length=None):
+#         gl.glShaderSource(shader, count, string, length)
+#
+#     @context_check
+#     def glCompileShader(cls, shader):
+#         gl.glCompileShader(shader)
+#
+#     @context_check
+#     def glGetShaderiv(cls, shader, pname, param=None):
+#         return gl.glGetShaderiv(shader,pname)
+#
+#     @context_check
+#     def glAttachShader(cls, program, shader):
+#         gl.glAttachShader(program, shader)
+#
+#     @context_check
+#     def glLinkProgram(cls, program):
+#         cls.current()._programs.collection[program].set_attribute('linked', True)
+#         gl.glLinkProgram(program)
+#
+#     @context_check
+#     def glValidateProgram(cls, program):
+#         cls.current()._programs.collection[program].set_attribute('validated', True)
+#         gl.glValidateProgram(program)
+#
+#     @context_check
+#     def glDeleteShader(cls, shader):
+#         gl.glDeleteShader(shader)
+#         cls.current()._shaders.remove(shader)
+#
+#     @context_check
+#     def glBindAttribLocation(cls, program, index, name):
+#         gl.glBindAttribLocation(program, index, name)
+#
+#     @context_check
+#     def glGetUniformLocation(cls, program, name):
+#         index = gl.glGetUniformLocation(program, name)
+#         return index
+#
+#
+#
+#
+#     @context_check
+#     def glGenTextures(cls, n, textures=None):
+#         index = gl.glGenTextures(n, textures)
+#         cls.current()._textures.generate(index)
+#         return index
+#
+#     @context_check
+#     def glTexParameter(cls, target, pname, parameter):
+#         gl.glTexParameter(target, pname, parameter)
+#         cls.current()._textures.binding(target).set_attribute(pname, parameter)
+#
+#     @context_check
+#     def glTexImage2D(cls, target, level, internalformat, width, height, border, format, type, pixels):
+#         gl.glTexImage2D(target, level, internalformat,width,height,border,format,type,pixels)
+#
+#     @context_check
+#     def glActiveTexture(cls, texture):
+#         gl.glActiveTexture(texture)
+#         slot = cls.byte_attribute_dict[texture]
+#         cls.current()._textures.activate_slot(slot)
+#
+#     @context_check
+#     def glBindTexture(cls, target, texture):
+#         cls.current()._textures.bind(texture, target)
+#         gl.glBindTexture(target, texture)
+#
+#     @context_check
+#     def glDeleteTextures(cls, n, textures):
+#         cls.current()._textures.remove(textures)
+#         if not isinstance(textures, (tuple, list)):
+#             textures = [textures]
+#         try:
+#             # don't know why but it throws error
+#             gl.glDeleteTextures(n, textures)
+#         except:
+#             gl.glDeleteTextures(textures)
+#
+#     @context_check
+#     def glDeleteRenderbuffers(cls, n, renderbuffers):
+#         cls.current()._render_buffers.remove(renderbuffers)
+#         if not isinstance(renderbuffers, (list,tuple)):
+#             renderbuffers = [renderbuffers,]
+#         gl.glDeleteRenderbuffers(n, renderbuffers)
+#     @context_check
+#     def glBufferSubData(cls,target,offset,size,data):
+#         gl.glBufferSubData(target,offset,size,data)
+#
+#     @context_check
+#     def glUniformMatrix4fv(cls, location, count, transpose, value):
+#         gl.glUniformMatrix4fv(location, count, transpose, value)
+#
+#     # uniform input
+#     @context_check
+#     def glUniform4fv(cls, location, count, value):
+#         gl.glUniform4fv(location, count, value)
+#     @context_check
+#     def glUniform1i(cls, location, v0):
+#         gl.glUniform1i(location, v0)
+#     @context_check
+#     def glUniform3fv(self,location,count,value):
+#         gl.glUniform3fv(location,count,value)
+#
+#
+#     @context_check
+#     def glDrawElements(cls,mode,count,type,indices):
+#         gl.glDrawElements(mode,count,type,indices)
+#
+#     # pixel read blit
+#     @context_check
+#     def glReadPixels(cls,x,y,width,height,format,type,pixels=None):
+#         return gl.glReadPixels(x,y,width,height,format,type,pixels)
+#     @context_check
+#     def glBlitFramebuffer(cls,srcX0,srcY0,srcX1,srcY1,dstX0,dstY0,dstX1,dstY1,mask,filter):
+#         gl.glBlitFramebuffer(srcX0,srcY0,srcX1,srcY1,dstX0,dstY0,dstX1,dstY1,mask,filter)
+#
+#     @context_check
+#     def glGetIntegerv(cls,pname,data=None):
+#         if data is None:
+#             data = ctypes.c_int()
+#             gl.glGetIntegerv(pname,data)
+#             return data
+#         else:
+#             gl.glGetIntegerv(pname,data)
+#
+#
+#     @context_check
+#     def glGetString(cls, name):
+#         return gl.glGetString(name)
+#
+#
+#
+#     @context_check
+#     def glGetShaderInfoLog(cls, shader):
+#         return gl.glGetShaderInfoLog(shader)
+#
+#     # render buffer
+#     @context_check
+#     def glGenRenderbuffers(cls,n, renderbuffers=None):
+#         id = gl.glGenRenderbuffers(n, renderbuffers)
+#         cls.current()._render_buffers.generate(id)
+#         return id
+#     @context_check
+#     def glBindRenderbuffer(cls, target, renderbuffer):
+#         """
+#
+#         :param target: ignore as it's always GL_RENDERBUFFER
+#         :param renderbuffer: openGL object
+#         :return:
+#         """
+#         cls.current()._render_buffers.bind(renderbuffer, target)
+#         gl.glBindRenderbuffer(target, renderbuffer)
+#     @context_check
+#     def glRenderbufferStorage(self, target, internalformat, width, height):
+#         # TODO log data info too?
+#         gl.glRenderbufferStorage(target, internalformat, width, height)
+#
+#     # texture
+#     @context_check
+#     def glGetTexImage(cls, target, level, format, type, array):
+#         result = gl.glGetTexImage(target, level, format, type, array)
+#         return result
+#
+#     # stencil
+#     @context_check
+#     def glStencilMask(cls, mask):
+#         gl.glStencilMask(mask)
+#     @context_check
+#     def glStencilFunc(cls,func,ref,mask):
+#         gl.glStencilFunc(func,ref,mask)
+#     @context_check
+#     def glStencilOp(cls,fail,zfail,zpass):
+#         gl.glStencilOp(fail,zfail,zpass)
+#
+#     @context_check
+#     def glIsEnabled(self,cap):
+#         return gl.glIsEnabled(cap)
+#
+#
+#     @classmethod
+#     def window(cls):
+#         return Windows.current()
+#
+#     @classmethod
+#     def current(cls):
+#         return GLFW_GL_tracker.get_current() #type:GLFW_GL_tracker
+#
+#     @classmethod
+#     def test(cls):
+#         pass

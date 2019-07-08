@@ -582,7 +582,7 @@ class Image(object):
             if hasattr(self, "_close__fp"):
                 self._close__fp()
             if self.fp:
-                self.fp.close()
+                self.fp.config_window_close()
         self.fp = None
 
     def close(self):
@@ -600,7 +600,7 @@ class Image(object):
         try:
             if hasattr(self, "_close__fp"):
                 self._close__fp()
-            self.fp.close()
+            self.fp.config_window_close()
             self.fp = None
         except Exception as msg:
             logger.debug("Error closing: %s", msg)
@@ -2683,7 +2683,7 @@ def open(fp, mode="r"):
                 continue
             except BaseException:
                 if exclusive_fp:
-                    fp.close()
+                    fp.config_window_close()
                 raise
         return None
 

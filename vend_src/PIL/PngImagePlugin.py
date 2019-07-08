@@ -627,10 +627,10 @@ class PngImageFile(ImageFile.ImageFile):
         self.fp.seek(self.tile[0][2] - 8)
 
         self.png.verify()
-        self.png.close()
+        self.png.config_window_close()
 
         if self._exclusive_fp:
-            self.fp.close()
+            self.fp.config_window_close()
         self.fp = None
 
     def load_prepare(self):
@@ -690,7 +690,7 @@ class PngImageFile(ImageFile.ImageFile):
                 logger.debug("%r %s %s (unknown)", cid, pos, length)
                 ImageFile._safe_read(self.fp, length)
         self._text = self.png.im_text
-        self.png.close()
+        self.png.config_window_close()
         self.png = None
 
     def _getexif(self):
@@ -919,7 +919,7 @@ def getchunks(im, **params):
     def append(fp, cid, *data):
         data = b"".join(data)
         crc = o32(_crc32(data, _crc32(cid)))
-        fp.append((cid, data, crc))
+        fp.insert((cid, data, crc))
 
     fp = collector()
 

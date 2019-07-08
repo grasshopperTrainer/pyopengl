@@ -3,7 +3,7 @@ from numpy.lib.recfunctions import merge_arrays, append_fields
 import weakref
 import copy
 
-from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+# from windowing.my_openGL.unique_glfw_context import Trackable_openGL as gl
 
 
 class _Block:
@@ -224,7 +224,7 @@ class _Property:
         for n, b in self._blocks.items():
             b._flag_changed = False
 
-class Glsl_property_container:
+class GLSL_property_container:
 
     def __init__(self, shader):
         self._shader = shader

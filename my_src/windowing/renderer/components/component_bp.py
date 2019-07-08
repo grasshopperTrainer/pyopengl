@@ -1,5 +1,7 @@
 import numpy as np
-from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
+from windowing.my_openGL.unique_glfw_context import Unique_glfw_context as gl
+import weakref
+
 class RenderComponent:
     # def __new__(cls, *args, **kwargs):
     #     if len(args) + len(kwargs) == 0:
@@ -9,16 +11,31 @@ class RenderComponent:
     #     else:
     #         ins = super().__new__(cls)
     #         return ins
+    _context = None
+    def build(self, context):
+        self._context = weakref.ref(context)
 
-    @classmethod
-    def build(cls):
-        pass
+    @property
+    def context(self):
+        return self._context()
+
+    def __del__(self):
+        if self._context != None:
+            if self._context() != None:
+                if self._glindex != None:
+                    self.delete()
     @classmethod
     def bind(cls):
         pass
     @classmethod
     def unbind(cls):
         pass
+
+    @property
+    def is_built(self):
+        if self._glindex is None:
+            return False
+        return True
 
     @staticmethod
     def _dtype_to_gltype(dtype: np.dtype):
@@ -45,3 +62,5 @@ class RenderComponent:
             # TODO type error for no supported GL data type
             pass
         pass
+
+

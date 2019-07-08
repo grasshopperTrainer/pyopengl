@@ -1,5 +1,5 @@
 from patterns.strict_method_implant import SMI
-
+import weakref
 class FBL(SMI):
     """
     this if mother of frame buffer-like class
@@ -7,6 +7,10 @@ class FBL(SMI):
     from OpenGL
     """
     _current = None
+    def __new__(cls, *args, **kwargs):
+        self = super().__new__(cls)
+        FBL._current = self
+        return self
 
     @SMI.must_func
     @property
@@ -40,13 +44,22 @@ class FBL(SMI):
     def end(self):
         pass
 
-
     @classmethod
     def get_current(cls):
-        return cls._current
+        if cls._current is None:
+            return None
+        else:
+            if cls._current() is None:
+                cls._current = None
+                return None
+            else:
+                return cls._current()
     @classmethod
     def set_current(cls, fbl):
-        if isinstance(fbl, FBL):
-            cls._current = fbl
-        else:
-            raise
+        try:
+            cls._current = weakref.ref(fbl)
+        except:
+            cls._current = None
+
+        # else:
+        #     raise

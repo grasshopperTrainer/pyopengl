@@ -1,10 +1,11 @@
 from collections import OrderedDict
 
 from .component_bp import RenderComponent
-from .glsl_property_container import Glsl_property_container
+from .glsl_property_container import GLSL_property_container
+from .glsl_input_type_builder import GLSL_input_type_builder, GLSL_input_type_template
 
-from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
-
+from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
+import copy
 
 class Shader(RenderComponent):
     _dic_shaders = OrderedDict()
@@ -13,36 +14,31 @@ class Shader(RenderComponent):
         self._file_name = file_name
         self._vertex, self._fragment, self._attribute, self._uniform = self._load_parse_glsl(file_name)
 
+        self._context = None
         self._glindex = None
         self._name = name
 
-        self._properties = Glsl_property_container(self)
+        self._properties = GLSL_property_container(self)
         for n,t,l in self._attribute:
             self._properties.new_attribute(n,t,l)
         for n,t,l in self._uniform:
             self._properties.new_uniform(n,t,l)
 
-        # for i in self._properties.uniform.blocks:
-        #     print(i)
-        # exit()
-
+        self._io_type = GLSL_input_type_builder(self._vertex, self._fragment) #type: GLSL_input_type_template
 
         self._flag_built = False
 
-    @property
-    def is_built(self):
-        return self._flag_built
 
-    def build(self):
-        # 1. create program
-        self._glindex = gl.glCreateProgram()
-        # 3. bind shaders
-        self._bake_shader()
-        # 2. store array buffer to use
-        self.properties.validate_uniform_location()
-        # self.store_self()
+    def build(self, context):
+        super().build(context)
 
-        self._flag_built = True
+        with self.context as gl:
+            # 1. create program
+            self._glindex = gl.glCreateProgram()
+            # 3. bind shaders
+            self._bake_shader()
+
+            self._flag_built = True
 
     def _load_parse_glsl(self, file_name):
         att = []
@@ -137,55 +133,62 @@ class Shader(RenderComponent):
         return vertex_string, fragment_string, tuple(att), tuple(uni)
 
     def _bake_shader(self):
+        with self.context as gl:
+            def compile(type, source):
+                id = gl.glCreateShader(type)
+                gl.glShaderSource(id, source)
+                gl.glCompileShader(id)
 
-        def compile(type, source):
-            id = gl.glCreateShader(type)
-            gl.glShaderSource(id, source)
-            gl.glCompileShader(id)
+                success = gl.glGetShaderiv(id, gl.GL_COMPILE_STATUS)
 
-            success = gl.glGetShaderiv(id, gl.GL_COMPILE_STATUS)
+                if not success:
+                    messege = gl.glGetShaderInfoLog(id)
+                    print(f'[{self.__class__.__name__}]: failed compile shader')
+                    print(messege)
+                    gl.glDeleteShader(id)
 
-            if not success:
-                messege = gl.glGetShaderInfoLog(id)
-                print(f'[{self.__class__.__name__}]: failed compile shader')
-                print(messege)
-                gl.glDeleteShader(id)
+                    return 0
 
-                return 0
+                return id
 
-            return id
+            vs = compile(gl.GL_VERTEX_SHADER, self._vertex)
+            fs = compile(gl.GL_FRAGMENT_SHADER, self._fragment)
 
-        vs = compile(gl.GL_VERTEX_SHADER, self._vertex)
-        fs = compile(gl.GL_FRAGMENT_SHADER, self._fragment)
+            gl.glAttachShader(self.glindex, vs)
+            gl.glAttachShader(self.glindex, fs)
+            gl.glLinkProgram(self.glindex)
+            gl.glValidateProgram(self.glindex)
 
-        gl.glAttachShader(self.glindex, vs)
-        gl.glAttachShader(self.glindex, fs)
-        gl.glLinkProgram(self.glindex)
-        gl.glValidateProgram(self.glindex)
-
-        gl.glDeleteShader(vs)
-        gl.glDeleteShader(fs)
-
-
-    @classmethod
-    def deleteProgram(cls, *index):
-        d = cls._dic_shaders
-        if len(index) is 0:
-            for n in d:
-                i = d[n][0]
-                gl.glDeleteProgram(i)
-        else:
-            for i in index:
-                n = list(d.keys())[i]
-                v = d[n][0]
-                gl.glDeleteProgram(v)
+            gl.glDeleteShader(vs)
+            gl.glDeleteShader(fs)
 
 
+    # @classmethod
+    # def deleteProgram(cls, *index):
+    #     d = cls._dic_shaders
+    #     if len(index) is 0:
+    #         for n in d:
+    #             i = d[n][0]
+    #             gl.glDeleteProgram(i)
+    #     else:
+    #         for i in index:
+    #             n = list(d.keys())[i]
+    #             v = d[n][0]
+    #             gl.glDeleteProgram(v)
     def bind(self):
-        gl.glUseProgram(self.glindex)
+        with self.context as gl:
+            gl.glUseProgram(self.glindex)
 
     def unbind(self):
-        gl.glUseProgram(0)
+        with self.context as gl:
+            gl.glUseProgram(0)
+
+    def delete(self):
+        if self._glindex != None:
+            with self.context as gl:
+                gl.glDeleteProgram(self._glindex)
+            self._glindex = None
+            self._context = None
 
     @property
     def vertexarray(self):
@@ -202,14 +205,17 @@ class Shader(RenderComponent):
     @property
     def glindex(self):
         return self._glindex
+    @property
+    def io_type(self):
+        return self._io_type
 
     def _validate_uniform_location(self):
         # for i, block in enumerate(self.properties.attribute.blocks):
         #     gl.glBindAttribLocation(self.glindex, i, block._name)
         #     block.location = i
-
-        for block in self.properties.uniform.blocks:
-            block.location = gl.glGetUniformLocation(self.glindex, block.name)
+        with self._context as gl:
+            for block in self.properties.uniform.blocks:
+                block.location = gl.glGetUniformLocation(self.glindex, block.name)
         # exit()
         # gl.glLinkProgram(self.glindex)
 

@@ -107,7 +107,7 @@ class MpoImageFile(JpegImagePlugin.JpegImageFile):
     def _close__fp(self):
         try:
             if self.__fp != self.fp:
-                self.__fp.close()
+                self.__fp.config_window_close()
         except AttributeError:
             pass
         finally:

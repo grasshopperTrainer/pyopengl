@@ -79,11 +79,11 @@ class Namespace:
         :return: None
         """
         if isinstance(value, dict):
-            self._namespaces.append(value)
+            self._namespaces.insert(value)
 
         elif isinstance(value, (tuple, list)):
             dic = dict(zip(value, [None]*len(value)))
-            self._namespaces.append(dic)
+            self._namespaces.insert(dic)
 
         elif isinstance(value, Namespace):
             self._namespaces = self._namespaces + value._namespaces

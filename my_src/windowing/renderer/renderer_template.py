@@ -1,273 +1,16 @@
-from windowing.my_openGL.glfw_gl_tracker import Trackable_openGL as gl
-# from windowing.windows import Windows
-from ..my_openGL.glfw_gl_tracker import GLFW_GL_tracker
+# from windowing.my_openGL.unique_glfw_context import Trackable_openGL as gl
+from windowing.windows import Windows
+from ..my_openGL.unique_glfw_context import Unique_glfw_context
 from ..renderer import components as comp
 
 from ..frame_buffer_like.frame_buffer_like_bp import FBL
 from ..viewport.viewports import Viewport
+from collections import namedtuple
 
 import numpy as np
+import weakref
+import copy
 
-
-# class VBO_layout:
-#     def __init__(self, ident):
-#         self.ident = ident
-#
-# class Layout_container:
-#     MULTI_VBO = VBO_layout(0)
-#     SINGLE_VBO = VBO_layout(1)
-class Render_unit:
-    pass
-
-class Render_unit_builder:
-    reg_count = 0
-    def __new__(cls, *args, **kwargs):
-        new_cls = type(f'Render_unit{cls.reg_count}', (Render_unit, Render_unit_temp, ), {})
-        cls.reg_count += 1
-        return new_cls
-
-
-class Render_unit_temp:
-
-    _init_list = []
-
-    _shader = None
-    _vertex_array = None
-    _vertex_buffer = None
-    _index_buffer = None
-    _texture = None
-    _hollow_comp = comp.RenderComponent()
-
-    @classmethod
-    def use_shader(cls, shader=None):
-        if shader is None:
-            cls._shader = comp.Shader()
-        else:
-            cls._shader = shader
-
-    @classmethod
-    def use_vertex_array(cls,vao=None):
-        if vao is None:
-            cls._vertex_array = comp.Vertexarray
-        else:
-            cls._vertex_array = vao
-
-    @classmethod
-    def use_vertex_buffer(cls,vbo=None):
-        if vbo is None:
-            cls._vertex_buffer = comp.Vertexbuffer
-        else:
-            cls._vertex_buffer = vbo
-
-    @classmethod
-    def use_index_buffer(cls,ibo=None):
-        if ibo is None:
-            cls._index_buffer = comp.Indexbuffer
-        else:
-            cls._index_buffer = ibo
-
-    @classmethod
-    def use_texture(cls,texture=None):
-        if texture is None:
-            cls._texture = comp.Texture
-        else:
-            cls._texture = texture
-
-    @property
-    def shader(self):
-        if self._shader is None:
-            return self.__class__._hollow_comp
-        else:
-            return self._shader
-
-    @property
-    def vertex_array(self):
-        if self._vertex_array is None:
-            return self.__class__._hollow_comp
-        else:
-            return self._vertex_array
-
-    @property
-    def vertex_buffer(self):
-        if self._vertex_buffer is None:
-            return self.__class__._hollow_comp
-        else:
-            return self._vertex_buffer
-
-    @property
-    def index_buffer(self):
-        if self._index_buffer is None:
-            return self.__class__._hollow_comp
-        else:
-            return self._index_buffer
-
-    @property
-    def texture(self):
-        if self._texture is None:
-            return self.__class__._hollow_comp
-        else:
-            return self._texture
-
-    def __init__(self):
-        self._shader = self.__class__._shader
-        self._properties = self._shader.properties.copy()
-
-        cls = self.__class__
-        if isinstance(cls._vertex_array, type):
-            self._vertex_array = cls._vertex_array()
-        if isinstance(cls._vertex_buffer, type):
-            self._vertex_buffer = cls._vertex_buffer()
-        if isinstance(cls._index_buffer, type):
-            self._index_buffer = cls._index_buffer()
-        if isinstance(cls._texture, type):
-            self._texture = cls._texture()
-
-        self._flag_built = False
-
-    def _build_(self):
-        if not self.shader.is_built:
-            self.shader.build()
-
-        self.vertex_array.build()
-        self.vertex_array.bind()
-
-        self.index_buffer.build()
-        self.vertex_buffer.build()
-
-        self.vertex_array.unbind()
-
-        self.texture.build()
-
-    def update_variables(self):
-        # for attribute
-        # bind buffer and vertex_attrib_pointer with gl if form of buffer has changed
-        if self.properties.attribute.is_buffer_formchange:
-            self.vertex_buffer.bind()
-            buffer = self.properties.attribute.buffer
-            self.vertex_buffer.set_attribpointer(buffer)
-            self.vertex_buffer.unbind()
-
-        # for vertex buffer
-        # update buffer if change has been made
-        # change whole if all buffer is changed
-        changed_blocks = self.properties.attribute.updated
-        if len(changed_blocks) != 0:
-            self.vertex_buffer.bind()
-
-            if len(changed_blocks) == len(self.properties.attribute.names):
-                buffer = self.properties.attribute.buffer
-                self.vertex_buffer.set_attribpointer(buffer)
-                # size = buffer.itemsize * buffer.size
-                # gl.glBufferData(gl.GL_ARRAY_BUFFER, size, buffer, self.vertex_buffer._glusage)
-
-            else:
-                # update part only
-                for block in changed_blocks:
-
-                    buffer = self.properties.attribute.buffer
-                    start_pos = self.properties.attribute.posof_block(block.name)
-
-                    # finde starting offset
-                    start_off = 0
-                    for i in range(start_pos):
-                        dtype = buffer.dtype[i]
-                        bytesize = dtype.itemsize
-                        start_off += bytesize
-
-                    data = block.data
-                    for i in range(buffer.size):
-                        off = start_off + buffer.itemsize * i
-                        element = data[i]
-                        size = element.itemsize * element.size
-                        gl.glBufferSubData(gl.GL_ARRAY_BUFFER, off, size, element)
-
-            self.vertex_buffer.unbind()
-
-            # if isinstance(self.index_buffer, comp.Indexbuffer):
-            #     # automated index setting
-            #     # if size changed
-            #     if self._drawmode == gl.GL_TRIANGLE_STRIP:
-            #         num_tri = buffer.size - 2
-            #         if num_tri != self.index_buffer.data.size:
-            #             indicies = []
-            #             for i in range(num_tri):
-            #                 if i == 0:
-            #                     indicies += [0, 1, 2]
-            #                 elif i == 1:
-            #                     indicies += [2, 0, 3]
-            #                 else:
-            #                     indicies += [i, i - 1, i + 1]
-            #             if len(indicies) != 0:
-            #                 self.index_buffer.data = indicies
-            #                 self.index_buffer.build()
-            #                 self.index_buffer.bind()
-            #             else:
-            #                 pass
-            #     else:
-            #         raise Exception(f"please define handler of other draw mode '{self.mode}'")
-
-        # for uniforms
-        changed_blocks = self.properties.uniform.updated
-        if len(changed_blocks) != 0:
-            # update part only
-            for block in changed_blocks:
-                n = block.data[0].size
-                t = block.data.dtype
-                if 'vec' in block.glsltype:
-                    n = block.glsltype.split('vec')[1]
-                    c = 1
-                    t = 'f'
-                    exec(f'gl.glUniform{n}{t}v({block.location},{c},block.data[{c - 1}])')
-                elif 'mat' in block.glsltype:
-                    n = block.glsltype.split('mat')[1]
-                    c = 1
-                    t = 'f'
-                    exec(f'gl.glUniformMatrix{n}{t}v({block.location},{c},True,block.data[{c - 1}])')
-                elif block.glsltype == 'int':
-                    gl.glUniform1i(block.location, block.data[0])
-                elif block.glsltype == 'float':
-                    gl.glUniform1f(block.location, block.data[0])
-                elif block.glsltype == 'bool':
-                    gl.glUniform1i(block.location, int(block.data[0]))
-                elif block.glsltype == 'sampler2D':
-                    gl.glUniform1i(block.location, block.data[0])
-                else:
-                    raise TypeError(f"parsing for '{block.glsltype}' undefined")
-
-        # update assigned matrix from global object
-        # mm = self.properties['MM']
-        # matrix = self.MM
-        # gl.glUniformMatrix4fv(mm.location, 1, True, matrix)
-
-        vp = Viewport.get_current()
-        vm = self.properties['VM']
-        matrix = vp.camera.VM
-        gl.glUniformMatrix4fv(vm.location, 1, True, matrix)
-
-        pm = self.properties['PM']
-        matrix = vp.camera.PM
-        gl.glUniformMatrix4fv(pm.location, 1, True, matrix)
-
-    def bind(self):
-        if not self._flag_built:
-            self._build_()
-            self._flag_built = True
-
-        self.shader.bind()
-
-        if isinstance(self.vertex_array, comp.Vertexarray):
-            self.vertex_array.bind()
-            if not gl.vao_stores_ibo:
-                self.index_buffer.bind()
-        else:
-            self.vertex_buffer.bind()
-            self.index_buffer.bind()
-
-        self.texture.bind()
-
-    @property
-    def properties(self):
-        return self._properties
 
 class Renderer_template:
     """
@@ -288,33 +31,39 @@ class Renderer_template:
     -no texture
     
     """
-    GL_DYNAMIC_DRAW = gl.GL_DYNAMIC_DRAW
+    GL_DYNAMIC_DRAW = Unique_glfw_context.GL_DYNAMIC_DRAW
 
+    # just a shell for IDE
     class Shader:
         pass
-
-    class VertexBuffer:
+    class Vertexarray:
         pass
-
+    class Vertexbuffer:
+        pass
     class Indexbuffer:
         pass
-
     class Texture:
         pass
-
+    # Real component classes
     Shader = comp.Shader
+    Vertexarray = comp.Vertexarray
     Vertexbuffer = comp.Vertexbuffer
     Indexbuffer = comp.Indexbuffer
     Texture = comp.Texture
-    # layout = Layout_container
-    _vertex_array = comp.RenderComponent()
-    _vertex_buffer = comp.RenderComponent()
-    _index_buffer = comp.RenderComponent()
-    _texture = comp.RenderComponent()
+
+    _shader = None
+    _vertex_array = None
+    _vertex_buffer = None
+    _index_buffer = None
+    _texture = None
+
+    _context_registry = weakref.WeakKeyDictionary()
 
     @classmethod
     def use_shader(cls, shader):
         if isinstance(shader, comp.Shader):
+            if shader._context != None:
+                raise
             cls._shader = shader
         else:
             raise TypeError
@@ -322,6 +71,9 @@ class Renderer_template:
     @classmethod
     def use_index_buffer(cls, index_buffer):
         if isinstance(index_buffer, comp.Indexbuffer):
+            if index_buffer._context != None:
+                raise
+
             cls._index_buffer = index_buffer
         else:
             raise TypeError
@@ -332,171 +84,104 @@ class Renderer_template:
 
     @classmethod
     def use_render_unit(cls, vao=True, vbo=True, index=False, texture=False):
+        cls._vertex_array = cls.Vertexarray if vao else cls._vertex_array
+        cls._vertex_buffer = cls.Vertexbuffer if vbo else cls._vertex_buffer
+        cls._index_buffer = cls.Indexbuffer if index else cls._index_buffer
+        cls._texture = cls.Texture if texture else cls._texture
 
-        ru = Render_unit_builder()
-
-        ru.use_shader(cls._shader)
-        ru.use_vertex_array() if vao else ru.use_vertex_array(cls._vertex_array)
-        ru.use_vertex_buffer() if vbo else ru.use_vertex_buffer(cls._vertex_buffer)
-        ru.use_index_buffer() if index else ru.use_index_buffer(cls._index_buffer)
-        ru.use_texture() if texture else ru.use_texture(cls._texture)
-
-        cls._render_unit_class = ru
 
     @classmethod
     def use_triangle_strip_draw(cls):
-        cls._drawmode = gl.GL_TRIANGLE_STRIP
+        cls._drawmode = Unique_glfw_context.GL_TRIANGLE_STRIP
 
 
     def new_render_unit(self):
-        # check for context first call
-        glfw_context = GLFW_GL_tracker.get_current()
-        reg = self._context_register
-        if glfw_context not in reg:
-            # generate class_singular gl components for the first call
-            self._shader.build()
-            if hasattr(self, '_index_buffer'):
-                self._index_buffer.build()
-            if hasattr(self, '_texture'):
-                self._texture.build()
-            reg.append(glfw_context)
-
-
-        # make new unit
-        ru = self._render_unit_class()
-        if glfw_context not in self._render_units:
-            self._render_units[glfw_context] = []
-        self._render_units[glfw_context].append(ru)
-        return ru
-
-
+        return self._render_unit_class()
 
     def __init__(self, name: str = None):
         # check shader-context-existence
         if not (hasattr(self, '_shader') and hasattr(self, '_drawmode')):
             raise Exception('Not enough comp fed.')
 
-        self._render_units = {}
-        self._context_register = []
-
+        # self._render_units = {}
         self._MM = np.eye(4)
 
         self._flag_draw = True
         self._flag_run = True
 
-        # default layer setting
-        # self.current_window.layer[0].add(self)
+        # check context
+        cls = self.__class__
+        context = Unique_glfw_context.get_current()
 
-    # def set_layout(self, const):
-    #     if isinstance(const,VBO_layout):
-    #         self._vbo_layout = const
-    #     else:
-    #         raise TypeError("should use instance's.const.(CORRECT_TYPE_CONST)")
+        self._context = weakref.ref(context)
+
+        if context not in cls._context_registry:
+            form = namedtuple('renderer_component',
+                              ['shader',
+                               'vertex_array',
+                               'vertex_buffer',
+                               'index_buffer',
+                               'texture', ])
+            renderer_components = [cls._shader, cls._vertex_array, cls._vertex_buffer, cls._index_buffer, cls._texture]
+            for i, comp in enumerate(renderer_components):
+                if comp != None and not isinstance(comp, type):
+                    renderer_components[i] = copy.deepcopy(comp)
+                    renderer_components[i].build(context)
+
+            cls._context_registry[context] = form(*renderer_components)
+
+        base_components = cls._context_registry[context]
+
+        # build a unit set, save it in instance
+        for n,v in zip(base_components._fields, base_components):
+            if v is None:
+                exec(f'self._{n} = None')
+            elif isinstance(v, type):
+                exec(f'self._{n} = v()')
+                exec(f'self._{n}.build(context)')
+            else:
+                exec(f'self._{n} = v')
+
+        if not all(i != None for i in (self._vertex_array, self._vertex_buffer)):
+            # TODO handle condition no vertex array or vertex buffer
+            #   can it be that way?
+            raise
+        self._shader_io = self._shader.io_type(self._shader, self._vertex_array, self._vertex_buffer)
 
     @property
-    def shader(self):
-        return self.__class__._shader
+    def context(self):
+        if self._context() is None:
+            raise
+        return self._context()
+
     @property
-    def vertex_array(self):
-        if hasattr(self,'_vertex_array'):
-            return self._vertex_array
+    def shader_io(self):
+        return self._shader_io
+
+    def bind(self):
+        if self.context != Unique_glfw_context.get_current():
+            raise
+
+        self._shader.bind()
+        if self._vertex_array != None:
+            self._vertex_array.bind()
+            if not Unique_glfw_context._spec_vao_stores_ibo:
+                if self._index_buffer != None:
+                    self._index_buffer.bind()
         else:
-            return comp.RenderComponent
+            if self._vertex_buffer != None:
+                self._vertex_buffer.bind()
+            if self._index_buffer != None:
+                self._index_buffer.bind()
+        if self._texture != None:
+            self._texture.bind()
 
-    @property
-    def vertex_buffer(self):
-        if hasattr(self, '_vertex_buffer'):
-            return self._vertex_buffer
-        else:
-            return comp.RenderComponent
+    def _draw_(self):
+        if self.flag_draw:
+            if Unique_glfw_context.get_current() != self.context:
+                raise
 
-    @property
-    def index_buffer(self):
-        if hasattr(self, '_index_buffer'):
-            return self._index_buffer
-        else:
-            return comp.RenderComponent
-
-    @property
-    def texture(self):
-        if hasattr(self, '_texture'):
-            return self._texture
-        else:
-            return comp.RenderComponent
-
-    def _check_shader_build(self):
-        # check for context first call
-        glfw_context = GLFW_GL_tracker.get_current()
-        reg = self._context_register
-
-        if glfw_context not in reg:
-            # generate class_singular gl components for the first call
-            self._shader.build()
-            if hasattr(self, '_index_buffer'):
-                self._index_buffer.build()
-            if hasattr(self, '_texture'):
-                self._texture.build()
-            reg.append(glfw_context)
-
-    def _draw_(self, render_unit, fbl = None):
-        self._check_shader_build()
-
-        # actual draw
-        fbo = FBL.get_current()
-        viewport = Viewport.get_current()
-
-        fbo.render_unit_registry.register(render_unit)
-        # check initiated context
-        context = GLFW_GL_tracker.get_current()
-
-        # if render_unit not in self._render_units[context]:
-        #     raise
-
-        if self.flag_draw or self.flag_run:
-            # load opengl states
-            render_unit.bind()
-
-            if self.flag_run:
-                render_unit.update_variables()
-
-            if self.flag_draw:
-                # Automated condition can't be set
-                # for example) if first draw is ignored and second draw is run
-                # to have similar frame to swap, ignored first has to be drawn before second
-                # which is nonsence.
-                # To avoid this window drawn on has to check every renderer before any draw call is made
-                # and if any draw call is evaluated to be called all other draw call on window has to be called
-
-                # TODO BUT if viewport is consistent window could just copy from front buffer partially and paste it
-                #      on the current drawing(back) buffer. This won't effect another viewport beeing refreshed.
-                #      If this makes thing faster this is worth a strategy.
-                #      Implement this.
-                if True:
-                    fbo.flag_something_rendered = True
-                    ibo = render_unit.index_buffer
-                    if ibo.count != 0:  # draw a thing
-                        fbo.begin()
-                        with fbo as fbo:
-                            viewport.fillbackground()  # before make any change erase background
-
-                            # get id color
-                            if render_unit.properties.has_property('u_id_color'):
-                                id = fbo.render_unit_registry.id_color(render_unit)
-                                uni = render_unit.properties['u_id_color']
-                                gl.glUniform4fv(uni.location, 1, id + [1, ])  # push color
-
-                            gl.glDrawElements(self.drawmode, ibo.count, ibo.gldtype, None)
-                        # fbo.end()
-
-            # TODO is this unnecessary processing? checking?
-            # self._unbind_global()
-
-    def _unbind_global(self):
-        self.shader.unbind()
-        self.vertex_array.unbind()
-        self.vertex_buffer.unbind()
-        self.index_buffer.unbind()
-        self.texture.unbind()
+            self.context.stack_render_unit((self, FBL.get_current(), Viewport.get_current(), 0))
 
     def _hide_(self, set=None):
         if set is None:

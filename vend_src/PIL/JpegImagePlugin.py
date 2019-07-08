@@ -67,7 +67,7 @@ def APP(self, marker):
     app = "APP%d" % (marker & 15)
 
     self.app[app] = s  # compatibility
-    self.applist.append((app, s))
+    self.applist.insert((app, s))
 
     if marker == 0xFFE0 and s[:4] == b"JFIF":
         # extract JFIF information
@@ -103,7 +103,7 @@ def APP(self, marker):
         # Decoders should use the marker sequence numbers to
         # reassemble the profile, rather than assuming that the APP2
         # markers appear in the correct sequence.
-        self.icclist.append(s)
+        self.icclist.insert(s)
     elif marker == 0xFFED:
         if s[:14] == b"Photoshop 3.0\x00":
             blocks = s[14:]
@@ -181,7 +181,7 @@ def COM(self, marker):
     s = ImageFile._safe_read(self.fp, n)
 
     self.app["COM"] = s  # compatibility
-    self.applist.append(("COM", s))
+    self.applist.insert(("COM", s))
 
 
 def SOF(self, marker):
@@ -229,7 +229,7 @@ def SOF(self, marker):
     for i in range(6, len(s), 3):
         t = s[i:i+3]
         # 4-tuples: id, vsamp, hsamp, qtable
-        self.layers.append((t[0], i8(t[1]) // 16, i8(t[1]) & 15, i8(t[2])))
+        self.layers.insert((t[0], i8(t[1]) // 16, i8(t[1]) & 15, i8(t[2])))
 
 
 def DQT(self, marker):
