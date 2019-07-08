@@ -9,35 +9,26 @@ class Vertexarray(RenderComponent):
         self._context = None
 
     def build(self, context):
-        self._context = context
+        super().build(context)
 
-        with self._context as gl:
+        with self.context as gl:
             self._glindex = gl.glGenVertexArrays(1)
 
     def bind(self):
-        with self._context as gl:
+        with self.context as gl:
             gl.glBindVertexArray(self._glindex)
 
     def unbind(self):
-        with self._context as gl:
+        with self.context as gl:
             gl.glBindVertexArray(0)
 
     def delete(self):
         if self._glindex != None:
-            with self._context as gl:
+            with self.context as gl:
                 gl.glDeleteVertexArrays(self._glindex)
                 print('vertexarray delete done')
             self._glindex = None
             self._context = None
-
-    def __del__(self):
-        if self._glindex != None:
-            self.delete()
-
-
-    # @property
-    # def vao(self):
-    #     return self._glindex
 
     def __str__(self):
         return f'<Vertex array object with opengl index: {self._glindex}>'

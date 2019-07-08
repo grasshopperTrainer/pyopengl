@@ -28,12 +28,9 @@ class Texture_new(Texture):
         self._context = None
 
     def build(self, context):
-        if context is None:
-            self._context = Unique_glfw_context.get_current()
-        else:
-            self._context = context
+        super().build(context)
 
-        with self._context as gl:
+        with self.context as gl:
             self._glindex = gl.glGenTextures(1)
 
             gl.glActiveTexture(gl.GL_TEXTURE0 + self._slot)
@@ -68,30 +65,21 @@ class Texture_new(Texture):
         self.build()
 
     def bind(self):
-        with self._context as gl:
+        with self.context as gl:
             gl.glActiveTexture(gl.GL_TEXTURE0 + self._slot)
             gl.glBindTexture(gl.GL_TEXTURE_2D, self._glindex)
 
     def unbind(self):
-        with self._context as gl:
+        with self.context as gl:
             gl.glActiveTexture(gl.GL_TEXTURE0)
             gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
     def delete(self):
         if self._glindex != None:
-            with self._context as gl:
-                gl.glDeleteTextures(1,self._glindex)
+            with self.context as gl:
+                gl.glDeleteTextures(self._glindex)
             self._glindex = None
             self._context = None
-
-    # def __del__(self):
-    #     if hasattr(self, '_glindex'):
-    #         self.delete()
-    #         del self._glindex
-
-    def __del__(self):
-        if self._glindex != None:
-            self.delete()
 
     @property
     def pixel_data(self):
@@ -105,13 +93,6 @@ class Texture_new(Texture):
     def default_repository(self, value: str):
         if isinstance(value, str):
             self.__class__._repository = value
-
-    def delete(self):
-        if self._glindex != None:
-            with self._context as gl:
-                gl.glDeleteTextures(self._glindex)
-            self._glindex = None
-            self._context = None
 
     @property
     def internalformat(self):
@@ -177,12 +158,9 @@ class Texture_load(Texture):
             raise FileNotFoundError("can't load file")
 
     def build(self, context):
-        if context is None:
-            self._context = Unique_glfw_context.get_current()
-        else:
-            self._context = context
+        super().build(context)
 
-        with self._context as gl:
+        with self.context as gl:
             self._glindex = np.array(gl.glGenTextures(1), np.uint8)
 
             gl.glActiveTexture(gl.GL_TEXTURE0 + self._slot)
@@ -219,24 +197,20 @@ class Texture_load(Texture):
 
 
     def bind(self):
-        with self._context as gl:
+        with self.context as gl:
             gl.glActiveTexture(gl.GL_TEXTURE0 + self._slot)
             gl.glBindTexture(gl.GL_TEXTURE_2D, self._glindex)
 
     def unbind(self):
-        with self._context as gl:
+        with self.context as gl:
             gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
     def delete(self):
         if self._glindex != None:
-            with self._context as gl:
+            with self.context as gl:
                 gl.glDeleteTextures(self._glindex)
             self._glindex = None
             self._context = None
-
-    def __del__(self):
-        if self._glindex != None:
-            self.delete()
 
     @property
     def pixel_data(self):

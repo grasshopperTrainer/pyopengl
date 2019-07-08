@@ -130,12 +130,12 @@ class Window(Matryoshka_coordinate_system):
             self._mother_window = weakref.ref(mother_window)  # type: Window
             mother_window._children_windows.add(self)
             # if window is shared share unique context too
-            self._unique_glfw_context = mother_window.glfw_context.give_tracker_to(self)
+            self._glfw_context = mother_window.glfw_context.give_tracker_to(self)
         else:
             self._mother_window = None  # type: Window
             # this is a unique context wrapper and is a context identifier
-            self._unique_glfw_context = Unique_glfw_context(self)
-        Unique_glfw_context.set_current(self._unique_glfw_context)
+            self._glfw_context = Unique_glfw_context(self)
+        Unique_glfw_context.set_current(self._glfw_context)
 
         Windows.set_current(self) # for init process may be needing which window is current
         # customizable frame
@@ -222,7 +222,6 @@ class Window(Matryoshka_coordinate_system):
         #
         self._flag_movable = True
         # self._dell = False
-        self._deleter = Deleters()
         self._flag_window_close = False
         self._flag_just_resized = True
 
@@ -485,8 +484,19 @@ class Window(Matryoshka_coordinate_system):
             if len(self.windows) == 0:
                 glfw.terminate()
 
-            self._deleter = None
             gc.collect()
+            # TODO deleting referensing this window
+            #   check this window's context and if it doesn't have any window do the same for the context
+
+
+            # print("==============")
+            # for i in gc.get_referrers(self._glfw_context):
+            #     print(type(i), i)
+            #     # if callable(i):
+            #     #     i()
+            # self._glfw_context = None
+            # exit()
+
 
     def config_movable(self, set:bool):
         self._flag_movable = set
@@ -1040,7 +1050,7 @@ class Window(Matryoshka_coordinate_system):
 
     @property
     def glfw_context(self):
-        return self._unique_glfw_context
+        return self._glfw_context
     @property
     def myframe(self):
         return self._myframe

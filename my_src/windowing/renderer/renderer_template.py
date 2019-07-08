@@ -22,7 +22,7 @@ class Render_unit:
 
 class Render_unit_builder:
     reg_count = 0
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, renderer, *args, **kwargs):
         new_cls = type(f'Render_unit{cls.reg_count}', (Render_unit, Render_unit_temp, ), {})
         cls.reg_count += 1
         return new_cls
@@ -32,7 +32,6 @@ class Render_unit_temp:
 
     _init_list = []
 
-    _context = None
     _shader = None
     _vertex_array = None
     _vertex_buffer = None
@@ -118,7 +117,8 @@ class Render_unit_temp:
         # generate instance
         # components can have three state 1. as a type 2. as a None 3. as a exterior object or
         cls = self.__class__
-        context = shader._context
+        exit()
+        context = shader.context
 
         self._use_my_vertex_array = False
         if isinstance(cls._vertex_array, type):
@@ -179,38 +179,6 @@ class Render_unit_temp:
                 vao.delete()
             if self._use_my_vertex_buffer:
                 vbo.delete()
-
-    # def build(self):
-        # # build rest of
-        #
-        # with self._context as context:
-        #     if not self.shader.is_built:
-        #         self.shader.build(context)
-        #
-        #     self.vertex_array.build(context)
-        #     self.vertex_array.bind()
-        #
-        #     self.index_buffer.build(context)
-        #     self.vertex_buffer.build(context)
-        #
-        #     self.vertex_array.unbind()
-        #
-        #     self.texture.build(context)
-
-    # def _build_(self):
-    #     # if not self.shader.is_built:
-    #     #     self.shader.build()
-    #
-    #     self.vertex_array.build()
-    #     self.vertex_array.bind()
-    #
-    #     self.index_buffer.build()
-    #     self.vertex_buffer.build()
-    #
-    #     self.vertex_array.unbind()
-    #
-    #     self.texture.build()
-
 
     def bind(self):
         context = Unique_glfw_context.get_current()
@@ -351,6 +319,50 @@ class Renderer_template:
         cls._use_render_unit_index = index
         cls._use_render_unit_texture = texture
 
+        render_unit_class = Render_unit_builder(cls)
+
+        # shader = copy.copy(cls._shader)
+        # render_unit_class.use_shader(shader)
+        # print(cls._shader)
+        unit = render_unit_class()
+        exit()
+        shader.build(glfw_context)
+        render_unit_class.use_shader(shader)
+
+        if cls._use_render_unit_index:
+            reunder_unit_class.use_index_buffer()
+        else:
+            if cls._index_buffer != None:
+                new_index_buffer = copy.deepcopy(cls._index_buffer)
+                new_index_buffer.build(glfw_context)
+                render_unit_class.use_index_buffer(new_index_buffer)
+
+        if cls._use_render_unit_texture:
+            render_unit_class.use_texture()
+        else:
+            if cls._texture != None:
+                new_texture = copy.deepcopy(cls._index_buffer)
+                new_texture.build(glfw_context)
+                render_unit_class.use_texture(new_texture)
+
+        if cls._use_render_unit_vao:
+            render_unit_class.use_vertex_array()
+        else:
+            if cls._vertex_array != None:
+                new_vertex_array = copy.deepcopy(cls._vertex_array)
+                new_vertex_array.build(glfw_context)
+                render_unit_class.use_vertex_array(new_vertex_array)
+
+        if cls._use_render_unit_vbo:
+            render_unit_class.use_vertex_buffer()
+        else:
+            if cls._vertex_buffer != None:
+                new_vertex_buffer = copy.deepcopy(cls._vertex_buffer)
+                new_vertex_buffer.build(glfw_context)
+                render_unit_class.use_vertex_buffer(new_vertex_buffer)
+
+        reg[glfw_context] = render_unit_class
+
         # ru = Render_unit_builder()
         #
         # ru.use_shader(cls._shader)
@@ -372,8 +384,13 @@ class Renderer_template:
         reg = self._context_register
         # print(list(glfw_context._windows.items()))
 
+        # print(glfw_context)
+        # if glfw_context not in self._render_unit_collection:
+        #     self._render_unit_collection[glfw_context] = {}
+        # self._render_unit_collection[glfw_context][]
+        # exit()
         if glfw_context not in reg:
-            render_unit_class = Render_unit_builder(glfw_context)
+            render_unit_class = Render_unit_builder()
 
             shader = copy.copy(self._shader)
             shader.build(glfw_context)
@@ -423,6 +440,7 @@ class Renderer_template:
 
         # self._render_units = {}
         self._context_register = weakref.WeakKeyDictionary()
+        self._render_unit_collection = weakref.WeakKeyDictionary()
 
         self._MM = np.eye(4)
 

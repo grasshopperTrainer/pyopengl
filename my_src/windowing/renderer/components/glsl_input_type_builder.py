@@ -70,7 +70,7 @@ class glsl_attribute:
             element = data[i]
             size = element.itemsize * element.size
 
-            with Unique_glfw_context.get_current() as gl:
+            with instance.context as gl:
                 gl.glBufferSubData(gl.GL_ARRAY_BUFFER, off, size, element)
 
 class vector(glsl_attribute):
@@ -84,7 +84,7 @@ class vector(glsl_attribute):
         l = self._location
 
         instance._shader.bind()
-        with instance._context as gl:
+        with instance.context as gl:
             exec(f'gl.glUniform{n}{t}v({l},{c},d)')
 
 class vec2(vector):
@@ -106,7 +106,7 @@ class matrix(glsl_attribute):
         c = 1
         t = d.dtype.kind
         instance._shader.bind()
-        with instance._context as gl:
+        with instance.context as gl:
             exec(f'gl.glUniformMatrix{n}{t}v({l},{c},False,d)')
 
 class mat4(matrix):
@@ -122,7 +122,8 @@ class integer(glsl_attribute):
     def push_uniform(self, instance):
         d = self._dict[instance][self._name][0]
         instance.shader.bind()
-        gl.glUniform1i(self._location, d)
+        with instance.context as gl:
+            gl.glUniform1i(self._location, d)
 
 class bool(integer):
 
@@ -208,11 +209,15 @@ class GLSL_input_type_template:
 
     _flag_uniform_location_validated = False
     _att_dict = None
+    @property
+    def context(self):
+        return self._context()
 
     def __init__(self,vertex_array, vertex_buffer, shader):
         if not  vertex_buffer._context == vertex_buffer._context == shader._context:
             raise
-        self._context = vertex_buffer._context
+        self._context = weakref.ref(vertex_buffer.context)
+
         self._vertex_array = vertex_array
         self._vertex_buffer = vertex_buffer
         self._shader = shader

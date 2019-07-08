@@ -48,9 +48,9 @@ class Indexbuffer(RenderComponent):
         self._glindex = None
 
     def build(self, context):
-        self._context = context
+        super().build(context)
 
-        with self._context as gl:
+        with self.context as gl:
             # if self._flag_firstbuild:
             self._glindex = gl.glGenBuffers(1)
                 # self._flag_firstbuild = False
@@ -62,23 +62,19 @@ class Indexbuffer(RenderComponent):
             # print('-index buffer built')
 
     def bind(self):
-        with self._context as gl:
+        with self.context as gl:
             gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self._glindex)
 
     def unbind(self):
-        with self._context as gl:
+        with self.context as gl:
             gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, 0)
 
     def delete(self):
         if self._glindex != None:
-            with self._context as gl:
+            with self.context as gl:
                 gl.glDeleteBuffers(self._glindex)
             self._glindex = None
             self._context = None
-
-    def __del__(self):
-        if self._glindex != None:
-            self.delete()
 
     @property
     def data(self):
@@ -107,10 +103,6 @@ class Indexbuffer(RenderComponent):
             dtype = self._dtype
 
         self._data = med.astype(dtype)
-
-    @property
-    def ibo(self):
-        return self._glindex
 
     @property
     def count(self):

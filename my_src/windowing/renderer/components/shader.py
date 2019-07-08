@@ -30,9 +30,9 @@ class Shader(RenderComponent):
 
 
     def build(self, context):
-        self._context = context
+        super().build(context)
 
-        with self._context as gl:
+        with self.context as gl:
             # 1. create program
             self._glindex = gl.glCreateProgram()
             # 3. bind shaders
@@ -133,7 +133,7 @@ class Shader(RenderComponent):
         return vertex_string, fragment_string, tuple(att), tuple(uni)
 
     def _bake_shader(self):
-        with self._context as gl:
+        with self.context as gl:
             def compile(type, source):
                 id = gl.glCreateShader(type)
                 gl.glShaderSource(id, source)
@@ -176,25 +176,19 @@ class Shader(RenderComponent):
     #             v = d[n][0]
     #             gl.glDeleteProgram(v)
     def bind(self):
-        with self._context as gl:
+        with self.context as gl:
             gl.glUseProgram(self.glindex)
 
     def unbind(self):
-        with self._context as gl:
+        with self.context as gl:
             gl.glUseProgram(0)
 
     def delete(self):
         if self._glindex != None:
-            with self._context as gl:
+            with self.context as gl:
                 gl.glDeleteProgram(self._glindex)
             self._glindex = None
             self._context = None
-
-
-    def __del__(self):
-        if self._glindex != None:
-            self.delete()
-
 
     @property
     def vertexarray(self):

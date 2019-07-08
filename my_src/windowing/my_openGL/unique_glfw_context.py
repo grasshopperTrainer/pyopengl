@@ -620,9 +620,9 @@ class Unique_glfw_context:
             buffers = [buffers, ]
         self._buffers.remove(buffers)
         gl.glDeleteBuffers(len(buffers),buffers)
-        print('+++++++++')
-        print(self)
-        raise
+        # print('+++++++++')
+        # print(self)
+        # raise
     # frame buffer
 
     def glGenFramebuffers(self, n, framebuffers=None):

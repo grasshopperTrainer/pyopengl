@@ -16,9 +16,9 @@ class Vertexbuffer(RenderComponent):
         self._context = None
 
     def build(self, context=None):
-        self._context = context
+        super().build(context)
 
-        with self._context as gl:
+        with self.context as gl:
             self._glindex = gl.glGenBuffers(1)
 
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self._glindex)
@@ -27,11 +27,11 @@ class Vertexbuffer(RenderComponent):
 
     def push_buffer(self, buffer):
         datasize = buffer.size * buffer.itemsize
-        with self._context as gl:
+        with self.context as gl:
             gl.glBufferData(gl.GL_ARRAY_BUFFER, datasize, buffer, self._glusage)
 
     def set_attribpointer(self, buffer_data):
-        with self._context as gl:
+        with self.context as gl:
             """
             This is called after binding VertexArrayObject to bind layout? with VAO.
             Thus is not run in self.build stage and separated.
@@ -87,22 +87,18 @@ class Vertexbuffer(RenderComponent):
     def bind(self):
         if self._glindex is None:
             self.build()
-        with self._context as gl:
+        with self.context as gl:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self._glindex)
     def unbind(self):
-        with self._context as gl:
+        with self.context as gl:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)
 
     def delete(self):
         if self._glindex != None:
-            with self._context as gl:
+            with self.context as gl:
                 gl.glDeleteBuffers(self._glindex)
             self._glindex = None
             self._context = None
-
-    def __del__(self):
-        if self._glindex != None:
-            self.delete()
 
     @property
     def data(self):

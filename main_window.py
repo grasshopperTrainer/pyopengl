@@ -83,7 +83,7 @@ class Main_window(Window):
         # self.mouse.set_object_selection_callback(self.rect.unit,self.mouse.set_button_press_callback,self.rect.switch_color,None)
 
     def _draw_(self):
-
+        print(list(self.rect.unit._context_dict.keys()))
         # pos = glfw.get_cursor_pos(self.glfw_window)
         # if 0<pos[0]<100 and 0<pos[1]<100:
         #     print('mouse on position')
@@ -106,7 +106,7 @@ class Main_window(Window):
 
         if self.mouse.is_in_area([0,0,],[100,100]) and self.mouse.is_just_pressed:
             if not self.windows.has_window_named('top_bar'):
-                self.top_bar = Top_bar(self)
+                self.top_bar = Top_bar(self.rect)
                 pass
             else:
                 if self.top_bar.flag_follow_active:
@@ -146,9 +146,10 @@ class Main_window(Window):
 
 class Top_bar(Window):
 
-    def __init__(self, mother):
+    def __init__(self, obj):
         self.config_visible(False)
-        super().__init__(1000,100, 'top_bar',None, mother)
+        super().__init__(1000,100, 'top_bar',None, None)
+        self.set_post_draw_callback(obj.switch_color)
         # print('[result of debuging unshared vertex array]')
         # print('of mother')
         # vao = mother.glfw_context._vertex_arrays
@@ -170,8 +171,8 @@ class Top_bar(Window):
         # exit()
         # self.set_window_z_position(1)
 
-        self.follow_window_iconify(mother)
-        self.follow_window_close(mother)
+        # self.follow_window_iconify(mother)
+        # self.follow_window_close(mother)
 
         self.position = (500,500)
         self.config_visible(True)
