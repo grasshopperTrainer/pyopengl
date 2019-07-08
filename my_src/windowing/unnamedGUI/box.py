@@ -99,20 +99,18 @@ class Filled_box(Box):
             when initiating ... like first_rect = TestBRO()
             how to make calling free???
             """
-    c = Renderer_builder()
-    c.use_shader(c.Shader('basic_gui_box'))
-    c.use_triangle_strip_draw()
-    c.use_index_buffer(c.Indexbuffer((0, 1, 3, 3, 1, 2)))
+    renderer = Renderer_builder()
+    renderer.use_shader(renderer.Shader('basic_gui_box'))
+    renderer.use_triangle_strip_draw()
+    renderer.use_index_buffer(renderer.Indexbuffer((0, 1, 3, 3, 1, 2)))
 
-    c.use_render_unit(vao=True, vbo=True)
-
-    renderer = c()
+    renderer.use_render_unit(vao=True, vbo=True)
 
     def __init__(self,posx, posy, width, height, window=None, viewport=None):
         super().__init__(posx, posy, width, height, window, viewport)
 
-        self._unit = self.renderer.new_render_unit()
-        self._unit.shader_attribute.resize(4)
+        self._unit = self.renderer()
+        self._unit.shader_io.resize(4)
 
         self._fill_color = 1,1,1,1
 
@@ -138,10 +136,10 @@ class Filled_box(Box):
         if self._flag_draw:
             if self.viewport != None:
                 with self.viewport:
-                    self._unit.shader_attribute.a_position = self.vertex()
-                    self._unit.shader_attribute.u_fillcol = self._fill_color
+                    self._unit.shader_io.a_position = self.vertex()
+                    self._unit.shader_io.u_fillcol = self._fill_color
 
-                    self.renderer._draw_(self._unit)
+                    self._unit._draw_()
 
 class Block(Filled_box):
     # TODO maybe need do-not-color

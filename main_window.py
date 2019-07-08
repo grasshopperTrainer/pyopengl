@@ -1,6 +1,5 @@
 from windowing.window import Window
 import glfw
-from windowing.renderer.BRO.testBRO import TestBRO
 from windowing.unnamedGUI import *
 import numpy as np
 from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
@@ -83,7 +82,6 @@ class Main_window(Window):
         # self.mouse.set_object_selection_callback(self.rect.unit,self.mouse.set_button_press_callback,self.rect.switch_color,None)
 
     def _draw_(self):
-        print(list(self.rect.unit._context_dict.keys()))
         # pos = glfw.get_cursor_pos(self.glfw_window)
         # if 0<pos[0]<100 and 0<pos[1]<100:
         #     print('mouse on position')

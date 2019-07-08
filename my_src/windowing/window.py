@@ -856,16 +856,16 @@ class Window(Matryoshka_coordinate_system):
 
                                             unit.bind()
 
-                                            if hasattr(unit.shader_attribute, 'PM'):
-                                                unit.shader_attribute.PM = vp.camera.PM
-                                            if hasattr(unit.shader_attribute, 'VM'):
-                                                unit.shader_attribute.VM = vp.camera.VM
-                                            if hasattr(unit.shader_attribute, 'u_id_color'):
+                                            if hasattr(unit.shader_io, 'PM'):
+                                                unit.shader_io.PM = vp.camera.PM
+                                            if hasattr(unit.shader_io, 'VM'):
+                                                unit.shader_io.VM = vp.camera.VM
+                                            if hasattr(unit.shader_io, 'u_id_color'):
                                                 color_id = frame.render_unit_registry.register(unit)
-                                                unit.shader_attribute.u_id_color = color_id  # push color
+                                                unit.shader_io.u_id_color = color_id  # push color
 
                                             # TODO how to store drawing conditing inside unit?
-                                            gl.glDrawElements(gl.GL_TRIANGLE_STRIP, unit.index_buffer.count, unit.index_buffer.gldtype, None)
+                                            gl.glDrawElements(gl.GL_TRIANGLE_STRIP, unit._index_buffer.count, unit._index_buffer.gldtype, None)
 
                     context.render_unit_stack_reset()
 

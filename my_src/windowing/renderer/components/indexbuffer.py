@@ -17,15 +17,12 @@ class Indexbuffer(RenderComponent):
             glusage = self.__class__.GL_DYNAMIC_DRAW
         self._glusage = glusage
 
-        if data is None:
-            self._data = np.array([])
-        else:
-            self.data = data
+
 
         # save dtype for glDrawElement()
         if dtype is None:
             # if not given will consider it automate mode
-            self._dtype = None
+            self._dtype = np.uint8
         elif isinstance(dtype, int):
             if dtype == 0:
                 self._dtype = np.uint8
@@ -40,8 +37,17 @@ class Indexbuffer(RenderComponent):
                 self._dtype = np.uint16
             elif 'int' in dtype or 'INT' in dtype:
                 self._dtype = np.uint32
+        elif isinstance(dtype, type(np.dtype)):
+            self._dtype = dtype
         else:
             raise TypeError
+
+        if data is None:
+            self._data = np.array([])
+        elif isinstance(data, np.ndarray):
+            self._data = data
+        elif isinstance(data, (list, tuple)):
+            self._data = np.array(data, dtype=self._dtype)
 
         # object index(?or just referring as just object is correct?) from OpenGL
         self._context = None
@@ -103,6 +109,9 @@ class Indexbuffer(RenderComponent):
             dtype = self._dtype
 
         self._data = med.astype(dtype)
+
+    def copy(self):
+        return self.__class__(self._data, self._glusage, self._dtype)
 
     @property
     def count(self):

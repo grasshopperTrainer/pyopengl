@@ -30,5 +30,8 @@ class Vertexarray(RenderComponent):
             self._glindex = None
             self._context = None
 
+    def copy(self):
+        return self.__class__()
+
     def __str__(self):
         return f'<Vertex array object with opengl index: {self._glindex}>'

@@ -24,7 +24,7 @@ class Shader(RenderComponent):
         for n,t,l in self._uniform:
             self._properties.new_uniform(n,t,l)
 
-        self._input_type = GLSL_input_type_builder(self._vertex, self._fragment) #type: GLSL_input_type_template
+        self._io_type = GLSL_input_type_builder(self._vertex, self._fragment) #type: GLSL_input_type_template
 
         self._flag_built = False
 
@@ -206,8 +206,8 @@ class Shader(RenderComponent):
     def glindex(self):
         return self._glindex
     @property
-    def input_type(self):
-        return self._input_type
+    def io_type(self):
+        return self._io_type
 
     def _validate_uniform_location(self):
         # for i, block in enumerate(self.properties.attribute.blocks):

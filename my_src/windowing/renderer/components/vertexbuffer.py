@@ -31,6 +31,7 @@ class Vertexbuffer(RenderComponent):
             gl.glBufferData(gl.GL_ARRAY_BUFFER, datasize, buffer, self._glusage)
 
     def set_attribpointer(self, buffer_data):
+        self._data = buffer_data
         with self.context as gl:
             """
             This is called after binding VertexArrayObject to bind layout? with VAO.
@@ -83,12 +84,15 @@ class Vertexbuffer(RenderComponent):
                     # print('stride:',stride)
                     gl.glVertexAttribPointer(i, size, gltype, gl.GL_FALSE, stride, offset)
             pass
+    def copy(self):
+        return self.__class__(self._glusage, self._data)
 
     def bind(self):
         if self._glindex is None:
             self.build()
         with self.context as gl:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self._glindex)
+
     def unbind(self):
         with self.context as gl:
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0)

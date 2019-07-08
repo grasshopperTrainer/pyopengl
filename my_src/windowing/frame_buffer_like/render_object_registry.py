@@ -1,6 +1,6 @@
 import weakref
 from collections import namedtuple
-from windowing.renderer.renderer_template import Render_unit
+from windowing.renderer.renderer_template import Renderer_template
 
 class Render_object_registry:
 
@@ -20,7 +20,7 @@ class Render_object_registry:
         if self._counter ^ self._counter_max == 0  and len(self._candidate) == 0:
             raise IndexError('register is fully filled')
 
-        if isinstance(object, Render_unit):
+        if isinstance(object, Renderer_template):
             if object not in self._collections:
                 if len(self._candidate) == 0:
                     id = self._counter

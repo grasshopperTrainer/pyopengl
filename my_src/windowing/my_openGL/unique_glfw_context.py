@@ -335,10 +335,11 @@ class Unique_glfw_context:
         #
         # elif Windows.get_current() not in self.get_shared_windows():
         #     self._temp_windows.append(Windows.get_current())
+        self.set_current(self)
         if len(self.get_shared_windows()) != 0:
-            # win = self.get_shared_windows()[0]
-            # if Windows.get_current() != win:
-            #     win.make_window_current()
+            win = self.get_shared_windows()[0]
+            if Windows.get_current() != win:
+                win.make_window_current()
             return self #type:Unique_glfw_context
         else:
             return Hollow_context()
@@ -596,7 +597,7 @@ class Unique_glfw_context:
         cls._spec_vendor = gl.glGetString(gl.GL_VENDOR)
 
         # from the bug of intel graphics, need this mark to trigger extra ibo binding
-        cls.vao_stores_ibo = False
+        cls._spec_vao_stores_ibo = False
         # TODO write down test to verify whether GL_ELEMENT_ARRAY_BUFFER can be
         #   bound with VAO. Don't know how yet.
 

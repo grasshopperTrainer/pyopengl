@@ -146,7 +146,7 @@ class GLSL_input_type_builder:
     _count = 0
 
     def __new__(cls, *args, **kwargs):
-        glsl_type = type(f'shader_object{cls._count}', (GLSL_input_type_template,), {'kkk':10})
+        glsl_type = type(f'shader_object{cls._count}', (GLSL_input_type_template,), {})
 
         if len(args) != 2:
             raise
@@ -213,7 +213,7 @@ class GLSL_input_type_template:
     def context(self):
         return self._context()
 
-    def __init__(self,vertex_array, vertex_buffer, shader):
+    def __init__(self,shader, vertex_array, vertex_buffer):
         if not  vertex_buffer._context == vertex_buffer._context == shader._context:
             raise
         self._context = weakref.ref(vertex_buffer.context)
@@ -242,11 +242,12 @@ class GLSL_input_type_template:
         self._vertex_buffer.unbind()
         self._flag_resized = True
 
-    def copy(self, vao, vbo, shader):
+    def copy(self,shader, vao, vbo):
         new = self.__class__(vao, vbo, shader)
         new._attribute_buffer = self._attribute_buffer
         new._uniform_buffer = self._uniform_buffer
         new.resize(len(new._attribute_buffer))
+
 
         return new
     # @classmethod
