@@ -3,7 +3,7 @@ from windowing.renderer.components.framebuffer import Framebuffer
 from windowing.renderer.components.renderbuffer import Renderbuffer
 from windowing.renderer.components.texture import Texture_new
 from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
-from windowing.viewport.viewport import Viewport
+from windowing.frame_buffer_like.viewport import Viewport
 
 class Renderable_image(FBL):
     def __init__(self, width, height):

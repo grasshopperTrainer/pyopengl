@@ -30,30 +30,26 @@ class glsl_attribute:
     def __set__(self, instance, value):
         if instance not in self._dict:
             self._dict[instance] = {}
-        if not np.array_equal(self._dict[instance][self._name], value):
-            try:
-                if len(self._dict[instance][self._name]) != len(value):
-                    self._dict[instance].resize(4, refcheck=False)
-                    self._dict[instance][self._name] = value
-                else:
-                    self._dict[instance][self._name] = value
-                # print(id(self._dict[instance[self._name]]))
-            except:
-                self._dict[instance][self._name] = value.flatten('F')
 
-            if self._kind == 0:
-                # instance._attribute_update_que.append(self._name)
-                self.push_attribute(instance)
-            else:
-                self.push_uniform(instance)
-                # instance._uniform_update_que.append(self)
+        target = self._dict[instance][self._name]
+        if self._kind == 0:
+            if len(target) != len(value):
+                raise
+        elif self._kind == 1:
+            value = np.array(value) if len(value) == 1 else np.array((value,))
+
+        try:
+            self._dict[instance][self._name] = value
+        except:
+            self._dict[instance][self._name] = value.flatten('F')
+
+        self.save_attribute(instance) if self._kind == 0 else self.save_uniform(instance)
 
 
     def set_array(self,instance, array):
         self._dict[instance] = array
 
-    def push_attribute(self, instance):
-        instance._vertex_buffer.bind()
+    def save_attribute(self, instance):
         buffer = self._dict[instance]
         start_pos = buffer.dtype.names.index(self._name)
 
@@ -69,23 +65,18 @@ class glsl_attribute:
             off = start_off + buffer.itemsize * i
             element = data[i]
             size = element.itemsize * element.size
-
-            with instance.context as gl:
-                gl.glBufferSubData(gl.GL_ARRAY_BUFFER, off, size, element)
+            instance._attribute_push_que.append((Unique_glfw_context.glBufferSubData,(Unique_glfw_context.GL_ARRAY_BUFFER, off, size, element)))
 
 class vector(glsl_attribute):
     _dtype = np.float32
 
-    def push_uniform(self, instance):
+    def save_uniform(self, instance):
         n = int(self.__class__.__name__.split('vec')[1])
         c = 1
         d = self._dict[instance][self._name][0]
         t = d.dtype.kind
         l = self._location
-
-        instance._shader.bind()
-        with instance.context as gl:
-            exec(f'gl.glUniform{n}{t}v({l},{c},d)')
+        instance._uniform_push_que[self._name] = eval(f'Unique_glfw_context.glUniform{n}{t}v'),(l,c,d)
 
 class vec2(vector):
     _n = 2
@@ -99,15 +90,13 @@ class vec4(vector):
 
 class matrix(glsl_attribute):
 
-    def push_uniform(self, instance):
+    def save_uniform(self, instance):
         n = int(self.__class__.__name__.split('mat')[1])
         d = self._dict[instance][self._name][0]
         l = self._location
         c = 1
         t = d.dtype.kind
-        instance._shader.bind()
-        with instance.context as gl:
-            exec(f'gl.glUniformMatrix{n}{t}v({l},{c},False,d)')
+        instance._uniform_push_que[self._name] = eval(f'Unique_glfw_context.glUniformMatrix{n}{t}v'),(l,c,False,d)
 
 class mat4(matrix):
     _n = 16
@@ -119,11 +108,9 @@ class integer(glsl_attribute):
     _dtype = np.int
 
 
-    def push_uniform(self, instance):
+    def save_uniform(self, instance):
         d = self._dict[instance][self._name][0]
-        instance.shader.bind()
-        with instance.context as gl:
-            gl.glUniform1i(self._location, d)
+        instance._uniform_push_que[self._name] = Unique_glfw_context.glUniform1i,(self._location, d)
 
 class bool(integer):
 
@@ -222,8 +209,8 @@ class GLSL_input_type_template:
         self._vertex_buffer = vertex_buffer
         self._shader = shader
         # copy buffer structure
-        self._attribute_buffer = self.__class__._attribute_buffer.copy()
-        self._uniform_buffer = self.__class__._uniform_buffer.copy()
+        self._attribute_buffer = copy.deepcopy(self.__class__._attribute_buffer)
+        self._uniform_buffer = copy.deepcopy(self.__class__._uniform_buffer)
 
         # initiate property objects
         for kind, dtype, name, location in self._att_dict:
@@ -231,8 +218,27 @@ class GLSL_input_type_template:
 
 
         self._flag_resized = False
-        self._attribute_update_que = []
-        self._uniform_update_que = []
+        self._attribute_push_que = []
+        self._uniform_push_que = {}
+
+    def push_all(self, context):
+        if context != self.context:
+            raise
+        # TODO attribute update sequence and uniform update sequence is little bit different...
+        #   that's because shader is shared and vertex buffer is not... what if vertex buffer is also shared? need to think about it more
+        with self.context as gl:
+            if len(self._attribute_push_que) != 0:
+                self._vertex_buffer.bind()
+                for f, args in self._attribute_push_que:
+                    f(gl,*args)
+                self._attribute_push_que = []
+
+            for f, args in self._uniform_push_que.values():
+                f(gl,*args)
+        # print('dddddddddddd')
+        # print(self._attribute_push_que)
+        # print(self._uniform_push_que)
+        # self._uniform_push_que = []
 
     def resize(self, n):
         self._attribute_buffer.resize(n, refcheck=False)
@@ -240,16 +246,18 @@ class GLSL_input_type_template:
         self._vertex_buffer.bind()
         self._vertex_buffer.set_attribpointer(self._attribute_buffer)
         self._vertex_buffer.unbind()
-        self._flag_resized = True
+        # self._flag_resized = True
 
-    def copy(self,shader, vao, vbo):
-        new = self.__class__(vao, vbo, shader)
-        new._attribute_buffer = self._attribute_buffer
-        new._uniform_buffer = self._uniform_buffer
-        new.resize(len(new._attribute_buffer))
+        # exit()
 
-
-        return new
+    # def copy(self,shader, vao, vbo):
+    #     new = self.__class__(vao, vbo, shader)
+    #     new._attribute_buffer = self._attribute_buffer
+    #     new._uniform_buffer = self._uniform_buffer
+    #     new.resize(len(new._attribute_buffer))
+    #
+    #
+    #     return new
     # @classmethod
     # def validate_uniform_location(cls):
     #     mark = None

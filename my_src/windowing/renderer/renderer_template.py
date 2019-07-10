@@ -1,10 +1,6 @@
 # from windowing.my_openGL.unique_glfw_context import Trackable_openGL as gl
-from windowing.windows import Windows
 from ..my_openGL.unique_glfw_context import Unique_glfw_context
 from ..renderer import components as comp
-
-from ..frame_buffer_like.frame_buffer_like_bp import FBL
-from ..viewport.viewports import Viewport
 from collections import namedtuple
 
 import numpy as np
@@ -127,12 +123,10 @@ class Renderer_template:
                 if comp != None and not isinstance(comp, type):
                     renderer_components[i] = copy.deepcopy(comp)
                     renderer_components[i].build(context)
-
             cls._context_registry[context] = form(*renderer_components)
 
-        base_components = cls._context_registry[context]
-
         # build a unit set, save it in instance
+        base_components = cls._context_registry[context]
         for n,v in zip(base_components._fields, base_components):
             if v is None:
                 exec(f'self._{n} = None')
@@ -158,14 +152,22 @@ class Renderer_template:
     def shader_io(self):
         return self._shader_io
 
-    def bind(self):
-        if self.context != Unique_glfw_context.get_current():
+    def draw(self):
+        if self.flag_draw:
+            if Unique_glfw_context.get_current() != self.context:
+                raise
+
+            self.context.render_unit_add(self)
+
+    def _draw_(self, context, frame, viewport):
+        # binding
+        if self.context != context:
             raise
 
         self._shader.bind()
         if self._vertex_array != None:
             self._vertex_array.bind()
-            if not Unique_glfw_context._spec_vao_stores_ibo:
+            if not context._spec_vao_stores_ibo:
                 if self._index_buffer != None:
                     self._index_buffer.bind()
         else:
@@ -176,12 +178,18 @@ class Renderer_template:
         if self._texture != None:
             self._texture.bind()
 
-    def _draw_(self):
-        if self.flag_draw:
-            if Unique_glfw_context.get_current() != self.context:
-                raise
+        if hasattr(self.shader_io, 'PM'):
+            self.shader_io.PM = viewport.camera.PM
+        if hasattr(self.shader_io, 'VM'):
+            self.shader_io.VM = viewport.camera.VM
+        if hasattr(self.shader_io, 'u_id_color'):
+            color_id = frame.render_unit_registry.register(self)
+            self.shader_io.u_id_color = color_id  # push color
 
-            self.context.stack_render_unit((self, FBL.get_current(), Viewport.get_current(), 0))
+        self.shader_io.push_all(context)
+        # TODO how to store drawing conditing inside unit?
+        context.glDrawElements(context.GL_TRIANGLE_STRIP, self._index_buffer.count, self._index_buffer.gldtype, None)
+
 
     def _hide_(self, set=None):
         if set is None:

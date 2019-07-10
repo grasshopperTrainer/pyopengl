@@ -3,8 +3,8 @@ from ..callback_repository import Callback_repository
 import weakref
 
 class _Button(Filled_box):
-    def __init__(self,posx,posy,width,height,window=None,viewport=None):
-        super().__init__(posx,posy,width,height,window,viewport)
+    def __init__(self,posx,posy,width,height,window=None):
+        super().__init__(posx,posy,width,height,window)
 
         self._color0 = 1, 1, 1, 1
         self._color1 = .5, .5, .5, 1
@@ -83,8 +83,8 @@ class _Button(Filled_box):
 
 # few pre_built buttons
 class Button_press(_Button):
-    def __init__(self,posx,posy,width,height,window=None,viewport=None):
-        super().__init__(posx,posy,width,height,window,viewport)
+    def __init__(self,posx,posy,width,height,window=None):
+        super().__init__(posx,posy,width,height,window)
         self._buttons_to_respond = [0,]
         self._flag_config_false_click = True
 
@@ -170,8 +170,8 @@ class Button_pressing(Button_press):
 
 
 class Button_hover(_Button):
-    def __init__(self,posx,posy,width,height,window=None,viewport=None):
-        super().__init__(posx,posy,width,height,window,viewport)
+    def __init__(self,posx,posy,width,height,window=None):
+        super().__init__(posx,posy,width,height,window)
         self._hover_target_frame_count = 5
         self._hover_accumulate_frame_count = 0
 
@@ -185,7 +185,6 @@ class Button_hover(_Button):
                     else:
                         self.fill_color = self.color1
                         self._flag_state = 1
-                        # print("kkkkkkkkkkkkkkk")
                         self.draw()
                 elif self._flag_state == 1:
                     pass
@@ -208,16 +207,15 @@ class Button_hover(_Button):
 
 
 class Button_hover_press(Button_hover, Button_press):
-    def __init__(self,posx,posy,width,height,window=None,viewport=None):
-        super().__init__(posx,posy,width,height,window,viewport)
+    def __init__(self,posx,posy,width,height,window=None):
+        super().__init__(posx,posy,width,height,window)
 
         self._color2 = 1,0,0,1
         self._click_target_frame_count = 10
         self._click_accumulate_frame_count = 0
 
     def switch_color(self):
-        if self.window != None and self.window.is_focused:
-
+        if self.window != None:
             mouse = self.window.mouse
 
             if self._click_accumulate_frame_count != 0:

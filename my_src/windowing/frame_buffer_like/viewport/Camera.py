@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..frame_buffer_like.frame_buffer_like_bp import FBL
+from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
 
 class _Camera:
     """

@@ -22,27 +22,32 @@ class Main_window(Window):
         self.flag_topbar_created = False
         self.top_bar = None
 
-        self.rect = Button_hover(0,0,100,100,self,self.viewports[0])
-        # # ui menu bar
-        # self.button0 = Button_press(0., 0., 50, 50)
-        # self.button1 = Button_press(50, 0., 50, 50)
-        # self.button2 = Button_press(100, 0., 50, 50)
+        self.rect = Button_hover(0,0,100,100,self)
         #
-        # self.button0_list = Block(0., 0.,50,-200,self,self.viewports[0])
-        # self.button0_list.fill_color = 1,0,0,1
-        # self.button0_list.is_child_of(self.button0)
-        #
-        # self.button0_list_buttons = []
-        # for i in range(5):
-        #     height = 50
-        #     button = Button_hover_press(0,-(i+1)*height ,1.0,height)
-        #     button.disable_all_draw()
-        #     self.button0_list.is_mother_of(button)
-        #
-        # # right buttons
-        # self.button_close = Button_hover_press(lambda x:x-50,0,50,50)
-        # self.button_maximize = Button_hover_press(lambda x:x-100,0,50,50)
-        # self.button_iconize = Button_hover_press(lambda x:x-150,0,50,50)
+        # right buttons
+        self.button_iconize = Button_hover_press(0,0,50,50)
+        self.button_maximize = Button_hover_press(50,0,50,50)
+        self.button_close = Button_hover_press(100,0,50,50)
+
+        self.right_buttons = Block(lambda x:x-150,lambda y:y-50,150,50,self)
+
+        self.right_buttons.is_mother_of( self.button_iconize, self.button_maximize, self.button_close)
+
+        self.button_close.set_1_just_callback(
+            lambda: self.config_window_close(),
+            identifier='window_close',
+            deleter=self.button_close
+        )
+        self.button_maximize.set_1_just_callback(
+            lambda: (self.config_maximize(not self.is_maximized),self.refresh_all()),
+            identifier='window_maximize',
+            deleter=self.button_close
+        )
+        self.button_iconize.set_1_just_callback(
+            lambda: self.config_iconified(True),
+            identifier='window_iconify',
+            deleter=self.button_close
+        )
         #
         # # Button_hover_press.state
         # self.menu_block = Block(0, lambda x: x - 50, 1.0, 50, window=self, viewport=self.viewports[0])
@@ -58,27 +63,9 @@ class Main_window(Window):
         # self.button0.set_1_just_callback(lambda: (self.button0_list.enable_all_draw(), self.button0_list.draw(), print(self.button0.vertex())))
         # self.button0.set_0_just_callback(lambda: (self.button0_list.reset_all_state(), self.button0_list.disable_all_draw(), self.refresh_all()))
         #
-        # self.button_close.set_1_just_callback(
-        #     lambda :self.config_window_close(),
-        #     identifier='window_close',
-        #     deleter=self.button_close
-        # )
-        # self.button_maximize.set_1_just_callback(
-        #     lambda :self.config_maximize(not self.is_maximized),
-        #     identifier='window_maximize',
-        #     deleter=self.button_close
-        # )
-        # self.button_iconize.set_1_just_callback(
-        #     lambda :self.config_iconified(True),
-        #     identifier='window_iconify',
-        #     deleter=self.button_close
-        # )
-
-        with self.viewports['default']:
-            self.viewports['default'].clear(1,0,0,1)
-            self.rect.draw()
+        self.refresh_all()
         # self.refresh_all() # first draw all
-        # self.set_window_refresh_callback(self.refresh_all)
+        self.set_window_resize_callback(self.refresh_all)
         # self.mouse.set_object_selection_callback(self.rect.unit,self.mouse.set_button_press_callback,self.rect.switch_color,None)
 
     def _draw_(self):
@@ -104,7 +91,7 @@ class Main_window(Window):
 
         if self.mouse.is_in_area([0,0,],[100,100]) and self.mouse.is_just_pressed:
             if not self.windows.has_window_named('top_bar'):
-                self.top_bar = Top_bar(self.rect)
+                self.top_bar = Top_bar(self)
                 pass
             else:
                 if self.top_bar.flag_follow_active:
@@ -136,18 +123,16 @@ class Main_window(Window):
 
     def refresh_all(self):
         print('refreshing')
-
-            # self.rect2.draw()
-        # self.viewports['menu_bar'].open().clear(1,0,0,1)
-        #     self.menu_block.draw()
-            # self.viewports.close()
+        with self.viewports[0]:
+            self.viewports[0].clear()
+            self.rect.draw()
+            self.right_buttons.draw()
 
 class Top_bar(Window):
 
-    def __init__(self, obj):
+    def __init__(self, mother):
         self.config_visible(False)
-        super().__init__(1000,100, 'top_bar',None, None)
-        self.set_post_draw_callback(obj.switch_color)
+        super().__init__(1000,100, 'top_bar',None, mother)
         # print('[result of debuging unshared vertex array]')
         # print('of mother')
         # vao = mother.glfw_context._vertex_arrays
@@ -169,8 +154,8 @@ class Top_bar(Window):
         # exit()
         # self.set_window_z_position(1)
 
-        # self.follow_window_iconify(mother)
-        # self.follow_window_close(mother)
+        self.follow_window_iconify(mother)
+        self.follow_window_close(mother)
 
         self.position = (500,500)
         self.config_visible(True)

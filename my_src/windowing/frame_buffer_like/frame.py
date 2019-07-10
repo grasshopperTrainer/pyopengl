@@ -1,14 +1,14 @@
 from windowing.renderer.components import *
 from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
 from .render_object_registry import Render_object_registry
-from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
-from ..viewport.viewport import Viewport
 from numbers import Number
-import numpy as np
+from windowing.frame_buffer_like.layers import Layers
+from windowing.frame_buffer_like.viewport.viewports import Viewports
+from windowing.mcs import MCS
 
-
-class Frame(FBL):
+class Frame(FBL,MCS):
     def __init__(self, width, height):
+        super().__init__(0,0,width,height)
         #typecheck
         if not isinstance(width, Number):
             raise TypeError
@@ -40,6 +40,9 @@ class Frame(FBL):
 
         self._render_stack = []
 
+        self._layers = Layers()
+        self._viewports = Viewports(self)
+
 
     def __del__(self):
         print(f'gc, Frame {self}')
@@ -48,6 +51,8 @@ class Frame(FBL):
         print('deleting frame')
         self._stencil_attachment.delete()
         self._depth_attachment.delete()
+        self._viewports.delete()
+        self._layers.delete()
         for i in self._color_attachments:
             i.delete()
         self._frame_buffer.delete()
@@ -151,6 +156,7 @@ class Frame(FBL):
             self._flag_something_rendered = v
         else:
             raise
+
     @property
     def render_unit_registry(self):
         return self._render_unit_registry

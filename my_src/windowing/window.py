@@ -1,8 +1,5 @@
-import threading
 import weakref
-import traceback
 import gc
-from collections import OrderedDict
 from time import sleep
 from time import time
 
@@ -14,11 +11,9 @@ import glfw as glfw
 
 from error_handler import *
 # from renderers.renderer.renderunit import RenderUnit
-from virtual_scope import *
 
 from .IO_device import *
-from .layers import *
-from .viewport import *
+from windowing.frame_buffer_like.viewport import *
 
 from .frame_buffer_like.frame_buffer_like_bp import FBL
 
@@ -26,11 +21,9 @@ from windowing.frame_buffer_like.renderable_image import Renderable_image
 from windowing.frame_buffer_like.frame import Frame
 from .windows import Windows
 from .callback_repository import Callback_repository
-from .deleter import Deleters
-import numpy as np
-from .matryoshka_coordinate_system import Area_definer, Matryoshka_coordinate_system
+from .mcs import MCS
 
-class Window(Matryoshka_coordinate_system):
+class Window(MCS):
     """
     Main class for window creation.
 
@@ -48,13 +41,6 @@ class Window(Matryoshka_coordinate_system):
     import glfw as glfw
     """
     def _global_init():
-        import numpy as np
-        from windowing.renderer import BRO
-        from windowing.frame_buffer_like.renderable_image import Renderable_image
-        from windowing.unnamedGUI import mygui
-        from windowing.viewport.viewport import Viewport
-        import OpenGL.GL as gl
-        import glfw as glfw
         pass
 
     _init_global = _global_init
@@ -199,7 +185,6 @@ class Window(Matryoshka_coordinate_system):
         # self._flag_just_resized = True
         #
         # viewport collection
-        self._viewports = Viewports(self)
         # #
         self._callbacks_repo = weakref.WeakKeyDictionary()
         callback_names = [
@@ -259,14 +244,14 @@ class Window(Matryoshka_coordinate_system):
         return self._init_func
 
     def window_resize_callback(self, window, width, height):
+        self._flag_just_resized = True
+        self.w, self.h = width, height
+
         self._callbacks_repo.exec('window_resize')
         if any(a < b for a,b in zip(self.myframe.size, self.size)):
             print('window, resize callback activated')
             self.myframe.rebuild(self.size)
-
-        self._flag_just_resized = True
-        self.w, self.h = width, height
-        gc.collect()
+        # gc.collect()
 
     def window_refresh_callback(self, window):
         self._callbacks_repo.exec('window_refresh')
@@ -285,7 +270,7 @@ class Window(Matryoshka_coordinate_system):
         print(f'{self} focused')
     def window_iconify_callback(self, window, iconified):
         self._callbacks_repo.exec('window_iconify')
-    def window_content_scale_callback(self, xscale, yscale):
+    def window_content_scale_callback(self, window, xscale, yscale):
         self._callbacks_repo.exec('window_content_scale')
     def window_maximized_callback(self,window, maximized):
         self._callbacks_repo.exec('window_maximized')
@@ -295,7 +280,7 @@ class Window(Matryoshka_coordinate_system):
     def set_post_draw_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
         self._callbacks_repo.setter('post_draw',func,args,kwargs,identifier,instant,deleter)
     def set_window_resize_callback(self, func, args:tuple = (),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
-        self._callbacks_repo.setter('wndow_resize',func,args,kwargs,identifier,instant,deleter)
+        self._callbacks_repo.setter('window_resize',func,args,kwargs,identifier,instant,deleter)
     def set_window_close_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
         self._callbacks_repo.setter('window_close',func,args,kwargs,identifier,instant,deleter)
     def set_window_pos_callback(self, func, args:tuple=(),kwargs:dict={},identifier:str='not_given',instant=False,deleter=None):
@@ -459,7 +444,6 @@ class Window(Matryoshka_coordinate_system):
             # destroy sub components that has self reference
             self._mouse.delete()
             self._keyboard.delete()
-            self._viewports.delete()
             self._myframe.delete()
 
             # clean relationship
@@ -731,15 +715,17 @@ class Window(Matryoshka_coordinate_system):
         with self.glfw_context as gl:
             gl.glEnable(gl.GL_SCISSOR_TEST)
             gl.glEnable(gl.GL_DEPTH_TEST)
+            gl.glDepthFunc(gl.GL_LEQUAL)
             gl.glEnable(gl.GL_STENCIL_TEST)
+            gl.glEnable(gl.GL_BLEND)
+            gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+
             a = gl.glIsEnabled(gl.GL_SCISSOR_TEST)
             b = gl.glIsEnabled(gl.GL_DEPTH_TEST)
             c = gl.glIsEnabled(gl.GL_STENCIL_TEST)
             if a + b + c != 3:
                 raise Exception('enabling test problem')
 
-            gl.glEnable(gl.GL_BLEND)
-            gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
             gl.glClear(gl.GL_COLOR_BUFFER_BIT)
             gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
@@ -788,86 +774,25 @@ class Window(Matryoshka_coordinate_system):
 
             for context in Unique_glfw_context.get_instances():
                 if len(context._render_unit_stack) != 0:
-                    print(context._render_unit_stack)
-                    sorted_data = {}
-                    for unit, frame, viewport, layer in context._render_unit_stack:
-                        # TODO can this be moved to where it is set sotred?
-                        # 1.sort by frame_buffer
-                        if frame not in sorted_data.keys():
-                            sorted_data[frame] = {}
-
-                        # 2.sort by viewport
-                        if viewport not in sorted_data[frame]:
-                            sorted_data[frame][viewport] = {}
-
-                        # 3.sort by layer
-                        if layer not in sorted_data[frame][viewport]:
-                            sorted_data[frame][viewport][layer] = []
-
-                        sorted_data[frame][viewport][layer].append(unit)
-
-                    # 4.then draw in order
+                    # draw with order
                     with context as gl:
 
-                        for frame, viewports in sorted_data.items():
+                        for frame, viewports in context._render_unit_stack.items():
                             gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, frame._frame_buffer._glindex)
                             attachments = [gl.GL_COLOR_ATTACHMENT0 + i for i in range(len(frame._color_attachments))]
                             gl.glDrawBuffers(len(frame._color_attachments), attachments)
 
-                            for vp,layers in viewports.items():
+                            for viewport,layers in viewports.items():
+                                gl.glViewport(*viewport.pixel_values)
+                                gl.glScissor(*viewport.pixel_values)
 
-                                gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
-                                gl.glViewport(*vp.pixel_values)
-                                gl.glScissor(*vp.pixel_values)
-
-                                # TODO can clearing be a unit of render_unit stack?
-                                if vp._flag_clear:
-                                    gl.glClearColor(*vp.clear_color)
-                                    gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-                                    gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
-
-                                    gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT1)
-                                    gl.glClearColor(0,0,0,0)
-                                    gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-
-                                    attachments = [gl.GL_COLOR_ATTACHMENT0 + i for i in
-                                                   range(len(frame._color_attachments))]
-                                    gl.glDrawBuffers(len(frame._color_attachments), attachments)
-
-                                    vp._flag_clear = False
-                                    pass
-
-                                positive_layers = []
-                                negative_layers = []
-                                layers = sorted(layers.items())
-                                if layers[0][0] < 0:
-                                    for i,v in enumerate(layers):
-                                        if v[0] >= 0:
-                                            negative_layers = layers[:i]
-                                            positive_layers = layers[i:]
-                                            break
-                                else:
-                                    positive_layers = layers
-
-                                for i in (positive_layers, negative_layers):
-                                    for ii, units in i:
+                                for layer,units in layers.items():
+                                    if layer.is_on:
+                                        frame._flag_something_rendered = True
                                         for unit in units:
-                                            frame._flag_something_rendered = True
+                                            unit._draw_(gl,frame, viewport)
 
-                                            unit.bind()
-
-                                            if hasattr(unit.shader_io, 'PM'):
-                                                unit.shader_io.PM = vp.camera.PM
-                                            if hasattr(unit.shader_io, 'VM'):
-                                                unit.shader_io.VM = vp.camera.VM
-                                            if hasattr(unit.shader_io, 'u_id_color'):
-                                                color_id = frame.render_unit_registry.register(unit)
-                                                unit.shader_io.u_id_color = color_id  # push color
-
-                                            # TODO how to store drawing conditing inside unit?
-                                            gl.glDrawElements(gl.GL_TRIANGLE_STRIP, unit._index_buffer.count, unit._index_buffer.gldtype, None)
-
-                    context.render_unit_stack_reset()
+                    context.render_unit_stack_flush()
 
             # copy myframe to window default
             for window in cls._windows:
@@ -1012,8 +937,10 @@ class Window(Matryoshka_coordinate_system):
 
     @property
     def viewports(self):
-        return self._viewports #type:Viewports
-
+        return self._myframe._viewports #type:Viewports
+    @property
+    def layers(self):
+        return self._myframe._layers #type:Layers
     @property
     def size(self):
         return self.pixel_w, self.pixel_h

@@ -36,7 +36,7 @@ class Hollow_mother:
         pixel_w = 1
         pixel_h = 1
 
-class Matryoshka_coordinate_system:
+class MCS:
     x = Area_definer()
     y = Area_definer()
     w = Area_definer()
@@ -130,7 +130,6 @@ class Matryoshka_coordinate_system:
 
         # recalculate and save
         if self._flag_updated:
-            print('need to refresh vertex')
             x = self.pixel_x
             y = self.pixel_y
             width = self.pixel_w
@@ -150,6 +149,7 @@ class Matryoshka_coordinate_system:
         if len(index) == 1:
             return vertex_list[0]
         return vertex_list
+
     def make_updated_all(self):
         self._flag_updated = True
         for child in self._children:

@@ -1,13 +1,10 @@
 import weakref
-import inspect
-import numpy as np
 import ctypes
-from collections import namedtuple
-import contextlib
-
+from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
+from collections import OrderedDict
+import OpenGL.GL as gl
 import glfw
 
-import OpenGL.GL as gl
 # import OpenGL.
 from windowing.windows import Windows
 
@@ -207,7 +204,7 @@ class Unique_glfw_context:
 
         self._temp_windows = []
 
-        self._render_unit_stack = set()
+        self._render_unit_stack = {}
 
     def give_tracker_to(self, window):
         """
@@ -285,10 +282,44 @@ class Unique_glfw_context:
         #     print()
         pass
 
-    def stack_render_unit(self, unit):
-        self._render_unit_stack.add(unit)
-    def render_unit_stack_reset(self):
-        self._render_unit_stack = set()
+    def render_unit_add(self, unit):
+        stack = self._render_unit_stack
+
+        frame = FBL.get_current()
+        viewport = frame._viewports.get_current()
+        layer = frame._layers.get_current()
+        # save sorted
+        if frame not in stack:
+            stack[frame] = {}
+        if viewport not in stack[frame]:
+            stack[frame][viewport] = OrderedDict()
+        if layer not in stack[frame][viewport]:
+            d = stack[frame][viewport]
+            if len(d) == 0:
+                d[layer] = []
+            else:
+                insert_pos = -1
+                for i,l in enumerate(d.keys()):
+                    if layer.id >= 0:
+                        if layer.id < l.id:
+                            insert_pos = i
+                            break
+                    else:
+                        if l.id < 0 and layer.id < l.id:
+                            insert_pos = i
+                # split dict
+                listed = list(d.items())
+                left = listed[:insert_pos+1]
+                right = listed[insert_pos+1:]
+                left.append((layer, []))
+                # merge
+                stack[frame][viewport] = OrderedDict({**(left+right)})
+
+        stack[frame][viewport][layer].append(unit)
+
+    def render_unit_stack_flush(self):
+        self._render_unit_stack = {}
+
     @property
     def instances(self):
         return list(self._instances)
@@ -711,14 +742,15 @@ class Unique_glfw_context:
             self._frame_buffers.bind(framebuffer, target)
 
         gl.glBindFramebuffer(target, framebuffer)
+
     def glGetUniformfv(self, program, location, return_n):
         v = (gl.GLfloat*return_n)()
         gl.glGetUniformfv(program, location, v)
         return list(v)
-    def glGetnUniformfv(self, program, location, bufsize):
-        v = ctypes.c_float()
-        gl.glGetnUniformfv(program, location, bufsize, v)
-        return v
+    # def glGetnUniformfv(self, program, location, bufsize):
+    #     v = ctypes.c_float()
+    #     gl.glGetnUniformfv(program, location, bufsize, v)
+    #     return v
 
     def glCheckFramebufferStatus(self, target):
         result = gl.glCheckFramebufferStatus(target)
@@ -774,9 +806,6 @@ class Unique_glfw_context:
     @_enforce_vao_share
     def glGenVertexArrays(self, n, arrays=None):
         index = gl.glGenVertexArrays(n, arrays)
-        print('eeeeeeeeeeeeeee', Windows.get_current(), index)
-        print(glfw.get_current_context())
-        print('eeeeeeeeeeeeeee', )
         self._vertex_arrays.generate(index)
         return index
 
@@ -861,6 +890,9 @@ class Unique_glfw_context:
         gl.glEnable(cap)
     def glDisable(self, cap):
         gl.glDisable(cap)
+
+    def glDepthFunc(self, func):
+        gl.glDepthFunc(func)
 
     def glBlendFunc(self, sfactor, dfactor):
         gl.glBlendFunc(sfactor, dfactor)
