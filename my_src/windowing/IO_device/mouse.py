@@ -5,6 +5,7 @@ import copy
 from patterns.store_instances_dict import SID
 # from ..my_openGL.glfw_gl_tracker import Trackable_openGL as gl
 from ..windows import Windows
+from windowing.mcs import MCS
 from ..callback_repository import Callback_repository
 from typing import Union, Tuple, Any, Callable, Dict, Optional
 class Position_registry:
@@ -32,7 +33,7 @@ class Mouse(SID):
             'scroll_right',
             'scroll_left'
         ]
-        self._callbacks_repo = Callback_repository(window, callbacks_names)
+        self._callbacks_repo = Callback_repository(callbacks_names)
 
         glfw.set_input_mode(self._window.glfw_window, glfw.STICKY_MOUSE_BUTTONS, glfw.TRUE)
         glfw.set_cursor_pos_callback(self._window.glfw_window, self.mouse_move_callback)
@@ -56,7 +57,7 @@ class Mouse(SID):
         self._mapping_source = weakref.WeakValueDictionary()
 
         self._just_values = {
-            'pressed':False,
+            'pressed':set(),
             'released':False
         }
 
@@ -99,9 +100,9 @@ class Mouse(SID):
         self._callbacks_repo.exec('exit')
     def button_callback(self):
         self._callbacks_repo.exec('button')
-    def button_press_callback(self):
+    def button_press_callback(self, button):
         self._callbacks_repo.exec('button_press')
-        self._just_values['pressed'] = True
+        self._just_values['pressed'].add(button)
     def button_release_callback(self):
         self._callbacks_repo.exec('button_release')
         self._just_values['released'] = True
@@ -163,7 +164,7 @@ class Mouse(SID):
         # TODO why first mouse click behaves differently?
         if action is 1:
             self._button_state[button] = True
-            self.button_press_callback()
+            self.button_press_callback(button)
             self.any_callback()
         if action is 0:
             self._button_state[button] = False
@@ -204,8 +205,12 @@ class Mouse(SID):
     #     self.instant_mouse_states.append([self._cursor_state,'onscreen', False])
 
     def reset_per_frame(self):
-        for i in self._just_values:
-            self._just_values[i] = False
+        for n,v in self._just_values.items():
+            if isinstance(v, set):
+                self._just_values[n] = set()
+            elif isinstance(v, bool):
+                self._just_values[n] = False
+
         # for type,key,state in self.instant_mouse_states:
         #     type[key] = state
         # self.instant_mouse_states = []
@@ -221,17 +226,23 @@ class Mouse(SID):
     @_get_just
     def is_just_released(self):
         pass
-    @_get_just
+
+    @property
     def is_just_pressed(self):
-        pass
+        if len(self._just_values['pressed']) != 0:
+            return True
+        else:
+            return False
+
     @property
     def pressed_button(self):
-        return_list = []
-        for n,v in self._button_state.items():
-            if v:
-                return_list.append(n)
-
-        return tuple(return_list)
+        return self._just_values['pressed']
+        # return_list = []
+        # for n,v in self._button_state.items():
+        #     if v:
+        #         return_list.append(n)
+        #
+        # return tuple(return_list)
 
     @property
     def button_state(self):
@@ -259,6 +270,7 @@ class Mouse(SID):
             return mapped
         else:
             return glfw.get_cursor_pos(self._window.glfw_window)
+
     @property
     def window_position_gl(self):
         # flipped to match openGL buffer order
@@ -312,12 +324,12 @@ class Mouse(SID):
             y = (y-a1)/h if h != 0 else 0
             return x,y
 
-    @property
-    def is_any_pressed(self):
-        if len(self.pressed_button) != 0:
-            return True
-        else:
-            return False
+    # @property
+    # def is_any_pressed(self):
+    #     if len(self.pressed_button) != 0:
+    #         return True
+    #     else:
+    #         return False
 
     @property
     def scroll_offset(self):
@@ -493,10 +505,13 @@ class Mouse(SID):
 
         state(callback_func)
 
-    def is_in_viewport(self, viewport):
-        a,b = viewport.get_glfw_vertex(0, 2)
+    def is_in_LCS(self, mcs):
+        if not isinstance(mcs, MCS):
+            raise TypeError
 
-        x,y = self.window_position
+        a,b = mcs.vertex(0, 2)
+
+        x,y = self.window_position_gl
         if a[0]< x < b[0] and a[1] < y < b[1]:
             return True
         else:
@@ -508,7 +523,6 @@ class Mouse(SID):
             if bottom_left[1] <= window_pos[1] <= top_right[1]:
                 return True
         return False
-
 
     def remove_callback(self, deleter=None, identifier=None):
         self._callbacks_repo.remove(deleter, identifier)

@@ -6,8 +6,7 @@ from .windows import Windows
 
 
 class Callback_repository:
-    def __init__(self, window, callback_names):
-        self._window = weakref.ref(window)
+    def __init__(self, callback_names):
         self._callback_names = callback_names
         self._callbacks_struct = {}
         self._callback_struct = namedtuple('callback', ['function','args','kwargs','identifier','singular',])
@@ -18,17 +17,8 @@ class Callback_repository:
     @property
     def deleters(self):
         return list(self._callbacks_repo.keys())
-    @property
-    def window(self):
-        return self._window()
 
-    def exec(self, callback_name, *args, **kwargs):
-        # set window
-        window_swap = None
-        if Windows.get_current() != self.window:
-            window_swap = Windows.get_current()
-            Windows.set_current(self.window)
-            self.window.make_window_current()
+    def exec(self, callback_name):
 
         # !!! prevent memory leak !!!
         # while looking into dict as well as check if deleter is useless
@@ -62,11 +52,6 @@ class Callback_repository:
         # delete empty deleter-dict
         for i in to_delete:
             del self._callbacks_repo[i]
-
-        # reset window
-        if window_swap != None:
-            Windows.set_current(window_swap)
-            window_swap.make_window_current()
 
         # return wrapper
 

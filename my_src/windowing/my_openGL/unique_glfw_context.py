@@ -191,6 +191,7 @@ class Unique_glfw_context:
         return cls._instances
 
     def __init__(self, bound_object):
+        self._previous_context = None
         # store instance
         self.__class__._windows[bound_object] = self
         self._instances.add(self)
@@ -298,7 +299,7 @@ class Unique_glfw_context:
             if len(d) == 0:
                 d[layer] = []
             else:
-                insert_pos = -1
+                insert_pos = len(d)
                 for i,l in enumerate(d.keys()):
                     if layer.id >= 0:
                         if layer.id < l.id:
@@ -309,11 +310,11 @@ class Unique_glfw_context:
                             insert_pos = i
                 # split dict
                 listed = list(d.items())
-                left = listed[:insert_pos+1]
-                right = listed[insert_pos+1:]
+                left = listed[:insert_pos]
+                right = listed[insert_pos:]
                 left.append((layer, []))
                 # merge
-                stack[frame][viewport] = OrderedDict({**(left+right)})
+                stack[frame][viewport] = OrderedDict(left+right)
 
         stack[frame][viewport][layer].append(unit)
 
@@ -366,16 +367,23 @@ class Unique_glfw_context:
         #
         # elif Windows.get_current() not in self.get_shared_windows():
         #     self._temp_windows.append(Windows.get_current())
+        if self.get_current() != self:
+            self._previous_context = self.get_current()
+
         self.set_current(self)
         if len(self.get_shared_windows()) != 0:
             win = self.get_shared_windows()[0]
             if Windows.get_current() != win:
+                glfw.make_context_current(win.glfw_window)
                 win.make_window_current()
             return self #type:Unique_glfw_context
         else:
             return Hollow_context()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        if self._previous_context != None:
+            self.set_current(self._previous_context)
+            self._previous_context = None
         # if len(self._temp_windows) != 0:
         #     win_to_restore = self._temp_windows.pop(-1)
         #     if win_to_restore != None:

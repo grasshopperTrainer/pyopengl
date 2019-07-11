@@ -19,16 +19,25 @@ class Box(MCS):
         else:
             self._window = None
 
-        self._flag_draw = True
+        # self._flag_draw = True
         self._flag_state = 0
 
     def draw(self):
         pass
 
+    def set_input_space(self, window):
+        self._window = weakref.ref(window)
+        pass
+
     def is_mother_of(self, *objects):
         super().is_mother_of(*objects)
-        for child in objects:
-            child.set_window(self.window)
+
+    def is_child_of(self, mother):
+        super().is_child_of(mother)
+        if isinstance(mother, Window):
+            self.set_input_space(mother)
+        else:
+            self.set_input_space(mother.window)
 
     def copy(self):
         """
@@ -94,6 +103,7 @@ class Filled_box(Box):
     @fill_color.setter
     def fill_color(self, color):
         self._fill_color = color
+
     @property
     def unit(self):
         return self._unit
@@ -107,18 +117,17 @@ class Filled_box(Box):
         self._fill_color = rgba
 
     def draw(self):
-        if self._flag_draw:
+        if self._flag_update:
             self._unit.shader_io.a_position = self.vertex()
             self._unit.shader_io.u_fillcol = self._fill_color
             self._unit.draw()
+        else:
+            print(f'{self} is deactivated drawing is ignored')
 
 class Block(Filled_box):
     # TODO maybe need do-not-color
     def __init__(self, posx, posy, width, height, window=None):
         super().__init__(posx,posy,width,height, window)
-
-        callbacks = ['state_change']
-        self._callback_repo = Callback_repository(window, callbacks)
 
     def draw(self):
         super().draw()

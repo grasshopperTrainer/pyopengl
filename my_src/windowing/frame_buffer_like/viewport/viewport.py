@@ -8,6 +8,7 @@ class Viewport(MCS):
 
     DEF_CLEAR_COLOR = 0, 0, 0, 1
     def __init__(self, x, y, width, height, mother_cs, collection, name= None):
+        self._previous_viewport = None
         super().__init__(x,y,width,height)
         # mother coordinate system
         self.is_child_of(mother_cs)
@@ -24,12 +25,19 @@ class Viewport(MCS):
         self._collection = collection
 
     def __enter__(self):
+        if self._collection.get_current != self:
+            self._previous_viewport = self._collection.get_current()
         self._collection.set_current(self)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._collection.set_current(self._collection[0])
-        pass
+        if self._previous_viewport != None:
+            self._collection.set_current(self._previous_viewport)
+            self._previous_viewport = None
+        else:
+        #     raise
+        #     self._collection.set_current(self._collection[0])
+            pass
 
 
     def clear(self,*color):

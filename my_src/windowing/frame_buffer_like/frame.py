@@ -8,6 +8,7 @@ from windowing.mcs import MCS
 
 class Frame(FBL,MCS):
     def __init__(self, width, height):
+        self._previous_frame = None
         super().__init__(0,0,width,height)
         #typecheck
         if not isinstance(width, Number):
@@ -42,7 +43,6 @@ class Frame(FBL,MCS):
 
         self._layers = Layers()
         self._viewports = Viewports(self)
-
 
     def __del__(self):
         print(f'gc, Frame {self}')
@@ -91,28 +91,19 @@ class Frame(FBL,MCS):
 
     def __enter__(self):
         # FBL.set_current(self)
+
         if self._context is None:
             raise
+        if FBL.get_current() != self:
+            self._previous_frame = FBL.get_current()
+
         FBL.set_current(self)
-        # with self._context as gl:
-        #     self._frame_buffer.bind()
-        #     # if clear is set
-        #     if Viewport.get_current()._flag_clear:
-        #         vp = Viewport.get_current()
-        #         # clear all color attachment color
-        #         self.bindDrawBuffer()
-        #         vp.fillbackground()
-        #         # clear id color to black
-        #         gl.glDrawBuffer(gl.GL_COLOR_ATTACHMENT1)
-        #         gl.glClearColor(0,0,0,0)
-        #         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-        #         self.bindDrawBuffer()
-        #         # reset draw buffer for comming drawing
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type is None:
-            self._flag_something_rendered = True
+        if self._previous_frame != None:
+            FBL.set_current(self._previous_frame)
+            self._previous_frame = None
 
     def bindDrawBuffer(self):
         with self._context as gl:

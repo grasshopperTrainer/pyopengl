@@ -66,8 +66,8 @@ class MCS:
 
         self._mother = Hollow_mother
 
-
         self._flag_update = True
+
 
     @property
     def pixel_x(self):
@@ -162,6 +162,7 @@ class MCS:
 
     def is_child_of(self, mother):
         self._mother = weakref.ref(mother)
+        self._flag_update = mother._flag_update
         mother._children.add(self)
 
     @property
@@ -179,5 +180,28 @@ class MCS:
     def children(self):
         return list(self._children)
 
+    @property
+    def is_active(self):
+        print(self, self._flag_update)
+        return self._flag_update
 
+    def activate(self):
+        self._flag_update = True
+    def activate_with_children(self):
+        self._flag_update = True
+        for child in self.children:
+            child.activate_with_children()
 
+    def deactivate(self):
+        self._flag_update = False
+    def deactivate_with_children(self):
+        self._flag_update = False
+        for child in self.children:
+            child.deactivate_with_children()
+
+    def switch_activation(self):
+        self._flag_update = not self._flag_update
+    def switch_activation_with_children(self):
+        self._flag_update = not self._flag_update
+        for child in self.children:
+            child.switch_activation_with_children()

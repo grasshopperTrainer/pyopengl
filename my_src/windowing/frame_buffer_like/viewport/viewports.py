@@ -47,6 +47,7 @@ class Viewports:
 
     def set_current(self, viewport):
         self._current = weakref.ref(viewport)
-
     def get_current(self):
+        if self._current() == None:
+            raise
         return self._current()

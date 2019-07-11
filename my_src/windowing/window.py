@@ -78,6 +78,14 @@ class Window(MCS):
 
     def __new__(cls,*args,**kwargs):
         self = super().__new__(cls)
+        print(cls, Window)
+        if isinstance(cls, Window):
+            print(super())
+            print(type(super()))
+            print(cls.__mro__)
+            print('args',args, kwargs)
+            # super().__init__(*args, **kwargs)
+            exit()
         self.__init__(*args, **kwargs)
         cls._windows + self
         return weakref.proxy(self)
@@ -199,7 +207,7 @@ class Window(MCS):
             'window_iconify',
             'window_content_scale'
         ]
-        self._callbacks_repo = Callback_repository(self,callback_names)
+        self._callbacks_repo = Callback_repository(callback_names)
 
         self.initiation_post_glfw_setting()
         self.initiation_gl_setting()
@@ -212,7 +220,7 @@ class Window(MCS):
 
         self._previous_window_size = glfw.get_window_size(self.glfw_window)
 
-        self.make_window_current()
+        # self.make_window_current()
 
     def handle_close(self):
         if self._flag_window_close:
@@ -246,7 +254,6 @@ class Window(MCS):
     def window_resize_callback(self, window, width, height):
         self._flag_just_resized = True
         self.w, self.h = width, height
-
         self._callbacks_repo.exec('window_resize')
         if any(a < b for a,b in zip(self.myframe.size, self.size)):
             print('window, resize callback activated')
@@ -764,11 +771,15 @@ class Window(MCS):
             # to give access to other windows through keyword 'windows'
             for window in cls._windows: #type: Window
 
-                window.make_window_current()
-                window.pre_draw_callback()
-                window._draw_()
-                window.post_draw_callback()
-                window.mouse.reset_per_frame()
+                # window.make_window_current()
+                with window.glfw_context:
+                    with window.myframe:
+                        with window.viewports[0]:
+                            with window.layers[0]:
+                                window.pre_draw_callback()
+                                window._draw_()
+                                window.post_draw_callback()
+                                window.mouse.reset_per_frame()
 
             glfw.poll_events()
 
@@ -791,7 +802,11 @@ class Window(MCS):
                                         frame._flag_something_rendered = True
                                         for unit in units:
                                             unit._draw_(gl,frame, viewport)
-
+                                            # print()
+                                            # print('writing into frame')
+                                            # print(unit)
+                                            # print(cls._windows.windows['main']._myframe)
+                                            # print(gl,frame, viewport)
                     context.render_unit_stack_flush()
 
             # copy myframe to window default
@@ -930,10 +945,6 @@ class Window(MCS):
     # @classmethod
     # def get_current_window(cls):
     #     return cls.windows.get_current()
-
-    @property
-    def layers(self):
-        return self._layers
 
     @property
     def viewports(self):
