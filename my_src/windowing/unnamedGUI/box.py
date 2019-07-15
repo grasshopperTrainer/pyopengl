@@ -37,6 +37,7 @@ class Box(MCS):
         if isinstance(mother, Window):
             self.set_input_space(mother)
         else:
+            print(self, mother, mother.window)
             self.set_input_space(mother.window)
 
     def copy(self):
@@ -74,6 +75,23 @@ class Box(MCS):
         if self._window != None:
             return self._window()
         return None
+
+    def is_pressed(self, depth=None):
+        print('children pressed?')
+        if self.window is None:
+            raise
+
+        mouse = self.window.mouse
+        mouse.is_in_LCS(self)
+        print(mouse.window_position_gl, mouse.is_just_pressed)
+        if depth != None:
+            if depth == 0:
+                return
+            else:
+                depth -= 1
+
+        print(self.children)
+        pass
 
 class Filled_box(Box):
     """
@@ -124,15 +142,18 @@ class Filled_box(Box):
         else:
             print(f'{self} is deactivated drawing is ignored')
 
+        for child in self.children:
+            child.draw()
+
 class Block(Filled_box):
     # TODO maybe need do-not-color
     def __init__(self, posx, posy, width, height, window=None):
         super().__init__(posx,posy,width,height, window)
 
-    def draw(self):
-        super().draw()
-        for child in self._children:
-            child.draw()
+    # def draw(self):
+    #     super().draw()
+    #     for child in self._children:
+    #         child.draw()
 
     def set_vertical(self, *boxes):
         pass

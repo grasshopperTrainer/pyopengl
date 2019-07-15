@@ -998,7 +998,10 @@ class Window(MCS):
         self.make_window_current()
         return w
 
-    def get_vertex(self, vertex = 0):
+    def remove_callback(self, deleter=None, identifier=None):
+        self._callbacks_repo.remove(deleter, identifier)
+
+    def get_screen_vertex(self, vertex = 0):
         """
         Returns coordinate of window vertex.
         Index goes anti-clockwise begining from top left.

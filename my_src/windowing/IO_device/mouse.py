@@ -310,7 +310,7 @@ class Mouse(SID):
 
     @property
     def screen_position(self):
-        pos = [a+b for a,b in zip(self.window.get_vertex(0), self.window_position)]
+        pos = [a + b for a,b in zip(self.window.get_screen_vertex(0), self.window_position)]
         return pos
 
     def viewport_local_position(self, viewport: 'Viewport', reparameterize:bool):

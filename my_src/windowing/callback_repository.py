@@ -57,7 +57,7 @@ class Callback_repository:
 
     def setter(self, callback_name, function, args: tuple = (), kwargs: dict = {}, identifier: str = 'not_given', instant=False,
                     deleter=None):
-
+        # TODO how to save local func like lambda with weak ref?
         if isinstance(function, (tuple, list)):
             if len(args) == 0:
                 args = [(),]*len(function)
@@ -97,57 +97,8 @@ class Callback_repository:
             self._callbacks_repo[deleter] = callbacks_set
         else:
             callbacks_set = self._callbacks_repo[deleter]
-        #
-        # # check callback equality
-        # exist = True
-        # need_new_name = True
-        #
-        # # func_name = function.__qualname__
+
         callbacks = callbacks_set[callback_name]
-        # if func_name in callbacks:
-        #     f, a, k, i, s = callbacks[func_name]
-        #     # if length is the same need to inspect farther
-        #     if identifier == i and len(f) == len(function):
-        #         # gonna check all
-        #         for s1,s2 in zip(zip(f,a,k), zip(function,args,kwargs)):
-        #             fi,ai,ki = s1
-        #             fii,aii,kii = s2
-        #             if isinstance(fi, weakref.ReferenceType):
-        #                 # if weakref dead i can override
-        #                 if fi() is None:
-        #                     # if at least one dead this callback set is useless
-        #                     need_new_name = False
-        #                     exist = False
-        #                     break
-        #                 # else need to check
-        #                 else:
-        #                     fi = fi()
-        #             else:
-        #                 pass
-        #
-        #             if fii.__code__ == fi.__code__ and all(a == b for a, b in zip(ai, aii)) and all(a == b for a, b, in zip(ki, kii)):
-        #                 # if a function set is identical need to check rest
-        #                 continue
-        #             else:
-        #                 exist = False
-        #                 break
-        #     else:
-        #         exist = False
-        #
-        # else:
-        #     need_new_name = False
-        #     exist = False
-        #
-        # if need_new_name:
-        #     # make name for similar
-        #     count = 0
-        #     while True:
-        #         temp_name = f'{func_name}{count}'
-        #         if temp_name in callbacks:
-        #             count += 1
-        #         else:
-        #             func_name = temp_name
-        #             break
         for i,func in enumerate(function):
             if hasattr(func, '__self__'):
                 function[i] = weakref.WeakMethod(func)
@@ -193,7 +144,7 @@ class Callback_repository:
 
     def remove(self, deleter= None, identifier=None):
         if deleter == None:
-            # TODO
+            # TODO need more functionality!!!
             pass
         else:
             if deleter in self._callbacks_repo:

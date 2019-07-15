@@ -1,6 +1,8 @@
 from windowing.window import Window
 import glfw
 from windowing.unnamedGUI import *
+import gc
+
 import numpy as np
 from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
 
@@ -22,113 +24,104 @@ class Main_window(Window):
         self.flag_topbar_created = False
         self.top_bar = None
 
-        self.rect = Button_press(0,0,100,100,self)
+        # self.rect = Button_press(0,0,100,100,self)
+        # #
+        # # right buttons
+        # self.button_iconize = Button_hover_press(0,0,50,50)
+        # self.button_maximize = Button_hover_press(50,0,50,50)
+        # self.button_close = Button_hover_press(100,0,50,50)
         #
-        # right buttons
-        self.button_iconize = Button_hover_press(0,0,50,50)
-        self.button_maximize = Button_hover_press(50,0,50,50)
-        self.button_close = Button_hover_press(100,0,50,50)
-
-        self.button_iconize.set_to_pressed_callback(
-            lambda: self.config_iconified(True),
-        )
-        self.button_maximize.set_switch_callback(
-            lambda: (self.config_maximize(not self.is_maximized)),
-        )
-        self.button_close.set_to_pressed_callback(
-            lambda: self.config_window_close(),
-        )
-        self.right_buttons = Block(lambda x:x-150,lambda y:y-50,150,50,self)
-        self.right_buttons.is_mother_of( self.button_iconize, self.button_maximize, self.button_close)
-        # print(self.viewports.get_current())
-        # exit()
-        self.left_buttons = Block(0, lambda  x:x-50, 300, 50, self)
-        buttons = []
-        for i in range(3):
-            b = Button_hover_press(i*100,0,100,50)
-            b.is_child_of(self.left_buttons)
-            buttons.append(b)
-        self.menu_list = Block(0, -250,100,250)
-        self.menu_list.is_child_of(buttons[0])
-        self.menu_list._flag_update = False
-        for i in range(5):
-            b = Button_hover_press(0,i*50,100,50)
-            # b._flag_draw = False
-            b.color0 = 1,1,0,1
-            b.is_child_of(self.menu_list)
-
-        buttons[0].set_switch_callback(
-            lambda: (self.menu_list.switch_activation_with_children(),
-                     self.refresh_all() if not self.menu_list.is_active else self.menu_list.draw())
-        )
-        buttons[0].set_reset_pressed_elsewhere(True)
-
+        # self.button_iconize.set_to_pressed_callback(
+        #     lambda: self.config_iconified(True),
+        # )
+        # self.button_maximize.set_switch_callback(
+        #     lambda: (self.config_maximize(not self.is_maximized)),
+        # )
+        # self.button_close.set_to_pressed_callback(
+        #     lambda: self.config_window_close(),
+        # )
+        # self.right_buttons = Block(lambda x:x-150,lambda y:y-50,150,50,self)
+        # self.right_buttons.is_mother_of( self.button_iconize, self.button_maximize, self.button_close)
+        # # print(self.viewports.get_current())
+        # # exit()
+        # self.left_buttons = Block(0, lambda  x:x-50, 300, 50, self)
+        # buttons = []
+        # for i in range(3):
+        #     b = Button_hover_press(i*100,0,100,50)
+        #     b.is_child_of(self.left_buttons)
+        #     buttons.append(b)
+        # self.menu_list = Block(0, -250,100,250)
+        # self.menu_list.is_child_of(buttons[0])
+        # self.menu_list._flag_update = False
+        # for i in range(5):
+        #     b = Button_hover_press(0,i*50,100,50)
+        #     # b._flag_draw = False
+        #     b.color0 = 1,1,0,1
+        #     b.is_child_of(self.menu_list)
+        #
+        # buttons[0].set_switch_callback(
+        #     lambda: (self.menu_list.switch_activation_with_children(),
+        #              self.refresh_all() if not self.menu_list.is_active else self.menu_list.draw())
+        # )
+        # buttons[0].set_reset_pressed_elsewhere(True)
+        source ='''
+        first
+         a
+          k
+        '''
+        self.test = Complex_button_list(source, Button_hover_press, 200, 50, self)
+        # self.buttonlist = Button_list(self, 1, Button_hover_press, 0,200,100)
+        # self.buttonlist.add()
+        # self.buttonlist.add()
+        # self.buttonlist.append(Button_hover_press(0,0,200,100))
+        # self.kkk = Button_list(self, 0, Button_hover_press,4,400,100)
         self.set_window_resize_callback(self.refresh_all)
         self.refresh_all()
     #
     def _draw_(self):
-        # pos = glfw.get_cursor_pos(self.glfw_window)
-        # if 0<pos[0]<100 and 0<pos[1]<100:
-        #     print('mouse on position')
-        #     self.a = Top_bar(self)
-        # elif 400<pos[0]<500 and 0<pos[1]<100:
-        #
-        #     if self.a == None:
-        #         self.a = Top_bar(self)
-        #         self.set_window_refresh_callback(self.a.p)
-        #         # self.a = None
+        # if self.mouse.is_in_area([0,0,],[100,100]) and self.mouse.is_just_pressed:
+        #     if not self.windows.has_window_named('top_bar'):
+        #         self.top_bar = Top_bar(self)
+        #         pass
         #     else:
-        #         self.a.config_window_close()
-        #         self.a = None
-        #         self.y = True
-        #         # exit()
-
-        #     self.refresh_all()
-        # if self.mouse.is_any_object_pressed():
-        #     self.refresh_all()
-
-        if self.mouse.is_in_area([0,0,],[100,100]) and self.mouse.is_just_pressed:
-            if not self.windows.has_window_named('top_bar'):
-                self.top_bar = Top_bar(self)
-                pass
-            else:
-                if self.top_bar.flag_follow_active:
-                    self.top_bar.config_window_close()
-                    self.top_bar = None
-                    print('top bar removed')
-                else:
-                    self.top_bar.unpin_from_viewport(self, self.viewports['top_bar'])
-                    self.top_bar.config_visible(True)
-                    self.top_bar.flag_follow_active = True
-                    self.refresh_all()
-
-        if self.top_bar != None:
-            # TODO extra processing for looking all conditions at once
-            conditions = [
-                self.mouse.is_in_LCS(self.viewports['top_bar']),
-                self.top_bar.flag_following,
-                self.mouse.is_in_window,
-                self.top_bar.mouse.is_just_released,
-                self.top_bar.flag_follow_active
-            ]
-            if all(conditions):
-                self.top_bar.move_to(self.get_vertex(0),(0,0))
-                self.top_bar.flag_follow_active = False
-                self.top_bar.config_visible(False)
-                self.top_bar.pin_on_viewport(self, 'top_bar', 0)
-                self.top_bar.mouse.set_map_from_window(self, 'top_bar')
+        #         if self.top_bar.flag_follow_active:
+        #             self.top_bar.config_window_close()
+        #             self.top_bar = None
+        #             print('top bar removed')
+        #         else:
+        #             self.top_bar.unpin_from_viewport(self, self.viewports['top_bar'])
+        #             self.top_bar.config_visible(True)
+        #             self.top_bar.flag_follow_active = True
+        #             self.refresh_all()
+        #
+        # if self.top_bar != None:
+        #     # TODO extra processing for looking all conditions at once
+        #     conditions = [
+        #         self.mouse.is_in_LCS(self.viewports['top_bar']),
+        #         self.top_bar.flag_following,
+        #         self.mouse.is_in_window,
+        #         self.top_bar.mouse.is_just_released,
+        #         self.top_bar.flag_follow_active
+        #     ]
+        #     if all(conditions):
+        #         self.top_bar.move_to(self.get_vertex(0),(0,0))
+        #         self.top_bar.flag_follow_active = False
+        #         self.top_bar.config_visible(False)
+        #         self.top_bar.pin_on_viewport(self, 'top_bar', 0)
+        #         self.top_bar.mouse.set_map_from_window(self, 'top_bar')
         pass
 
     def refresh_all(self):
         print('refreshing')
         with self.viewports[0]:
             self.viewports[0].clear()
-            with self.layers[0]:
-                self.rect.draw()
+            # with self.layers[0]:
+            #     self.rect.draw()
             with self.layers[-1]:
-
-                self.left_buttons.draw()
-                self.right_buttons.draw()
+                self.test.draw()
+                # self.buttonlist.draw()
+                # self.left_buttons.draw()
+                # self.right_buttons.draw()
 
 class Top_bar(Window):
 
@@ -147,28 +140,20 @@ class Top_bar(Window):
 
             self.flag_follow_active = True
             self.flag_following = False
-            print('dddddddddddddddddddddddddddddddd')
 
     def _draw_(self):
-        # self.viewports[0].open()
-        # if self.mouse.is_just_pressed and self.mouse.cursor_object == self.rect1.unit:
-        #     print('debug, object press detected')
-            # self.viewports[0].open()
-            # with self.viewports[0]:
-            #     self.rect1.switch_color()
+        if self.flag_follow_active:
+            if not self.mouse.is_in_LCS(self.viewports['center']) and self.mouse.is_in_window and 0 in self.mouse.pressed_button:
+                if not self.flag_following:
+                    self.flag_following = True
+                    self.ref_window_pos = self.mouse.window_position
 
-        # if self.flag_follow_active:
-        #     if not self.mouse.is_in_viewport(self.viewports['center']) and self.mouse.is_in_window and 0 in self.mouse.pressed_button:
-        #         if not self.flag_following:
-        #             self.flag_following = True
-        #             self.ref_window_pos = self.mouse.window_position
-        #
-        #     if self.flag_following:
-        #         self.move_to(self.mouse.screen_position,self.ref_window_pos)
-        #
-        #     if not self.mouse.is_any_pressed:
-        #         if self.flag_following:
-        #             self.flag_following = False
-        # pass
+            if self.flag_following:
+                self.move_to(self.mouse.screen_position,self.ref_window_pos)
+
+            if not self.mouse.is_just_pressed:
+                if self.flag_following:
+                    self.flag_following = False
+        pass
         pass
 
