@@ -14,6 +14,8 @@ class Callback_repository:
             self._callbacks_struct[i] = []
 
         self._callbacks_repo = weakref.WeakKeyDictionary()
+        self._exec_flags = dict(zip(callback_names, [True for i in range(len(callback_names))]))
+
     @property
     def deleters(self):
         return list(self._callbacks_repo.keys())
@@ -36,18 +38,19 @@ class Callback_repository:
             # if not an empty run regularly
             else:
                 for callback in dic[callback_name]:
-                    f, a, k, i, s = callback
-                    for fi,ai,ki in zip(f,a,k):
-                        if isinstance(fi, weakref.ReferenceType):
-                            if fi() is None:
-                                dic[callback_name].remove(callback)
-                                continue
-                            else:
-                                fi = fi()
-                        fi(*ai, **ki)
+                    if self._exec_flags[callback_name]:
+                        f, a, k, i, s = callback
+                        for fi,ai,ki in zip(f,a,k):
+                            if isinstance(fi, weakref.ReferenceType):
+                                if fi() is None:
+                                    dic[callback_name].remove(callback)
+                                    continue
+                                else:
+                                    fi = fi()
+                            fi(*ai, **ki)
 
-                    if s:
-                        dic[callback_name].remove(callback)
+                        if s:
+                            dic[callback_name].remove(callback)
 
         # delete empty deleter-dict
         for i in to_delete:
@@ -116,6 +119,10 @@ class Callback_repository:
             callbacks.append(self._callback_struct(function, args, kwargs, identifier, instant))
 
         # return wrapper
+
+    def set_exec_flag(self, callback_name, b):
+        self._exec_flags[callback_name] = b
+
     def __len__(self):
         # self.print_full()
         return len(self._callbacks_repo)

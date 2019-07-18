@@ -1,6 +1,7 @@
 from .box import Filled_box, Block
 from ..callback_repository import Callback_repository
 import weakref
+from ..mcs import Family_Tree
 import gc
 
 class _Button(Filled_box):
@@ -19,7 +20,7 @@ class _Button(Filled_box):
         callbacks = ['to_idle', 'to_pressed', 'to_hover', 'while_idle', 'while_pressed', 'while_hover']
         self._callback_repo = Callback_repository(callbacks)
 
-        # self._callback_repo = Callback_repository
+        self._flag_reset_pressed_elsewhere = False
 
     @property
     def state(self):
@@ -27,7 +28,12 @@ class _Button(Filled_box):
     @state.setter
     def state(self, v):
         self._flag_state = v
-
+        if v == 0:
+            self.fill_color = self.color0
+        elif v == 1:
+            self.fill_color = self.color1
+        elif v == 2:
+            self.fill_color = self.color2
     @property
     def color0(self):
         return self._color0
@@ -65,6 +71,10 @@ class _Button(Filled_box):
                 identifier=self,
                 deleter=self
             )
+
+    def set_reset_pressed_elsewhere(self, b):
+        self._flag_reset_pressed_elsewhere = b
+
     def delete(self):
         self.window._callbacks_repo.remove(deleter=self)
     # def reset_all_state(self):
@@ -102,6 +112,8 @@ class _Button(Filled_box):
     def exec_while_hover_callback(self):
         self._callback_repo.exec('while_hover')
 
+    def use_to_idle_callback(self, b):
+        self._callback_repo.set_exec_flag('to_idle', b)
 
 
 # few pre_built buttons
@@ -110,33 +122,35 @@ class Button_press(_Button):
         super().__init__(posx,posy,width,height,window)
         self._buttons_to_respond = [0,]
 
-        self._flag_reset_pressed_elsewhere = False
-
     def switch_color(self):
         if self.window != None:
             mouse = self.window.mouse
             if mouse.is_in_LCS(self):
                 if mouse.is_just_pressed:
                     if self.state == 0:
-                        self.exec_to_pressed_callback()
                         self.fill_color = self.color1
                         self.state = 1
+                        self.exec_to_pressed_callback()
                     else:
-                        self.exec_to_idle_callback()
                         self.fill_color = self.color0
                         self.state = 0
+                        self.exec_to_idle_callback()
                     self.draw()
             else:
                 if mouse.is_just_pressed:
                     if self._flag_reset_pressed_elsewhere:
                         if self.state == 1:
-                            self.exec_to_idle_callback()
                             self.fill_color = self._color0
                             self._flag_state = 0
+                            self.exec_to_idle_callback()
                             self.draw()
+                else:
+                    if self.state == 1:
+                        self.exec_while_pressed_callback()
+                    else:
+                        self.exec_while_idle_callback()
 
-    def set_reset_pressed_elsewhere(self,b):
-        self._flag_reset_pressed_elsewhere = b
+
 
     @property
     def buttons_to_respond(self):
@@ -195,6 +209,7 @@ class Button_hover(_Button):
         super().__init__(posx,posy,width,height,window)
         self._hover_target = 3
         self._hover_count = 0
+        # self._flag_sticky_button = False
 
     def switch_color(self):
         if self.window != None:
@@ -202,6 +217,7 @@ class Button_hover(_Button):
             if mouse.is_in_area(*self.vertex(0,2)):
                 if self._flag_state == 0:
                     if self._hover_count == self._hover_target:
+                        self.exec_to_hover_callback()
                         self.fill_color = self.color1
                         self._flag_state = 1
                         self.draw()
@@ -211,12 +227,18 @@ class Button_hover(_Button):
                     pass
             else:
                 if self._flag_state == 1:
+                    self.exec_to_idle_callback()
                     self._hover_count = 0
                     self._flag_state = 0
                     self.fill_color = self.color0
                     self.draw()
                 elif self._flag_state == 0:
                     pass
+    #
+    # def set_stiky_button(self, b):
+    #     if not isinstance(b, bool):
+    #         raise
+    #     self._flag_sticky_button = b
 
     @property
     def hover_target_frame_count(self):
@@ -259,6 +281,14 @@ class Button_hover_press(Button_press):
                     self.draw()
                     self._hover_count = 0
                     self._hovered = False
+    @property
+    def color2(self):
+        return self._hover_color
+    @color2.setter
+    def color2(self, *rgba):
+        if len(rgba) != 4:
+            raise ValueError
+        self._hover_color = rgba
 
 class Button_list(Block):
 
@@ -366,6 +396,7 @@ class Complex_button_list:
     def __init__(self, source, kind, unit_width, unit_height, window):
         if not isinstance(source, str):
             raise TypeError
+        self._master = None
         self._source = source
         self._kind = kind
         self._unit_width = unit_width
@@ -373,80 +404,121 @@ class Complex_button_list:
         self._window = weakref.ref(window)
         self._compile(source)
 
+
     def _compile(self, text):
-        text = text.splitlines()
-        lblank = 0
-        collection = {}
-        for i,line in enumerate(text):
-            line = line.rstrip()
-            # clear right blank
-            if len(line) != 0:
-                blank = len(line) - len(line.lstrip())
-                if lblank == 0:
-                    lblank = blank
-                word = line[lblank:]
+        family_tree = Family_Tree(None)
+        family_tree.build_from_text(text)
 
-                # calculate level
-                level = 0
-                for letter in word:
-                    if letter == ' ':
-                        level += 1
-                    else:
-                        break
+        branches = [family_tree._tree]
+        masters = [None for i in range(len(family_tree._tree))]
 
-                # build complex data structure
-                if len(collection) == 0:
-                    if level != 0:
-                        raise
-                    collection = {word: {}}
+        while True:
+            new_branches = []
+            new_masters = []
+
+            for master,branch in zip(masters,branches):
+                n = len(branch)
+                button_list = Button_list(self._window(),1,Button_hover_press, n, self._unit_width, self._unit_height*n)
+                for i in button_list.children:
+                    i.color1 = i.color2
+
+                if master != None:
+                    button_list.is_child_of(master)
+                    button_list.x = master.w
+                    # initially don't show or react to input device
+                    # for i in button_list.family[0:2]:
+                    #     i.deactivate()
+                    for i in button_list.family[0:2]:
+                        i.deactivate()
+
+                    # set draw action with master button
+                    # if hovered need to deactivate currently drawn child and draw hovered child
+
+                    def to_hovered(master, clear_func, self):
+                        print('hovered', master)
+                        for in_list_button in master.siblings +[master]:
+                            print('siblings:',in_list_button, in_list_button.family[1:])
+                            # all the members below deactivate
+                            in_list_button.state = 0
+                            for child in in_list_button.family[1:]:
+                                print('hovered deactivating', child)
+                                child.deactivate()
+                                child.state = 0
+                        # for i in master.family[1:]:
+                        #     i.deactivate()
+                        #     i.state = 0
+                        # clear
+                        clear_func()
+                        # activate new list
+                        master.children[0].activate()
+                        for i in master.children[0].children:
+                            print('+++',i)
+                            i.activate()
+                            i.state = 0
+                            # i.draw()
+                        master.state = 1
+                        # draw till master
+                        self.draw()
+
+
+                    master.set_to_hover_callback(
+                        lambda m=master,f=self._window().refresh_all,this=self: to_hovered(m,f,this)
+                    )
+
+                    def ignore_to_idle(button):
+                        button.state = 1
+                    master.set_to_idle_callback(
+                        lambda m=master:ignore_to_idle(m)
+                    )
+
                 else:
-                    branch = collection
-                    for i in range(level):
-                        if isinstance(branch, dict):
-                            branch = list(branch.values())[-1]
-                        else:
-                            branch = branch[-1]
-                    branch[word] = {}
+                    self._master = Button_press(0,0,*button_list.size, self._window())
+                    self._master.set_reset_pressed_elsewhere(True)
+                    self._master.color1 = 1,1,1,1
+
+                    # master button if just for cursor detection
+                    def master_reset_func(window, button_list):
+                        # print('master_to_idle')
+                        mouse = window.mouse
+                        for i in button_list.family[1:]:
+                            if mouse.is_in_LCS(i):
+                                return
+
+                        print(button_list.family[2:])
+                        for i in button_list.family[2:]:
+                            print('iiiiiii',i)
+                            i.deactivate()
+                            i.state = 0
+                        for i in button_list.children:
+                            i.state = 0
+                        # if it's offsprings not pressed
+                        window.refresh_all()
+
+                        self.draw()
+
+                    self._window().mouse.set_button_press_callback(
+                        lambda w=self._window(), bl=button_list :master_reset_func(w,bl)
+                    )
+
+                    button_list.is_child_of(self._master)
 
 
-        def build(source, master):
-            n = len(source.keys())
-            bl = Button_list(self._window(), 1, self._kind,n,self._unit_width, self._unit_height*n)
-            # for child in bl.children:
-            #     child.set_reset_pressed_elsewhere(True)
+                for child, (name,value) in zip(button_list.children, branch.items()):
+                    child.name = name
 
-            if master != None:
-                bl.is_child_of(master)
-                bl.deactivate(0,2)
-                bl.x, bl.y = master.w,0
-                # master.set_to_hover_callback(
-                #     lambda : (bl.activate(1), bl.draw())
-                # )
-                #
-                # master.set_to_idle_callback(
-                #     lambda : (bl.deactivate(),self._window().refresh_all()) if not bl.is_pressed() else None
-                # )
-            else:
-                n = len(source.keys())
-                master_button = Button_press(0,0,self._unit_width, self._unit_height*n, self._window())
-                bl.is_child_of(master_button)
-                master_button.set_reset_pressed_elsewhere(True)
-                master_button.set_to_idle_callback(
-                    lambda :(master_button.children[0].deactivate(), print('ouside_pressed'), self._window().refresh_all())
-                )
-                master_button.set_to_pressed_callback(
-                    lambda :(master_button.children[0].activate(0), print('inside_pressed'))
-                )
-                pass
+                    # if there is a grandchild
+                    # if len(value) != 0:
+                    new_branches.append(value)
+                    new_masters.append(child)
 
-            for i,d in enumerate(source.values()):
-                if len(d) != 0:
-                    build(d, bl.children[i])
+            branches = new_branches
+            masters = new_masters
 
-            return bl
+            if len(branches) == 0:
+                break
 
-        self._master = build(collection,None)
-        # self._master.activate_with_children()
+        print(self._master._family_tree._tree)
+        # exit()
 
     def draw(self):
         self._master.draw()

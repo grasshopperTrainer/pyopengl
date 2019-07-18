@@ -135,6 +135,7 @@ class Window(MCS):
         # customizable frame
         # TODO frame is leaking memory!!!!!
         m = glfw.get_primary_monitor()
+        # TODO building big frame throws inconsistency with viewports of itself
         _,_,max_width,max_height = glfw.get_monitor_workarea(m)
         extra = 500 # this is to cover Windows content area. May be needed for full screen draw
         self._myframe = Frame(max_width+extra, max_height+ extra)  # type: Renderable_image
@@ -601,21 +602,21 @@ class Window(MCS):
         return self._flag_just_resized
 
 
-    def is_child_of(self, mother):
-        if mother is self._mother_window:
-            return True
-        else:
-            return False
-    def is_mother_of(self, child):
-        if child in self._children_windows:
-            return True
-        else:
-            return False
-    def is_shared_window(self, win):
-        if win in self.shared_windows:
-            return True
-        else:
-            return False
+    # def is_child_of(self, mother):
+    #     if mother is self._mother_window:
+    #         return True
+    #     else:
+    #         return False
+    # def is_mother_of(self, child):
+    #     if child in self._children_windows:
+    #         return True
+    #     else:
+    #         return False
+    # def is_shared_window(self, win):
+    #     if win in self.shared_windows:
+    #         return True
+    #     else:
+    #         return False
 
     def copy_frame_from(dst, src, src0x, src0y, src1x, src1y, dst0x, dst0y, dst1x, dst1y):
         if not dst.is_shared_window(src):

@@ -68,44 +68,69 @@ class WeakOrderedSet:
 
 
 class Family_Tree:
-    def __init__(self, master):
-        self._tree = WeakOrderedSet()
-        self._tree = {master:{}}
-    def get_branch_under(self,origin):
-        # need to search for branch first
-        # {mother: {child:{} , child: {}, child: {chi, TARGET}}, brother: {chi:{}}, sis: {chi:{},chi:{}}}
-        let_break = False
-        branch = [self._tree, ]
+    def __init__(self, member):
+        try:
+            self._member = weakref.ref(member)
+        except:
+            self._member = member
+
+        self._tree = {member:{}}
+
+    def build_from_text(self, text):
+        text = text.splitlines()
+        lblank = 0
+        collection = {}
+        for i, line in enumerate(text):
+            line = line.rstrip()
+            # clear right blank
+            if len(line) != 0:
+                blank = len(line) - len(line.lstrip())
+                if lblank == 0:
+                    lblank = blank
+                word = line[lblank:]
+
+                # calculate level
+                level = 0
+                for letter in word:
+                    if letter == ' ':
+                        level += 1
+                    else:
+                        break
+
+                # build complex data structure
+                word = word.strip()
+                if len(collection) == 0:
+                    if level != 0:
+                        raise
+                    collection = {word: {}}
+                else:
+                    branch = collection
+                    for i in range(level):
+                        if isinstance(branch, dict):
+                            branch = list(branch.values())[-1]
+                        else:
+                            branch = branch[-1]
+                    branch[word] = {}
+
+        self._tree = collection
+    def get_true_branch_of_generation(self, generation):
+        pass
+    def get_true_branch_of_member(self, origin):
+        # {child: {}, child:{}, child: {chi:{}, chi:{}}}
+        branch = [self._tree,]
         while True:
-            subs = []
+            new_branch = []
             for dic in branch:
                 if origin in dic:
-                    branch = dic[origin]
-                    let_break = True
-                    break
+                    return dic[origin]
                 else:
-                    for i in dic.values():
-                        subs.append(i)
-            if let_break:
-                break
+                    new_branch += list(dic.values())
+
+            if len(new_branch) == 0:
+                # means tree doesn't have object(origin)
+                raise
             else:
-                if len(subs) == 0:
-                    # if there isn't
-                    raise
-                    return {}
-                else:
-                    branch = subs
-        return branch
-
-    def children_of(self, origin):
-        offspring = self.get_branch_under(origin)
-
-        # key is mother values are children
-        # {child: {}, child:{}, child: {chi:{}, chi:{}}}
-        return self._flatten(offspring)
-
-    # def siblings_of(self, origin):
-    #     for i in self._tree
+                branch = new_branch
 
     def _flatten(self, branch):
         #example) {child: {}, child:{}, child: {chi:{}, chi:{}}}
@@ -115,11 +140,221 @@ class Family_Tree:
             flattened += self._flatten(c)
         return flattened
 
-    def graft_under(self, family, origin):
-        branch = self.get_branch_under(origin)
-        branch.update(family._tree)
-        family._tree = self._tree
+    def offsprings_of(self, origin):
+        branch = self.get_true_branch_of_member(origin)
+        return self._flatten(branch)
 
+    def siblings_of(self, origin):
+        mother = self.mother_of(origin)
+
+        # for origin
+        if mother == None:
+            return []
+        siblings = self.children_of(mother)
+        siblings.remove(origin)
+        return siblings
+
+    def children_of(self, origin):
+        # {child: {}, child:{}, child: {chi:{}, chi:{}}}
+        branch = [self._tree, ]
+        while True:
+            new_branch = []
+            for dic in branch:
+                if origin in dic:
+                    return list(dic[origin].keys())
+                else:
+                    new_branch += list(dic.values())
+
+            if len(new_branch) == 0:
+                # means tree doesn't have object(origin)
+                return []
+            else:
+                branch = new_branch
+
+    def mother_of(self, origin):
+        branch = [self._tree,]
+
+        if origin == self.origin:
+            return None
+
+        while True:
+            new_branch = []
+            for dic in branch:
+                for key, value in dic.items():
+                    if origin in value:
+                        return key
+                else:
+                    new_branch += list(dic.values())
+
+            if len(new_branch) == 0:
+                # not a member of the family
+                raise
+            branch = new_branch
+
+    @property
+    def origin(self):
+        return list(self._tree.keys())[0]
+
+    @property
+    def all_members(self):
+        return self._flatten(self._tree)
+
+    @property
+    def all_generation(self):
+
+        def f(branches, generations = []):
+            new_branches = []
+            generation = []
+            for i in branches:
+                generation += i.keys()
+                new_branches += list(i.values())
+
+            if len(generation) != 0:
+                generations.append(generation)
+
+            if len(new_branches) != 0:
+                f(new_branches,generations)
+
+            return generations
+
+        return f([self._tree])
+
+
+
+    def has_member(self, obj, branch:dict=None):
+        if branch is None:
+            branch = self._tree
+
+        if obj in branch:
+            return True
+        else:
+            for i in branch.values():
+                if self.has_member(obj, i):
+                    return True
+
+        return False
+
+    def renounce(self, member):
+        mother = self.mother_of(member)
+        branch = self.get_true_branch_of_member(mother)
+        del branch[member]
+
+    def graft(self, source, target_tree, target):
+        if not isinstance(target_tree, self.__class__):
+            raise TypeError
+        if not self.has_member(source):
+            raise
+        if not target_tree.has_member(target):
+            raise
+
+
+        source_branch = self.get_true_branch_of_member(source)
+        target_branch = {target:target_tree.get_true_branch_of_member(target)}
+
+        # TODO can a member belong in two trees?
+        # this case if for relocating existing member
+        if self.has_member(target):
+            self.renounce(target)
+
+        source_branch.update(target_branch)
+        target_tree._tree = self._tree
+    @property
+    def member(self):
+        if isinstance(self._member, weakref.ReferenceType):
+            return self._member()
+        return self._member
+
+    def generation_from_to(self, member, start, stop):
+        # start_stop is reletive from member
+
+        # find master
+        masters = member
+        if start is None:
+            mother = member
+            start = 0
+            while True:
+                mother = self.mother_of(mother)
+                if mother == None:
+                    break
+                start -= 1
+
+            masters = [self.origin]
+        elif start < 0:
+            for i in range(-start):
+                masters = self.mother_of(masters)
+            masters = [masters]
+        elif start == 0:
+            masters = [member]
+        else:
+            masters = [member]
+            for i in range(start):
+                new_masters = []
+                for master in masters:
+                    new_masters += self.children_of(master)
+                masters = new_masters
+
+        # ununderstood condition
+        if stop != None and start >= stop:
+            raise
+
+        # collect members
+        offsprings = []
+        branches = []
+        for master in masters:
+            branches.append({master:self.get_true_branch_of_member(master)})
+
+        if stop is None:
+            while True:
+                new_branches = []
+                for dic in branches:
+                    offsprings += list(dic.keys())
+                    new_branches += list(dic.values())
+
+                if len(new_branches) == 0:
+                    break
+                else:
+                    branches = new_branches
+                    continue
+        else:
+            for i in range(stop-start):
+                new_branches = []
+                for dic in branches:
+                    offsprings += list(dic.keys())
+                    new_branches += list(dic.values())
+                branches = new_branches
+
+        return offsprings
+        # offsprings = []
+        # offsprings += masters
+        # while True:
+        #     children = []
+        #     for member in masters:
+        #         # is extra searching from begining chore here?
+        #         children += self.children_of(member)
+        #
+        #     start += 1
+        #     if stop != None:
+        #         if start == stop:
+        #             break
+        #     else:
+        #         if len(children) == 0:
+        #             break
+        #
+        #     offsprings += children
+        #     masters = children
+        #
+        # return offsprings
+
+
+    def __getitem__(self, item):
+
+        if isinstance(item, int):
+            return self.generation_from_to(self.member, item, item+1)
+        elif isinstance(item, slice):
+            return self.generation_from_to(self.member, item.start, item.stop)
+        else:
+            raise
+        raise
 
 
 class Area_definer:
@@ -173,6 +408,7 @@ class MCS:
     # _pixel_h = Record_change_value()
 
     def __init__(self,posx,posy,width,height):
+        self._name = None
         self._family_tree = Family_Tree(self)
 
         self.x = posx
@@ -189,9 +425,8 @@ class MCS:
 
         self._vertex = [(),(),(),()]
 
-        self._mother = Hollow_mother
-
         self._flag_update = True
+
     @property
     def definers(self):
         return self.x, self.y, self.w, self.h
@@ -218,8 +453,14 @@ class MCS:
         else:
             result = self.x
         # print(self._mother)
-        result = result + self.mother.pixel_x
-
+        # try:
+        if self.mother != None:
+            result = result + self.mother.pixel_x
+        # except Exception as e:
+        #     print(self._family_tree._tree)
+        #     print(self, self.mother)
+        #     print(result, self.mother.x)
+        #     raise e
         return result
 
     @property
@@ -231,7 +472,8 @@ class MCS:
         else:
             result = self.y
 
-        result = result + self.mother.pixel_y
+        if self.mother != None:
+            result = result + self.mother.pixel_y
 
         return result
 
@@ -274,7 +516,6 @@ class MCS:
             y = self.pixel_y
             width = self.pixel_w
             height = self.pixel_h
-            print('vertex',x,y,width,height)
             new_vertex = (x, y), (x + width, y), (x + width, y + height), (x, y + height)
             self._vertex = new_vertex
 
@@ -312,27 +553,21 @@ class MCS:
     def is_child_of(self, mother):
         # TODO weakly storing children seems to be not working with buttons. why?
         #   that's because when creating button with 'window' window's callback stores button
-        mother._family_tree.graft_under(self._family_tree,mother)
-        self._flag_update = mother._flag_update
+        mother._family_tree.graft(mother, self._family_tree, self)
 
     def replace_child(self):
         pass
 
     @property
     def mother(self):
-        if isinstance(self._mother, weakref.ReferenceType):
-            if self._mother() is None:
-                self._mother = Hollow_mother
-                return self._mother
-            else:
-                return self._mother()
-        else:
-            return self._mother
+        return self._family_tree.mother_of(self)
 
     @property
     def children(self):
         return self._family_tree.children_of(self)
-
+    @property
+    def siblings(self):
+        return self._family_tree.siblings_of(self)
     @property
     def master(self):
         if self._mother is None:
@@ -343,34 +578,39 @@ class MCS:
     def is_active(self):
         return self._flag_update
 
-    def activate(self, depth=None):
+    # def activate(self, depth=None):
+    #     self._flag_update = True
+    #     if depth != None:
+    #         if depth == 0:
+    #             return
+    #         else:
+    #             depth -= 1
+    #
+    #     for child in self.children:
+    #         child.activate(depth)
+
+    # def deactivate(self, start=None, stop=None):
+    #     # self._flag_update = False
+    #     if start == None and stop==None:
+    #         pass
+    #     else:
+    #         # if from_to == 0:
+    #         #     return
+    #         # else:
+    #         #     from_to -= 1
+    #         print(start, stop)
+    #
+    #         target = self
+    #         for i in range(start):
+    #             target = target.children
+    #
+    #     for child in self.children:
+    #         child.deactivate(from_to)
+    def activate(self):
         self._flag_update = True
-        if depth != None:
-            if depth == 0:
-                return
-            else:
-                depth -= 1
 
-        for child in self.children:
-            child.activate(depth)
-
-    def deactivate(self, start=None, stop=None):
-        # self._flag_update = False
-        if start == None and stop==None:
-            pass
-        else:
-            # if from_to == 0:
-            #     return
-            # else:
-            #     from_to -= 1
-            print(start, stop)
-
-            target = self
-            for i in range(start):
-                target = target.children
-        for child in self.children:
-            child.deactivate(from_to)
-
+    def deactivate(self):
+        self._flag_update = False
 
     def switch_activation(self, depth = None):
         self._flag_update = not self._flag_update
@@ -381,3 +621,22 @@ class MCS:
                 depth -= 1
         for child in self.children:
             child.switch_activation(depth)
+
+    @property
+    def family(self):
+        return self._family_tree
+
+    @property
+    def name(self):
+        return self._name
+    @name.setter
+    def name(self, text):
+        if not isinstance(text, str):
+            raise TypeError
+        self._name = text
+
+    def __str__(self):
+        return f"<{self.__class__.__name__}> named '{self._name}'"
+
+    def __repr__(self):
+        return self.__str__()

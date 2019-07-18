@@ -67,9 +67,27 @@ class Main_window(Window):
         source ='''
         first
          a
+          n
+         aa
+          mm
+          mmm
+        second
+         b
+          dd
+          dd
+          d
+          d
+        third
+         c
+         cc
+         ccc
+          kk
           k
+          kkk
+           l
+            ll
         '''
-        self.test = Complex_button_list(source, Button_hover_press, 200, 50, self)
+        self.test = Complex_button_list(source, Button_hover_press, 50, 50, self)
         # self.buttonlist = Button_list(self, 1, Button_hover_press, 0,200,100)
         # self.buttonlist.add()
         # self.buttonlist.add()

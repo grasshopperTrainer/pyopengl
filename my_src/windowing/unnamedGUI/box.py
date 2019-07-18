@@ -139,11 +139,11 @@ class Filled_box(Box):
             self._unit.shader_io.a_position = self.vertex()
             self._unit.shader_io.u_fillcol = self._fill_color
             self._unit.draw()
+            for child in self.children:
+                child.draw()
         else:
             print(f'{self} is deactivated drawing is ignored')
 
-        for child in self.children:
-            child.draw()
 
 class Block(Filled_box):
     # TODO maybe need do-not-color

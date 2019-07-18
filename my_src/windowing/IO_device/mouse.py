@@ -102,6 +102,7 @@ class Mouse(SID):
         self._callbacks_repo.exec('button')
     def button_press_callback(self, button):
         self._callbacks_repo.exec('button_press')
+        print('button_pressed')
         self._just_values['pressed'].add(button)
     def button_release_callback(self):
         self._callbacks_repo.exec('button_release')
