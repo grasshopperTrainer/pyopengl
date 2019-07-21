@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from .component_bp import RenderComponent
-from .glsl_property_container import GLSL_property_container
+# from .glsl_property_container import GLSL_property_container
 from .glsl_input_type_builder import GLSL_input_type_builder, GLSL_input_type_template
 
 from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
@@ -17,12 +17,6 @@ class Shader(RenderComponent):
         self._context = None
         self._glindex = None
         self._name = name
-
-        self._properties = GLSL_property_container(self)
-        for n,t,l in self._attribute:
-            self._properties.new_attribute(n,t,l)
-        for n,t,l in self._uniform:
-            self._properties.new_uniform(n,t,l)
 
         self._io_type = GLSL_input_type_builder(self._vertex, self._fragment) #type: GLSL_input_type_template
 
@@ -65,7 +59,7 @@ class Shader(RenderComponent):
                 continue
 
             # raise flag
-            if '#shader' in line:
+            if '#' in line and 'shader' in line:
                 if 'vertex' in line:
                     save_vertex = True
                 elif 'fragment' in line:

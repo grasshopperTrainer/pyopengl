@@ -255,6 +255,7 @@ class Unique_glfw_context:
         return self
 
     def print_current_binding(self):
+        # TODO this needs to be fixed by asking values to opengl directly
         print(f'current binding of glfw context {self}')
         print(f'    program           : {self._programs.binding().id}')
         print(f'    vertex array      : {self._vertex_arrays.binding().id}')
@@ -265,23 +266,6 @@ class Unique_glfw_context:
         print(f'    render buffer     : {self._render_buffers.binding().id}')
         print(f'    texture           : {self._textures.binding()}')
 
-    def print_full_info(self):
-        # print()
-        # windows = []
-        # for w,c in self.__class__._windows.items():
-        #     if c is self:
-        #         windows.append(w)
-        # print(f"OpenGL CONTEXT INFO of {'window' if len(windows) == 1 else 'windows'}:")
-        # windows = str([i.name for i in windows])
-        # print(f'{windows: >{len(windows)+4}}')
-        # print()
-        #
-        # for i in self.objet_list:
-        #     for ii in i.format_generated():
-        #         print(ii)
-        #     print(i.collection)
-        #     print()
-        pass
 
     def render_unit_add(self, unit):
         stack = self._render_unit_stack
@@ -300,11 +284,21 @@ class Unique_glfw_context:
                 d[layer] = []
             else:
                 insert_pos = len(d)
+
                 for i,l in enumerate(d.keys()):
+                    # layer id is positive
                     if layer.id >= 0:
-                        if layer.id < l.id:
+                        # if comparing is positive too
+                        if l.id >= 0:
+                            if layer.id < l.id:
+                                insert_pos = i
+                                break
+                        # as soon as comparing is negetive
+                        # that's the end of positive layers so stop
+                        else:
                             insert_pos = i
                             break
+                    # layer id is negative
                     else:
                         if l.id < 0 and layer.id < l.id:
                             insert_pos = i
@@ -491,7 +485,9 @@ class Unique_glfw_context:
     GL_RGBA = gl.GL_RGBA
     GL_RGB = gl.GL_RGB
     GL_RGBA8 = gl.GL_RGBA8
-    GL_R = gl.GL_R
+    GL_RED = gl.GL_RED
+    GL_GREEN = gl.GL_GREEN
+    GL_BLUE = gl.GL_BLUE
 
     # depth stencil internal format
     GL_DEPTH_COMPONENT = gl.GL_DEPTH_COMPONENT
@@ -524,6 +520,7 @@ class Unique_glfw_context:
     GL_TEXTURE_WRAP_R = gl.GL_TEXTURE_WRAP_R
     GL_LINEAR = gl.GL_LINEAR
     GL_REPEAT = gl.GL_REPEAT
+    GL_CLAMP_TO_EDGE = gl.GL_CLAMP_TO_EDGE
 
     GL_CURRENT_PROGRAM = gl.GL_CURRENT_PROGRAM
     GL_ELEMENT_ARRAY_BUFFER_BINDING = gl.GL_ELEMENT_ARRAY_BUFFER_BINDING
@@ -546,6 +543,8 @@ class Unique_glfw_context:
 
     GL_VERTEX_ARRAY_POINTER = gl.GL_VERTEX_ARRAY_POINTER
 
+
+    GL_UNPACK_ALIGNMENT = gl.GL_UNPACK_ALIGNMENT
     # for IDE hinting
     _spec_buffer_shared = None
     _spec_vertex_array_shared = None
@@ -968,6 +967,8 @@ class Unique_glfw_context:
     def glTexImage2D(self, target, level, internalformat, width, height, border, format, type, pixels):
         gl.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels)
 
+    def glPixelStorei(self,pname, param):
+        gl.glPixelStorei(pname, param)
 
     def glActiveTexture(self, texture):
         gl.glActiveTexture(texture)
@@ -1024,6 +1025,10 @@ class Unique_glfw_context:
     @_enforce_program_use_share
     def glUniform1i(self, location, v0):
         gl.glUniform1i(location, v0)
+
+    @_enforce_program_use_share
+    def glUniform2fv(self, location, count, value):
+        gl.glUniform2fv(location, count, value)
 
     @_enforce_program_use_share
     def glUniform3fv(self, location, count, value):

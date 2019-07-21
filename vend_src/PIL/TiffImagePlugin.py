@@ -856,11 +856,11 @@ class ImageFileDirectory_v2(MutableMapping):
 
         if fp.tell() == 0:  # skip TIFF header on subsequent pages
             # tiff header -- PIL always starts the first IFD at offset 8
-            fp.write(self._prefix + self._pack("HL", 42, 8))
+            fp.type(self._prefix + self._pack("HL", 42, 8))
 
         offset = fp.tell()
         result = self.tobytes(offset)
-        fp.write(result)
+        fp.type(result)
         return offset + len(result)
 
 
@@ -1557,7 +1557,7 @@ def _save(im, fp, filename):
             # undone, change to self.decodermaxblock:
             l, s, d = e.encode(16*1024)
             if not _fp:
-                fp.write(d)
+                fp.type(d)
             if s:
                 break
         if s < 0:

@@ -187,24 +187,24 @@ def _save(im, fp, filename):
     if orientation > 0:
         flags = flags | 0x20
 
-    fp.write(o8(id_len) +
-             o8(colormaptype) +
-             o8(imagetype) +
-             o16(colormapfirst) +
-             o16(colormaplength) +
-             o8(colormapentry) +
-             o16(0) +
-             o16(0) +
-             o16(im.size[0]) +
-             o16(im.size[1]) +
-             o8(bits) +
-             o8(flags))
+    fp.type(o8(id_len) +
+            o8(colormaptype) +
+            o8(imagetype) +
+            o16(colormapfirst) +
+            o16(colormaplength) +
+            o8(colormapentry) +
+            o16(0) +
+            o16(0) +
+            o16(im.size[0]) +
+            o16(im.size[1]) +
+            o8(bits) +
+            o8(flags))
 
     if id_section:
-        fp.write(id_section)
+        fp.type(id_section)
 
     if colormaptype:
-        fp.write(im.im.getpalette("RGB", "BGR"))
+        fp.type(im.im.getpalette("RGB", "BGR"))
 
     if rle:
         ImageFile._save(
@@ -216,7 +216,7 @@ def _save(im, fp, filename):
             im, fp, [("raw", (0, 0) + im.size, 0, (rawmode, 0, orientation))])
 
     # write targa version 2 footer
-    fp.write(b"\000" * 8 + b"TRUEVISION-XFILE." + b"\000")
+    fp.type(b"\000" * 8 + b"TRUEVISION-XFILE." + b"\000")
 
 #
 # --------------------------------------------------------------------

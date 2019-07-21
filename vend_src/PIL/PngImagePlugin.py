@@ -733,10 +733,10 @@ def putchunk(fp, cid, *data):
 
     data = b"".join(data)
 
-    fp.write(o32(len(data)) + cid)
-    fp.write(data)
+    fp.type(o32(len(data)) + cid)
+    fp.type(data)
     crc = _crc32(data, _crc32(cid))
-    fp.write(o32(crc))
+    fp.type(o32(crc))
 
 
 class _idat(object):
@@ -795,7 +795,7 @@ def _save(im, fp, filename, chunk=putchunk):
     #
     # write minimal PNG file
 
-    fp.write(_MAGIC)
+    fp.type(_MAGIC)
 
     chunk(fp, b"IHDR",
           o32(im.size[0]), o32(im.size[1]),     # 0: size

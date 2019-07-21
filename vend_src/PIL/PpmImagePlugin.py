@@ -142,16 +142,16 @@ def _save(im, fp, filename):
         rawmode, head = "RGB", b"P6"
     else:
         raise IOError("cannot write mode %s as PPM" % im.mode)
-    fp.write(head + ("\n%d %d\n" % im.size).encode('ascii'))
+    fp.type(head + ("\n%d %d\n" % im.size).encode('ascii'))
     if head == b"P6":
-        fp.write(b"255\n")
+        fp.type(b"255\n")
     if head == b"P5":
         if rawmode == "L":
-            fp.write(b"255\n")
+            fp.type(b"255\n")
         elif rawmode == "I;16B":
-            fp.write(b"65535\n")
+            fp.type(b"65535\n")
         elif rawmode == "I;32B":
-            fp.write(b"2147483648\n")
+            fp.type(b"2147483648\n")
     ImageFile._save(im, fp, [("raw", (0, 0)+im.size, 0, (rawmode, 0, 1))])
 
     # ALTERNATIVE: save via builtin debug function

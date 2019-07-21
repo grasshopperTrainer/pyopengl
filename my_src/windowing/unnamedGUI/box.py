@@ -102,10 +102,10 @@ class Filled_box(Box):
             """
     renderer = Renderer_builder()
     renderer.use_shader(renderer.Shader('basic_gui_box'))
-    renderer.use_triangle_strip_draw()
+    renderer.use_drawmode_triangle_strip()
     renderer.use_index_buffer(renderer.Indexbuffer((0, 1, 3, 3, 1, 2)))
 
-    renderer.use_render_unit(vao=True, vbo=True)
+    renderer.use_render_unit(True)
 
     def __init__(self,posx, posy, width, height, window=None):
         super().__init__(posx, posy, width, height, window)

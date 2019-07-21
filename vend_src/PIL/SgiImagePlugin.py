@@ -174,27 +174,27 @@ def _save(im, fp, filename):
         imgName = imgName.encode('ascii', 'ignore')
     # Standard representation of pixel in the file
     colormap = 0
-    fp.write(struct.pack('>h', magicNumber))
-    fp.write(o8(rle))
-    fp.write(o8(bpc))
-    fp.write(struct.pack('>H', dim))
-    fp.write(struct.pack('>H', x))
-    fp.write(struct.pack('>H', y))
-    fp.write(struct.pack('>H', z))
-    fp.write(struct.pack('>l', pinmin))
-    fp.write(struct.pack('>l', pinmax))
-    fp.write(struct.pack('4s', b''))  # dummy
-    fp.write(struct.pack('79s', imgName))  # truncates to 79 chars
-    fp.write(struct.pack('s', b''))  # force null byte after imgname
-    fp.write(struct.pack('>l', colormap))
-    fp.write(struct.pack('404s', b''))  # dummy
+    fp.type(struct.pack('>h', magicNumber))
+    fp.type(o8(rle))
+    fp.type(o8(bpc))
+    fp.type(struct.pack('>H', dim))
+    fp.type(struct.pack('>H', x))
+    fp.type(struct.pack('>H', y))
+    fp.type(struct.pack('>H', z))
+    fp.type(struct.pack('>l', pinmin))
+    fp.type(struct.pack('>l', pinmax))
+    fp.type(struct.pack('4s', b''))  # dummy
+    fp.type(struct.pack('79s', imgName))  # truncates to 79 chars
+    fp.type(struct.pack('s', b''))  # force null byte after imgname
+    fp.type(struct.pack('>l', colormap))
+    fp.type(struct.pack('404s', b''))  # dummy
 
     rawmode = 'L'
     if bpc == 2:
         rawmode = 'L;16B'
 
     for channel in im.split():
-        fp.write(channel.tobytes('raw', rawmode, 0, orientation))
+        fp.type(channel.tobytes('raw', rawmode, 0, orientation))
 
     fp.config_window_close()
 

@@ -310,7 +310,7 @@ def _save_all(im, fp, filename):
     if data is None:
         raise IOError("cannot write file as WebP (encoder returned None)")
 
-    fp.write(data)
+    fp.type(data)
 
 
 def _save(im, fp, filename):
@@ -341,7 +341,7 @@ def _save(im, fp, filename):
     if data is None:
         raise IOError("cannot write file as WebP (encoder returned None)")
 
-    fp.write(data)
+    fp.type(data)
 
 
 Image.register_open(WebPImageFile.format, WebPImageFile, _accept)

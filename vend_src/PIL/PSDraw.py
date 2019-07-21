@@ -36,9 +36,9 @@ class PSDraw(object):
 
     def _fp_write(self, to_write):
         if not py3 or self.fp == sys.stdout:
-            self.fp.write(to_write)
+            self.fp.type(to_write)
         else:
-            self.fp.write(bytes(to_write, 'UTF-8'))
+            self.fp.type(bytes(to_write, 'UTF-8'))
 
     def begin_document(self, id=None):
         """Set up printing of a document. (Write Postscript DSC header.)"""

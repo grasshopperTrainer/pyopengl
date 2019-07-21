@@ -180,7 +180,7 @@ def _save(im, fp, filename):
 
     # header
     for h in header:
-        fp.write(o16(h))
+        fp.type(o16(h))
 
     # image body
     ImageFile._save(im, fp, [("raw", (0, 0)+im.size, 32, ("1", 0, 1))])

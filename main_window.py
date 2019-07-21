@@ -1,7 +1,10 @@
 from windowing.window import Window
 import glfw
 from windowing.unnamedGUI import *
+from windowing.renderer.cleaner import Cleaner
+
 import gc
+import freetype as ft
 
 import numpy as np
 from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
@@ -18,7 +21,7 @@ class Main_window(Window):
         self.viewports.new(0, lambda x:x - 150, 1., 100,'top_bar')
         self.viewports.new(lambda x:x-400, 100, 400, lambda x:x-100,'side_bar')
         self.viewports.new(20,20,lambda x:x-40,lambda x:x-40,'center').set_min()
-
+        self.layers.new(1)
         self.layers.new(-1)
 
         self.flag_topbar_created = False
@@ -64,35 +67,46 @@ class Main_window(Window):
         #              self.refresh_all() if not self.menu_list.is_active else self.menu_list.draw())
         # )
         # buttons[0].set_reset_pressed_elsewhere(True)
-        source ='''
-        first
-         a
-          n
-         aa
-          mm
-          mmm
-        second
-         b
-          dd
-          dd
-          d
-          d
-        third
-         c
-         cc
-         ccc
-          kk
-          k
-          kkk
-           l
-            ll
-        '''
-        self.test = Complex_button_list(source, Button_hover_press, 50, 50, self)
+        # source ='''
+        # first
+        #  a
+        #   n
+        #  aa
+        #   mm
+        #   mmm
+        # second
+        #  b
+        #   dd
+        #   dd
+        #   d
+        #   d
+        # third
+        #  c
+        #  cc
+        #  ccc
+        #   kk
+        #   k
+        #   kkk
+        #    l
+        #     ll
+        # '''
+        # self.test = Complex_button_list(source, Button_hover_press, 50, 50, self)
         # self.buttonlist = Button_list(self, 1, Button_hover_press, 0,200,100)
         # self.buttonlist.add()
         # self.buttonlist.add()
         # self.buttonlist.append(Button_hover_press(0,0,200,100))
         # self.kkk = Button_list(self, 0, Button_hover_press,4,400,100)
+        self.filledbox_back = Filled_box(0,0,100,100,self)
+        self.filledbox_middle = Filled_box(50,50,100,100,self)
+        self.filledbox_middle.fill_color = 1,1,0,1
+        self.filledbox_front = Filled_box(100,100,100,100,self)
+        self.filledbox_front.fill_color = 0,0,1,1
+        self.text_box = Textbox('Hellow world',0,50,100,100,self)
+        # print(ft)
+        # exit()
+
+        # print(self.face.load_char())
+
         self.set_window_resize_callback(self.refresh_all)
         self.refresh_all()
     #
@@ -135,8 +149,16 @@ class Main_window(Window):
             self.viewports[0].clear()
             # with self.layers[0]:
             #     self.rect.draw()
+            with self.layers[0]:
+                self.filledbox_back.draw()
+            with self.layers[1]:
+                self.filledbox_middle.draw()
+                # self.cleaner.clear(1,0,1,1)
             with self.layers[-1]:
-                self.test.draw()
+                self.filledbox_front.draw()
+                self.text_box.draw()
+            # with self.layers[-1]:
+                # self.test.draw()
                 # self.buttonlist.draw()
                 # self.left_buttons.draw()
                 # self.right_buttons.draw()

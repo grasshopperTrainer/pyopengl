@@ -4,6 +4,8 @@ import copy
 # from ...my_openGL.unique_glfw_context import Trackable_openGL as gl
 from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
 from windowing.windows import Windows
+import numbers
+
 class glsl_attribute:
 
     def __init__(self, kind, name, location):
@@ -36,7 +38,10 @@ class glsl_attribute:
             if len(target) != len(value):
                 raise
         elif self._kind == 1:
-            value = np.array(value) if len(value) == 1 else np.array((value,))
+            if isinstance(value, numbers.Number):
+                pass
+            else:
+                value = np.array(value) if len(value) == 1 else np.array((value,))
 
         try:
             self._dict[instance][self._name] = value
@@ -52,7 +57,6 @@ class glsl_attribute:
     def save_attribute(self, instance):
         buffer = self._dict[instance]
         start_pos = buffer.dtype.names.index(self._name)
-
         # finde starting offset
         start_off = 0
         for i in range(start_pos):
@@ -61,10 +65,17 @@ class glsl_attribute:
             start_off += bytesize
 
         data = buffer[self._name]
+        # print()
+        # print(self._name)
+        # print(buffer)
+        # print(data)
         for i in range(buffer.size):
             off = start_off + buffer.itemsize * i
             element = data[i]
             size = element.itemsize * element.size
+            # with instance.context as gl:
+            #     instance._vertex_buffer.bind()
+            #     gl.glBufferSubData(Unique_glfw_context.GL_ARRAY_BUFFER, off, size, element)
             instance._attribute_push_que.append((Unique_glfw_context.glBufferSubData,(Unique_glfw_context.GL_ARRAY_BUFFER, off, size, element)))
 
 class vector(glsl_attribute):
@@ -110,6 +121,8 @@ class integer(glsl_attribute):
 
     def save_uniform(self, instance):
         d = self._dict[instance][self._name][0]
+        print('ddd', self._name)
+        print(d)
         instance._uniform_push_que[self._name] = Unique_glfw_context.glUniform1i,(self._location, d)
 
 class bool(integer):
@@ -173,6 +186,10 @@ class GLSL_input_type_builder:
 
         uni_fields = []
         for i in uni_args:
+            print(i)
+
+            if i[1] == 'int':
+                i[1] = 'integer'
             dtype = eval(f'{i[1]}._dtype')
             n = eval(f'{i[1]}._n')
             uni_fields.append((i[2], dtype, n))
@@ -220,25 +237,45 @@ class GLSL_input_type_template:
         self._flag_resized = False
         self._attribute_push_que = []
         self._uniform_push_que = {}
-
+        self._captured = []
     def push_all(self, context):
+        att, uni = self._captured.pop(0)
+        # print('=================')
+        # # print(att)
+        # for i in att:
+        #     print(i)
+        # print()
+        # for i in uni.items():
+        #     print(i)
+        # print(uni)
         if context != self.context:
             raise
         # TODO attribute update sequence and uniform update sequence is little bit different...
         #   that's because shader is shared and vertex buffer is not... what if vertex buffer is also shared? need to think about it more
         with self.context as gl:
-            if len(self._attribute_push_que) != 0:
+            if len(att) != 0:
                 self._vertex_buffer.bind()
-                for f, args in self._attribute_push_que:
+                for f, args in att:
                     f(gl,*args)
-                self._attribute_push_que = []
+                # self._attribute_push_que = []
 
-            for f, args in self._uniform_push_que.values():
+            for f, args in uni.values():
                 f(gl,*args)
+
+        # lately bound _ pipeline assigned
+        for f, args in self._uniform_push_que.values():
+            f(gl, *args)
+        self._uniform_push_que = {}
         # print('dddddddddddd')
         # print(self._attribute_push_que)
         # print(self._uniform_push_que)
         # self._uniform_push_que = []
+    def capture_push_value(self):
+        att = copy.deepcopy(self._attribute_push_que)
+        uni = copy.deepcopy(self._uniform_push_que)
+        self._attribute_push_que = []
+        self._uniform_push_que = {}
+        self._captured.append((att,uni))
 
     def resize(self, n):
         self._attribute_buffer.resize(n, refcheck=False)

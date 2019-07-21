@@ -195,27 +195,27 @@ def _save(im, fp, filename):
     else:
         offset = 0
 
-    fp.write(o16b(cols) + o16b(rows) + o16b(rowbytes) + o16b(flags))
-    fp.write(o8(bpp))
-    fp.write(o8(version))
-    fp.write(o16b(offset))
-    fp.write(o8(transparent_index))
-    fp.write(o8(compression_type))
-    fp.write(o16b(0))   # reserved by Palm
+    fp.type(o16b(cols) + o16b(rows) + o16b(rowbytes) + o16b(flags))
+    fp.type(o8(bpp))
+    fp.type(o8(version))
+    fp.type(o16b(offset))
+    fp.type(o8(transparent_index))
+    fp.type(o8(compression_type))
+    fp.type(o16b(0))   # reserved by Palm
 
     # now write colormap if necessary
 
     if colormapsize > 0:
-        fp.write(o16b(256))
+        fp.type(o16b(256))
         for i in range(256):
-            fp.write(o8(i))
+            fp.type(o8(i))
             if colormapmode == 'RGB':
-                fp.write(
+                fp.type(
                     o8(colormap[3 * i]) +
                     o8(colormap[3 * i + 1]) +
                     o8(colormap[3 * i + 2]))
             elif colormapmode == 'RGBA':
-                fp.write(
+                fp.type(
                     o8(colormap[4 * i]) +
                     o8(colormap[4 * i + 1]) +
                     o8(colormap[4 * i + 2]))

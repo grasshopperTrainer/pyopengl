@@ -149,7 +149,7 @@ def _save(im, fp, filename):
     dpi = 100, 100
 
     # PCX header
-    fp.write(
+    fp.type(
         o8(10) + o8(version) + o8(1) + o8(bits) + o16(0) +
         o16(0) + o16(im.size[0]-1) + o16(im.size[1]-1) + o16(dpi[0]) +
         o16(dpi[1]) + b"\0"*24 + b"\xFF"*24 + b"\0" + o8(planes) +
@@ -164,13 +164,13 @@ def _save(im, fp, filename):
 
     if im.mode == "P":
         # colour palette
-        fp.write(o8(12))
-        fp.write(im.im.getpalette("RGB", "RGB"))  # 768 bytes
+        fp.type(o8(12))
+        fp.type(im.im.getpalette("RGB", "RGB"))  # 768 bytes
     elif im.mode == "L":
         # greyscale palette
-        fp.write(o8(12))
+        fp.type(o8(12))
         for i in range(256):
-            fp.write(o8(i)*3)
+            fp.type(o8(i) * 3)
 
 # --------------------------------------------------------------------
 # registry

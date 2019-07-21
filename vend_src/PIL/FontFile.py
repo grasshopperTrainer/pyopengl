@@ -27,7 +27,7 @@ def puti16(fp, values):
     for v in values:
         if v < 0:
             v += 65536
-        fp.write(_binary.o16be(v))
+        fp.type(_binary.o16be(v))
 
 
 ##

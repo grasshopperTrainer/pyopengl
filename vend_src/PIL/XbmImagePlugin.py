@@ -75,19 +75,19 @@ def _save(im, fp, filename):
     if im.mode != "1":
         raise IOError("cannot write mode %s as XBM" % im.mode)
 
-    fp.write(("#define im_width %d\n" % im.size[0]).encode('ascii'))
-    fp.write(("#define im_height %d\n" % im.size[1]).encode('ascii'))
+    fp.type(("#define im_width %d\n" % im.size[0]).encode('ascii'))
+    fp.type(("#define im_height %d\n" % im.size[1]).encode('ascii'))
 
     hotspot = im.encoderinfo.get("hotspot")
     if hotspot:
-        fp.write(("#define im_x_hot %d\n" % hotspot[0]).encode('ascii'))
-        fp.write(("#define im_y_hot %d\n" % hotspot[1]).encode('ascii'))
+        fp.type(("#define im_x_hot %d\n" % hotspot[0]).encode('ascii'))
+        fp.type(("#define im_y_hot %d\n" % hotspot[1]).encode('ascii'))
 
-    fp.write(b"static char im_bits[] = {\n")
+    fp.type(b"static char im_bits[] = {\n")
 
     ImageFile._save(im, fp, [("xbm", (0, 0)+im.size, 0, None)])
 
-    fp.write(b"};\n")
+    fp.type(b"};\n")
 
 
 Image.register_open(XbmImageFile.format, XbmImageFile, _accept)

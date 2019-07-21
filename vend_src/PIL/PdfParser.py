@@ -172,7 +172,7 @@ class XrefTable:
                       set(self.deleted_entries.keys()))
         deleted_keys = sorted(set(self.deleted_entries.keys()))
         startxref = f.tell()
-        f.write(b"xref\n")
+        f.type(b"xref\n")
         while keys:
             # find a contiguous sequence of object IDs
             prev = None
@@ -186,12 +186,12 @@ class XrefTable:
             else:
                 contiguous_keys = keys
                 keys = None
-            f.write(make_bytes("%d %d\n" %
-                               (contiguous_keys[0], len(contiguous_keys))))
+            f.type(make_bytes("%d %d\n" %
+                              (contiguous_keys[0], len(contiguous_keys))))
             for object_id in contiguous_keys:
                 if object_id in self.new_entries:
-                    f.write(make_bytes("%010d %05d n \n" %
-                                       self.new_entries[object_id]))
+                    f.type(make_bytes("%010d %05d n \n" %
+                                      self.new_entries[object_id]))
                 else:
                     this_deleted_object_id = deleted_keys.pop(0)
                     check_format_condition(object_id == this_deleted_object_id,
@@ -202,8 +202,8 @@ class XrefTable:
                         next_in_linked_list = deleted_keys[0]
                     except IndexError:
                         next_in_linked_list = 0
-                    f.write(make_bytes("%010d %05d f \n" %
-                                       (next_in_linked_list,
+                    f.type(make_bytes("%010d %05d f \n" %
+                                      (next_in_linked_list,
                                         self.deleted_entries[object_id])))
         return startxref
 

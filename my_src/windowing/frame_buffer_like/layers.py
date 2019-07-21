@@ -39,6 +39,10 @@ class Layer:
     def is_on(self):
         return self._state
 
+    def __str__(self):
+        return f'<Layer> name:{self._name} id:{self._id}'
+    def __repr__(self):
+        return self.__str__()
 class Layers:
     def __init__(self):
         self._layers = {}

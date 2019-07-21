@@ -403,7 +403,7 @@ def _write_single_frame(im, fp, palette):
     im_out = _normalize_palette(im_out, palette, im.encoderinfo)
 
     for s in _get_global_header(im_out, im.encoderinfo):
-        fp.write(s)
+        fp.type(s)
 
     # local image header
     flags = 0
@@ -415,7 +415,7 @@ def _write_single_frame(im, fp, palette):
     ImageFile._save(im_out, fp, [("gif", (0, 0)+im.size, 0,
                                   RAWMODE[im_out.mode])])
 
-    fp.write(b"\0")  # end of image data
+    fp.type(b"\0")  # end of image data
 
 
 def _write_multiple_frames(im, fp, palette):
@@ -474,7 +474,7 @@ def _write_multiple_frames(im, fp, palette):
                 # global header
                 for s in _get_global_header(im_frame,
                                             frame_data['encoderinfo']):
-                    fp.write(s)
+                    fp.type(s)
                 offset = (0, 0)
             else:
                 # compress difference
@@ -501,7 +501,7 @@ def _save(im, fp, filename, save_all=False):
     if not save_all or not _write_multiple_frames(im, fp, palette):
         _write_single_frame(im, fp, palette)
 
-    fp.write(b";")  # end of file
+    fp.type(b";")  # end of file
 
     if hasattr(fp, "flush"):
         fp.flush()
@@ -549,33 +549,33 @@ def _write_local_header(fp, im, offset, flags):
         if not transparent_color_exists:
             transparency = 0
 
-        fp.write(b"!" +
-                 o8(249) +                # extension intro
-                 o8(4) +                  # length
-                 o8(packed_flag) +        # packed fields
-                 o16(duration) +          # duration
-                 o8(transparency) +       # transparency index
-                 o8(0))
+        fp.type(b"!" +
+                o8(249) +  # extension intro
+                o8(4) +  # length
+                o8(packed_flag) +  # packed fields
+                o16(duration) +  # duration
+                o8(transparency) +  # transparency index
+                o8(0))
 
     if "comment" in im.encoderinfo and \
        1 <= len(im.encoderinfo["comment"]):
-        fp.write(b"!" +
-                 o8(254))                 # extension intro
+        fp.type(b"!" +
+                o8(254))                 # extension intro
         for i in range(0, len(im.encoderinfo["comment"]), 255):
             subblock = im.encoderinfo["comment"][i:i+255]
-            fp.write(o8(len(subblock)) +
-                     subblock)
-        fp.write(o8(0))
+            fp.type(o8(len(subblock)) +
+                    subblock)
+        fp.type(o8(0))
     if "loop" in im.encoderinfo:
         number_of_loops = im.encoderinfo["loop"]
-        fp.write(b"!" +
-                 o8(255) +                # extension intro
-                 o8(11) +
+        fp.type(b"!" +
+                o8(255) +  # extension intro
+                o8(11) +
                  b"NETSCAPE2.0" +
-                 o8(3) +
-                 o8(1) +
-                 o16(number_of_loops) +   # number of loops
-                 o8(0))
+                o8(3) +
+                o8(1) +
+                o16(number_of_loops) +  # number of loops
+                o8(0))
     include_color_table = im.encoderinfo.get('include_color_table')
     if include_color_table:
         palette_bytes = _get_palette_bytes(im)
@@ -584,15 +584,15 @@ def _write_local_header(fp, im, offset, flags):
             flags = flags | 128               # local color table flag
             flags = flags | color_table_size
 
-    fp.write(b"," +
-             o16(offset[0]) +             # offset
-             o16(offset[1]) +
-             o16(im.size[0]) +            # size
-             o16(im.size[1]) +
-             o8(flags))                   # flags
+    fp.type(b"," +
+            o16(offset[0]) +  # offset
+            o16(offset[1]) +
+            o16(im.size[0]) +  # size
+            o16(im.size[1]) +
+            o8(flags))                   # flags
     if include_color_table and color_table_size:
-        fp.write(_get_header_palette(palette_bytes))
-    fp.write(o8(8))                       # bits
+        fp.type(_get_header_palette(palette_bytes))
+    fp.type(o8(8))                       # bits
 
 
 def _save_netpbm(im, fp, filename):
@@ -773,7 +773,7 @@ def _write_frame_data(fp, im_frame, offset, params):
         ImageFile._save(im_frame, fp, [("gif", (0, 0)+im_frame.size, 0,
                                         RAWMODE[im_frame.mode])])
 
-        fp.write(b"\0")  # end of image data
+        fp.type(b"\0")  # end of image data
     finally:
         del im_frame.encoderinfo
 

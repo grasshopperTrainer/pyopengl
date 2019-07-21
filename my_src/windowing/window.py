@@ -474,6 +474,7 @@ class Window(MCS):
             self._glfw_window = None
             # if there is no window left, terminate
             if len(self.windows) == 0:
+                print('TERMINATE')
                 glfw.terminate()
 
             gc.collect()
@@ -799,6 +800,8 @@ class Window(MCS):
                                 gl.glScissor(*viewport.pixel_values)
 
                                 for layer,units in layers.items():
+                                    # this is to seperate layers regardless of depth drawn
+                                    gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
                                     if layer.is_on:
                                         frame._flag_something_rendered = True
                                         for unit in units:

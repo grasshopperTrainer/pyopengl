@@ -13,19 +13,52 @@ class Texture(RenderComponent):
     _default_format = Unique_glfw_context.GL_RGBA
     _default_type = Unique_glfw_context.GL_UNSIGNED_BYTE
 
+    RGBA = Unique_glfw_context.GL_RGBA
+    RED = Unique_glfw_context.GL_RED
+    GREEN = Unique_glfw_context.GL_GREEN
+    BLUE = Unique_glfw_context.GL_BLUE
 
 class Texture_new(Texture):
 
-    def __init__(self, width, height, slot):
+    def __init__(self, width, height, slot, internalformat = None, format = None, type = None,data = None):
         self._size = (width, height)
         self._slot = slot
 
-        self._internalformat = None
-        self._format = None
-        self._type = None
+        if internalformat is None:
+            self._internalformat = self._default_internalformat
+        else:
+            if isinstance(internalformat, str):
+                if hasattr(self, internalformat):
+                    self._internalformat = eval(f'self.{internalformat}')
+                else:
+                    raise
+            else:
+                raise
+        if format is None:
+            self._format = self._default_format
+        else:
+            if isinstance(format, str):
+                if hasattr(self, format):
+                    self._format = eval(f'self.{format}')
+                else:
+                    raise
+            else:
+                raise
+
+        if type is None:
+            self._type = self._default_type
+        else:
+            if isinstance(type, str):
+                if hasattr(self, type):
+                    self._type = eval(f'self.{type}')
+                else:
+                    raise
+            else:
+                raise
 
         self._glindex = None
         self._context = None
+        self._data = data
 
     def build(self, context):
         super().build(context)
@@ -43,20 +76,39 @@ class Texture_new(Texture):
             gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_REPEAT)
             # gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_R, gl.GL_REPEAT)
             # gl.glTexParameter(gl.GL_TEXTURE_2D, gl.GL_GENERATE_MIPMAP, gl.GL_TRUE)
-
-
-            gl.glTexImage2D(gl.GL_TEXTURE_2D,
-                            0,
-                            self.internalformat,
-                            self._size[0],
-                            self._size[1],
-                            0,
-                            self.format,
-                            self.type,
-                            None)
+            try:
+                gl.glTexImage2D(gl.GL_TEXTURE_2D,
+                                0,
+                                self._internalformat,
+                                self._size[0],
+                                self._size[1],
+                                0,
+                                self._format,
+                                self._type,
+                                self._data)
+            except OSError as e:
+                while True:
+                    try:
+                        # TODO why?
+                        gl.glTexImage2D(gl.GL_TEXTURE_2D,
+                                        0,
+                                        self._internalformat,
+                                        self._size[0],
+                                        self._size[1],
+                                        0,
+                                        self._format,
+                                        self._type,
+                                        self._data)
+                        break
+                    except:
+                        pass
 
             gl.glActiveTexture(gl.GL_TEXTURE0)
             gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+
+        # erase data?
+        self._data = None
+        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
 
     def rebuild(self,width, height):
         self._size = width, height
@@ -94,35 +146,35 @@ class Texture_new(Texture):
         if isinstance(value, str):
             self.__class__._repository = value
 
-    @property
-    def internalformat(self):
-        if self._internalformat is None:
-            return self.__class__._default_internalformat
-        else:
-            return self._internalformat
-    @internalformat.setter
-    def internalformat(self, v):
-        self._internalformat = v
-
-    @property
-    def format(self):
-        if self._format is None:
-            return self.__class__._default_format
-        else:
-            return self._format
-    @format.setter
-    def format(self, v):
-        self._format = v
-
-    @property
-    def type(self):
-        if self._type is None:
-            return self.__class__._default_type
-        else:
-            return self._type
-    @format.setter
-    def format(self, v):
-        self._type = v
+    # @property
+    # def internalformat(self):
+    #     if self._internalformat is None:
+    #         return self.__class__._default_internalformat
+    #     else:
+    #         return self._internalformat
+    # @internalformat.setter
+    # def internalformat(self, v):
+    #     self._internalformat = v
+    #
+    # @property
+    # def format(self):
+    #     if self._format is None:
+    #         return self.__class__._default_format
+    #     else:
+    #         return self._format
+    # @format.setter
+    # def format(self, v):
+    #     self._format = v
+    #
+    # @property
+    # def type(self):
+    #     if self._type is None:
+    #         return self.__class__._default_type
+    #     else:
+    #         return self._type
+    # @format.setter
+    # def format(self, v):
+    #     self._type = v
 
 
 class Texture_load(Texture):

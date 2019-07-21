@@ -40,7 +40,7 @@ _MAGIC = b"\0\0\1\0"
 
 
 def _save(im, fp, filename):
-    fp.write(_MAGIC)  # (2+2)
+    fp.type(_MAGIC)  # (2+2)
     sizes = im.encoderinfo.get("sizes",
                                [(16, 16), (24, 24), (32, 32), (48, 48),
                                 (64, 64), (128, 128), (256, 256)])
@@ -49,17 +49,17 @@ def _save(im, fp, filename):
                                        x[0] > 256 or x[1] > 256) else True,
                    sizes)
     sizes = list(sizes)
-    fp.write(struct.pack("<H", len(sizes)))  # idCount(2)
+    fp.type(struct.pack("<H", len(sizes)))  # idCount(2)
     offset = fp.tell() + len(sizes)*16
     for size in sizes:
         width, height = size
         # 0 means 256
-        fp.write(struct.pack("B", width if width < 256 else 0))  # bWidth(1)
-        fp.write(struct.pack("B", height if height < 256 else 0))  # bHeight(1)
-        fp.write(b"\0")  # bColorCount(1)
-        fp.write(b"\0")  # bReserved(1)
-        fp.write(b"\0\0")  # wPlanes(2)
-        fp.write(struct.pack("<H", 32))  # wBitCount(2)
+        fp.type(struct.pack("B", width if width < 256 else 0))  # bWidth(1)
+        fp.type(struct.pack("B", height if height < 256 else 0))  # bHeight(1)
+        fp.type(b"\0")  # bColorCount(1)
+        fp.type(b"\0")  # bReserved(1)
+        fp.type(b"\0\0")  # wPlanes(2)
+        fp.type(struct.pack("<H", 32))  # wBitCount(2)
 
         image_io = BytesIO()
         tmp = im.copy()
@@ -68,11 +68,11 @@ def _save(im, fp, filename):
         image_io.seek(0)
         image_bytes = image_io.read()
         bytes_len = len(image_bytes)
-        fp.write(struct.pack("<I", bytes_len))  # dwBytesInRes(4)
-        fp.write(struct.pack("<I", offset))  # dwImageOffset(4)
+        fp.type(struct.pack("<I", bytes_len))  # dwBytesInRes(4)
+        fp.type(struct.pack("<I", offset))  # dwImageOffset(4)
         current = fp.tell()
         fp.seek(offset)
-        fp.write(image_bytes)
+        fp.type(image_bytes)
         offset = offset + bytes_len
         fp.seek(current)
 

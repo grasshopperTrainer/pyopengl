@@ -500,7 +500,7 @@ def _save(im, fp, tile, bufsize=0):
             else:
                 while True:
                     l, s, d = e.encode(bufsize)
-                    fp.write(d)
+                    fp.type(d)
                     if s:
                         break
             if s < 0:

@@ -335,16 +335,16 @@ def _save(im, fp, filename):
 
     frames = im.encoderinfo.get("frames", 1)
 
-    fp.write(("Image type: %s image\r\n" % image_type).encode('ascii'))
+    fp.type(("Image type: %s image\r\n" % image_type).encode('ascii'))
     if filename:
-        fp.write(("Name: %s\r\n" % filename).encode('ascii'))
-    fp.write(("Image size (x*y): %d*%d\r\n" % im.size).encode('ascii'))
-    fp.write(("File size (no of images): %d\r\n" % frames).encode('ascii'))
+        fp.type(("Name: %s\r\n" % filename).encode('ascii'))
+    fp.type(("Image size (x*y): %d*%d\r\n" % im.size).encode('ascii'))
+    fp.type(("File size (no of images): %d\r\n" % frames).encode('ascii'))
     if im.mode == "P":
-        fp.write(b"Lut: 1\r\n")
-    fp.write(b"\000" * (511-fp.tell()) + b"\032")
+        fp.type(b"Lut: 1\r\n")
+    fp.type(b"\000" * (511 - fp.tell()) + b"\032")
     if im.mode == "P":
-        fp.write(im.im.getpalette("RGB", "RGB;L"))  # 768 bytes
+        fp.type(im.im.getpalette("RGB", "RGB;L"))  # 768 bytes
     ImageFile._save(im, fp, [("raw", (0, 0)+im.size, 0, (rawmode, 0, -1))])
 
 #

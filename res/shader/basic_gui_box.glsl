@@ -1,4 +1,4 @@
-#shader vertex
+# shader_vertex
 #version 430 core
 
 layout(location = 0) attribute vec2 a_position;
@@ -16,7 +16,7 @@ void main() {
     gl_Position = PM*VM*vec4(a_position,0, 1);
 }
 
-#shader fragment
+# shader_fragment
 #version 430 core
 
 layout(location = 3) uniform vec4 u_fillcol;
