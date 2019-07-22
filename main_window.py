@@ -80,6 +80,16 @@ class Main_window(Window):
           dd
           d
           d
+         d
+         f
+         d
+         d
+         f
+         g
+         s
+         d
+         f
+         g
         third
          c
          cc
@@ -113,8 +123,8 @@ class Main_window(Window):
         self.filledbox_middle.fill_color = 1,1,0,1
         self.filledbox_front = Filled_box(100,100,100,100,self)
         self.filledbox_front.fill_color = 0,0,1,1
-        self.text_box = Textbox(0,50,200,50,self,'Hellow world',50)
-        self.text_box.text_fill_color = 1,0,0,1
+        # self.text_box = Textbox(0,50,200,50,self,'Hellow world',50)
+        # self.text_box.text_fill_color = 1,0,0,1
         # print(ft)
         # exit()
 
@@ -168,7 +178,7 @@ class Main_window(Window):
                 self.filledbox_middle.draw()
                 # self.cleaner.clear(1,0,1,1)
                 self.filledbox_front.draw()
-                self.text_box.draw()
+                # self.text_box.draw()
             with self.layers[-1]:
                 pass
                 self.test.draw()

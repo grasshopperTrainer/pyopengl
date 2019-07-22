@@ -93,8 +93,6 @@ class Typewriter_builder:
             vertex = left_top, left_top+np.array((0,-h)),left_top+np.array((w,-h)),left_top+np.array((w,0))
 
             renderer.shader_io.vertex = vertex
-            if char == 'e':
-                print('-----------------', vertex)
             renderer.shader_io.fill_color = color
             renderer.draw(f'typing {char}')
 

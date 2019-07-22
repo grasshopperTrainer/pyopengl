@@ -768,7 +768,7 @@ class Window(MCS):
         # timer.print_framerate_drawing()
         while True:
             # gc.collect()
-            timer.set_routine_start()
+            timer.set_routine()
             # if cls._display_window():
             # to give access to other windows through keyword 'windows'
             for window in cls._windows: #type: Window
@@ -804,24 +804,20 @@ class Window(MCS):
                                     gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
                                     if layer.is_on:
                                         frame._flag_something_rendered = True
-                                        print()
-                                        print('--------------------------------------')
-                                        print(layer)
                                         for unit in units:
-                                            print(unit)
-                                            if hasattr(unit[0], 'shader_io'):
-                                                for i in unit[0].shader_io._captured:
-                                                    # print('   ',i)
-                                                    print()
-                                                    for ii in i[0]:
-                                                        print('    ', ii)
-                                            unit[0]._draw_(gl,frame, viewport)
+                                        #     print(unit)
+                                        #     if hasattr(unit[0], 'shader_io'):
+                                        #         for i in unit[0].shader_io._captured:
+                                        #             # print('   ',i)
+                                        #             print()
+                                        #             for ii in i[0]:
+                                        #                 print('    ', ii)
+                                            unit[0]._draw_(gl,frame, viewport, unit[2],unit[3])
                                             # print()
                                             # print('writing into frame')
                                             # print(unit)
                                             # print(cls._windows.windows['main']._myframe)
                                             # print(gl,frame, viewport)
-                                        print('--------------------------------------')
                     context.render_unit_stack_flush()
 
             # copy myframe to window default
@@ -852,7 +848,6 @@ class Window(MCS):
             if to_break:
                 break
 
-            timer.set_routine_end()
             if timer.framecount == framecount:
                 break
 
@@ -1077,8 +1072,12 @@ class Window(MCS):
     #     print(self.mouse.window_position)
 class Timer:
     def __init__(self,framerate, name):
+        self._previous_time = time()
+        self._previous_time_per_second = time()
         self._framecount = 0
         self._frametarget = framerate
+        self._target_rendering_time = 1/framerate
+
         self._name = name
         self._current_framerate = 0
 
@@ -1090,7 +1089,7 @@ class Timer:
 
         self._start_position_set = False
         self._routine_start_position_set = False
-        self._print_framerate = False
+        self._print_framerate = True
         self._print_framerate_drawing = False
         self._glfwtime = 0
 
@@ -1103,48 +1102,69 @@ class Timer:
         self._print_framerate = True
     def print_framerate_drawing(self):
         self._print_framerate_drawing = True
-    def set_routine_start(self):
-        glfw.set_time(0)
-        if self._start_position_set:
-            # for compensation
-            target = 1 / self._frametarget
-            self._frame_compensation = (time() - self._saved_time_frame_start - target)/2
-            self._saved_time_frame_start = time()
-            # print(self._frame_compensation)
 
-    def set_routine_end(self):
-        # measure sleep
-        if self._framecount % self._frametarget is 0:
-            per_second_rendering_time = time() - self._saved_time_second
+    def set_routine(self):
+        if self._framecount%self._frametarget == 0:
+            rendering_time = time() - self._previous_time_per_second
+            self._previous_time_per_second = time()
+            self._per_frame_compensation = (1-rendering_time)/self._frametarget
             try:
-                self._current_framerate = self._frametarget / per_second_rendering_time
+                fps = self._frametarget/rendering_time
+                self._target_rendering_time = 1/self._frametarget + self._per_frame_compensation
+                print(round(fps), rendering_time, self._per_frame_compensation, self._target_rendering_time)
             except:
                 pass
-            else:
-                self._saved_time_second = time()
-                # if self._print_framerate:
-                #     print()
-                #     print(f'{self._name}: framerate: {round(self._current_framerate)}')
-
-        target = 1/self._frametarget
-
-        rendering_time = glfw.get_time()
-        # if self._print_framerate_drawing:
-        #     if self._framecount % self._frametarget is 0:
-        #         try:
-        #             fps = 1/rendering_time
-        #         except:
-        #             fps = 0
-        #         print(f'drawing_framerate: {fps}')
-        #     self._glfwtime = g.get_time()
-
-        self._framecount += 1
-        #sleep
-        waiting_time = target - rendering_time - self._frame_compensation
-        if waiting_time >= 0:
-            sleep(waiting_time)
+        rendering_time = time()-self._previous_time
+        self._previous_time = time()
+        wait_time = self._target_rendering_time-rendering_time
+        # print(rendering_time, wait_time, self._per_frame_compensation)
+        self._framecount +=1
+        if wait_time > 0:
+            sleep(wait_time)
         else:
+            # if self._framecount != 1:
+            self._previous_time += wait_time
             pass
+        # glfw.set_time(0)
+        # if self._start_position_set:
+        #     # for compensation
+        #     target = 1 / self._frametarget
+        #     self._frame_compensation = (time() - self._saved_time_frame_start - target)/2
+        #     self._saved_time_frame_start = time()
+        #     # print(self._frame_compensation)
+        #     # measure sleep
+        #     if self._framecount % self._frametarget is 0:
+        #         per_second_rendering_time = time() - self._saved_time_second
+        #         try:
+        #             self._current_framerate = self._frametarget / per_second_rendering_time
+        #         except:
+        #             pass
+        #         else:
+        #             self._saved_time_second = time()
+        #             if self._print_framerate:
+        #                 print()
+        #                 print(f'{self._name}: framerate: {round(self._current_framerate)}')
+        #
+        #     target = 1 / self._frametarget
+        #
+        #     rendering_time = glfw.get_time()
+        #     # if self._print_framerate_drawing:
+        #     #     if self._framecount % self._frametarget is 0:
+        #     #         try:
+        #     #             fps = 1/rendering_time
+        #     #         except:
+        #     #             fps = 0
+        #     #         print(f'drawing_framerate: {fps}')
+        #     #     self._glfwtime = g.get_time()
+        #
+        #     self._framecount += 1
+        #     # sleep
+        #     waiting_time = target - rendering_time - self._frame_compensation
+        #     if waiting_time >= 0:
+        #         sleep(waiting_time)
+        #     else:
+        #         pass
+
     @property
     def framecount(self):
         return self._framecount

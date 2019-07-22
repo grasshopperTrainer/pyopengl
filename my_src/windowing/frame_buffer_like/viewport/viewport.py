@@ -46,7 +46,7 @@ class Viewport(MCS):
             self._clear_color = color
         Unique_glfw_context.get_current().render_unit_add(self, f"cleangin viewport '{self.name}'")
 
-    def _draw_(self, context, frame, viewport):
+    def _draw_(self, context, frame, viewport, att, uni):
         context.glScissor(*self.pixel_values)
         context.glClearColor(*self.clear_color)
         context.glClear(context.GL_COLOR_BUFFER_BIT)

@@ -255,7 +255,7 @@ class Button_hover_press(Button_press):
     def __init__(self,posx,posy,width,height,window=None):
         super().__init__(posx,posy,width,height,window)
         self._hover_count = 0
-        self._hover_target = 3
+        self._hover_target = 0
         self._hover_color = 1,0,0,1
         self._hovered = False
 
@@ -441,17 +441,17 @@ class Complex_button_list:
                     # if hovered need to deactivate currently drawn child and draw hovered child
 
                     def to_hovered(master, clear_func, self):
-                        print()
-                        print('hovered', master)
-                        print(master.siblings)
+                        # print()
+                        # print('hovered', master)
+                        # print(master.siblings)
                         for in_list_button in master.siblings +[master]:
-                            print('siblings:',in_list_button, in_list_button.family[1:])
+                            # print('siblings:',in_list_button, in_list_button.family[1:])
                             # all the members below deactivate
                             in_list_button.state = 0
-                            print(in_list_button.family[1:])
+                            # print(in_list_button.family[1:])
                             for child in in_list_button.family[1:]:
                                 if not isinstance(child, Textbox):
-                                    print('hovered deactivating', child)
+                                    # print('hovered deactivating', child)
                                     child.deactivate()
                                     child.state = 0
                         # for i in master.family[1:]:
@@ -467,7 +467,7 @@ class Complex_button_list:
                         # print(master.children[0])
                         clear_func()
                         for i in master.family[0:3]:
-                            print('+++',i)
+                            # print('+++',i)
                             i.activate()
                             i.state = 0
                             # i.draw()
@@ -478,7 +478,7 @@ class Complex_button_list:
 
 
                     master.set_to_hover_callback(
-                        lambda m=master,f=self._window().clearing,this=self: to_hovered(m,f,this)
+                        lambda m=master,f=self._window().refresh_all,this=self: to_hovered(m,f,this)
                     )
 
                     def ignore_to_idle(button):
@@ -497,10 +497,9 @@ class Complex_button_list:
                         # print('master_to_idle')
                         mouse = window.mouse
                         for i in button_list.family[1:]:
-                            if mouse.is_in_LCS(i):
+                            if mouse.is_in_LCS(i) and i.is_active:
                                 return
 
-                        print(button_list.family[2:])
                         for i in button_list.family[2:]:
                             print('iiiiiii',i)
                             i.deactivate()

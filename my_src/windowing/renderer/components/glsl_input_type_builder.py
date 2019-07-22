@@ -237,8 +237,7 @@ class GLSL_input_type_template:
         self._uniform_push_que = {}
         self._captured = []
 
-    def push_all(self, context):
-        att, uni = self._captured.pop(0)
+    def push_all(self, context, att, uni):
         # print('=================')
         # # print(att)
         # for i in att:
@@ -252,14 +251,14 @@ class GLSL_input_type_template:
         # TODO attribute update sequence and uniform update sequence is little bit different...
         #   that's because shader is shared and vertex buffer is not... what if vertex buffer is also shared? need to think about it more
         with self.context as gl:
-            if len(att) != 0:
+            if att != None:
                 self._vertex_buffer.bind()
                 for f, args in att:
                     f(gl,*args)
                 # self._attribute_push_que = []
-
-            for f, args in uni.values():
-                f(gl,*args)
+            if att != None:
+                for f, args in uni.values():
+                    f(gl,*args)
 
         # lately bound _ pipeline assigned
         for f, args in self._uniform_push_que.values():

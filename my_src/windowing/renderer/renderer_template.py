@@ -205,10 +205,10 @@ class Renderer_template:
         if self.flag_draw:
             if Unique_glfw_context.get_current() != self.context:
                 raise
-            self.shader_io.capture_push_value()
-            self.context.render_unit_add(self,comment)
 
-    def _draw_(self, context, frame, viewport):
+            self.context.render_unit_add(self,*self.shader_io.capture_push_value(),comment)
+
+    def _draw_(self, context, frame, viewport, att, uni):
         # binding
         if self.context != context:
             raise
@@ -235,7 +235,7 @@ class Renderer_template:
             color_id = frame.render_unit_registry.register(self)
             self.shader_io.u_id_color = color_id  # push color
 
-        self.shader_io.push_all(context)
+        self.shader_io.push_all(context, att, uni)
 
         if self._draw_scissor:
             context.glScissor(*self._draw_scissor)
