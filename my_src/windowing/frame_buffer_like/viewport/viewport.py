@@ -44,9 +44,10 @@ class Viewport(MCS):
         # TODO need clear option, which color attachment, depth or stencil, id_color
         if len(color) == 4:
             self._clear_color = color
-        Unique_glfw_context.get_current().render_unit_add(self)
+        Unique_glfw_context.get_current().render_unit_add(self, f"cleangin viewport '{self.name}'")
 
     def _draw_(self, context, frame, viewport):
+        context.glScissor(*self.pixel_values)
         context.glClearColor(*self.clear_color)
         context.glClear(context.GL_COLOR_BUFFER_BIT)
         context.glClear(context.GL_STENCIL_BUFFER_BIT)

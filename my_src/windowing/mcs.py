@@ -258,6 +258,7 @@ class Family_Tree:
 
         source_branch.update(target_branch)
         target_tree._tree = self._tree
+
     @property
     def member(self):
         if isinstance(self._member, weakref.ReferenceType):
@@ -568,15 +569,47 @@ class MCS:
     @property
     def siblings(self):
         return self._family_tree.siblings_of(self)
-    @property
-    def master(self):
-        if self._mother is None:
-            return self
-        else:
-            return self.mother
+
     @property
     def is_active(self):
         return self._flag_update
+
+    def pack_children_horizontal(self, origin = (0,0), reverse = False):
+        members = self.family[1]
+        if len(members) != 0:
+            if reverse:
+                oldest = members[0]
+                offset = -oldest.pixel_w
+                oldest.x, oldest.y = offset+origin[0],origin[1]
+                for member in members[1:]:
+                    offset -= member.pixel_w
+                    member.x, member.y = offset+origin[0], origin[1]
+            else:
+                oldest = members[0]
+                oldest.x, oldest.y = origin[0],origin[1]
+                offset = oldest.pixel_w
+                for member in members[1:]:
+                    member.x, member.y = offset+origin[0], origin[1]
+                    offset += member.pixel_w
+
+    def pack_children_vertical(self, origin=(0,0), reverse = False):
+        members = self.family[1]
+        if len(members) != 0:
+            if reverse:
+                oldest = members[0]
+                offset = -oldest.pixel_h
+                oldest.x, oldest.y = origin[0], origin[1]+offset
+                for member in members[1:]:
+                    offset -= member.pixel_h
+                    member.x, member.y = origin[0], origin[1]+offset
+            else:
+                oldest = members[0]
+                oldest.x, oldest.y = origin[0], origin[1]
+                offset = oldest.pixel_h
+                for member in members[1:]:
+                    member.x, member.y = origin[0], origin[1]+offset
+                    offset += member.pixel_h
+        pass
 
     # def activate(self, depth=None):
     #     self._flag_update = True

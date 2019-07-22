@@ -267,7 +267,7 @@ class Unique_glfw_context:
         print(f'    texture           : {self._textures.binding()}')
 
 
-    def render_unit_add(self, unit):
+    def render_unit_add(self, unit, comment=''):
         stack = self._render_unit_stack
 
         frame = FBL.get_current()
@@ -310,7 +310,7 @@ class Unique_glfw_context:
                 # merge
                 stack[frame][viewport] = OrderedDict(left+right)
 
-        stack[frame][viewport][layer].append(unit)
+        stack[frame][viewport][layer].append((unit,comment))
 
     def render_unit_stack_flush(self):
         self._render_unit_stack = {}

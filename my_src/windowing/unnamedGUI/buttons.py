@@ -3,6 +3,7 @@ from ..callback_repository import Callback_repository
 import weakref
 from ..mcs import Family_Tree
 import gc
+from .box import Textbox
 
 class _Button(Filled_box):
     """
@@ -131,11 +132,12 @@ class Button_press(_Button):
                         self.fill_color = self.color1
                         self.state = 1
                         self.exec_to_pressed_callback()
+                        self.draw()
                     else:
                         self.fill_color = self.color0
                         self.state = 0
                         self.exec_to_idle_callback()
-                    self.draw()
+                        self.draw()
             else:
                 if mouse.is_just_pressed:
                     if self._flag_reset_pressed_elsewhere:
@@ -268,8 +270,8 @@ class Button_hover_press(Button_press):
                     if self._hover_count == self._hover_target:
                         self.fill_color = self._hover_color
                         self._hovered = True
-                        self.exec_to_hover_callback()
                         self.draw()
+                        self.exec_to_hover_callback()
                     else:
                         self._hover_count += 1
             else:
@@ -403,7 +405,9 @@ class Complex_button_list:
         self._unit_height = unit_height
         self._window = weakref.ref(window)
         self._compile(source)
-
+    @property
+    def master(self):
+        return self._master
 
     def _compile(self, text):
         family_tree = Family_Tree(None)
@@ -417,8 +421,10 @@ class Complex_button_list:
             new_masters = []
 
             for master,branch in zip(masters,branches):
+
                 n = len(branch)
                 button_list = Button_list(self._window(),1,Button_hover_press, n, self._unit_width, self._unit_height*n)
+
                 for i in button_list.children:
                     i.color1 = i.color2
 
@@ -435,34 +441,44 @@ class Complex_button_list:
                     # if hovered need to deactivate currently drawn child and draw hovered child
 
                     def to_hovered(master, clear_func, self):
+                        print()
                         print('hovered', master)
+                        print(master.siblings)
                         for in_list_button in master.siblings +[master]:
                             print('siblings:',in_list_button, in_list_button.family[1:])
                             # all the members below deactivate
                             in_list_button.state = 0
+                            print(in_list_button.family[1:])
                             for child in in_list_button.family[1:]:
-                                print('hovered deactivating', child)
-                                child.deactivate()
-                                child.state = 0
+                                if not isinstance(child, Textbox):
+                                    print('hovered deactivating', child)
+                                    child.deactivate()
+                                    child.state = 0
                         # for i in master.family[1:]:
                         #     i.deactivate()
                         #     i.state = 0
                         # clear
-                        clear_func()
                         # activate new list
-                        master.children[0].activate()
-                        for i in master.children[0].children:
+                        # for i in master.family[0:1]:
+                        #     i.activate()
+                        # master.children[0].activate()
+                        # print('dddddddddddddddddd')
+                        # print(master.family[0:1])
+                        # print(master.children[0])
+                        clear_func()
+                        for i in master.family[0:3]:
                             print('+++',i)
                             i.activate()
                             i.state = 0
                             # i.draw()
                         master.state = 1
                         # draw till master
-                        self.draw()
+                        with self._window().layers[-1]:
+                            self.draw()
 
 
                     master.set_to_hover_callback(
-                        lambda m=master,f=self._window().refresh_all,this=self: to_hovered(m,f,this)
+                        lambda m=master,f=self._window().clearing,this=self: to_hovered(m,f,this)
                     )
 
                     def ignore_to_idle(button):
@@ -517,7 +533,12 @@ class Complex_button_list:
             if len(branches) == 0:
                 break
 
-        print(self._master._family_tree._tree)
+        for member in self._master.family[1:]:
+            if member.name != None:
+                text_box = Textbox(0,0,member.pixel_w, member.pixel_h,member.window, member.name, member.pixel_h)
+                text_box.text_fill_color = 0,0,1,1
+                text_box.is_child_of(member)
+
         # exit()
 
     def draw(self):

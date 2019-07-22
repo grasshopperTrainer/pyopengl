@@ -1,4 +1,3 @@
-from .box import Box
 # from ..renderer.typewriter.typewriter import Basic_typewriter
 from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
 from ..renderer.renderer_template import Renderer_builder
@@ -80,19 +79,25 @@ class Typewriter_builder:
                                                       glyps.advance.x)
 
 
-    def type(self, originx, originy, string):
+    def type(self, originx, originy, string, height ,color):
+        # scale factor
+        ratio = height/self._height
         for char in string:
             if char not in self._characters:
                 raise
-            renderer, w,h,left_off, bottom_off, advance = self._characters[char]
+            renderer = self._characters[char][0]
+            w,h,left_off, bottom_off, advance = np.array(self._characters[char][1:])*ratio # scale
 
             # position area
             left_top = np.array((originx+left_off, originy+bottom_off))
             vertex = left_top, left_top+np.array((0,-h)),left_top+np.array((w,-h)),left_top+np.array((w,0))
 
             renderer.shader_io.vertex = vertex
-            renderer.shader_io.fill_color = 1, 0, 0, 1
-            renderer.draw()
+            if char == 'e':
+                print('-----------------', vertex)
+            renderer.shader_io.fill_color = color
+            renderer.draw(f'typing {char}')
+
             # move right
             originx += advance/64
 
@@ -112,13 +117,5 @@ class Basic_typewriter:
         return wrapper
 
     @_build_if_non
-    def type(cls, posx, posy, string):
-        cls.typewriter.type(posx,posy, string)
-
-class Textbox(Box):
-    def __init__(self, string, posx, posy, width, height,window):
-        super().__init__(posx,posy,width,height,window)
-        self._string = string
-
-    def draw(self):
-        Basic_typewriter.type(self.pixel_x, self.pixel_y, self._string)
+    def type(cls, posx, posy, string, height, color):
+        cls.typewriter.type(posx, posy, string, height, color)

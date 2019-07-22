@@ -188,6 +188,8 @@ class Renderer_template:
         # if isinstance(cls._vertex_array, self.Vertexarray):
         #     cls.shader_io = self._shader_io
 
+        self._draw_scissor = []
+
     @property
     def context(self):
         if self._context() is None:
@@ -198,12 +200,13 @@ class Renderer_template:
     def shader_io(self):
         return self._shader_io
 
-    def draw(self):
+    def draw(self, comment=''):
+
         if self.flag_draw:
             if Unique_glfw_context.get_current() != self.context:
                 raise
             self.shader_io.capture_push_value()
-            self.context.render_unit_add(self)
+            self.context.render_unit_add(self,comment)
 
     def _draw_(self, context, frame, viewport):
         # binding
@@ -233,9 +236,17 @@ class Renderer_template:
             self.shader_io.u_id_color = color_id  # push color
 
         self.shader_io.push_all(context)
+
+        if self._draw_scissor:
+            context.glScissor(*self._draw_scissor)
         # TODO how to store drawing conditing inside unit?
         context.glDrawElements(context.GL_TRIANGLE_STRIP, self._index_buffer.count, self._index_buffer.gldtype, None)
 
+    def draw_scissor(self, posx=None, posy=None, width=None, height=None):
+        if any(i is None for i in (posx, posy, width, height)):
+            self._draw_scissor = []
+        else:
+            self._draw_scissor = posx, posy, width, height
 
     def _hide_(self, set=None):
         if set is None:

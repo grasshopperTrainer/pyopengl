@@ -121,8 +121,6 @@ class integer(glsl_attribute):
 
     def save_uniform(self, instance):
         d = self._dict[instance][self._name][0]
-        print('ddd', self._name)
-        print(d)
         instance._uniform_push_que[self._name] = Unique_glfw_context.glUniform1i,(self._location, d)
 
 class bool(integer):
@@ -238,6 +236,7 @@ class GLSL_input_type_template:
         self._attribute_push_que = []
         self._uniform_push_que = {}
         self._captured = []
+
     def push_all(self, context):
         att, uni = self._captured.pop(0)
         # print('=================')
@@ -275,7 +274,8 @@ class GLSL_input_type_template:
         uni = copy.deepcopy(self._uniform_push_que)
         self._attribute_push_que = []
         self._uniform_push_que = {}
-        self._captured.append((att,uni))
+        # self._captured.append((att,uni))
+        return att, uni
 
     def resize(self, n):
         self._attribute_buffer.resize(n, refcheck=False)

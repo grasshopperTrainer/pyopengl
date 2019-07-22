@@ -7,6 +7,8 @@ from ..callback_repository import Callback_repository
 import weakref
 from collections import namedtuple
 from ..mcs import MCS
+from .typewriter import Basic_typewriter
+
 
 class Box(MCS):
 
@@ -21,6 +23,16 @@ class Box(MCS):
 
         # self._flag_draw = True
         self._flag_state = 0
+        self._flag_scissor = True
+
+    def scissor(self, b:bool):
+        if not isinstance(b, bool):
+            raise TypeError
+        if b:
+            for i in self.family[1:]:
+                i._flag_scissor = False
+
+        self._flag_scissor = b
 
     def draw(self):
         pass
@@ -37,7 +49,6 @@ class Box(MCS):
         if isinstance(mother, Window):
             self.set_input_space(mother)
         else:
-            print(self, mother, mother.window)
             self.set_input_space(mother.window)
 
     def copy(self):
@@ -134,15 +145,26 @@ class Filled_box(Box):
 
         self._fill_color = rgba
 
+
     def draw(self):
         if self._flag_update:
             self._unit.shader_io.a_position = self.vertex()
             self._unit.shader_io.u_fillcol = self._fill_color
-            self._unit.draw()
+            if self._flag_scissor:
+                self._unit.draw_scissor(self.pixel_x,self.pixel_y, self.pixel_w, self.pixel_h)
+            self._unit.draw(comment=self.__str__())
             for child in self.children:
                 child.draw()
         else:
-            print(f'{self} is deactivated drawing is ignored')
+            # print(f'{self} is deactivated drawing is ignored')
+            pass
+
+    # def type_text(self, text, height, position=(0,0)):
+    #     self._text = text
+    #     self._text_height = height
+    #     self._text_position = position
+    #
+    #     Basic_typewriter.type(self.pixel_x, self.pixel_y, self._string, self._text_height, self.text_fill_color)
 
 
 class Block(Filled_box):
@@ -160,3 +182,29 @@ class Block(Filled_box):
 
     def set_state_change(self):
         pass
+
+
+class Textbox(Filled_box):
+    def __init__(self,posx, posy, width, height,window, string, text_height):
+        super().__init__(posx,posy,width,height,window)
+        self.fill_color = 0,0,0,0
+        self._text_fill_color = 0,0,0,1
+        self._text_height = text_height
+        self._string = string
+
+    def draw(self):
+        super().draw()
+        self.type()
+
+    @property
+    def text_fill_color(self):
+        return self._text_fill_color
+    @text_fill_color.setter
+    def text_fill_color(self, rgba):
+        if len(rgba) != 4:
+            raise
+        self._text_fill_color = rgba
+
+    def type(self):
+        Basic_typewriter.type(self.pixel_x, self.pixel_y, self._string, self._text_height, self.text_fill_color)
+

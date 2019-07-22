@@ -804,13 +804,24 @@ class Window(MCS):
                                     gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
                                     if layer.is_on:
                                         frame._flag_something_rendered = True
+                                        print()
+                                        print('--------------------------------------')
+                                        print(layer)
                                         for unit in units:
-                                            unit._draw_(gl,frame, viewport)
+                                            print(unit)
+                                            if hasattr(unit[0], 'shader_io'):
+                                                for i in unit[0].shader_io._captured:
+                                                    # print('   ',i)
+                                                    print()
+                                                    for ii in i[0]:
+                                                        print('    ', ii)
+                                            unit[0]._draw_(gl,frame, viewport)
                                             # print()
                                             # print('writing into frame')
                                             # print(unit)
                                             # print(cls._windows.windows['main']._myframe)
                                             # print(gl,frame, viewport)
+                                        print('--------------------------------------')
                     context.render_unit_stack_flush()
 
             # copy myframe to window default

@@ -67,41 +67,54 @@ class Main_window(Window):
         #              self.refresh_all() if not self.menu_list.is_active else self.menu_list.draw())
         # )
         # buttons[0].set_reset_pressed_elsewhere(True)
-        # source ='''
-        # first
-        #  a
-        #   n
-        #  aa
-        #   mm
-        #   mmm
-        # second
-        #  b
-        #   dd
-        #   dd
-        #   d
-        #   d
-        # third
-        #  c
-        #  cc
-        #  ccc
-        #   kk
-        #   k
-        #   kkk
-        #    l
-        #     ll
-        # '''
-        # self.test = Complex_button_list(source, Button_hover_press, 50, 50, self)
-        # self.buttonlist = Button_list(self, 1, Button_hover_press, 0,200,100)
-        # self.buttonlist.add()
-        # self.buttonlist.add()
-        # self.buttonlist.append(Button_hover_press(0,0,200,100))
-        # self.kkk = Button_list(self, 0, Button_hover_press,4,400,100)
+        source ='''
+        first
+         a
+          n
+         aa
+          mm
+          mmm
+        second
+         b
+          dd
+          dd
+          d
+          d
+        third
+         c
+         cc
+         ccc
+          kk
+          k
+          kkk
+           l
+            ll
+        '''
+        self.test = Complex_button_list(source, Button_hover_press, 100, 50, self)
+
+        self.test.master.x = 0
+        self.test.master.y = lambda y:y-50
+        self.test.master.children[0].pack_children_horizontal()
+        for button in self.test.master.children[0].children:
+            button.pack_children_vertical(reverse=True)
+
+            button.children[0].pack_children_vertical(origin=(0,button.children[0].pixel_h),reverse=True)
+
+            for member in button.family[2:]:
+                if isinstance(member, Button_list):
+                    member.x, member.y = 1.0, member.mother.pixel_h - member.pixel_h
+                    print(member.vertex())
+                    member.pack_children_vertical(origin=(0,member.pixel_h),reverse=True)
+
+        # exit()
+
         self.filledbox_back = Filled_box(0,0,100,100,self)
         self.filledbox_middle = Filled_box(50,50,100,100,self)
         self.filledbox_middle.fill_color = 1,1,0,1
         self.filledbox_front = Filled_box(100,100,100,100,self)
         self.filledbox_front.fill_color = 0,0,1,1
-        self.text_box = Textbox('Hellow world',0,50,100,100,self)
+        self.text_box = Textbox(0,50,200,50,self,'Hellow world',50)
+        self.text_box.text_fill_color = 1,0,0,1
         # print(ft)
         # exit()
 
@@ -154,14 +167,17 @@ class Main_window(Window):
             with self.layers[1]:
                 self.filledbox_middle.draw()
                 # self.cleaner.clear(1,0,1,1)
-            with self.layers[-1]:
                 self.filledbox_front.draw()
                 self.text_box.draw()
-            # with self.layers[-1]:
-                # self.test.draw()
+            with self.layers[-1]:
+                pass
+                self.test.draw()
                 # self.buttonlist.draw()
                 # self.left_buttons.draw()
                 # self.right_buttons.draw()
+    def clearing(self):
+        self.viewports[0].clear()
+
 
 class Top_bar(Window):
 
