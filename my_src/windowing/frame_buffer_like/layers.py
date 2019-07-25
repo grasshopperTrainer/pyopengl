@@ -1,6 +1,6 @@
 import weakref
 from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
-
+# from windowing.frame_buffer_like.frame import Frame
 
 class Layer:
     def __enter__(self):
@@ -43,6 +43,7 @@ class Layer:
         return f'<Layer> name:{self._name} id:{self._id}'
     def __repr__(self):
         return self.__str__()
+
 class Layers:
     def __init__(self):
         self._layers = {}

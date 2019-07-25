@@ -825,6 +825,8 @@ class Window(MCS):
                 # if window.myframe._flag_something_rendered:
                 if window.myframe._flag_something_rendered:
                     window.make_window_current()
+                    print(window.myframe.children)
+                    exit()
                     with window.glfw_context as gl:
                         gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, window.myframe._frame_buffer._glindex)
                         gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # set source
