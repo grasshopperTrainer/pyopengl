@@ -94,7 +94,7 @@ class Typewriter_builder:
 
             renderer.shader_io.vertex = vertex
             renderer.shader_io.fill_color = color
-            renderer.draw(f'typing {char}')
+            renderer.draw(0, comment=f'typing {char}')
 
             # move right
             originx += advance/64

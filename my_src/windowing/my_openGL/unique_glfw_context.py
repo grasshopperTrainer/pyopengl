@@ -267,30 +267,31 @@ class Unique_glfw_context:
         print(f'    texture           : {self._textures.binding()}')
 
 
-    def render_unit_add(self, unit, att=None, uni=None, comment=''):
+    def render_unit_add(self, unit, att=None, uni=None, que=0, comment=''):
         stack = self._render_unit_stack
 
         frame = FBL.get_current()
         viewport = frame._viewports.get_current()
-        layer = frame._layers.get_current()
         # save sorted
         if frame not in stack:
             stack[frame] = {}
         if viewport not in stack[frame]:
             stack[frame][viewport] = OrderedDict()
-        if layer not in stack[frame][viewport]:
+        if que not in stack[frame][viewport]:
             d = stack[frame][viewport]
             if len(d) == 0:
-                d[layer] = []
+                d[que] = []
             else:
                 insert_pos = len(d)
 
                 for i,l in enumerate(d.keys()):
                     # layer id is positive
-                    if layer.id >= 0:
+                    print('-------')
+                    print(que)
+                    if que >= 0:
                         # if comparing is positive too
-                        if l.id >= 0:
-                            if layer.id < l.id:
+                        if l >= 0:
+                            if que < l:
                                 insert_pos = i
                                 break
                         # as soon as comparing is negetive
@@ -300,7 +301,7 @@ class Unique_glfw_context:
                             break
                     # layer id is negative
                     else:
-                        if l.id < 0 and layer.id < l.id:
+                        if l < 0 and que < l:
                             insert_pos = i
                 # split dict
                 listed = list(d.items())
@@ -310,7 +311,7 @@ class Unique_glfw_context:
                 # merge
                 stack[frame][viewport] = OrderedDict(left+right)
 
-        stack[frame][viewport][layer].append((unit,comment, att, uni))
+        stack[frame][viewport][que].append((unit,comment, att, uni))
 
     def render_unit_stack_flush(self):
         self._render_unit_stack = {}
@@ -488,6 +489,7 @@ class Unique_glfw_context:
     GL_RED = gl.GL_RED
     GL_GREEN = gl.GL_GREEN
     GL_BLUE = gl.GL_BLUE
+    GL_ALPHA = gl.GL_ALPHA
 
     # depth stencil internal format
     GL_DEPTH_COMPONENT = gl.GL_DEPTH_COMPONENT

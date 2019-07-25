@@ -148,6 +148,7 @@ class Window(MCS):
         self._myframe.use_depth_attachment(bitdepth=32)
         self._myframe.use_stencil_attachment(bitdepth=16)
         self._myframe.build(self.glfw_context)
+        self._myframe.name = f'of window {self.name}'
 
         #
         # # some info for resetting
@@ -751,8 +752,6 @@ class Window(MCS):
     #     GL.glClear(GL.GL_COLOR_BUFFER_BIT)
     #     GL.glClear(GL.GL_DEPTH_BUFFER_BIT)
     #     self._flag_need_swap = True
-    def _draw_(self):
-        pass
 
     @classmethod
     def run_single_thread(cls, framecount = None):
@@ -787,51 +786,68 @@ class Window(MCS):
 
             for context in Unique_glfw_context.get_instances():
                 if len(context._render_unit_stack) != 0:
+                    print()
+                    print('-----------------------------------------')
                     # draw with order
                     with context as gl:
-
+                        print('    ',context)
                         for frame, viewports in context._render_unit_stack.items():
                             gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, frame._frame_buffer._glindex)
                             attachments = [gl.GL_COLOR_ATTACHMENT0 + i for i in range(len(frame._color_attachments))]
                             gl.glDrawBuffers(len(frame._color_attachments), attachments)
-
+                            print('      ',frame, frame.mother)
+                            print(frame.pixel_values)
+                            print(frame._color_attachments[0]._size)
                             for viewport,layers in viewports.items():
                                 gl.glViewport(*viewport.pixel_values)
                                 gl.glScissor(*viewport.pixel_values)
-
+                                print('          ',viewport)
                                 for layer,units in layers.items():
+                                    print('              ', layer)
                                     # this is to seperate layers regardless of depth drawn
                                     gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
-                                    if layer.is_on:
-                                        frame._flag_something_rendered = True
-                                        for unit in units:
-                                        #     print(unit)
-                                        #     if hasattr(unit[0], 'shader_io'):
-                                        #         for i in unit[0].shader_io._captured:
-                                        #             # print('   ',i)
-                                        #             print()
-                                        #             for ii in i[0]:
-                                        #                 print('    ', ii)
-                                            unit[0]._draw_(gl,frame, viewport, unit[2],unit[3])
-                                            # print()
-                                            # print('writing into frame')
-                                            # print(unit)
-                                            # print(cls._windows.windows['main']._myframe)
-                                            # print(gl,frame, viewport)
+                                    # if layer.is_on:
+                                    frame._flag_something_rendered = True
+                                    for unit in units:
+                                        print('                    ',unit)
+                                    #     print(unit)
+                                    #     if hasattr(unit[0], 'shader_io'):
+                                    #         for i in unit[0].shader_io._captured:
+                                    #             # print('   ',i)
+                                    #             print()
+                                    #             for ii in i[0]:
+                                    #                 print('    ', ii)
+                                        unit[0]._draw_(gl,frame, viewport, unit[2],unit[3])
+                                        # print()
+                                        # print('writing into frame')
+                                        # print(unit)
+                                        # print(cls._windows.windows['main']._myframe)
+                                        # print(gl,frame, viewport)
                     context.render_unit_stack_flush()
 
-            # copy myframe to window default
+            # myframe to glfw buffer
             for window in cls._windows:
                 # if window.myframe._flag_something_rendered:
-                if window.myframe._flag_something_rendered:
+                if window.myframe.something_rendered:
                     window.make_window_current()
-                    print(window.myframe.children)
-                    exit()
                     with window.glfw_context as gl:
+                        gl.glDisable(gl.GL_DEPTH_TEST)
+                        gl.glViewport(0,0,window.w, window.h)
+                        gl.glScissor(0,0,window.w, window.h) # reset scissor to copy all
+                        # merge frames
+                        # gonna draw on window's default frame
+                        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, window.myframe._frame_buffer._glindex)
+                        # for every direct child
+                        # TODO: layer's layer how to render? chronically?
+                        for id,frame in window.myframe.layers.all_items():
+                            if frame._flag_something_rendered:
+                                frame.render_area_of_frame(window.w, window.h)
+                                frame._flag_something_rendered = False
+
+                        # merged texture to window buffer
+                        # after everything is drawn on default frame copy it into window's buffer
                         gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, window.myframe._frame_buffer._glindex)
                         gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # set source
-
-                        gl.glScissor(0,0,window.w, window.h) # reset scissor to copy all
 
                         gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, 0)
                         gl.glBlitFramebuffer(0, 0, window.w, window.h,
@@ -839,7 +855,10 @@ class Window(MCS):
                                              gl.GL_COLOR_BUFFER_BIT,
                                              gl.GL_LINEAR)
 
+                        gl.glEnable(gl.GL_DEPTH_TEST)
+
                     glfw.swap_buffers(window.glfw_window)
+
                 window.myframe.flag_something_rendered = False
                 window._flag_just_resized = False
 
@@ -952,7 +971,8 @@ class Window(MCS):
 
         Windows.set_current(self)
         Unique_glfw_context.set_current(self.glfw_context)
-        FBL.set_current(self._myframe)
+        if hasattr(self, '_myframe'):
+            FBL.set_current(self._myframe)
 
     # @classmethod
     # def get_current_window(cls):
@@ -1109,11 +1129,12 @@ class Timer:
         if self._framecount%self._frametarget == 0:
             rendering_time = time() - self._previous_time_per_second
             self._previous_time_per_second = time()
-            self._per_frame_compensation = (1-rendering_time)/self._frametarget
+            per_frame_compensation = (1-rendering_time)/self._frametarget
             try:
                 fps = self._frametarget/rendering_time
-                self._target_rendering_time = 1/self._frametarget + self._per_frame_compensation
-                print(round(fps), rendering_time, self._per_frame_compensation, self._target_rendering_time)
+                self._target_rendering_time = 1/self._frametarget + per_frame_compensation
+
+                print('fps:',round(fps), rendering_time, self._target_rendering_time)
             except:
                 pass
         rendering_time = time()-self._previous_time
@@ -1127,45 +1148,6 @@ class Timer:
             # if self._framecount != 1:
             self._previous_time += wait_time
             pass
-        # glfw.set_time(0)
-        # if self._start_position_set:
-        #     # for compensation
-        #     target = 1 / self._frametarget
-        #     self._frame_compensation = (time() - self._saved_time_frame_start - target)/2
-        #     self._saved_time_frame_start = time()
-        #     # print(self._frame_compensation)
-        #     # measure sleep
-        #     if self._framecount % self._frametarget is 0:
-        #         per_second_rendering_time = time() - self._saved_time_second
-        #         try:
-        #             self._current_framerate = self._frametarget / per_second_rendering_time
-        #         except:
-        #             pass
-        #         else:
-        #             self._saved_time_second = time()
-        #             if self._print_framerate:
-        #                 print()
-        #                 print(f'{self._name}: framerate: {round(self._current_framerate)}')
-        #
-        #     target = 1 / self._frametarget
-        #
-        #     rendering_time = glfw.get_time()
-        #     # if self._print_framerate_drawing:
-        #     #     if self._framecount % self._frametarget is 0:
-        #     #         try:
-        #     #             fps = 1/rendering_time
-        #     #         except:
-        #     #             fps = 0
-        #     #         print(f'drawing_framerate: {fps}')
-        #     #     self._glfwtime = g.get_time()
-        #
-        #     self._framecount += 1
-        #     # sleep
-        #     waiting_time = target - rendering_time - self._frame_compensation
-        #     if waiting_time >= 0:
-        #         sleep(waiting_time)
-        #     else:
-        #         pass
 
     @property
     def framecount(self):

@@ -21,8 +21,8 @@ class Main_window(Window):
         self.viewports.new(0, lambda x:x - 150, 1., 100,'top_bar')
         self.viewports.new(lambda x:x-400, 100, 400, lambda x:x-100,'side_bar')
         self.viewports.new(20,20,lambda x:x-40,lambda x:x-40,'center').set_min()
-        self.layers.new(1)
         self.layers.new(-1)
+        self.layers.new(1)
 
         self.flag_topbar_created = False
         self.top_bar = None
@@ -100,29 +100,29 @@ class Main_window(Window):
            l
             ll
         '''
-        self.test = Complex_button_list(source, Button_hover_press, 100, 50, self)
-
-        self.test.master.x = 0
-        self.test.master.y = lambda y:y-50
-        self.test.master.children[0].pack_children_horizontal()
-        for button in self.test.master.children[0].children:
-            button.pack_children_vertical(reverse=True)
-
-            button.children[0].pack_children_vertical(origin=(0,button.children[0].pixel_h),reverse=True)
-
-            for member in button.family[2:]:
-                if isinstance(member, Button_list):
-                    member.x, member.y = 1.0, member.mother.pixel_h - member.pixel_h
-                    print(member.vertex())
-                    member.pack_children_vertical(origin=(0,member.pixel_h),reverse=True)
+        # self.test = Complex_button_list(source, Button_hover_press, 100, 50, self)
+        #
+        # self.test.master.x = 0
+        # self.test.master.y = lambda y:y-50
+        # self.test.master.children[0].pack_children_horizontal()
+        # for button in self.test.master.children[0].children:
+        #     button.pack_children_vertical(reverse=True)
+        #
+        #     button.children[0].pack_children_vertical(origin=(0,button.children[0].pixel_h),reverse=True)
+        #
+        #     for member in button.family[2:]:
+        #         if isinstance(member, Button_list):
+        #             member.x, member.y = 1.0, member.mother.pixel_h - member.pixel_h
+        #             print(member.vertex())
+        #             member.pack_children_vertical(origin=(0,member.pixel_h),reverse=True)
 
         # exit()
 
         self.filledbox_back = Filled_box(0,0,100,100,self)
-        self.filledbox_middle = Filled_box(50,50,100,100,self)
-        self.filledbox_middle.fill_color = 1,1,0,1
-        self.filledbox_front = Filled_box(100,100,100,100,self)
-        self.filledbox_front.fill_color = 0,0,1,1
+        self.yellow_box = Filled_box(10, 10, 100, 100, self)
+        self.yellow_box.fill_color = 1, 1, 0, 1
+        self.blue_box = Filled_box(20, 20, 100, 100, self)
+        self.blue_box.fill_color = 0, 0, 1, 1
         # self.text_box = Textbox(0,50,200,50,self,'Hellow world',50)
         # self.text_box.text_fill_color = 1,0,0,1
         # print(ft)
@@ -174,14 +174,15 @@ class Main_window(Window):
             #     self.rect.draw()
             with self.layers[0]:
                 self.filledbox_back.draw()
-            with self.layers[1]:
-                self.filledbox_middle.draw()
-                # self.cleaner.clear(1,0,1,1)
-                self.filledbox_front.draw()
-                # self.text_box.draw()
             with self.layers[-1]:
+                self.blue_box.draw()
+            with self.layers[1]:
+                self.yellow_box.draw()
                 pass
-                self.test.draw()
+                # self.cleaner.clear(1,0,1,1)
+                # self.text_box.draw()
+                pass
+                # self.test.draw()
                 # self.buttonlist.draw()
                 # self.left_buttons.draw()
                 # self.right_buttons.draw()

@@ -152,7 +152,7 @@ class Filled_box(Box):
             self._unit.shader_io.u_fillcol = self._fill_color
             # if self._flag_scissor:
             #     self._unit.draw_scissor(self.pixel_x,self.pixel_y, self.pixel_w, self.pixel_h)
-            self._unit.draw(comment=self.__str__())
+            self._unit.draw(0,comment=self.__str__())
             for child in self.children:
                 child.draw()
         else:

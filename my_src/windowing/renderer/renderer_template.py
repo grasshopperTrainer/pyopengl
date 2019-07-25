@@ -38,14 +38,18 @@ class Renderer_template:
         pass
     class Indexbuffer:
         pass
-    class Texture:
+    class Texture_new:
         pass
+    class Texture_load:
+        pass
+
     # Real component classes
     Shader = comp.Shader
     Vertexarray = comp.Vertexarray
     Vertexbuffer = comp.Vertexbuffer
     Indexbuffer = comp.Indexbuffer
-    Texture = comp.Texture
+    Texture_new = comp.Texture_new
+    Texture_load = comp.Texture_load
 
     _shader = None
     _vertex_array = None
@@ -140,7 +144,7 @@ class Renderer_template:
         cls = self.__class__
         context = Unique_glfw_context.get_current()
         if context is None:
-            raise
+            raise Exception('construct after after context is built')
         self._context = weakref.ref(context)
         # store template components
         if context not in cls._context_registry:
@@ -200,13 +204,13 @@ class Renderer_template:
     def shader_io(self):
         return self._shader_io
 
-    def draw(self, comment=''):
+    def draw(self, que, comment):
 
         if self.flag_draw:
             if Unique_glfw_context.get_current() != self.context:
                 raise
 
-            self.context.render_unit_add(self,*self.shader_io.capture_push_value(),comment)
+            self.context.render_unit_add(self,*self.shader_io.capture_push_value(),que,comment)
 
     def _draw_(self, context, frame, viewport, att, uni):
         # binding
@@ -326,3 +330,6 @@ class Renderer_builder:
             new_cls = type(f'Renderer_builder{cls.reg}', (Renderer_template,), {})
             cls.reg += 1
             return new_cls
+
+    def __init__(self) -> Renderer_template:
+        super().__init__()

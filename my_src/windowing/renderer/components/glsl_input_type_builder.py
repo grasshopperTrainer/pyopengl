@@ -237,6 +237,8 @@ class GLSL_input_type_template:
         self._uniform_push_que = {}
         self._captured = []
 
+
+
     def push_all(self, context, att, uni):
         # print('=================')
         # # print(att)

@@ -108,5 +108,4 @@ class Vertexbuffer(RenderComponent):
     def data(self):
         return self._data
 
-    def __str__(self):
-        return f'<Vertex buffer object with opengl index: {self._glindex}>'
+

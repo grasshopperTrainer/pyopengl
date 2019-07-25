@@ -154,14 +154,17 @@ class Family_Tree:
         siblings.remove(origin)
         return siblings
 
-    def children_of(self, origin):
+    def children_of(self, origin, type=None):
         # {child: {}, child:{}, child: {chi:{}, chi:{}}}
         branch = [self._tree, ]
         while True:
             new_branch = []
             for dic in branch:
                 if origin in dic:
-                    return list(dic[origin].keys())
+                    if type is None:
+                        return list(dic[origin].keys())
+                    else:
+                        return list(filter(lambda x: isinstance(x,type), list(dic[origin].keys())))
                 else:
                     new_branch += list(dic.values())
 
@@ -565,7 +568,10 @@ class MCS:
 
     @property
     def children(self):
-        return self._family_tree.children_of(self)
+        return self._family_tree.children_of(self,None)
+    def children_of_type(self, type):
+        return self._family_tree.children_of(self, type)
+
     @property
     def siblings(self):
         return self._family_tree.siblings_of(self)
