@@ -18,14 +18,15 @@ class Main_window(Window):
         # self.rect2 = TestBRO(100,100,200,200)
 
         # menu = self.viewports.new(0,0,1.,50, 'menu_bar')
-        self.viewports.new(0, lambda x:x - 150, 1., 100,'top_bar')
-        self.viewports.new(lambda x:x-400, 100, 400, lambda x:x-100,'side_bar')
-        self.viewports.new(20,20,lambda x:x-40,lambda x:x-40,'center').set_min()
         self.layers.new(-1)
         self.layers.new(1)
-
-        self.flag_topbar_created = False
-        self.top_bar = None
+        # self.layers.new(-3)
+        main_viewport = self.layers[1].viewports.new(0,0,1.0,1.0,'main 3d space')
+        main_viewport.camera.set_test_mouse(self.mouse)
+        main_viewport.camera.set_mode(1)
+        main_viewport.camera.trans_look_at([0, 0, 0], [100, 0, 100])
+        # main_viewport.camera.trans_move(0,0,100)
+        # main_viewport.camera.trans_rotate(30,0,0)
 
         # self.rect = Button_press(0,0,100,100,self)
         # #
@@ -119,10 +120,10 @@ class Main_window(Window):
         # exit()
 
         self.filledbox_back = Filled_box(0,0,100,100,self)
-        self.yellow_box = Filled_box(10, 10, 100, 100, self)
-        self.yellow_box.fill_color = 1, 1, 0, 1
+        self.red_box = Filled_box(10, 10, 100, 100, self)
+        self.red_box.fill_color = 1, 0, 0, 0.9
         self.blue_box = Filled_box(20, 20, 100, 100, self)
-        self.blue_box.fill_color = 0, 0, 1, 1
+        self.blue_box.fill_color = 0.5, 0.5, 1, 0.8
         # self.text_box = Textbox(0,50,200,50,self,'Hellow world',50)
         # self.text_box.text_fill_color = 1,0,0,1
         # print(ft)
@@ -134,58 +135,33 @@ class Main_window(Window):
         self.refresh_all()
     #
     def _draw_(self):
-        # if self.mouse.is_in_area([0,0,],[100,100]) and self.mouse.is_just_pressed:
-        #     if not self.windows.has_window_named('top_bar'):
-        #         self.top_bar = Top_bar(self)
-        #         pass
-        #     else:
-        #         if self.top_bar.flag_follow_active:
-        #             self.top_bar.config_window_close()
-        #             self.top_bar = None
-        #             print('top bar removed')
-        #         else:
-        #             self.top_bar.unpin_from_viewport(self, self.viewports['top_bar'])
-        #             self.top_bar.config_visible(True)
-        #             self.top_bar.flag_follow_active = True
-        #             self.refresh_all()
-        #
-        # if self.top_bar != None:
-        #     # TODO extra processing for looking all conditions at once
-        #     conditions = [
-        #         self.mouse.is_in_LCS(self.viewports['top_bar']),
-        #         self.top_bar.flag_following,
-        #         self.mouse.is_in_window,
-        #         self.top_bar.mouse.is_just_released,
-        #         self.top_bar.flag_follow_active
-        #     ]
-        #     if all(conditions):
-        #         self.top_bar.move_to(self.get_vertex(0),(0,0))
-        #         self.top_bar.flag_follow_active = False
-        #         self.top_bar.config_visible(False)
-        #         self.top_bar.pin_on_viewport(self, 'top_bar', 0)
-        #         self.top_bar.mouse.set_map_from_window(self, 'top_bar')
+        print(self.layers[1].viewports[1].camera.position)
+
+        with self.layers[1] as l:
+            with l.viewports[1] as v:
+                v.clear()
+                self.filledbox_back.draw()
         pass
 
     def refresh_all(self):
         print('refreshing')
-        with self.viewports[0]:
-            self.viewports[0].clear()
-            # with self.layers[0]:
-            #     self.rect.draw()
-            with self.layers[0]:
-                self.filledbox_back.draw()
-            with self.layers[-1]:
-                self.blue_box.draw()
-            with self.layers[1]:
-                self.yellow_box.draw()
-                pass
-                # self.cleaner.clear(1,0,1,1)
-                # self.text_box.draw()
-                pass
-                # self.test.draw()
-                # self.buttonlist.draw()
-                # self.left_buttons.draw()
-                # self.right_buttons.draw()
+        # self.layers[0].viewports[1].clear()
+        # with self.layers[0]:
+        #     self.rect.draw()
+        with self.layers[0]:
+            self.red_box.draw()
+        with self.layers[1]:
+            self.filledbox_back.draw()
+        with self.layers[-1]:
+            self.blue_box.draw()
+            pass
+            # self.cleaner.clear(1,0,1,1)
+            # self.text_box.draw()
+            pass
+            # self.test.draw()
+            # self.buttonlist.draw()
+            # self.left_buttons.draw()
+            # self.right_buttons.draw()
     def clearing(self):
         self.viewports[0].clear()
 

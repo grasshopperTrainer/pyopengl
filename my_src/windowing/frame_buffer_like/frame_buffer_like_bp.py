@@ -9,7 +9,7 @@ class FBL(SMI):
     _current = None
     def __new__(cls, *args, **kwargs):
         self = super().__new__(cls)
-        FBL._current = self
+        FBL._current = weakref.ref(self)
         return self
 
     @SMI.must_func

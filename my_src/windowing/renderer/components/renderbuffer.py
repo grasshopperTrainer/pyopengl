@@ -22,7 +22,7 @@ class Renderbuffer(RenderComponent):
 
     def __init__(self, width, height, internalformat):
         self._size = width, height
-        self._internalformat = internalformat
+        self._internal_format = internalformat
         self._context = None
         self._glindex = None
 
@@ -37,11 +37,11 @@ class Renderbuffer(RenderComponent):
 
             gl.glBindRenderbuffer(gl.GL_RENDERBUFFER, self._glindex)
             # initial setting
-            gl.glRenderbufferStorage(gl.GL_RENDERBUFFER, self._internalformat, self._size[0],self._size[1])
+            gl.glRenderbufferStorage(gl.GL_RENDERBUFFER, self._internal_format, self._size[0], self._size[1])
             gl.glBindRenderbuffer(gl.GL_RENDERBUFFER, 0)
 
     def copy(self):
-        new = Renderbuffer(*self._size, self._internalformat)
+        new = Renderbuffer(*self._size, self._internal_format)
         return new
 
     def rebuild(self, width, height):
@@ -63,6 +63,13 @@ class Renderbuffer(RenderComponent):
                 gl.glDeleteRenderbuffers(1, self._glindex)
             self._glindex = None
             self._context = None
+
+    @property
+    def bitdepth(self):
+        if self._internal_format == self.GL_STENCIL_INDEX8:
+            return 255
+        else:
+            raise
 
     def __del__(self):
         if self._glindex != None:

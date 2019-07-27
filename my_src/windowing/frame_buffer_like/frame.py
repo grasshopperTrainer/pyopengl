@@ -40,9 +40,32 @@ class Frame_renderer:
         # need only part of texture
         cls.renderer_obj.shader_io.tex_coord = (0,h),(0,0),(w,0),(w,h)
         # directly draw
-        cls.renderer_obj._draw_(frame.context, frame, frame._viewports[0], *cls.renderer_obj.shader_io.capture_push_value())
+        cls.renderer_obj._draw_(frame.context, frame, frame._viewports[0], cls.renderer_obj.shader_io.capture_push_value())
 
-        # exit()
+
+class Stencil_cleaner:
+    renderer = Renderer_builder()
+    renderer.use_shader(renderer.Shader('stencil_cleaner'))
+    # frame_renderer.use_texture(frame_renderer.Texture_new(0,0,0,))
+    renderer.use_vertex_array(renderer.Vertexarray())
+    renderer.use_vertex_buffer(renderer.Vertexbuffer())
+    renderer.use_index_buffer(renderer.Indexbuffer((0, 1, 3, 3, 1, 2)))
+    renderer.use_drawmode_triangle_strip()
+
+    renderer_obj = None
+
+    @classmethod
+    def clear(cls,context):
+        # initiation
+        if cls.renderer_obj is None:
+            cls.renderer_obj = cls.renderer()
+            cls.renderer_obj.shader_io.resize(4)
+            cls.renderer_obj.shader_io.vertex = (-1, 1), (-1, -1), (1, -1), (1, 1)
+            cls.renderer_obj.shader_io.push_latest()
+
+        cls.renderer_obj._draw_(context)
+
+    # exit()
 class Frame(FBL,MCS):
     def __init__(self, width, height, mother_viewport=None):
         self._previous_frame = None
@@ -80,7 +103,6 @@ class Frame(FBL,MCS):
 
         self._render_stack = []
 
-        self._layers = Layers(self)
         self._viewports = Viewports(self)
 
     def __del__(self):
@@ -91,13 +113,13 @@ class Frame(FBL,MCS):
         self._stencil_attachment.delete()
         self._depth_attachment.delete()
         self._viewports.delete()
-        self._layers.delete()
         for i in self._color_attachments:
             i.delete()
         self._frame_buffer.delete()
 
     def clear(self, *rgba):
         with self:
+            print('cleeenging')
             self._viewports[0].clear(*rgba)
 
     def render_area_of_frame(self, clip_width, clip_height):
@@ -117,6 +139,9 @@ class Frame(FBL,MCS):
 
         new_frame.build(self.context)
         new_frame.is_child_of(self)
+        # this is for following window
+        new_frame._viewports = Viewports(self._viewports._frame())
+
 
         return new_frame
 
@@ -156,11 +181,9 @@ class Frame(FBL,MCS):
         # FBL.set_current(self)
 
         if self._context is None:
-            # self.build()
             raise
-        if FBL.get_current() != self:
-            self._previous_frame = FBL.get_current()
 
+        self._previous_frame = FBL.get_current()
         FBL.set_current(self)
         return self
 
@@ -212,8 +235,8 @@ class Frame(FBL,MCS):
         else:
             raise
     @property
-    def layers(self):
-        return self._layers
+    def viewports(self):
+        return self._viewports
 
     @property
     def render_unit_registry(self):
@@ -265,15 +288,13 @@ class Frame(FBL,MCS):
         return False
 
 class Layers:
-    def __init__(self, frame):
-        self._frame = weakref.ref(frame)
+    def __init__(self, master_frame):
+        # layers(frames) will be drawn on this frame
+        self._frame = weakref.ref(master_frame)
         self._layers = {}
-        self._layers[0] = frame
         self._current = None
-        # default = self.new(0, 'default')
-        # self.set_current(default)
 
-    def __getitem__(self, item):
+    def __getitem__(self, item) -> Frame:
         if isinstance(item, str):
             for i in self._layers.values():
                 if i._name == item:
@@ -291,31 +312,31 @@ class Layers:
             raise TypeError
         if id in self._layers:
             raise
-
-
         name = 'unknown' if name is None else name
         new_frame = self._frame().new_child()
         new_frame.name = str(id)
-
+        # viewports follow
+        # transparent default
+        new_frame.clear(0,0,0,0)
         self._layers[id] = new_frame
 
         # sort
         s = sorted(self._layers.items())
         split = None
         for i,(id,frame) in enumerate(s):
-            if id < 0:
+            if id >= 0:
                 split = i
+                break
         if split != None:
-            s = s[split+1:] + s[:split+1]
+            s = s[split:] + s[:split]
             self._layers = dict(s)
-
         return new_frame
 
     def set_current(self, layer):
         self._current = weakref.ref(layer)
 
     def all_items(self):
-        return self._layers.items()
+        return list(self._layers.items())
 
     @property
     def default(self):

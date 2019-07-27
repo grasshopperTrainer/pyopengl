@@ -2,11 +2,12 @@ from .Camera import _Camera
 from collections import namedtuple
 from windowing.mcs import MCS
 from windowing.my_openGL.unique_glfw_context import Unique_glfw_context
+from ..frame_buffer_like_bp import FBL
 import weakref
 
 class Viewport(MCS):
 
-    DEF_CLEAR_COLOR = 0, 0, 0, 1
+    DEF_CLEAR_COLOR = 0, 0, 0, 0
     def __init__(self, x, y, width, height, mother_cs, collection, name= None):
         self._previous_viewport = None
         super().__init__(x,y,width,height)
@@ -25,20 +26,12 @@ class Viewport(MCS):
         self._collection = collection
 
     def __enter__(self):
-        if self._collection.get_current != self:
-            self._previous_viewport = self._collection.get_current()
+        self._previous_viewport = self._collection.get_current()
         self._collection.set_current(self)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self._previous_viewport != None:
-            self._collection.set_current(self._previous_viewport)
-            self._previous_viewport = None
-        else:
-        #     raise
-        #     self._collection.set_current(self._collection[0])
-            pass
-
+        self._previous_viewport = None
 
     def clear(self,*color):
         # TODO need clear option, which color attachment, depth or stencil, id_color
@@ -46,7 +39,7 @@ class Viewport(MCS):
             self._clear_color = color
         Unique_glfw_context.get_current().render_unit_add(self, f"cleangin viewport '{self.name}'")
 
-    def _draw_(self, context, frame, viewport, att, uni):
+    def _draw_(self, context, frame, viewport, att_uni):
         context.glScissor(*self.pixel_values)
         context.glClearColor(*self.clear_color)
         context.glClear(context.GL_COLOR_BUFFER_BIT)
@@ -117,6 +110,7 @@ class Viewport(MCS):
 
     def set_max(self):
         pass
+
 
     @property
     def camera(self):

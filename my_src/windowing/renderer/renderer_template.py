@@ -210,9 +210,9 @@ class Renderer_template:
             if Unique_glfw_context.get_current() != self.context:
                 raise
 
-            self.context.render_unit_add(self,*self.shader_io.capture_push_value(),que,comment)
+            self.context.render_unit_add(self, self.shader_io.capture_push_value(),que,comment)
 
-    def _draw_(self, context, frame, viewport, att, uni):
+    def _draw_(self, context, frame=None, viewport=None, att_uni=None):
         # binding
         if self.context != context:
             raise
@@ -231,18 +231,21 @@ class Renderer_template:
         if self._texture != None:
             self._texture.bind()
 
-        if hasattr(self.shader_io, 'PM'):
-            self.shader_io.PM = viewport.camera.PM
-        if hasattr(self.shader_io, 'VM'):
-            self.shader_io.VM = viewport.camera.VM
-        if hasattr(self.shader_io, 'u_id_color'):
-            color_id = frame.render_unit_registry.register(self)
-            self.shader_io.u_id_color = color_id  # push color
+        if viewport != None:
+            if hasattr(self.shader_io, 'PM'):
+                self.shader_io.PM = viewport.camera.PM
+            if hasattr(self.shader_io, 'VM'):
+                self.shader_io.VM = viewport.camera.VM
+        if frame != None:
+            if hasattr(self.shader_io, 'u_id_color'):
+                color_id = frame.render_unit_registry.register(self)
+                self.shader_io.u_id_color = color_id  # push color
 
-        self.shader_io.push_all(context, att, uni)
+        if att_uni != None:
+            self.shader_io.push_all(context, att_uni)
 
-        if self._draw_scissor:
-            context.glScissor(*self._draw_scissor)
+        # if self._draw_scissor:
+        #     context.glScissor(*self._draw_scissor)
         # TODO how to store drawing conditing inside unit?
         context.glDrawElements(context.GL_TRIANGLE_STRIP, self._index_buffer.count, self._index_buffer.gldtype, None)
 

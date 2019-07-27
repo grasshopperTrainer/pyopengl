@@ -18,7 +18,7 @@ from windowing.frame_buffer_like.viewport import *
 from .frame_buffer_like.frame_buffer_like_bp import FBL
 
 from windowing.frame_buffer_like.renderable_image import Renderable_image
-from windowing.frame_buffer_like.frame import Frame
+from windowing.frame_buffer_like.frame import Frame,Layers,Stencil_cleaner
 from .windows import Windows
 from .callback_repository import Callback_repository
 from .mcs import MCS
@@ -46,7 +46,7 @@ class Window(MCS):
     _init_global = _global_init
     _windows = Windows()
 
-    _default_framerate_target = 60
+    _default_framerate_target = 30
     _print_framerate = False
 
     # ^are UCD still valid?
@@ -138,7 +138,7 @@ class Window(MCS):
         # TODO building big frame throws inconsistency with viewports of itself
         _,_,max_width,max_height = glfw.get_monitor_workarea(m)
         extra = 500 # this is to cover Windows content area. May be needed for full screen draw
-        self._myframe = Frame(max_width+extra, max_height+ extra)  # type: Renderable_image
+        self._myframe = Frame(max_width+extra,max_height+extra)  # type: Renderable_image
         # glsl: layout(location = 0), this is default output
         # this is ambient color output
         self._myframe.use_color_attachment(0)
@@ -146,10 +146,13 @@ class Window(MCS):
         self._myframe.use_color_attachment(1)
         # use basig depth and stencil
         self._myframe.use_depth_attachment(bitdepth=32)
-        self._myframe.use_stencil_attachment(bitdepth=16)
+        self._myframe.use_stencil_attachment(bitdepth=8)
         self._myframe.build(self.glfw_context)
         self._myframe.name = f'of window {self.name}'
+        self._myframe._viewports = Viewports(self)
 
+        self._layers = Layers(self._myframe)
+        self._layers.new(0,'default')
         #
         # # some info for resetting
         # # look at preset_window() for further usage
@@ -259,7 +262,7 @@ class Window(MCS):
         self._callbacks_repo.exec('window_resize')
         if any(a < b for a,b in zip(self.myframe.size, self.size)):
             print('window, resize callback activated')
-            self.myframe.rebuild(self.size)
+            self.myframe.rebuild(*self.size)
         # gc.collect()
 
     def window_refresh_callback(self, window):
@@ -774,42 +777,41 @@ class Window(MCS):
 
                 # window.make_window_current()
                 with window.glfw_context:
-                    with window.myframe:
-                        with window.viewports[0]:
-                            with window.layers[0]:
-                                window.pre_draw_callback()
-                                window._draw_()
-                                window.post_draw_callback()
-                                window.mouse.reset_per_frame()
+                    with window.layers[0]:
+                        with window.layers[0].viewports[0]:
+                            window.pre_draw_callback()
+                            window._draw_()
+                            window.post_draw_callback()
+                            window.mouse.reset_per_frame()
 
             glfw.poll_events()
 
             for context in Unique_glfw_context.get_instances():
                 if len(context._render_unit_stack) != 0:
-                    print()
-                    print('-----------------------------------------')
+                    # print()
+                    # print('-----------------------------------------')
                     # draw with order
                     with context as gl:
-                        print('    ',context)
+                        # print('    ',context)
                         for frame, viewports in context._render_unit_stack.items():
                             gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, frame._frame_buffer._glindex)
                             attachments = [gl.GL_COLOR_ATTACHMENT0 + i for i in range(len(frame._color_attachments))]
                             gl.glDrawBuffers(len(frame._color_attachments), attachments)
-                            print('      ',frame, frame.mother)
-                            print(frame.pixel_values)
-                            print(frame._color_attachments[0]._size)
+                            # print('      ',frame, frame.mother)
+                            # print(frame.pixel_values)
+                            # print(frame._color_attachments[0]._size)
                             for viewport,layers in viewports.items():
                                 gl.glViewport(*viewport.pixel_values)
                                 gl.glScissor(*viewport.pixel_values)
-                                print('          ',viewport)
+                                # print('          ',viewport)
                                 for layer,units in layers.items():
-                                    print('              ', layer)
+                                    # print('              ', layer)
                                     # this is to seperate layers regardless of depth drawn
                                     gl.glClear(gl.GL_DEPTH_BUFFER_BIT)
                                     # if layer.is_on:
                                     frame._flag_something_rendered = True
                                     for unit in units:
-                                        print('                    ',unit)
+                                        # print('                    ',unit)
                                     #     print(unit)
                                     #     if hasattr(unit[0], 'shader_io'):
                                     #         for i in unit[0].shader_io._captured:
@@ -817,7 +819,7 @@ class Window(MCS):
                                     #             print()
                                     #             for ii in i[0]:
                                     #                 print('    ', ii)
-                                        unit[0]._draw_(gl,frame, viewport, unit[2],unit[3])
+                                        unit[0]._draw_(gl,frame, viewport, unit[2])
                                         # print()
                                         # print('writing into frame')
                                         # print(unit)
@@ -831,16 +833,22 @@ class Window(MCS):
                 if window.myframe.something_rendered:
                     window.make_window_current()
                     with window.glfw_context as gl:
-                        gl.glDisable(gl.GL_DEPTH_TEST)
-                        gl.glViewport(0,0,window.w, window.h)
-                        gl.glScissor(0,0,window.w, window.h) # reset scissor to copy all
-                        # merge frames
                         # gonna draw on window's default frame
                         gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, window.myframe._frame_buffer._glindex)
+                        gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+                        gl.glDisable(gl.GL_DEPTH_TEST) # cus layers are treeted as flat sheets
+                        gl.glViewport(0,0,window.w, window.h) # reset scissor to copy all
+                        gl.glScissor(0,0,window.w, window.h)
+                        # gl.glClearStencil(0)
+                        # gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
+                        # merge frames
                         # for every direct child
                         # TODO: layer's layer how to render? chronically?
-                        for id,frame in window.myframe.layers.all_items():
-                            if frame._flag_something_rendered:
+                        stencil_bitdepth = window.myframe._stencil_attachment.bitdepth
+                        # gl.glStencilMask(stencil_bitdepth)
+                        layers = window.layers.all_items()
+                        for id, frame in window.layers.all_items():
+                            for id,frame in layers:
                                 frame.render_area_of_frame(window.w, window.h)
                                 frame._flag_something_rendered = False
 
@@ -971,19 +979,22 @@ class Window(MCS):
 
         Windows.set_current(self)
         Unique_glfw_context.set_current(self.glfw_context)
-        if hasattr(self, '_myframe'):
-            FBL.set_current(self._myframe)
+        # if hasattr(self, '_myframe'):
+        try:
+            FBL.set_current(self.layers[0])
+        except:
+            pass
 
     # @classmethod
     # def get_current_window(cls):
     #     return cls.windows.get_current()
 
+    # @property
+    # def viewports(self):
+    #     return self._myframe._viewports #type:Viewports
     @property
-    def viewports(self):
-        return self._myframe._viewports #type:Viewports
-    @property
-    def layers(self):
-        return self._myframe._layers #type:Layers
+    def layers(self) -> Layers:
+        return self._layers
     @property
     def size(self):
         return self.pixel_w, self.pixel_h

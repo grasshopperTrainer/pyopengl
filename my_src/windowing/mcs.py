@@ -541,9 +541,6 @@ class MCS:
             return vertex_list[0]
         return vertex_list
 
-    def move(self):
-
-        pass
 
     def make_updated_all(self):
         self._flag_updated = True

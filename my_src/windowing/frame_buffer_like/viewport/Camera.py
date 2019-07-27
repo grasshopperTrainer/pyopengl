@@ -1,4 +1,7 @@
 import numpy as np
+from windowing.IO_device.mouse import Mouse
+import weakref
+
 
 from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
 
@@ -29,11 +32,20 @@ class _Camera:
         # to make PM just in time set refresh function
         self._PM = np.eye(4)
         self._VM = np.eye(4)
+        self._mouse = None
 
     @property
     def near(self):
         near = (self._far+self._near)/2 - (self._far-self._near)/2*self.scale_factor[2]
+
         return near
+
+    def set_near(self, v):
+        self._near = v
+    def accumulate_near(self, v):
+        print('accumulating near', self._near,v)
+        self._near += v
+
     @property
     def far(self):
         far = (self._far+self._near)/2 + (self._far-self._near)/2*self.scale_factor[2]
@@ -55,48 +67,63 @@ class _Camera:
         top = (self._top + self._bottom) / 2 + (self._top - self._bottom) / 2 * self.scale_factor[1]
         return top
 
-    def move(self, x, y, z):
+    def trans_move(self, x, y, z):
         # move camera
         matrix = np.eye(4)
         matrix[:, 3] = -x, -y, -z, 1
         self._VM = matrix.dot(self._VM)
 
-    def rotate(self, x, y, z, radian=False):
+    def trans_rotate(self, x, y, z, order=[0,1,2], radian=False):
+        """
+        rotate around axit
+        :param x:
+        :param y:
+        :param z:
+        :param order:
+        :param radian:
+        :return:
+        """
         if radian:
             x,y,z = -x,-y,-z
         else:
             x, y, z = [np.radians(-i) for i in [x,y,z]]
 
-        matrix = np.eye(4)
+        combined_matrix = np.eye(4)
+        rotate_x = np.eye(4)
+        rotate_y = np.eye(4)
+        rotate_z = np.eye(4)
 
         if x != 0:
-            new = np.eye(4)
-            new[1] = 0, np.cos(x), -np.sin(x), 0
-            new[2] = 0, np.sin(x), np.cos(x), 0
-            matrix = new.dot(matrix)
+            rotate_x[1] = 0, np.cos(x), -np.sin(x), 0
+            rotate_x[2] = 0, np.sin(x), np.cos(x), 0
         if y != 0:
-            new = np.eye(4)
-            new[0] = np.cos(y), 0, np.sin(y), 0
-            new[2] = -np.sin(y), 0, np.cos(y), 0
-            matrix = new.dot(matrix)
+            rotate_y[0] = np.cos(y), 0, np.sin(y), 0
+            rotate_y[2] = -np.sin(y), 0, np.cos(y), 0
         if z != 0:
-            new = np.eye(4)
-            new[0] = np.cos(z), -np.sin(z), 0, 0
-            new[1] = np.sin(z), np.cos(z), 0, 0
-            matrix = new.dot(matrix)
-
-        self.VM = matrix.dot(self.VM)
+            rotate_z[0] = np.cos(z), -np.sin(z), 0, 0
+            rotate_z[1] = np.sin(z), np.cos(z), 0, 0
+        s = sorted(zip(order,(rotate_x, rotate_y, rotate_z)))
+        for _,m in s:
+            combined_matrix = m.dot(combined_matrix)
+        self._VM = combined_matrix.dot(self._VM)
 
     def scale(self,x=1,y=1,z=1):
         self.scale_factor = (x,y,z)
 
-    def lookat(self, to_point, from_point=None):
+    def trans_look_at(self, to_point:(tuple, list), from_point:(tuple, list)=None):
+        """
+        position camera so so it look at 'to_point' from 'from_point'
+
+        :param to_point: camera to look at
+        :param from_point: camera to look from
+        :return:
+        """
         if from_point is None:
             from_point = -self.VM.dot(np.array([[0, 0, 0, 1]]).T)
             from_point[3] = 1
         else:
-            self.VM = np.eye(4)
-            self.move(*from_point)
+            self._VM = np.eye(4)
+            self.trans_move(*from_point)
             from_point = np.array([from_point + [1, ]]).T
 
         to_point = np.array([to_point + [1, ]]).T
@@ -109,7 +136,7 @@ class _Camera:
         if not np.isnan(angle):
             if y <= 0:
                 angle = -angle
-            self.rotate(0, 0, angle, True)
+            self.trans_rotate(0, 0, angle, radian=True)
 
         y = -vec[2]
         z = np.sqrt(vec[0] * vec[0] + vec[1] * vec[1])
@@ -120,19 +147,18 @@ class _Camera:
                 angle = -angle
             if y <= 0:
                 angle = np.pi - angle
-            self.rotate(angle, 0, 0, True)
+            self.trans_rotate(angle, 0, 0, radian=True)
 
-    @property
-    def mode(self):
-        return self._mode
+    def set_mode(self, mode):
+        """
+        currently three modes supported
+        0. orthonographic
+        1. projection
+        2. orthonographic pixel_true 2D plane
 
-    @mode.setter
-    def mode(self, mode):
-        # three modes are supported
-        # 0. orthonographic
-        # 1. projection
-        # 2. orthonographic true 2D plane
-
+        :param mode:
+        :return:
+        """
         if isinstance(mode, str):
             if 'ortho' in mode:
                 self._mode = 0
@@ -162,6 +188,25 @@ class _Camera:
             self._bottom = -1
 
         self.build_PM()
+    # @property
+    # def mode(self):
+    #     return self._mode
+    #
+    # @mode.setter
+    # def mode(self, mode):
+
+
+    def set_test_mouse(self, mouse):
+        if not isinstance(mouse,Mouse):
+            raise TypeError
+        self._mouse = weakref.ref(mouse)
+        mouse.set_scroll_down_callback(
+            lambda : self.trans_move(0,0,2)
+        )
+        mouse.set_scroll_up_callback(
+            lambda : self.trans_move(0,0,-2)
+        )
+
     @property
     def PM(self):
         self.build_PM()
@@ -240,7 +285,13 @@ class _Camera:
                      [0, 0, -2 / (f - n), -(f + n) / (f - n)],
                      [0, 0, 0, 1]]
                 )
-
+    @property
+    def position(self):
+        origin = np.array([[0],[0],[0],[1]])
+        print(origin)
+        print(self._VM)
+        a = self._VM.copy()
+        return self._VM.dot(origin)
     @property
     def w(self):
         return self.right - self.left

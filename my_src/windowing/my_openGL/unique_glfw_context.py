@@ -267,7 +267,7 @@ class Unique_glfw_context:
         print(f'    texture           : {self._textures.binding()}')
 
 
-    def render_unit_add(self, unit, att=None, uni=None, que=0, comment=''):
+    def render_unit_add(self, unit, att_uni=None, que=0, comment=''):
         stack = self._render_unit_stack
 
         frame = FBL.get_current()
@@ -311,7 +311,7 @@ class Unique_glfw_context:
                 # merge
                 stack[frame][viewport] = OrderedDict(left+right)
 
-        stack[frame][viewport][que].append((unit,comment, att, uni))
+        stack[frame][viewport][que].append((unit,comment, att_uni))
 
     def render_unit_stack_flush(self):
         self._render_unit_stack = {}
@@ -503,6 +503,7 @@ class Unique_glfw_context:
     GL_DEPTH32F_STENCIL8 = gl.GL_DEPTH32F_STENCIL8
 
     GL_DEPTH_STENCIL = gl.GL_DEPTH_STENCIL
+    # numbers are bit values
     GL_STENCIL_INDEX1 = gl.GL_STENCIL_INDEX1
     GL_STENCIL_INDEX4 = gl.GL_STENCIL_INDEX4
     GL_STENCIL_INDEX8 = gl.GL_STENCIL_INDEX8
@@ -1104,8 +1105,8 @@ class Unique_glfw_context:
 
     def glStencilOp(self, fail, zfail, zpass):
         gl.glStencilOp(fail, zfail, zpass)
-
-
+    def glClearStencil(self,s):
+        gl.glClearStencil(s)
     def glIsEnabled(self, cap):
         return gl.glIsEnabled(cap)
 

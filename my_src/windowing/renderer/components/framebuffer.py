@@ -66,7 +66,8 @@ class Framebuffer(RenderComponent):
                                          gl.GL_STENCIL_ATTACHMENT,
                                          gl.GL_RENDERBUFFER,
                                          stencil_attachment._glindex)
-            gl.glEnable(gl.GL_STENCIL_TEST)
+            # gl.glEnable(gl.GL_STENCIL_TEST)
+            gl.glClearStencil(0)
             gl.glClear(gl.GL_STENCIL_BUFFER_BIT)
 
         self._stencil_attachment = weakref.ref(stencil_attachment)
