@@ -1,6 +1,8 @@
 import numpy as np
 import copy
 import inspect
+import weakref
+from numbers import Number
 
 
 class Primitive:
@@ -50,20 +52,6 @@ class Primitive:
 
         dic[make_unique_name(key_list, key, preffix, suffix)] = value
 
-    @property
-    def data(self):
-        return self._data
-
-    @data.setter
-    def data(self, value):
-        # to ensure all the proceeding numpy calculation efficient
-        if isinstance(value, np.ndarray):
-            data = self.__class__.DATATYPE(value)
-        self._data = value
-
-    def get_data(self) -> list:
-        return self._data
-
     def __call__(self):
         return self._data
 
@@ -87,17 +75,16 @@ class Primitive:
         pass
 
     def __str__(self):
-        return f'{self.__class__.__name__} : {self._data}'
+        raise
 
-    def set_data(self, data):
+    # def set_data(self, data):
+    #     # to ensure all the proceeding numpy calculation efficient
+    #     if isinstance(data, np.ndarray):
+    #         data = self.__class__.DATATYPE(data)
+    #     self._data = data
 
-        # to ensure all the proceeding numpy calculation efficient
-        if isinstance(data, np.ndarray):
-            data = self.__class__.DATATYPE(data)
-        self._data = data
-
-    def get_data(self):
-        return self._data
+    # def get_data(self):
+    #     return self._data
 
     def printmessage(self, text: str, header: str = 'ERROR '):
         func_name = inspect.currentframe().f_back.f_code.co_name
@@ -699,15 +686,29 @@ class Tlist(Primitive):
         for i in leafs:
             i.set_data([])
 
+class Raw_array:
+    def __init__(self):
+        self._d = weakref.WeakKeyDictionary()
+
+    def __set__(self, instance, value):
+        self._d[instance] = np.array(value)
+
+    def __get__(self, instance, owner):
+        return self._d[instance]
+
 
 class Geometry(Primitive):
+    _raw = Raw_array()
 
-    def bymatrix(self, value):
-        if isinstance(value, np.ndarray):
-            self.data = value
-        else:
-            self.printmessage("input isn't matrix")
-        return self
+    def from_raw(self, raw:np.ndarray):
+        raise Exception('not defined for this primitive yet')
+
+    # def bymatrix(self, value):
+    #     if isinstance(value, np.ndarray):
+    #         self.data = value
+    #     else:
+    #         self.printmessage("input isn't matrix")
+    #     return self
 
     @property
     def numvertex(self):
@@ -766,36 +767,13 @@ class Geometry(Primitive):
     def __repr__(self):
         return self.__str__()
 
-
-class Vector(Geometry):
-
-    def __init__(self, x: (int, float) = 0, y: (int, float) = 0, z: (int, float) = 0):
-        self.set_data(np.array([[x], [y], [z], [0]]))
-
-    def __str__(self):
-        arr = self.get_data()
-        return f'{self.__class__.__name__} : {arr[:3]}'
-
-    def __mul__(self, other):
-        if isinstance(other, (float, int)):
-            m = self() * other
-            return Vector().bymatrix(self() * other)
-
-    def __add__(self, other):
-        if isinstance(other, Vector):
-            return Vector().bymatrix(self() + other())
-
     @property
-    def x(self):
-        return self.data[0, 0]
+    def raw(self) -> np.ndarray:
+        return self._raw
 
-    @property
-    def y(self):
-        return self.data[1, 0]
-
-    @property
-    def z(self):
-        return self.data[2, 0]
+    @raw.setter
+    def raw(self, v):
+        self._raw = v
 
 
 class Domain2d(Primitive):
@@ -856,20 +834,31 @@ class Domain(Primitive):
         se = self._data
         return se[1] - se[0]
 
+class Vector_Point:
+    def __new__(cls, raw:np.ndarray):
+        if not isinstance(raw, np.ndarray):
+            raise TypeError
+        if raw.shape != (4,1):
+            raise ValueError
+
+        # point
+        if raw[3,0] == 1:
+            return Point().from_raw(raw)
+        # vector
+        elif raw[3,0] == 0:
+            return Vector().from_raw(raw)
+        else:
+            raise ValueError
+
 
 class Point(Geometry):
 
-    def __init__(self, x: (int, float) = 0, y: (int, float) = 0, z: (int, float) = 0):
-        self.set_data(np.array([[x], [y], [z], [1]]))
+    def __init__(self, x:Number = 0, y:Number = 0, z:Number = 0):
+        self.raw = [[x], [y], [z], [1]]
         self.iterstart = 0
 
-    def __str__(self, dataonly=False):
-        arr = self.get_data()
-        if dataonly:
-            return f'{arr.T[0, :3]}'
-        else:
-
-            return f'P{arr.T[0, :3]}'
+    def __str__(self):
+        return f'{self.__class__.__name__} : {[round(i, 2) for i in self.raw[:3, 0]]}'
 
     def __repr__(self):
         return self.__str__()
@@ -893,21 +882,121 @@ class Point(Geometry):
             self.iterstart = 0
             raise StopIteration
 
+    def __add__(self, other):
+        if isinstance(other, Point):
+            pass
+        elif isinstance(other, (tuple, list)):
+            if len(other) == 3 and all([isinstance(i, Number) for i in other]):
+                self.raw += [[i] for i in other] + [[0]]
+        elif isinstance(other, np.ndarray):
+            raise
+        return self
+
+    def __radd__(self, other):
+        raise
+        pass
+
     @property
     def x(self):
-        return self.data.item(0, 0)
+        return self.raw[0,0]
 
     @property
     def y(self):
-        return self.data.item(1, 0)
+        return self.raw[1, 0]
 
     @property
     def z(self):
-        return self.data.item(2, 0)
+        return self.raw[2, 0]
 
-    def get_listdata(self):
-        return np.reshape(self.get_data(), (1, 4))[0, :3].tolist()
+    @property
+    def xyz(self):
+        return self.raw[:3,0]
 
+    def from_vector(self):
+        raise
+        pass
+
+    def from_raw(self, raw:np.ndarray):
+        if not isinstance(raw, np.ndarray):
+            raise TypeError
+        if raw.shape != (4,1) or raw[3,0] != 1:
+            raise ValueError
+        self.raw = raw
+
+
+class Vector(Geometry):
+
+    def __init__(self, x: Number = 0, y: Number = 0, z: Number = 0):
+        self.raw = [[x], [y], [z], [0]]
+
+    def __str__(self):
+        return f'{self.__class__.__name__} : {[round(i, 2) for i in self.raw[:3, 0]]}'
+
+    def __add__(self, other):
+        if isinstance(other, Vector):
+            new = self.raw.copy()
+            return Vector().from_raw(new+other.raw)
+        else:
+            raise
+
+    def __truediv__(self, other):
+        if isinstance(other, Number):
+            v = self.raw.copy()
+            xyz= v[:3,0]/other
+            return Vector(*xyz)
+        else:
+            raise
+
+    def __mul__(self, other):
+        if isinstance(other, Number):
+            v = self.raw.copy()
+            xyz = v[:3,0]*other
+            return Vector(*xyz)
+        elif isinstance(other, Vector):
+            return self.raw*other.raw
+
+    def dot(self, other):
+        return self.raw.flatten().dot(other.raw.flatten())
+
+    @property
+    def x(self):
+        return self.raw[0, 0]
+
+    @property
+    def y(self):
+        return self.raw[1, 0]
+
+    @property
+    def z(self):
+        return self.raw[2, 0]
+
+    @property
+    def xyz(self):
+        return self.raw[:3, 0]
+
+    def from_point(self, point: Point):
+        if not isinstance(point, Point):
+            raise
+        raw = point.raw.copy()
+        raw[3, 0] = 0
+        self.raw = raw
+        return self
+
+    def from_raw(self, raw: np.ndarray):
+        if raw.shape != (4, 1):
+            print(raw)
+            raise TypeError
+        raw[3, 0] = 0
+        self.raw = raw
+        return self
+
+    # functions that recieve single vector and returns single vector should be methods?
+    # or functions that mutates self should be methods?
+    # functions that return basic properties should be methods
+    @property
+    def length(self):
+        x, y, z = self.xyz
+        return np.sqrt(x * x + y*y + z * z)
 
 class Line(Geometry):
     def __init__(self, start: Point = Point(), end: Point = Point(10, 0)):
@@ -997,10 +1086,69 @@ def wrapindex(index, end):
     else:
         return -(-index % (end + 1))
 
+class Plane(Geometry):
+    def __init__(self, origin:(tuple,list) = (0,0,0), normal:(tuple,list)=(0,0,1), axis_x:(tuple, list)=(1, 0, 0)):
+        dot_product = sum(np.array(normal) * np.array(axis_x))
+        if dot_product != 0:
+            raise
+        self.raw = np.array([[*origin,1], [*normal,0], [*axis_x, 0]]).transpose()
+
+    def __str__(self):
+        return f'{self.__class__.__name__} of origin {self.origin}'
+
+    def from_raw(self, raw:np.ndarray):
+        if raw.shape != (4,3):
+            raise
+        if not all([ a == b for a,b in zip(raw[3],(1,0,0))]):
+            raise
+        self.raw = raw
+        return self
+
+    @property
+    def origin(self):
+        return Point(*self.raw[:3,0])
+
+    @property
+    def normal(self):
+        return Vector(*self.raw[:3,1])
+
+    @property
+    def x_axis(self):
+        return Vector(*self.raw[:3,2])
 
 class Matrix(Primitive):
-    pass
+    def __init__(self,
+                 e00:Number=1,e01:Number=0,e02:Number=0,e03:Number=0,
+                 e10:Number=0,e11:Number=1,e12:Number=0,e13:Number=0,
+                 e20:Number=0,e21:Number=0,e22:Number=1,e23:Number=0,
+                 e30:Number=0,e31:Number=0,e32:Number=0,e33:Number=1):
 
+        elements = [e00,e01,e02,e03,
+                    e10,e11,e12,e13,
+                    e20,e21,e22,e23,
+                    e30,e31,e32,e33]
+        if not all([isinstance(i,Number) for i in elements]):
+            raise ValueError
+        self.raw = np.array(elements).reshape((4,4))
+
+    def from_raw(self, raw):
+        if not isinstance(raw, np.ndarray):
+            raise
+        if raw.shape != (4,4):
+            raise ValueError
+        self.raw = raw
+        return self
+
+    def __str__(self):
+        listed = self.raw.tolist()
+
+        for r,row in enumerate(listed):
+            for c,ii in enumerate(row):
+                listed[r][c] = '{: .2f}'.format(ii)
+            listed[r] = str(row)
+
+        listed[0] = f'{self.__class__.__name__} : ' + listed[0]
+        return '{:>45}\n{:>45}\n{:>45}\n{:>45}'.format(*listed)
 
 class Transformation(Primitive):
 

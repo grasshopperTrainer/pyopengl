@@ -1,4 +1,4 @@
-inimport numpy as np
+import numpy as np
 import copy
 from .primitives import *
 from ..tools import rect_tools as rect

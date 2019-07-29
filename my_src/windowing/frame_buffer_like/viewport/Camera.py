@@ -1,6 +1,8 @@
 import numpy as np
 from windowing.IO_device.mouse import Mouse
 import weakref
+from numbers import Number
+import prohopper.tools as pr
 
 
 from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
@@ -33,6 +35,8 @@ class _Camera:
         self._PM = np.eye(4)
         self._VM = np.eye(4)
         self._mouse = None
+        # initially camera is facing downward from origin
+        self._plane = pr.primitives.Plane((0,0,0),(0,0,-1),(1,0,0))
 
     @property
     def near(self):
@@ -68,44 +72,19 @@ class _Camera:
         return top
 
     def trans_move(self, x, y, z):
-        # move camera
-        matrix = np.eye(4)
-        matrix[:, 3] = -x, -y, -z, 1
-        self._VM = matrix.dot(self._VM)
+        self._plane = pr.trans.move(pr.primitives.Vector(x,y,z),self._plane)
 
-    def trans_rotate(self, x, y, z, order=[0,1,2], radian=False):
-        """
-        rotate around axit
-        :param x:
-        :param y:
-        :param z:
-        :param order:
-        :param radian:
-        :return:
-        """
-        if radian:
-            x,y,z = -x,-y,-z
-        else:
-            x, y, z = [np.radians(-i) for i in [x,y,z]]
+    def trans_rotate(self, x:Number,y:Number,z:Number, order=[0,1,2], radian=False):
+        a = pr.trans.rotate_around_x(self._plane, 90)
+        print(self._plane.raw)
+        print(a.raw)
+        a,b = pr.trans.Vector(100,100,0), pr.trans.Vector(0,100,100)
+        print(pr.vector.project_point_on_vector(a,b).raw)
+        print(pr.plane.plane_from_vector_point(a,b))
+        # pr.trans.rotate_around_axis(self._plane,self._plane)
+        exit()
 
-        combined_matrix = np.eye(4)
-        rotate_x = np.eye(4)
-        rotate_y = np.eye(4)
-        rotate_z = np.eye(4)
 
-        if x != 0:
-            rotate_x[1] = 0, np.cos(x), -np.sin(x), 0
-            rotate_x[2] = 0, np.sin(x), np.cos(x), 0
-        if y != 0:
-            rotate_y[0] = np.cos(y), 0, np.sin(y), 0
-            rotate_y[2] = -np.sin(y), 0, np.cos(y), 0
-        if z != 0:
-            rotate_z[0] = np.cos(z), -np.sin(z), 0, 0
-            rotate_z[1] = np.sin(z), np.cos(z), 0, 0
-        s = sorted(zip(order,(rotate_x, rotate_y, rotate_z)))
-        for _,m in s:
-            combined_matrix = m.dot(combined_matrix)
-        self._VM = combined_matrix.dot(self._VM)
 
     def scale(self,x=1,y=1,z=1):
         self.scale_factor = (x,y,z)
@@ -213,6 +192,12 @@ class _Camera:
         return self._PM
     @property
     def VM(self):
+        # from self.position and direction(Point and Vector gonna build Matrix)
+        v = pr.primitives.Vector().from_point(self.position)
+        print(v)
+        exit()
+        pr.vector.flip(v)
+
         return self._VM
 
     def build_PM(self, major='v'):
@@ -287,11 +272,8 @@ class _Camera:
                 )
     @property
     def position(self):
-        origin = np.array([[0],[0],[0],[1]])
-        print(origin)
-        print(self._VM)
-        a = self._VM.copy()
-        return self._VM.dot(origin)
+        return self._plane.origin
+
     @property
     def w(self):
         return self.right - self.left

@@ -24,7 +24,9 @@ class Main_window(Window):
         main_viewport = self.layers[1].viewports.new(0,0,1.0,1.0,'main 3d space')
         main_viewport.camera.set_test_mouse(self.mouse)
         main_viewport.camera.set_mode(1)
-        main_viewport.camera.trans_look_at([0, 0, 0], [100, 0, 100])
+        # main_viewport.camera.trans_look_at([0, 0, 0], [100, 0, 100])
+        main_viewport.camera.trans_move(100,100,0)
+        main_viewport.camera.trans_rotate(10,0,0)
         # main_viewport.camera.trans_move(0,0,100)
         # main_viewport.camera.trans_rotate(30,0,0)
 
@@ -135,7 +137,6 @@ class Main_window(Window):
         self.refresh_all()
     #
     def _draw_(self):
-        print(self.layers[1].viewports[1].camera.position)
 
         with self.layers[1] as l:
             with l.viewports[1] as v:
