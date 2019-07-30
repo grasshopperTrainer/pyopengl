@@ -2,10 +2,8 @@ import numpy as np
 from windowing.IO_device.mouse import Mouse
 import weakref
 from numbers import Number
-import prohopper.tools as pr
+import prohopper as pr
 
-
-from windowing.frame_buffer_like.frame_buffer_like_bp import FBL
 
 class _Camera:
     """
@@ -36,7 +34,7 @@ class _Camera:
         self._VM = np.eye(4)
         self._mouse = None
         # initially camera is facing downward from origin
-        self._plane = pr.primitives.Plane((0,0,0),(0,0,-1),(1,0,0))
+        self._plane = pr.primitives.Plane((0, 0, 0), (1, 0, 0), (0, -1, 0), (0, 0, -1))
 
     @property
     def near(self):
@@ -72,16 +70,12 @@ class _Camera:
         return top
 
     def trans_move(self, x, y, z):
-        self._plane = pr.trans.move(pr.primitives.Vector(x,y,z),self._plane)
+        self._plane = pr.trans.move(pr.primitives.Vector(x, y, z), self._plane)
 
     def trans_rotate(self, x:Number,y:Number,z:Number, order=[0,1,2], radian=False):
-        a = pr.trans.rotate_around_x(self._plane, 90)
-        print(self._plane.raw)
-        print(a.raw)
-        a,b = pr.trans.Vector(100,100,0), pr.trans.Vector(0,100,100)
-        print(pr.vector.project_point_on_vector(a,b).raw)
-        print(pr.plane.plane_from_vector_point(a,b))
-        # pr.trans.rotate_around_axis(self._plane,self._plane)
+        # what i want is to rotate camera plane with its local axis
+        # - means i need a tool rotate around axis
+        pr.trans.rotate_around_axis(self._plane, self._plane.x_axis, 30,True)
         exit()
 
 
@@ -193,7 +187,7 @@ class _Camera:
     @property
     def VM(self):
         # from self.position and direction(Point and Vector gonna build Matrix)
-        v = pr.primitives.Vector().from_point(self.position)
+        v = prohopper.primitives.Vector().from_point(self.position)
         print(v)
         exit()
         pr.vector.flip(v)

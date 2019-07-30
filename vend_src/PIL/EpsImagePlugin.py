@@ -264,7 +264,7 @@ class EpsImageFile(ImageFile.ImageFile):
                             self.info[k] = ""
                     elif s[0] == '%':
                         # handle non-DSC Postscript comments that some
-                        # tools mistakenly put in the Comments section
+                        # tools_building mistakenly put in the Comments section
                         pass
                     else:
                         raise IOError("bad EPS header")

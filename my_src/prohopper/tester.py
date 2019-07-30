@@ -1,1 +1,5 @@
-print("Hello {0}, your balance is {1:.3f}".format('dddd', 2030323,203023))
+import math
+
+a = 5.0
+b = 4.99995
+print(math.isclose(a,b,rel_tol=1.e-5))

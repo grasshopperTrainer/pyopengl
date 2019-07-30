@@ -1,5 +1,5 @@
 import numpy as np
-from prohopper.tools.primitives import Primitive
+from prohopper.primitives import Primitive
 
 
 class Vector(Primitive):

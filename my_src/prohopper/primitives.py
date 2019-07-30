@@ -8,10 +8,10 @@ from numbers import Number
 class Primitive:
     DIC = {}
     DATATYPE = np.float32
-
+    TOLORENCE = 1.e-9
     def __init__(self, data, title: str = None):
         """
-        Parent of all tools classes.
+        Parent of all tools_building classes.
         rule#1_ in child class functions never return Hlist
         - add functions for general management and meta control -
         :param data:
@@ -700,6 +700,7 @@ class Raw_array:
 class Geometry(Primitive):
     _raw = Raw_array()
 
+    @classmethod
     def from_raw(self, raw:np.ndarray):
         raise Exception('not defined for this primitive yet')
 
@@ -910,7 +911,7 @@ class Point(Geometry):
 
     @property
     def xyz(self):
-        return self.raw[:3,0]
+        return self.raw[:3,0].tolist()
 
     def from_vector(self):
         raise
@@ -972,7 +973,7 @@ class Vector(Geometry):
 
     @property
     def xyz(self):
-        return self.raw[:3, 0]
+        return self.raw[:3, 0].tolist()
 
     def from_point(self, point: Point):
         if not isinstance(point, Point):
@@ -982,13 +983,13 @@ class Vector(Geometry):
         self.raw = raw
         return self
 
-    def from_raw(self, raw: np.ndarray):
-        if raw.shape != (4, 1):
-            print(raw)
+    @classmethod
+    def from_raw(cls, raw: np.ndarray):
+        if not isinstance(raw, np.ndarray):
             raise TypeError
-        raw[3, 0] = 0
-        self.raw = raw
-        return self
+        if raw.shape != (4, 1):
+            raise TypeError
+        return cls(*raw.transpose().tolist()[0][:3])
 
     # functions that recieve single vector and returns single vector should be methods?
     # or functions that mutates self should be methods?
@@ -999,51 +1000,38 @@ class Vector(Geometry):
         return np.sqrt(x * x + y*y + z * z)
 
 class Line(Geometry):
-    def __init__(self, start: Point = Point(), end: Point = Point(10, 0)):
-        self.set_data(np.concatenate((start(), end()), 1))
+    def __init__(self, start:(list, tuple) = [0,0,0], end:(list,tuple) = [1,0,0]):
+        if len(start) != 3 or len(end) != 3:
+            raise ValueError
+        if not all([all([isinstance(ii, Number) for ii in i]) for i in (start, end)]):
+            raise TypeError
 
-    def __call__(self, *args, **kwargs):
-        if len(args) is 0:
-            return self.data
-        else:
-            result = []
-            for i in args:
-                if isinstance(i, (float, int)):
-                    v = self.vertex[1] - self.vertex[0]
-                    newP = self.vertex[0] + v * i
-                    result.append(newP)
-                else:
-                    result.append(None)
-            if len(result) is 1:
-                return result[0]
-            else:
-                return result
-
-    def __mul__(self, other):
-        if isinstance(other, (float, int)):
-            return Point().bymatrix(self() * other)
+        self.raw = np.array((start, end)).transpose()
 
     def __str__(self):
         return f'Line {self.length}'
 
     @property
-    def F(self):
-        m = np.concatenate((self.vertex[1](), self.vertex[0]()), 1)
-
-        return Line().bymatrix(m)
-
-    @property
-    def V(self):
-        v = self.end - self.start
-        return v
-
-    @property
     def start(self):
-        return self.vertex[0]
+        return self.raw[:3, 0].tolist()[0]
 
     @property
     def end(self):
-        return self.vertex[1]
+        return self.raw[:3, 1].tolist()[0]
+
+    @property
+    def length(self):
+        start, end = self.raw.copy().transpose().tolist()
+        v = []
+        for a,b in zip(start, end):
+            v.append(b-a)
+        l = np.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2])
+        return l
+
+    @classmethod
+    def from_vector(cls, vector:Vector):
+        end = vector.raw.copy().transpose().tolist()[0][:3]
+        return cls([0,0,0],end)
 
 
 class Rect(Geometry):
@@ -1087,22 +1075,46 @@ def wrapindex(index, end):
         return -(-index % (end + 1))
 
 class Plane(Geometry):
-    def __init__(self, origin:(tuple,list) = (0,0,0), normal:(tuple,list)=(0,0,1), axis_x:(tuple, list)=(1, 0, 0)):
-        dot_product = sum(np.array(normal) * np.array(axis_x))
-        if dot_product != 0:
+    def __init__(self,
+                 origin:(tuple, list),
+                 axis_x:(tuple, list),
+                 axis_y:(tuple, list),
+                 axis_z:(tuple, list)):
+
+        axis = axis_x, axis_y,axis_z
+        if not all([isinstance(i, (tuple, list)) for i in axis]):
+            print(axis)
             raise
-        self.raw = np.array([[*origin,1], [*normal,0], [*axis_x, 0]]).transpose()
+        axis = [list(i) for i in axis]
+
+        # check dot product for perpendicularity 3 times!!!
+        xy_dp = sum((np.array(axis_x)*np.array(axis_y)).tolist())
+        yz_dp = sum((np.array(axis_y)*np.array(axis_z)).tolist())
+        zx_dp = sum((np.array(axis_z)*np.array(axis_x)).tolist())
+        if not np.isclose(sum([xy_dp, yz_dp, zx_dp]),0.,atol=self.TOLORENCE):
+            raise ValueError('given 3 vectors not perpendicular')
+        # TODO should right-hand left-hand be checked too? do i support right_handed LCS?
+
+        # unitize
+        for i in axis:
+            l = np.sqrt(i[0]*i[0]+i[1]*i[1]+i[2]*i[2])
+            i[:] = i[0]/l,i[1]/l,i[2]/l
+        axis_x, axis_y,axis_z = axis
+
+        # one point three vectors
+        self.raw = np.array([[*origin,1], [*axis_x,0], [*axis_y, 0], [*axis_z, 0]]).transpose()
 
     def __str__(self):
         return f'{self.__class__.__name__} of origin {self.origin}'
 
-    def from_raw(self, raw:np.ndarray):
-        if raw.shape != (4,3):
+    @classmethod
+    def from_raw(cls, raw:np.ndarray):
+        if raw.shape != (4,4):
             raise
-        if not all([ a == b for a,b in zip(raw[3],(1,0,0))]):
+        if not all([ a == b for a,b in zip(raw[3],(1,0,0,0))]):
             raise
-        self.raw = raw
-        return self
+        listed = [i[:3] for i in raw.transpose().tolist()]
+        return cls(*listed)
 
     @property
     def origin(self):
