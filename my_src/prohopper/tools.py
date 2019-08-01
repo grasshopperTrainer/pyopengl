@@ -1,6 +1,23 @@
 from .primitives import *
 
+DEF_TOLERANCE = 1.e-9
+
 class trans:
+
+    @staticmethod
+    def orient(geo:Geometry, source:Plane, target:Plane) -> Geometry:
+        """
+        orient given geometry from source plane to target plane
+        :param geo: thing to orient
+        :param source: reference plane of geo
+        :param target: result plane of geo
+        :return: geo
+        """
+        tom,_ = matrix.trans_between_origin_and_plane(source)
+        _,tpm = matrix.trans_between_origin_and_plane(target)
+        geo = trans.transform(geo, tom)
+        geo = trans.transform(geo, tpm)
+        return geo
 
     @staticmethod
     def move(vec: Vector, geometry:Geometry):
@@ -37,35 +54,140 @@ class trans:
     def rotate_around_axis(geometry:Geometry, axis:Line, angle, degree=False):
         if not isinstance(axis,Line):
             if isinstance(axis, Vector):
-                axis = Line.from_vector(axis)
+                axis = line.con_from_vector(axis)
             else:
                 raise TypeError
-    
-        # how to rotate around axis...
-        # find trans matrices for world z to that axis and put it backward
-        print(geometry, axis, angle)
-        axis_plane = plane.con_2_vectors(Vector(1,0,0), axis)
-        exit()
-        x = matrix.transformation_2_planes()
-        transform()
-        pass
+        axis_start,_ = line.decon(axis)
+        # vector from axis
+        axis_vector = vector.con_from_line(axis)
+        # what is this for? want to fine another vector that is close to x and perpendicular
+        ref_point = Point(1,0,0)
+
+        projected_point = point.perpendicular_on_vector(axis_vector,ref_point)
+        perpen_v = vector.con_two_points(projected_point, ref_point)
+        # and build a reference plane
+        ref_plane = plane.con_from_2_vectors(axis_vector, perpen_v, 'z','x', axis_start)
+        xpo,xop = matrix.trans_between_origin_and_plane(ref_plane)
+
+        # back force move
+        geometry = trans.transform(geometry, xpo)
+        # using rotation z because input axis is set as z while building ref_plane
+        geometry = trans.rotate_around_z(geometry,angle,degree)
+        geometry = trans.transform(geometry, xop)
+
+        return geometry
 
     @staticmethod
     def rotate_around_x(geometry:Geometry, angle, degree=False, ):
         x = matrix.rotation_x(angle, degree)
-        return transform(geometry,x)
+        return trans.transform(geometry,x)
 
     @staticmethod
     def rotate_around_y(geometry:Geometry, angle, degree=False):
         x = matrix.rotation_y(angle, degree)
-        return transform(geometry,x)
+        return trans.transform(geometry,x)
 
     @staticmethod
     def rotate_around_z(geometry:Vector, angle, degree=False):
         x = matrix.rotation_z(angle, degree)
-        return transform(geometry,x)
+        return trans.transform(geometry,x)
+
+
+class line:
+    @staticmethod
+    def con_two_points(start:Point, end:Point) -> Line:
+        return Line(start.xyz, end.xyz)
+    @staticmethod
+    def con_point_vector(start:Point, vec:Vector) -> Line:
+        return line.con_two_points(start, trans.move(vec, start))
+
+    @staticmethod
+    def con_from_vector(vector:Vector):
+        end = vector.raw.copy().transpose().tolist()[0][:3]
+        return Line([0,0,0],end)
+    @staticmethod
+    def decon(lin:Line):
+        return Point(*lin.raw[:3, 0]), Point(*lin.raw[:3, 1])
+
+class point:
+
+    @staticmethod
+    def con_from_vector(vec:Vector):
+        return Point(*vec.xyz)
+
+    @staticmethod
+    def perpendicular_on_vector(vec: Vector, poi: Point):
+        vec2 = vector.con_from_point(poi)
+        a = vector.angle_2_vectors(vec, vec2)
+        l = np.cos(a) * vec2.length
+        new_v = vector.amplitude(vec, l)
+        return point.con_from_vector(new_v)
+
 
 class vector:
+    @staticmethod
+    def dot(vec1:Vector, vec2:Vector) -> float:
+        return vec1.raw.flatten().dot(vec2.raw.flatten())
+
+    @staticmethod
+    def con_two_points(start:Point, end:Point) -> Vector:
+        coord = []
+        for a,b in zip(start.xyz, end.xyz):
+            coord.append(b-a)
+        return Vector(*coord)
+
+    @staticmethod
+    def quarter_on_plane(vec:Vector, plane_hint:str):
+        if not isinstance(vec, Vector):
+            raise TypeError
+        x,y,z = vec.xyz
+        if plane_hint == 'xy' or plane_hint == 'yx':
+            if x >= 0:
+                if y >= 0:
+                    return 0
+                else:
+                    return 3
+            else:
+                if y >= 0:
+                    return 1
+                else:
+                    return 2
+
+        elif plane_hint == 'yz' or plane_hint == 'zy':
+            if y >= 0:
+                if z >= 0:
+                    return 0
+                else:
+                    return 3
+            else:
+                if z >= 0:
+                    return 1
+                else:
+                    return 2
+
+        elif plane_hint == 'zx' or plane_hint == 'xz':
+            if z >= 0:
+                if x >= 0:
+                    return 0
+                else:
+                    return 3
+            else:
+                if x >= 0:
+                    return 1
+                else:
+                    return 2
+        else:
+            raise ValueError
+
+    @staticmethod
+    def vector_2_points(start:Point, end:Point):
+        return end-start
+
+    @staticmethod
+    def con_from_point(poi:Point):
+        return Vector(*poi.xyz)
+
+
 
     # @tlist.calbranch
     # def average(*vectors: Vector):
@@ -80,10 +202,24 @@ class vector:
     #     return newv
 
     @staticmethod
-    def unit(vector:Vector, ):
-        if not isinstance(vector, Vector):
+    def con_from_line(line:Line):
+        if not isinstance(line, Line):
             raise TypeError
-        return vector/vector.length
+        xyz = []
+        for a, b in zip(line.start, line.end):
+            xyz.append(b - a)
+        return Vector(*xyz)
+
+    @staticmethod
+    def unit(vec:Vector):
+        if not isinstance(vec, Vector):
+            raise TypeError
+        if vec.length == 0:
+            raise ValueError
+        xyz = []
+        for i in vec.xyz:
+            xyz.append(i/vec.length)
+        return Vector(*xyz)
 
     @staticmethod
     def divide(vector:Vector, v, raw=False):
@@ -107,24 +243,16 @@ class vector:
         return Vector().from_raw(vector.raw*[[-1],[-1],[-1],[0]])
 
     @staticmethod
-    def angle_2_vectors(from_vector, to_vector, deegrees=False):
+    def angle_2_vectors(from_vector, to_vector, degree=False):
         u1,u2 = vector.unit(from_vector), vector.unit(to_vector)
         cos_value = u1.raw.flatten().dot(u2.raw.flatten())
         angle = np.arccos(cos_value)
-        if deegrees:
+        if degree:
             return np.degrees(angle)
         else:
             return angle
 
-    @staticmethod
-    def project_point_on_vector(point:Point, vector:Vector):
-        if not isinstance(point, (Point,Vector)):
-            raise TypeError
-        if not isinstance(vector, Vector):
-            raise TypeError
 
-        angle = vector.angle_2_vectors(point, vector)
-        return amplitude(vector, np.cos(angle)*point.length)
 
     @staticmethod
     def deconstruct(vector:Vector, ):
@@ -137,24 +265,109 @@ class vector:
         return Vector().from_raw(on_xy),Vector().from_raw(on_yz),Vector().from_raw(on_xz)
 
     @staticmethod
-    def project_on_xyplane(vector:Vector, ):
-        new = vector.raw.copy()
+    def project_on_xyplane(vec:Vector):
+        new = vec.raw.copy()
         new[2,0] = 0
         return Vector().from_raw(new)
 
     @staticmethod
-    def project_on_yzplane(vector:Vector, raw=False):
-        new = vector.raw.copy()
+    def project_on_yzplane(vec:Vector):
+        new = vec.raw.copy()
         new[0, 0] = 0
         return Vector().from_raw(new)
 
     @staticmethod
-    def project_on_xzplane(vector:Vector, raw=False):
-        new = vector.raw.copy()
+    def project_on_xzplane(vec:Vector):
+        new = vec.raw.copy()
         new[1, 0] = 0
         return Vector().from_raw(new)
 
 class matrix:
+    @staticmethod
+    def trans_from_origin_to_plane(pla:Plane) -> Matrix:
+        return matrix.trans_between_origin_and_plane(pla)[1]
+    @staticmethod
+    def trans_from_plane_to_origin(pla:Plane) -> Matrix:
+        return matrix.trans_between_origin_and_plane(pla)[0]
+
+    @staticmethod
+    def trans_between_origin_and_plane(pla:Plane) -> (Matrix, Matrix):
+        """
+        calculates two transform matrices
+            [0] to_origin_matrix: transform matrix from plane to origin
+            [1] to_plane_matrix: transform matrix from origin to plane
+
+        :param pla: target plane
+        :return: (tom, tpm)
+        """
+        to_origin_matrices = []
+        to_plane_matrices = []
+        origin, axis_x, axis_y, axis_z = plane.decon(pla)
+        # this is the last move
+        to_plane_vector = vector.con_from_point(origin)
+        to_origin_matrices.append(matrix.translation(-to_plane_vector))
+        to_plane_matrices.append(matrix.translation(to_plane_vector))
+
+        # need to match each vectors
+        # gonna match x,y,z
+        # so looking into z rotation first
+
+        # look for a vector that can be rotated
+        vector_on_xy = vector.project_on_xyplane(axis_x)
+        if vector_on_xy.length != 0:
+            angle = vector.angle_2_vectors(Vector(1,0,0), vector_on_xy)
+        else:
+            vector_on_xy = vector.project_on_xyplane(axis_y)
+            angle = vector.angle_2_vectors(Vector(0,1,0), vector_on_xy)
+        quarter = vector.quarter_on_plane(vector_on_xy,'xy')
+        if quarter == 0 or quarter == 1:
+            angle = -angle
+        to_origin = matrix.rotation_z(angle)
+        to_plane = matrix.rotation_z(-angle)
+        to_origin_matrices.insert(0,to_origin)
+        to_plane_matrices.append(to_plane)
+        axis_x = trans.transform(axis_x, to_origin)
+        axis_y = trans.transform(axis_y, to_origin)
+        axis_z = trans.transform(axis_z, to_origin)
+
+        # look into x rotation
+        vector_on_yz = vector.project_on_yzplane(axis_y)
+        if vector_on_yz.length != 0:
+            angle = vector.angle_2_vectors(Vector(0,1,0), vector_on_yz)
+        else:
+            vector_on_yz = vector.project_on_yzplane(axis_z)
+            angle = vector.angle_2_vectors(Vector(0,0,1), vector_on_yz)
+        quarter = vector.quarter_on_plane(vector_on_yz, 'yz')
+        if quarter == 0 or quarter == 1:
+            angle = -angle
+        to_origin = matrix.rotation_x(angle)
+        to_plane = matrix.rotation_x(-angle)
+        to_origin_matrices.insert(0,to_origin)
+        to_plane_matrices.append(to_plane)
+        axis_x = trans.transform(axis_x, to_origin)
+        axis_y = trans.transform(axis_y, to_origin)
+        axis_z = trans.transform(axis_z, to_origin)
+
+        # look into y rotation
+        vector_on_xz = vector.project_on_xzplane(axis_z)
+        if vector_on_xz.length != 0:
+            angle = vector.angle_2_vectors(Vector(0,0,1), vector_on_xz)
+        else:
+            vector_on_xz = vector.project_on_xzplane(axis_x)
+            angle = vector.angle_2_vectors(Vector(1,0,0), vector_on_xz)
+        quarter = vector.quarter_on_plane(vector_on_xz, 'xz')
+        if quarter == 0 or quarter == 1:
+            angle = -angle
+        to_origin = matrix.rotation_y(angle)
+        to_plane = matrix.rotation_y(-angle)
+        to_origin_matrices.insert(0, to_origin)
+        to_plane_matrices.append(to_plane)
+
+        # all matrices collected
+        to_origin_matrix = matrix.combine_matrix(*to_origin_matrices)
+        to_plane_matrix = matrix.combine_matrix(*to_plane_matrices)
+
+        return to_origin_matrix, to_plane_matrix
 
     @staticmethod
     def translation(vec: Vector):
@@ -163,10 +376,6 @@ class matrix:
         matrix = np.eye(4)
         matrix[:3, 3] = vec.xyz
         return Matrix().from_raw(matrix)
-
-    @staticmethod
-    def scaling():
-        pass
 
     @staticmethod
     def rotation_x(angle, degrees=False):
@@ -197,6 +406,17 @@ class matrix:
         return Matrix().from_raw(matrix)
 
     @staticmethod
+    def scale(x,y,z):
+        return Matrix(x,0,0,0,
+                      0,y,0,0,
+                      0,0,z,0,
+                      0,0,0,1)
+
+    @staticmethod
+    def rotation_vector(vec:Vector, angle:Number, degree=False):
+        raise
+
+    @staticmethod
     def transform(matrix: Matrix, geometry):
         pass
 
@@ -204,209 +424,149 @@ class matrix:
     def transformation_2_planes(from_plane: Plane, to_plane: Plane):
         if not isinstance(from_plane, Plane) or not isinstance(to_plane, Plane):
             raise TypeError
-        #
-        # # first find two angles
-        # # need to apply transformations and then reverse it?
-        # obj = np.hstack((axis.raw, point.raw))
-        # # TODO is this the best way?
-        # xy = vector.project_on_xyplane(axis)
-        # # angle1
-        # quarter = None
-        # if xy.y >= 0:
-        #     if xy.x >= 0:  # vector is in first quarter
-        #         quarter = 0
-        #     else:
-        #         quarter = 1
-        # else:
-        #     if xy.x >= 0:
-        #         quarter = 3
-        #     else:
-        #         quarter = 2
-        #
-        # rotation_z = np.arccos(xy.x / xy.length)
-        # if quarter == 0 or quarter == 1:
-        #     rotation_z_matrix = matrix.rotation_z(rotation_z)
-        #     # seeing at direction from origin rotation goes clockwise so...
-        #     # need to negative
-        #     obj = matrix.rotation_z(-rotation_z).raw.dot(obj)
-        # if quarter == 2 or quarter == 3:
-        #     rotation_z_matrix = matrix.rotation_z(-rotation_z)
-        #     obj = matrix.rotation_z(rotation_z).raw.dot(obj)
-        #
-        # # angle2
-        # # x_axis already projected on xz plane so
-        # xz = Vector().from_raw(obj[:4, [0]])
-        # rotation_y = np.arccos(xz.x / xz.length)
-        # if xz.x >= 0:
-        #     if xz.z >= 0:
-        #         quarter = 2
-        #     else:
-        #         quarter = 3
-        # else:
-        #     if xz.z >= 0:
-        #         quarter = 0
-        #     else:
-        #         quarter = 1
-        # if quarter == 0 or quarter == 1:
-        #     rotation_y_matrix = matrix.rotation_y(rotation_y)
-        #     obj = matrix.rotation_y(-rotation_y).raw.dot(obj)
-        # else:
-        #     rotation_y_matrix = matrix.rotation_y(-rotation_y)
-        #     obj = matrix.rotation_y(rotation_y).raw.dot(obj)
-        #
-        # # angle 3
-        # # need to find with second point
-        # yz = obj[:3, 1]
-        # yz[0] = 0
-        # yz = Vector(*yz)
-        # rotation_x = np.arccos(yz.y / yz.length)
-        # if yz.z >= 0:
-        #     if yz.y >= 0:
-        #         quarter = 0
-        #     else:
-        #         quarter = 1
-        # else:
-        #     if yz.y >= 0:
-        #         quarter = 3
-        #     else:
-        #         quarter = 2
-        # if quarter == 0 or quarter == 1:
-        #     rotation_x_matrix = matrix.rotation_x(rotation_x)
-        #     obj = matrix.rotation_x(-rotation_x).raw.dot(obj)
-        # else:
-        #     rotation_x_matrix = matrix.rotation_x(-rotation_x)
-        #     obj = matrix.rotation_x(rotation_x).raw.dot(obj)
-        #
-        # # transformation info collected
-        # rotations = rotation_z_matrix, rotation_y_matrix, rotation_x_matrix
-        # z = trans.transform(Vector(0, 0, 1), *rotations)
-        # y = trans.transform(Vector(0, 1, 0), *rotations)
-        #
-        # if which_axis == 'x':
-        #     return con_plane_3_vectors(axis, y, z, origin)
-        # elif which_axis == 'y':
-        #     return con_plane_3_vectors(z, axis, y, origin)
-        # elif which_axis == 'z':
-        #     return con_plane_3_vectors(y, z, axis, origin)
-        # else:
-        #     raise TypeError
-        #
-        # pass
+        exit()
 
     @staticmethod
-    def combine_matrix(*matrix):
+    def combine_matrix(*mat):
         result = np.eye(4)
-        for m in reversed(matrix):
-            new_r = m.raw.copy()
-            result = new_r.dot(result)
+        for m in reversed(mat):
+            x = m.raw.copy()
+            result = x.dot(result)
         return Matrix.from_raw(result)
 
 class plane:
+    @staticmethod
+    def relocate(pla:Plane, new_origin:Point) -> Plane:
+        new_raw = pla.raw.copy()
+        new_raw[:3, 0] = new_origin.xyz
+        return Plane.from_raw(new_raw)
 
     @staticmethod
-    def third_perpendicular_vector_from_2(vector1, vector2):
-
-        pass
-
-    @staticmethod
-    def con_vector_point(axis: Vector, which_axis, point: Point, origin: Point = Point(0, 0, 0)):
-        if not isinstance(point, (Point, Vector)):
-            raise TypeError
-        if not isinstance(axis, Vector):
-            raise TypeError
-        if not isinstance(origin, Point):
-            raise
-
-        # first find two angles
-        # need to apply transformations and then reverse it?
-        obj = np.hstack((axis.raw, point.raw))
-        # TODO is this the best way?
-        xy = vector.project_on_xyplane(axis)
-        # angle1
-        quarter = None
-        if xy.y >= 0:
-            if xy.x >= 0:  # vector is in first quarter
-                quarter = 0
-            else:
-                quarter = 1
-        else:
-            if xy.x >= 0:
-                quarter = 3
-            else:
-                quarter = 2
-
-        rotation_z = np.arccos(xy.x / xy.length)
-        if quarter == 0 or quarter == 1:
-            rotation_z_matrix = matrix.rotation_z(rotation_z)
-            # seeing at direction from origin rotation goes clockwise so...
-            # need to negative
-            obj = matrix.rotation_z(-rotation_z).raw.dot(obj)
-        if quarter == 2 or quarter == 3:
-            rotation_z_matrix = matrix.rotation_z(-rotation_z)
-            obj = matrix.rotation_z(rotation_z).raw.dot(obj)
-
-        # angle2
-        # x_axis already projected on xz plane so
-        xz = Vector().from_raw(obj[:4, [0]])
-        rotation_y = np.arccos(xz.x / xz.length)
-        if xz.x >= 0:
-            if xz.z >= 0:
-                quarter = 2
-            else:
-                quarter = 3
-        else:
-            if xz.z >= 0:
-                quarter = 0
-            else:
-                quarter = 1
-        if quarter == 0 or quarter == 1:
-            rotation_y_matrix = matrix.rotation_y(rotation_y)
-            obj = matrix.rotation_y(-rotation_y).raw.dot(obj)
-        else:
-            rotation_y_matrix = matrix.rotation_y(-rotation_y)
-            obj = matrix.rotation_y(rotation_y).raw.dot(obj)
-
-        # angle 3
-        # need to find with second point
-        yz = obj[:3, 1]
-        yz[0] = 0
-        yz = Vector(*yz)
-        rotation_x = np.arccos(yz.y / yz.length)
-        if yz.z >= 0:
-            if yz.y >= 0:
-                quarter = 0
-            else:
-                quarter = 1
-        else:
-            if yz.y >= 0:
-                quarter = 3
-            else:
-                quarter = 2
-        if quarter == 0 or quarter == 1:
-            rotation_x_matrix = matrix.rotation_x(rotation_x)
-            obj = matrix.rotation_x(-rotation_x).raw.dot(obj)
-        else:
-            rotation_x_matrix = matrix.rotation_x(-rotation_x)
-            obj = matrix.rotation_x(rotation_x).raw.dot(obj)
-
-        # transformation info collected
-        rotations = rotation_z_matrix, rotation_y_matrix, rotation_x_matrix
-        z = trans.transform(Vector(0, 0, 1), *rotations)
-        y = trans.transform(Vector(0, 1, 0), *rotations)
-
-        if which_axis == 'x':
-            return plane.con_3_vectors(axis, y, z, origin)
-        elif which_axis == 'y':
-            return plane.con_3_vectors(z, axis, y, origin)
-        elif which_axis == 'z':
-            return plane.con_3_vectors(y, z, axis, origin)
-        else:
-            raise TypeError
+    def decon(pla:Plane) -> (Point, Vector, Vector, Vector):
+        return Point(*pla.raw[:3,0]), Vector(*pla.raw[:3, 1]),Vector(*pla.raw[:3, 2]),Vector(*pla.raw[:3, 3])
 
     @staticmethod
-    def con_2_vectors(axis1: Vector, axis2: Vector, axis1_hint: str, axis2_hint: str):
-        print(axis1, axis2, axis1_hint, axis2_hint)
-        pass
+    def con_from_2_vectors(axis1: Vector, axis2: Vector, axis1_hint: str, axis2_hint: str, origin:Point):
+
+        """
+        Build a plane from given two axis.
+        If given axes are not perpendicular axis2 will be transformed to make it correct as axis2_hint.
+
+        :param origin: origin of the new plane
+        :param axis1: first axis of the plane
+        :param axis2: second axis of the plane
+        :param axis1_hint: one of ('x','y','z')
+        :param axis2_hint: one of ('x','y','z')
+        :return: plane
+        """
+        # check perpendicularity and if not build new axis2
+        if not np.isclose(vector.dot(axis1, axis2), 0.0, atol=DEF_TOLERANCE):
+            p = point.con_from_vector(axis2)
+            p_on_v = point.perpendicular_on_vector(axis1, p)
+            axis2 = vector.con_two_points(p_on_v, p)
+        # make a set
+        axis = {'x':None, 'y':None, 'z':None}
+        axis[axis1_hint] = axis1
+        axis[axis2_hint] = axis2
+
+        matrices_origin_to_plane = [matrix.translation(vector.con_from_point(origin))]
+        if axis['x'] != None:
+            # if axis is given need to match to origin's axis
+            # determine by rotating which origin axis y or z
+            # TODO what to do with tolarence
+            # if np.isclose(v.z,0.0,atol=TOLERANCE):
+            if not np.isclose(axis['x'].z,0.0,atol=DEF_TOLERANCE):
+                # there is a value to rotate around y axis
+                projected = vector.project_on_xzplane(axis['x'])
+                q = vector.quarter_on_plane(projected,'xz')
+                angle = vector.angle_2_vectors(Vector(1,0,0), projected)
+                if q == 0 or q == 1:
+                    angle = -angle
+                to_origin = matrix.rotation_y(angle)
+                to_plane = matrix.rotation_y(-angle)
+                matrices_origin_to_plane.append(to_plane)
+                axis[axis1_hint] = trans.transform(axis[axis1_hint], to_origin)
+                axis[axis2_hint] = trans.transform(axis[axis2_hint], to_origin)
+            if not np.isclose(axis['x'].y,0.0,atol=DEF_TOLERANCE):
+                # there is a value to rotate around z axis
+                projected = vector.project_on_xyplane(axis['x'])
+                q = vector.quarter_on_plane(projected, 'xy')
+                angle = vector.angle_2_vectors(Vector(1,0,0), projected)
+                if q == 0 or q == 1:
+                    angle = -angle
+                to_origin = matrix.rotation_z(angle)
+                to_plane = matrix.rotation_z(-angle)
+                matrices_origin_to_plane.append(to_plane)
+                axis[axis1_hint] = trans.transform(axis[axis1_hint], to_origin)
+                axis[axis2_hint] = trans.transform(axis[axis2_hint], to_origin)
+
+        if axis['y'] != None:
+            if not np.isclose(axis['y'].z,0.0,atol=DEF_TOLERANCE):
+                # there is a value to rotate around x axis
+                projected = vector.project_on_yzplane(axis['y'])
+                q = vector.quarter_on_plane(projected, 'yz')
+                angle = vector.angle_2_vectors(Vector(0, 1, 0), projected)
+                if q == 0 or q == 1:
+                    angle = -angle
+                to_origin = matrix.rotation_x(angle)
+                to_plane = matrix.rotation_x(-angle)
+                matrices_origin_to_plane.append(to_plane)
+                axis[axis1_hint] = trans.transform(axis[axis1_hint], to_origin)
+                axis[axis2_hint] = trans.transform(axis[axis2_hint], to_origin)
+            if not np.isclose(axis['y'].x,0.0,atol=DEF_TOLERANCE):
+                # there is a value to rotate around z axis
+                projected = vector.project_on_xyplane(axis['y'])
+                q = vector.quarter_on_plane(projected, 'xy')
+                angle = vector.angle_2_vectors(Vector(0, 1, 0), projected)
+                if q == 0 or q == 1:
+                    angle = -angle
+                to_origin = matrix.rotation_z(angle)
+                to_plane = matrix.rotation_z(-angle)
+                matrices_origin_to_plane.append(to_plane)
+                axis[axis1_hint] = trans.transform(axis[axis1_hint], to_origin)
+                axis[axis2_hint] = trans.transform(axis[axis2_hint], to_origin)
+
+        if axis['z'] != None:
+            # if axis is given need to match to origin's axis
+            # determine by rotating which origin axis y or z
+            # TODO what to do with tolarence
+            # if np.isclose(v.z,0.0,atol=TOLERANCE):
+            if not np.isclose(axis['z'].y,0.0,atol=DEF_TOLERANCE):
+                # there is a value to rotate around y axis
+                projected = vector.project_on_yzplane(axis['z'])
+                q = vector.quarter_on_plane(projected, 'yz')
+                angle = vector.angle_2_vectors(Vector(0, 0, 1), projected)
+                if q == 0 or q == 1:
+                    angle = -angle
+                to_origin = matrix.rotation_x(angle)
+                to_plane = matrix.rotation_x(-angle)
+                matrices_origin_to_plane.append(to_plane)
+                axis[axis1_hint] = trans.transform(axis[axis1_hint], to_origin)
+                axis[axis2_hint] = trans.transform(axis[axis2_hint], to_origin)
+            if not np.isclose(axis['z'].x,0.0,atol=DEF_TOLERANCE):
+                # there is a value to rotate around z axis
+                projected = vector.project_on_xzplane(axis['z'])
+                q = vector.quarter_on_plane(projected, 'xz')
+                angle = vector.angle_2_vectors(Vector(0, 0, 1), projected)
+                if q == 0 or q == 1:
+                    angle = -angle
+                to_origin = matrix.rotation_y(angle)
+                to_plane = matrix.rotation_y(-angle)
+                matrices_origin_to_plane.append(to_plane)
+                axis[axis1_hint] = trans.transform(axis[axis1_hint], to_origin)
+                axis[axis2_hint] = trans.transform(axis[axis2_hint], to_origin)
+
+        default_plane = Plane([0,0,0],[1,0,0],[0,1,0],[0,0,1])
+        default_plane = trans.transform(default_plane, *matrices_origin_to_plane)
+        return default_plane
+
+    @staticmethod
+    def con_vector_point(axis: Vector, poi: Point, axis_hint: str, point_hint: str, origin: Point = Point(0, 0, 0)):
+        projected_point = point.perpendicular_on_vector(axis, poi)
+        perpen_v = vector.con_two_points(projected_point, poi)
+        # and build a reference plane
+        ref_plane = plane.con_from_2_vectors(axis, perpen_v, axis_hint, point_hint, origin)
+        return ref_plane
 
     @staticmethod
     def con_3_vectors(x_axis: Vector, y_axis: Vector, z_axis: Vector, origin: Point = Point(0, 0, 0)):
@@ -414,9 +574,5 @@ class plane:
             raise TypeError
 
         return Plane(origin.xyz, x_axis.xyz, y_axis.xyz, z_axis.xyz)
-
-    @staticmethod
-    def orient(origin_plane, geometry, target_plane):
-        pass
 
 

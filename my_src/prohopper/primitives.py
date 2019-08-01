@@ -869,8 +869,11 @@ class Point(Geometry):
             return Point().bymatrix(self() + other())
 
     def __sub__(self, other):
-        v = self() - other()
-        return Vector().bymatrix(v)
+        r = []
+        for a,b in zip(self.raw.flatten(), other.raw.flatten()):
+            r.append(a-b)
+
+        return Vector(*r[:3])
 
     def __iter__(self):
         return self
@@ -917,12 +920,14 @@ class Point(Geometry):
         raise
         pass
 
-    def from_raw(self, raw:np.ndarray):
+    @classmethod
+    def from_raw(cls, raw:np.ndarray):
         if not isinstance(raw, np.ndarray):
             raise TypeError
         if raw.shape != (4,1) or raw[3,0] != 1:
             raise ValueError
-        self.raw = raw
+
+        return cls(*raw[:3, 0])
 
 
 class Vector(Geometry):
@@ -940,13 +945,13 @@ class Vector(Geometry):
         else:
             raise
 
-    def __truediv__(self, other):
-        if isinstance(other, Number):
-            v = self.raw.copy()
-            xyz= v[:3,0]/other
-            return Vector(*xyz)
-        else:
-            raise
+    # def __truediv__(self, other):
+    #     if isinstance(other, Number):
+    #         v = self.raw.copy()
+    #         xyz= v[:3,0]/other
+    #         return Vector(*xyz)
+    #     else:
+    #         raise
 
     def __mul__(self, other):
         if isinstance(other, Number):
@@ -999,6 +1004,12 @@ class Vector(Geometry):
         x, y, z = self.xyz
         return np.sqrt(x * x + y*y + z * z)
 
+    def __neg__(self):
+        return self.__class__().from_raw(self.raw.copy()*(-1))
+
+    def flip(self):
+        self.raw = -self.raw
+
 class Line(Geometry):
     def __init__(self, start:(list, tuple) = [0,0,0], end:(list,tuple) = [1,0,0]):
         if len(start) != 3 or len(end) != 3:
@@ -1006,6 +1017,7 @@ class Line(Geometry):
         if not all([all([isinstance(ii, Number) for ii in i]) for i in (start, end)]):
             raise TypeError
 
+        start, end = start+[0], end+[0]
         self.raw = np.array((start, end)).transpose()
 
     def __str__(self):
@@ -1013,11 +1025,11 @@ class Line(Geometry):
 
     @property
     def start(self):
-        return self.raw[:3, 0].tolist()[0]
+        return self.raw[:3, 0].tolist()
 
     @property
     def end(self):
-        return self.raw[:3, 1].tolist()[0]
+        return self.raw[:3, 1].tolist()
 
     @property
     def length(self):
@@ -1028,10 +1040,6 @@ class Line(Geometry):
         l = np.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2])
         return l
 
-    @classmethod
-    def from_vector(cls, vector:Vector):
-        end = vector.raw.copy().transpose().tolist()[0][:3]
-        return cls([0,0,0],end)
 
 
 class Rect(Geometry):
@@ -1076,10 +1084,10 @@ def wrapindex(index, end):
 
 class Plane(Geometry):
     def __init__(self,
-                 origin:(tuple, list),
-                 axis_x:(tuple, list),
-                 axis_y:(tuple, list),
-                 axis_z:(tuple, list)):
+                 origin:(tuple, list) = [0,0,0],
+                 axis_x:(tuple, list) = [1,0,0],
+                 axis_y:(tuple, list) = [0,1,0],
+                 axis_z:(tuple, list) = [0,0,1]):
 
         axis = axis_x, axis_y,axis_z
         if not all([isinstance(i, (tuple, list)) for i in axis]):
@@ -1092,8 +1100,10 @@ class Plane(Geometry):
         yz_dp = sum((np.array(axis_y)*np.array(axis_z)).tolist())
         zx_dp = sum((np.array(axis_z)*np.array(axis_x)).tolist())
         if not np.isclose(sum([xy_dp, yz_dp, zx_dp]),0.,atol=self.TOLORENCE):
+            print(axis_x, axis_y, axis_z)
             raise ValueError('given 3 vectors not perpendicular')
-        # TODO should right-hand left-hand be checked too? do i support right_handed LCS?
+        # TODO should right-hand right-hand be checked too? do i support right_handed LCS?
+        #   is it already checked by perpendicularity check?
 
         # unitize
         for i in axis:
@@ -1121,12 +1131,14 @@ class Plane(Geometry):
         return Point(*self.raw[:3,0])
 
     @property
-    def normal(self):
-        return Vector(*self.raw[:3,1])
-
-    @property
     def x_axis(self):
-        return Vector(*self.raw[:3,2])
+        return Vector(*self.raw[:3,1])
+    @property
+    def y_axis(self):
+        return Vector(*self.raw[:3, 2])
+    @property
+    def z_axis(self):
+        return Vector(*self.raw[:3,3])
 
 class Matrix(Primitive):
     def __init__(self,
@@ -1143,13 +1155,13 @@ class Matrix(Primitive):
             raise ValueError
         self.raw = np.array(elements).reshape((4,4))
 
-    def from_raw(self, raw):
+    @classmethod
+    def from_raw(cls, raw):
         if not isinstance(raw, np.ndarray):
             raise
         if raw.shape != (4,4):
             raise ValueError
-        self.raw = raw
-        return self
+        return cls(*raw.flatten().tolist())
 
     def __str__(self):
         listed = self.raw.tolist()
@@ -1161,6 +1173,7 @@ class Matrix(Primitive):
 
         listed[0] = f'{self.__class__.__name__} : ' + listed[0]
         return '{:>45}\n{:>45}\n{:>45}\n{:>45}'.format(*listed)
+
 
 class Transformation(Primitive):
 

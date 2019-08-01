@@ -31,10 +31,9 @@ class _Camera:
 
         # to make PM just in time set refresh function
         self._PM = np.eye(4)
-        self._VM = np.eye(4)
         self._mouse = None
-        # initially camera is facing downward from origin
-        self._plane = pr.primitives.Plane((0, 0, 0), (1, 0, 0), (0, -1, 0), (0, 0, -1))
+        # what is the best coordinate definition for a camera?
+        self._plane = pr.primitives.Plane((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
 
     @property
     def near(self):
@@ -72,55 +71,43 @@ class _Camera:
     def trans_move(self, x, y, z):
         self._plane = pr.trans.move(pr.primitives.Vector(x, y, z), self._plane)
 
-    def trans_rotate(self, x:Number,y:Number,z:Number, order=[0,1,2], radian=False):
-        # what i want is to rotate camera plane with its local axis
-        # - means i need a tool rotate around axis
-        pr.trans.rotate_around_axis(self._plane, self._plane.x_axis, 30,True)
-        exit()
+    def trans_pitch(self, angle, degree=True):
+        if not isinstance(angle, Number):
+            raise
+        axis = pr.line.con_point_vector(self._plane.origin, self._plane.x_axis)
+        self._plane = pr.trans.rotate_around_axis(self._plane, axis, angle, degree)
 
+    def trans_yaw(self, angle, degree=True):
+        if not isinstance(angle, Number):
+            raise
+        axis = pr.line.con_point_vector(self._plane.origin, self._plane.y_axis)
+        self._plane = pr.trans.rotate_around_axis(self._plane, axis, angle, degree)
 
+    def trans_roll(self, angle, degree=True):
+        if not isinstance(angle, Number):
+            raise
+        axis = pr.line.con_point_vector(self._plane.origin, self._plane.z_axis)
+        self._plane = pr.trans.rotate_around_axis(self._plane, axis, angle, degree)
+
+    def trans_look_at(self, target_point, upright=True):
+        # need to match -z_axis head target_point
+        p = pr.Point(*target_point)
+        v_p_to_o = pr.vector.con_two_points(p, self._plane.origin)
+        if upright:
+            # and if upright set camera y_axis be on xz plane
+            ref_p = pr.trans.move(pr.Vector(0,0,1),self._plane.origin)
+        else:
+            # TODO what is the meaning of this
+            ref_p = pr.trans.move(self._plane.origin, self._plane.y_axis)
+        self._plane = pr.plane.con_vector_point(v_p_to_o, ref_p, 'z', 'y',self._plane.origin)
+
+    def from_look_at(self, source_point, target_point, upright=True):
+        pass
 
     def scale(self,x=1,y=1,z=1):
         self.scale_factor = (x,y,z)
 
-    def trans_look_at(self, to_point:(tuple, list), from_point:(tuple, list)=None):
-        """
-        position camera so so it look at 'to_point' from 'from_point'
 
-        :param to_point: camera to look at
-        :param from_point: camera to look from
-        :return:
-        """
-        if from_point is None:
-            from_point = -self.VM.dot(np.array([[0, 0, 0, 1]]).T)
-            from_point[3] = 1
-        else:
-            self._VM = np.eye(4)
-            self.trans_move(*from_point)
-            from_point = np.array([from_point + [1, ]]).T
-
-        to_point = np.array([to_point + [1, ]]).T
-        vec = (to_point - from_point).T[0]
-
-        x = vec[1]
-        y = -vec[0]
-        angle = np.arccos(x / np.sqrt(x * x + y * y))
-        # print(angle, np.degrees(angle),x,y)
-        if not np.isnan(angle):
-            if y <= 0:
-                angle = -angle
-            self.trans_rotate(0, 0, angle, radian=True)
-
-        y = -vec[2]
-        z = np.sqrt(vec[0] * vec[0] + vec[1] * vec[1])
-        angle = np.arcsin(z / np.sqrt(z * z + y * y))
-        # print(angle, np.degrees(angle),x,y)
-        if not np.isnan(angle):
-            if z <= 0:
-                angle = -angle
-            if y <= 0:
-                angle = np.pi - angle
-            self.trans_rotate(angle, 0, 0, radian=True)
 
     def set_mode(self, mode):
         """
@@ -184,15 +171,12 @@ class _Camera:
     def PM(self):
         self.build_PM()
         return self._PM
+
     @property
     def VM(self):
-        # from self.position and direction(Point and Vector gonna build Matrix)
-        v = prohopper.primitives.Vector().from_point(self.position)
-        print(v)
-        exit()
-        pr.vector.flip(v)
+        x = pr.matrix.trans_from_plane_to_origin(self._plane)
 
-        return self._VM
+        return x.raw
 
     def build_PM(self, major='v'):
 

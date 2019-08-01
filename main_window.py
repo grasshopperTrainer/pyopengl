@@ -25,8 +25,10 @@ class Main_window(Window):
         main_viewport.camera.set_test_mouse(self.mouse)
         main_viewport.camera.set_mode(1)
         # main_viewport.camera.trans_look_at([0, 0, 0], [100, 0, 100])
-        main_viewport.camera.trans_move(100,100,0)
-        main_viewport.camera.trans_rotate(10,0,0)
+        main_viewport.camera.trans_move(100,100,100)
+        # main_viewport.camera.trans_pitch(30)
+        main_viewport.camera.trans_look_at([0,0,0])
+
         # main_viewport.camera.trans_move(0,0,100)
         # main_viewport.camera.trans_rotate(30,0,0)
 
@@ -121,7 +123,7 @@ class Main_window(Window):
 
         # exit()
 
-        self.filledbox_back = Filled_box(0,0,100,100,self)
+        self.filledbox_back = Filled_box(0,0,100,50,self)
         self.red_box = Filled_box(10, 10, 100, 100, self)
         self.red_box.fill_color = 1, 0, 0, 0.9
         self.blue_box = Filled_box(20, 20, 100, 100, self)
