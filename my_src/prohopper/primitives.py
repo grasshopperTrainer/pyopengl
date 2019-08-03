@@ -1042,47 +1042,153 @@ class Line(Geometry):
 
 
 
-class Rect(Geometry):
 
-    def __init__(self,
-                 lu: Point = Point(-1, 1),
-                 ld: Point = Point(-1, -1),
-                 rd: Point = Point(1, -1),
-                 ru: Point = Point(1, 1)):
-        self.set_data(np.concatenate((lu(), ld(), rd(), ru()), 1))
 
-        # self.vertex = None
+def wrapindex(index, last):
+    return index % last
 
-    def __str__(self):
-        return f'Rect{self.center().get_listdata()}'
+"""
+need configuration for complex shape
+"""
+class Brep:
+    pass
+class CSG:
+    pass
+
+
+
+class Flat(Geometry):
+    """
+    for flat surface
+    """
+    def __init__(self):
+        # need flatness check
+        pass
+    pass
+
+class Triangle(Flat):
+    pass
+
+class Tetragon(Flat):
+    def __init__(self,a,b,c,d):
+        """
+        vectors represent order:
+
+        a------d
+        ;      ;
+        ;      ;
+        ;      ;
+        b------d
+
+        :param a,b,c,d: vertex of tetragon
+        """
+        vertex = a,b,c,d
+        for i,v in enumerate(vertex):
+            if not isinstance(v, (list, tuple)):
+                print(a,b,c,d)
+                print(v)
+                raise ValueError
+            if len(v) != 3:
+                raise ValueError
+            if not all([isinstance(e,Number) for e in v]):
+                raise ValueError
+            vertex[i].append(1)
+        self.raw = np.array(vertex).transpose()
 
     @property
-    def domain(self):
-        pass
+    def center(self):
+        coord = []
+        for i in self.raw.tolist():
+            coord.append(sum(i) / 4)
+        return Point(*coord[:3])
 
-    def center(self) -> Point:
-        return self.average
+    def __str__(self):
+        return f'{self.__class__.__name__} centered {self.center}'
 
-    def get_size(self):
-        p1 = self.vertex(0)
-        p2 = self.vertex(1)
-        p3 = self.vertex(2)
-        width = p3.x - p2.x
-        height = p1.y - p2.y
-        return width, height
+class Rectangle(Tetragon):
+    pass
 
-    def print_data(self):
-        size = self.get_size()
-        print(f'center: {self.center()}, width: {size[0]}, height: {size[1]}')
+class Square(Rectangle):
+    pass
 
 
-def wrapindex(index, end):
-    if index >= 0:
-        return index % end
-    else:
-        return -(-index % (end + 1))
+class Hexahedron(Geometry):
+    def __init__(self,
+                 a=[-50,50, -50], b=[-50,-50,-50], c=[50,-50,-50], d=[50,50,-50],
+                 e=[-50,50,50], f=[-50,-50,50], g=[50,-50,50], h=[50,50,50]):
+        """
+        input vectors should follow order as shown below:
+             +z
+              :
+              :
+            e-;------h
+           /; ;     /l
+          / ; :    / l
+         /  ; :   /  l
+        f--------g   l
+        l   a....l...d
+        l  .  ;  l  /
+        l .   o--l-/------ +x
+        l.       l/
+        b------- c
+
+        yet raw array will store vertex values as following order -> d,c,b,a,e,f,g,h
+             +z
+              :
+              :
+            4-;------7
+           /; ;     /l
+          / ; :    / l
+         /  ; :   /  l
+        5--------6   l
+        l   3....l...0
+        l  .  ;  l  /
+        l .   o--l-/------ +x
+        l.       l/
+        2------- 1
+
+
+        :param a,b,c,d: vertex of top face going anti_clockwise
+        :param e,f,g,h: vertex of bottom face going anti_clockwise
+        """
+        # default box of size 100,100,100 centered at origin(0,0,0)
+        vertex = d,c,b,a,e,f,g,h
+        for i,v in enumerate(vertex):
+            if not isinstance(v, (list, tuple)):
+                raise
+            if len(v) != 3:
+                raise
+            if not all([isinstance(ii, Number) for ii in v]):
+                raise
+            vertex[i].append(1)
+        array = np.array(vertex).transpose()
+        self.raw = array
+
+    @property
+    def vertex(self):
+        l = self.raw[:3].transpose().tolist()
+        return l
+
+    @property
+    def center(self):
+        coord = []
+        for i in self.raw.tolist():
+            coord.append(sum(i)/8)
+        return Point(*coord[:3])
+
+    def __str__(self):
+        return f'{self.__class__.__name__} centered {self.center}'
+
+class Box(Hexahedron):
+    def __init__(self,
+                 a,b,c,d,
+                 e,f,g,h):
+        # box check first
+        super().__init__(a,b,c,d,e,f,g,h)
+
 
 class Plane(Geometry):
+    """"""
     def __init__(self,
                  origin:(tuple, list) = [0,0,0],
                  axis_x:(tuple, list) = [1,0,0],

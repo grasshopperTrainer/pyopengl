@@ -2,6 +2,17 @@ from .primitives import *
 
 DEF_TOLERANCE = 1.e-9
 
+class morph:
+    @staticmethod
+    def extrude(geo:Geometry, direction:Vector) -> Geometry:
+        if isinstance(geo, Flat):
+
+
+        elif isinstance(geo, Line):
+            raise
+        else:
+            raise
+
 class trans:
 
     @staticmethod
@@ -122,6 +133,20 @@ class point:
         l = np.cos(a) * vec2.length
         new_v = vector.amplitude(vec, l)
         return point.con_from_vector(new_v)
+
+    @staticmethod
+    def average(*points:(list,tuple)) -> Point:
+        coords = []
+        for p in points:
+            if not isinstance(p, Point):
+                raise TypeError
+            coords.append(p.xyz)
+        coords = np.array(coords).transpose()
+        new = []
+        for l in coords:
+            new.append(sum(l)/len(points))
+
+        return Point(*new)
 
 
 class vector:
@@ -575,4 +600,64 @@ class plane:
 
         return Plane(origin.xyz, x_axis.xyz, y_axis.xyz, z_axis.xyz)
 
+class rectangle:
+    @staticmethod
+    def con_center_width_height(plane:(Plane,Point), width:Numbfer, height:Number) -> Rectangle:
+        if not isinstance(width,Number) or not isinstance(height, Number):
+            raise TypeError
+
+        if isinstance(plane, Point):
+            x,y,z = plane.xyz
+            w,h = width/2, height/2
+            return Rectangle([x-w,y+h,z],[x-w,y-h,z],[x+w,y-h,z],[x+w,y+h,z])
+
+        elif isinstance(plane, Plane):
+            rect = Rectangle([-w,+h,0],[-w,-h,0],[+w,-h,0],[+w,+h,0])
+            return trans.orient(rect, Plane(), plane)
+
+        else:
+            raise TypeError
+
+
+class hexahedron:
+
+    @staticmethod
+    def decon(hexa:Hexahedron) -> (Point,
+                                   (Point,Point,Point,Point,Point,Point,Point,Point),
+                                   (Rectangle,Rectangle,Rectangle,Rectangle,Rectangle,Rectangle)):
+        pass
+    @staticmethod
+    def face_of(hexa:Hexahedron, *index:int):
+        """
+        how to correctly order vertex and faces
+        face[0] = vertex 0,1,2,3 bottom
+        face[1] = vertex 0,7,6,1
+        face[2] = vertex 1,6,5,2
+        face[3] = vertex 2,5,4,3
+        face[4] = vertex 3,4,7,0
+        face[5] = vertex 4,5,6,7 top
+
+        :param index:
+        :return:
+        """
+        if len(index) == 0 :
+            raise ValueError
+        if not all([isinstance(i, Number) for i in index]):
+            raise ValueError
+        vertex = hexa.vertex
+        faces = []
+        for i in index:
+            i = i % 6
+            if i == 0:
+                a,b,c,d = vertex[0:4]
+            elif i == 5:
+                a,b,c,d = vertex[4:8]
+            else:
+                a,b,c,d = i-1%4, 8-i, 5+i, i%4
+                a,b,c,d = vertex[a],vertex[b],vertex[c],vertex[d]
+            faces.append(Tetragon(a,b,c,d))
+
+        if len(faces) == 1:
+            return faces[0]
+        return faces
 
