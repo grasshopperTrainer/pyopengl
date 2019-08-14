@@ -1,5 +1,7 @@
-import math
+import numpy as np
 
-a = 5.0
-b = 4.99995
-print(math.isclose(a,b,rel_tol=1.e-5))
+
+a = np.array([[0,4],[1,5],[2,6],[3,7]])
+
+print(a)
+print(np.flip(a,1))

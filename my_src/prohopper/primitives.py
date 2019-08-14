@@ -3,7 +3,8 @@ import copy
 import inspect
 import weakref
 from numbers import Number
-
+from .errors import *
+from .constants import *
 
 class Primitive:
     DIC = {}
@@ -75,7 +76,7 @@ class Primitive:
         pass
 
     def __str__(self):
-        raise
+        return f'{self.__class__.__name__}'
 
     # def set_data(self, data):
     #     # to ensure all the proceeding numpy calculation efficient
@@ -701,7 +702,7 @@ class Geometry(Primitive):
     _raw = Raw_array()
 
     @classmethod
-    def from_raw(self, raw:np.ndarray):
+    def from_raw(cls, raw:np.ndarray):
         raise Exception('not defined for this primitive yet')
 
     # def bymatrix(self, value):
@@ -716,19 +717,6 @@ class Geometry(Primitive):
 
         return self().shape[1]
 
-    @property
-    def vertex(self):
-        points = []
-        d = self.data
-
-        for i in range(self.numvertex):
-            m = d[:, [i]]
-            points.append(Point().bymatrix(m))
-        return points
-
-    @property
-    def average(self):
-        return Point().bymatrix(np.mean(self(), 1).reshape((4, 1)))
 
     @property
     def length(self):
@@ -866,14 +854,15 @@ class Point(Geometry):
 
     def __add__(self, other):
         if isinstance(other, Vector):
-            return Point().bymatrix(self() + other())
+            return Point.from_raw(self.raw + other.raw)
+        else:
+            raise
 
     def __sub__(self, other):
-        r = []
-        for a,b in zip(self.raw.flatten(), other.raw.flatten()):
-            r.append(a-b)
-
-        return Vector(*r[:3])
+        if isinstance(other, Vector):
+            return Point.from_raw(self.raw - other.raw)
+        else:
+            raise
 
     def __iter__(self):
         return self
@@ -886,31 +875,52 @@ class Point(Geometry):
             self.iterstart = 0
             raise StopIteration
 
-    def __add__(self, other):
-        if isinstance(other, Point):
-            pass
-        elif isinstance(other, (tuple, list)):
-            if len(other) == 3 and all([isinstance(i, Number) for i in other]):
-                self.raw += [[i] for i in other] + [[0]]
-        elif isinstance(other, np.ndarray):
-            raise
-        return self
+    # def __add__(self, other):
+    #     if isinstance(other, Point):
+    #         pass
+    #     elif isinstance(other, (tuple, list)):
+    #         if len(other) == 3 and all([isinstance(i, Number) for i in other]):
+    #             self.raw += [[i] for i in other] + [[0]]
+    #     elif isinstance(other, np.ndarray):
+    #         raise
+    #     return self
 
     def __radd__(self, other):
         raise
         pass
 
+    # def __eq__(self, other):
+    #     if isinstance(other, (tuple, list)):
+    #         raise
+    #     elif isinstance(other, Point):
+    #         if all([np.isclose(a,b,atol=DEF_TOLERANCE) for a,b in zip(self.xyz, other.xyz)]):
+    #             return True
+    #         else:
+    #             return False
+
     @property
     def x(self):
         return self.raw[0,0]
+    @x.setter
+    def x(self, v):
+        if isinstance(v, Number):
+            self.raw[0, 0] = v
 
     @property
     def y(self):
         return self.raw[1, 0]
+    @y.setter
+    def y(self, v):
+        if isinstance(v, Number):
+            self.raw[1,0] = v
 
     @property
     def z(self):
         return self.raw[2, 0]
+    @z.setter
+    def z(self, v):
+        if isinstance(v, Number):
+            self.raw[2, 0] = v
 
     @property
     def xyz(self):
@@ -1010,7 +1020,12 @@ class Vector(Geometry):
     def flip(self):
         self.raw = -self.raw
 
-class Line(Geometry):
+class String(Geometry):
+    """
+    class identifier reprisenting string
+    """
+
+class Line(String):
     def __init__(self, start:(list, tuple) = [0,0,0], end:(list,tuple) = [1,0,0]):
         if len(start) != 3 or len(end) != 3:
             raise ValueError
@@ -1021,7 +1036,16 @@ class Line(Geometry):
         self.raw = np.array((start, end)).transpose()
 
     def __str__(self):
-        return f'Line {self.length}'
+        return f'Line ' + '{:.3f}'.format(self.length)
+
+    def flip(self):
+        s,e = self.vertex
+        self.raw[:3, 0] = e
+        self.raw[:3, 1] = s
+
+    @property
+    def vertex(self):
+        return self.start, self.end
 
     @property
     def start(self):
@@ -1041,7 +1065,55 @@ class Line(Geometry):
         return l
 
 
+class Polyline(String):
 
+    def __init__(self, *points_coord):
+        if len(points_coord) == 0:
+            pass
+        else:
+            for coord in points_coord:
+                if not isinstance(coord, (tuple, list)):
+                    raise CoordinateLikeError
+                if len(coord) not in (3,2):
+                    print(len(coord))
+                    raise CoordinateLikeError
+                if not all([isinstance(i, Number) for i in coord]):
+                    raise AllnumberError
+
+            # convert into arrays stack and transpose?
+            raw = None
+            for i, coord in enumerate(points_coord):
+                # do i need to remove duplicated point?
+                # if previous is the same with current ignore
+                if i != 0:
+                    if all([a == b for a,b in zip(points_coord[i-1], coord)]):
+                        continue
+
+                # else append to array
+                if len(coord) == 3:
+                    coord = list(coord) + [1]
+                else:
+                    coord = list(coord) + [0,1]
+                arr = np.array(coord)
+                if raw is None:
+                    raw = arr
+                else:
+                    raw = np.vstack([raw, arr])
+            self.raw = raw.transpose()
+
+    @classmethod
+    def from_raw(cls, raw:np.ndarray):
+        if not isinstance(raw, np.ndarray):
+            raise TypeError
+        if not all([i == 1 for i in raw[3]]):
+            raise ValueError
+
+        ins = cls()
+        ins.raw = raw
+        return ins
+
+class Polygone(Geometry):
+    pass
 
 
 def wrapindex(index, last):

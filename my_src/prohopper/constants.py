@@ -1,0 +1,1 @@
+DEF_TOLERANCE = 1.e-9

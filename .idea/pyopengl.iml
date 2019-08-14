@@ -5,10 +5,11 @@
       <sourceFolder url="file://$MODULE_DIR$/my_src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/vend_src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/my_src/windowing/renderer/BRO" />
+      <excludeFolder url="file://$MODULE_DIR$/vend_src/PIL" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/../pyopengl2/my_src/trash" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.6 (venv)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.7 (untitled2)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">

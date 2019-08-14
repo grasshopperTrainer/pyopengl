@@ -1,11 +1,264 @@
 from .primitives import *
+from .constants import *
 
-DEF_TOLERANCE = 1.e-9
+
+class intersection:
+    @staticmethod
+    def line_line(line1:Line, line2:Line):
+        if not isinstance(line1,Line) or not isinstance(line2,Line):
+            raise TypeError
+        # need to define what is correct intersection
+        # 1.if two lines coinside
+        # 2.if two lines coinside partially
+        # 3.if vertex of one line touches another
+        # 4.if two lines intersect through the point
+        # 5.if imaginary extension of two lines intersect eventually
+        # let except #5 be considered as intersection
+        # if line1.vertex
+        (a,b),(c,d) = line.decon(line1), line.decon(line2)
+        directional1 = vector.con_from_line(line1)
+        directional2 = vector.con_from_line(line2)
+        if vector.compare_parallel(directional1, directional2):
+
+            #1
+            if line.coinside(line1,line2) or line.coinside(line1, line.flipped(line2)):
+                return Line(a.xyz, b.xyz)
+            #2
+            elif point.is_on_line(line1,c):
+                if point.is_on_line(line1, d):
+                    return Line(c.xyz, d.xyz)
+                elif d.xyz[0] <= a.xyz[0]:
+                    return Line(a.xyz, c.xyz)
+                elif d.xyz[0] >= b.xyz[0]:
+                    return Line(c.xyz, b.xyz)
+
+            elif point.is_on_line(line1, d):
+                if point.is_on_line(line1, c):
+                    return Line(c.xyz, d.xyz)
+                elif c.xyz[0] <= a.xyz[0]:
+                    return Line(a.xyz, d.xyz)
+                elif c.xyz[0] >= b.xyz[0]:
+                    return Line(d.xyz, b.xyz)
+        else:
+            #3 is merged with #4
+            # TODO 4 vector method? need to understand this more fluently
+            cross_two_directional = vector.cross(directional2,directional1)
+            if cross_two_directional.length == 0:
+                return None
+            else:
+                cross = vector.cross(directional2,vector.con_two_points(a,c))
+                r = cross.length / cross_two_directional.length
+                u = directional1*r
+                if vector.compare_parallel(cross, cross_two_directional) == 1:
+                    return a+u
+                else:
+                    return a-u
+
+
+class tests:
+    @staticmethod
+    def triangulatioin(pol:Polyline):
+        raw = pol.raw
+        # gonna find all points on y axis
+        sorted_by_x = sorted(raw[0])
+        x_min = sorted_by_x[0]
+        x_max = sorted_by_x[-1]
+        line_length = x_max-x_min + 2
+        crossing_lines = []
+        for i in set(raw[1]):
+            crossing_lines.append(line.con_point_vector(Point(x_min-1,i,0),Vector(line_length,0,0)))
+        # prepare vertices and edges
+        # vertices
+        vertices = polyline.points(pol)
+        sorted_vertices = point.sort(vertices, 'y')
+        # do i need to remove duplicated
+        sorted_vertices = point.unique_points(sorted_vertices)
+        # edges
+        edges = polyline.edges(pol)
+        for e in edges:
+            # organize so all edges head right_up corner
+            if e.start[1] > e.end[1]:
+                # make so start of all edges are downward
+                e.flip()
+            elif e.start[1] == e.end[1]:
+                if e.start[0] > e.end[0]:
+                    e.flip()
+        edges_to_look_for = edges.copy()
+
+        # do tripezoidal, triangulatioin seperately
+        # there are three steps
+
+        # trapezoidal Decomposition
+        horizontals = []
+        verticals = []
+        trapezoid = []
+        for c_line in crossing_lines:
+            print()
+            print('c_line', c_line.vertex)
+            print(horizontals)
+            intersections = []
+            segments = []
+            to_remove = []
+            for e in edges_to_look_for:
+                y = c_line.start[1]
+                if e.start[1] == y:
+                    print(' c_line touching start of line', e.vertex)
+                    intersections.append(Point(*e.start))
+                elif e.start[1] < y and e.end[1] > y:
+                    print(' c_line crossing middle of a line', e.vertex)
+                    ip = intersection.line_line(c_line, e)
+                    intersections.append(ip)
+                    verticals.append(Line(e.start,ip.xyz))
+                    segments.append(Line(ip.xyz, e.end))
+                    to_remove.append(e)
+                elif e.end[1] == y:
+                    print(' c_line touching end of line',e.vertex)
+                    intersections.append(Point(*e.end))
+                    verticals.append(e)
+                    to_remove.append(e)
+                elif e.end[1] < y:
+                    # this is exactly for horizontal that was on a previous p_line so discarded
+                    print(' c_line is above line',e.vertex)
+                    horizontals.append(e)
+                    to_remove.append(e)
+
+            print('horizontal boundaries')
+            for i in horizontals:
+                print(i.vertex)
+            print('vertical boundaries')
+            for i in verticals:
+                print(i.vertex)
+            print()
+
+            for i in to_remove:
+                edges_to_look_for.remove(i)
+
+            # sort intersections
+            intersections = point.unique_points(intersections)
+            intersections = point.sort(intersections, 'x')
+
+            # initial case
+            if len(horizontals)+ len(verticals) == 0:
+                pass
+            else:
+                # before searching for shattered need to see if whole searching area is a trapezoid with segmented edges
+                if len(horizontals) >= 2:
+                    print('dddddddddddddddddddddddddddd')
+                    bottom = polyline.con_from_lines(horizontals)
+                    print(horizontals)
+                    for i in horizontals:
+                        print(i.vertex)
+                    print(bottom)
+                    if bottom != None:
+                        if len(verticals) != 2:
+                            pass
+                        else:
+                            top = polyline.con_from_points(intersections)
+                            print(intersections)
+                            print(point.in_points(polyline.start_end(top), line.end(verticals[0]),line.end(verticals[1])))
+                            if all(point.in_points(polyline.start_end(top), line.end(verticals[0]),line.end(verticals[1]))):
+
+                                trapezoid.append([bottom, verticals[0],verticals[1], top])
+                                edges_to_look_for += segments
+                                print('+++++++++++++++++')
+                                print(polyline.edges(top))
+                                print('+++++++++++++++++')
+                                verticals = []
+                                horizontals = polyline.edges(top)
+                                continue
+                            else:
+                                pass
+
+                horizontals_to_search = horizontals.copy()
+                verticals_to_search = verticals.copy()
+                for n in range(len(intersections) - 1):
+                    # need to find triangle pointing up
+
+                    vertex1, vertex2 = intersections[n], intersections[n+1]
+                    print('     looking after shape of', vertex1, vertex2)
+                    new_trapeziod = []
+
+                    if len(horizontals_to_search) + len(verticals_to_search) == 0:
+                        break
+
+                    # find two verticals connected to diagonal
+                    for b in verticals_to_search:
+                        if point.coinside(vertex1, line.end(b)):
+                            new_trapeziod.append(b)
+                            break
+                    for b in verticals_to_search:
+                        if point.coinside(vertex2, line.end(b)):
+                            new_trapeziod.append(b)
+                            break
+
+                    # if two are found
+                    if len(new_trapeziod) == 2:
+                        verticals_to_search.remove(new_trapeziod[0])
+                        verticals_to_search.remove(new_trapeziod[1])
+
+                        s,e = line.start(new_trapeziod[0]), line.start(new_trapeziod[1])
+
+                        if point.coinside(s, e):
+                            # if starting points coinside -> it's a triangle
+                            pass
+                        else:
+                            # if trepazoid
+                            searching_line = line.con_two_points(s,e)
+                            print(s,e)
+                            for b in horizontals_to_search:
+                                if line.coinside(b,searching_line):
+                                    print('     third',b)
+                                    # bottom boundary takes i=0
+                                    new_trapeziod.insert(0,b)
+                                    horizontals_to_search.remove(b)
+                                    break
+
+                            if len(new_trapeziod) != 3:
+                                # means diagonal is useless so move to next
+                                continue
+
+                        for i in new_trapeziod:
+                            try:
+                                horizontals.remove(i)
+                            except:
+                                print(i.vertex)
+                                for ii in horizontals:
+                                    print(ii.vertex)
+                                for ii in verticals:
+                                    print(ii.vertex)
+
+                                verticals.remove(i)
+
+                        diagonal = line.con_two_points(vertex1, vertex2)
+                        new_trapeziod.append(diagonal)
+                        trapezoid.append(new_trapeziod)
+                        horizontals.append(diagonal)
+                        continue
+
+                    else:
+                        # if diagonal is not connected at least to two boundaries
+                        # this diagonal is useless
+                        continue
+
+            # for searching intersecting wiwh c_line
+            edges_to_look_for += segments
+
+            print('---------trapeziod--------')
+            for i in trapezoid:
+                print(i)
+            # print(intersections)
+
+        # monotone Subdivision
+
+        # triangulation
+
+
 
 class morph:
     @staticmethod
     def extrude(geo:Geometry, direction:Vector) -> Geometry:
         if isinstance(geo, Flat):
+            pass
 
 
         elif isinstance(geo, Line):
@@ -105,9 +358,51 @@ class trans:
 
 
 class line:
+
+    @staticmethod
+    def start(lin:Line) -> Point:
+        return Point(*lin.start)
+
+    @staticmethod
+    def end(lin:Line) -> Point:
+        return Point(*lin.end)
+
+    @staticmethod
+    def decon(lin:Line):
+        return [Point(*lin.raw.copy()[:3, 0]), Point(*lin.raw.copy()[:3, 1])]
+
+    @staticmethod
+    def has_vertex(lin:Line, poi:Point):
+        start, end = lin.vertex
+        coord = poi.xyz
+        if all([a==b for a,b in zip(start,coord)]) or all([a==b for a,b in zip(end, coord)]):
+            return True
+        return False
+
+    @staticmethod
+    def middle(line:Line):
+        coord = []
+        for a,b in line.vertex:
+            coord.append((a+b)/2)
+        return Point(*coord)
+
+    @staticmethod
+    def coinside(line1:Line, line2:Line, consider_direction = True) -> bool:
+        if consider_direction:
+            return np.sum(np.equal(line1.raw, line2.raw)) == 8
+        else:
+            return any([
+                np.sum(np.equal(line1.raw, line2.raw)) == 8,
+                np.sum(np.equal(line1.raw, np.flip(line2.raw,1))) == 8])
+
+    @staticmethod
+    def flipped(lin:Line):
+        return Line(lin.end,lin.start)
+
     @staticmethod
     def con_two_points(start:Point, end:Point) -> Line:
         return Line(start.xyz, end.xyz)
+
     @staticmethod
     def con_point_vector(start:Point, vec:Vector) -> Line:
         return line.con_two_points(start, trans.move(vec, start))
@@ -116,11 +411,251 @@ class line:
     def con_from_vector(vector:Vector):
         end = vector.raw.copy().transpose().tolist()[0][:3]
         return Line([0,0,0],end)
+
+
+
+class polyline:
     @staticmethod
-    def decon(lin:Line):
-        return Point(*lin.raw[:3, 0]), Point(*lin.raw[:3, 1])
+    def start(pol: Polyline):
+        if not isinstance(pol, Polyline):
+            raise TypeError
+        return Point(*pol.raw[:3, 0])
+
+    @staticmethod
+    def end(pol: Polyline):
+        if not isinstance(pol, Polyline):
+            raise TypeError
+        return Point(*pol.raw[:3, -1])
+
+    @staticmethod
+    def start_end(pol:Polyline):
+        if not isinstance(pol, Polyline):
+            raise TypeError
+        return [ Point(*pol.raw[:3, 0]), Point(*pol.raw[:3, -1]) ]
+
+    @staticmethod
+    def join(*segments:(tuple, list)):
+        """
+        excepts segments and return joined
+        :return:
+        """
+
+    @staticmethod
+    def con_any_from_lines():
+        pass
+
+    @staticmethod
+    def con_from_lines(lines:(tuple, list)) -> Polyline:
+        if not isinstance(lines, (tuple, list)):
+            raise TypeError
+        if len(lines) == 0:
+            return None
+        lines = lines.copy()
+        starting_line= lines.pop(0)
+        sorted_vertex = line.decon(starting_line)
+        while True:
+            flag_found = False
+            to_remove = []
+            for l in lines:
+                cloud = sorted_vertex[0], sorted_vertex[-1]
+                # if the line can be joined from start or end of collected
+                s,e = line.decon(l)
+                if any(point.in_points(cloud, s,e)):
+                    flag_found = True
+                    if point.coinside(sorted_vertex[0], s):
+                        sorted_vertex.insert(0,e)
+                    elif point.coinside(sorted_vertex[0], e):
+                        sorted_vertex.insert(0,s)
+                    elif point.coinside(sorted_vertex[-1], s):
+                        sorted_vertex.append(e)
+                    elif point.coinside(sorted_vertex[-1], e):
+                        sorted_vertex.append(s)
+                    to_remove.append(l)
+
+            if not flag_found:
+                return None
+
+            for i in to_remove:
+                lines.remove(l)
+
+            if len(lines) == 0:
+                break
+
+        return polyline.con_from_points(sorted_vertex)
+
+    @staticmethod
+    def con_from_points(points_list:(tuple, list)) -> Polyline:
+        if not isinstance(points_list,(tuple, list)):
+            raise TypeError
+        if len(points_list) == 0:
+            return None
+
+        raw = points_list[0].raw.copy()
+        for p in points_list[1:]:
+            if not isinstance(p, Point):
+                raise
+            raw = np.hstack((raw, p.raw.copy()))
+
+        return Polyline.from_raw(raw)
+
+    @staticmethod
+    def point_in(pol:Polyline, point:Point):
+        pass
+
+
+    @staticmethod
+    def decon(pol:Polyline) -> list:
+        """
+        deconstructs polyline into points and lines
+        :param pol:
+        :return: [list of points, list of lines]
+        """
+        coords = pol.raw[:3].transpose().tolist()
+        points = []
+        for i in coords:
+            points.append(Point(*i))
+
+        lines = []
+        for i in range(len(points)-1):
+            lines.append(line.con_two_points(points[i], points[i+1]))
+
+        return [points, lines]
+
+    @staticmethod
+    def points(pol: Polyline):
+        coords = pol.raw[:3].transpose().tolist()
+        points = []
+        for i in coords:
+            points.append(Point(*i))
+        return points
+
+    @staticmethod
+    def edges(pol:Polyline):
+        lines = []
+        points = polyline.points(pol)
+        for i in range(len(points)-1):
+            lines.append(line.con_two_points(points[i],points[i+1]))
+        return lines
+
+    @staticmethod
+    def is_closed(pol:Polyline):
+        raw = pol.raw
+        if all(np.equal(raw[:3,-1], raw[:3,0])):
+            return True
+        else:
+            return False
+
 
 class point:
+    @staticmethod
+    def in_points(cloud:(tuple, list), *points:Point):
+        mask = []
+        for p in points:
+            co = False
+            for i in cloud:
+                if point.coinside(p, i):
+                    co = True
+                    break
+            mask.append(co)
+        return mask
+
+    @staticmethod
+    def unique_points(points:(list, tuple)):
+        unique_points = []
+        for p in points:
+            if not isinstance(p, Point):
+                raise TypeError
+
+            unique = True
+            for i in unique_points:
+                # if there is one that has same coordinate value don't add
+                # if all is looked and there's isn't one coinside then add
+                coinsides = True
+                for a,b in zip(i.xyz, p.xyz):
+                    # if any component is different go to next
+                    if a != b:
+                        coinsides = False
+                        break
+                # for all components equal inspecting point is not unique
+                if coinsides:
+                    unique = False
+                    break
+                else:
+                    continue
+
+            if unique:
+                unique_points.append(p)
+            else:
+                continue
+        return unique_points
+
+    @staticmethod
+    def coinside(point1:Point, point2:Point, atol=None) -> bool:
+        if atol != None:
+            raise
+        else:
+            return all(np.equal(point1.raw, point2.raw))
+
+    @staticmethod
+    def sort(points, mask:str = 'x'):
+        """
+        sort points by given ingredient
+
+        :param mask: key to sort with, one of 'x','y','z'
+        :param points: points to sort
+        :return: sorted list of points
+        """
+        mask_index = {'x':0,'y':1,'z':2}
+        if not mask in mask_index:
+            raise ValueError
+        if not all([isinstance(p, Point) for p in points]):
+
+            raise TypeError
+
+        keys = []
+        i = mask_index[mask]
+        for p in points:
+            keys.append(p.xyz[i])
+        sorted_list = sorted(zip(keys, points),key=lambda x: x[0])
+
+        points = [i[1] for i in sorted_list]
+        return points
+
+    @staticmethod
+    def sort_chunck():
+        pass
+
+    @staticmethod
+    def equal(point1:Point, point2:Point) -> bool:
+        if not isinstance(point1, Point) or not isinstance(point2, Point):
+            return TypeError
+        for a,b in zip(point1.xyz, point2.xyz):
+            if not np.isclose(a,b, atol=DEF_TOLERANCE):
+                return False
+        return True
+
+    @staticmethod
+    def is_on_line(lin:Line, *points:(tuple, list)) -> bool:
+        results = []
+        directional1 = vector.con_from_line(lin)
+        for poi in points:
+            if not isinstance(poi, Point):
+                raise TypeError
+
+            directional2 = vector.con_two_points(Point(*lin.start), poi)
+            if vector.compare_parallel(directional1,directional2):
+                start, end = lin.start, lin.end
+                x,_,_ = poi.xyz
+                if x >= start[0] and x<=end[0]:
+                    results.append(True)
+                else:
+                    results.append(False)
+            else:
+                results.append(False)
+
+        if len(results) == 1:
+            return results[0]
+        return results
 
     @staticmethod
     def con_from_vector(vec:Vector):
@@ -153,6 +688,49 @@ class vector:
     @staticmethod
     def dot(vec1:Vector, vec2:Vector) -> float:
         return vec1.raw.flatten().dot(vec2.raw.flatten())
+
+    @staticmethod
+    def cross(vec1:Vector, vec2:Vector) -> Vector:
+        if not isinstance(vec1, Vector) or not isinstance(vec2, Vector):
+            raise TypeError
+        cross = np.cross(vec1.raw[:3,0], vec2.raw[:3,0])
+        return Vector(*cross)
+
+    @staticmethod
+    def compare_parallel(vec1:Vector, vec2:Vector) -> int:
+        """
+        definition of return value
+        -1 opposite direction
+        0 non-parallel
+        +1 same direction
+
+        :param vec1:
+        :param vec2:
+        :return:
+        """
+        xyz1 = vec1.xyz
+        xyz2 = vec2.xyz
+        scalars = []
+        # if both comparint is 0 -> no effect
+        # if one of two is 0 -> non-parallel
+        for a,b in zip(xyz1, xyz2):
+            zeros = sum([k == 0 for k in (a,b)])
+            if zeros == 0:
+                scalars.append(a/b)
+            elif zeros == 1:
+                return 0
+            elif zeros == 2:
+                pass
+
+        for s in scalars:
+            if s != scalars[0]:
+                return 0
+        if scalars[0] == 0:
+            return 0
+        elif scalars[0] > 0:
+            return 1
+        elif scalars[0] < 0:
+            return -1
 
     @staticmethod
     def con_two_points(start:Point, end:Point) -> Vector:
@@ -250,12 +828,12 @@ class vector:
     def divide(vector:Vector, v, raw=False):
         pass
 
-    @staticmethod
-    def multiply(vector:Vector, v, ):
-        if raw:
-            return vector.raw*v
-        else:
-            return vector*v
+    # @staticmethod
+    # def multiply(vector:Vector, v, ):
+    #     if raw:
+    #         return vector.raw*v
+    #     else:
+    #         return vector*v
 
     @staticmethod
     def amplitude(vector:Vector, amp:Number):
@@ -602,7 +1180,7 @@ class plane:
 
 class rectangle:
     @staticmethod
-    def con_center_width_height(plane:(Plane,Point), width:Numbfer, height:Number) -> Rectangle:
+    def con_center_width_height(plane:(Plane,Point), width:Number, height:Number) -> Rectangle:
         if not isinstance(width,Number) or not isinstance(height, Number):
             raise TypeError
 

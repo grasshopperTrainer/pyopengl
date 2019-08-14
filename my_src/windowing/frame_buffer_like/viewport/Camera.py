@@ -3,7 +3,7 @@ from windowing.IO_device.mouse import Mouse
 import weakref
 from numbers import Number
 import prohopper as pr
-
+import rhino3dm as rh
 
 class _Camera:
     """
@@ -42,7 +42,6 @@ class _Camera:
         # how to handle ratio? <- don't need it at the beginning
         self._clip_space = pr.primitives.Hexahedron([-w,h,f],[-w, -h, f],[w, -h, f],[w,h,f],
                                                     [-w,h,n],[-w, -h, n],[w,-h,n],[w,h,n])
-
     @property
     def near(self):
         near = (self._far+self._near)/2 - (self._far-self._near)/2*self.scale_factor[2]
@@ -116,14 +115,11 @@ class _Camera:
                 # this is pixel_true_2D projection origin set to left bottom of the viewport
                 self._mode = 2
                 # camera should be centered viewport and use ortho for pm
-                w, h = self._viewport.pixel_w, self._viewport.pixel_h
-                self._plane.raw[:3,0] = w/2, h/2, 0
-                # cliping area is defined as follow
-                # build front area and extrude
-                pr.primitives.Rectangle([-w/2,h/2,0],[-],[],[])
-
         elif isinstance(mode, int):
             self._mode = mode
+        print('need to build brep')
+        print(self._mode)
+        exit()
 
     def set_test_mouse(self, mouse):
         if not isinstance(mouse,Mouse):
@@ -153,12 +149,12 @@ class _Camera:
         # 3. when viewport property has changed
 
         print(self._mode)
+        exit()
         if self._flag_recalculate_pm:
 
             self._PM = None
         return self._PM
 
-        exit()
         if self._mode == 0:
             n, f, r, l, t, b = self.near, self.far, self.right, self.left, self.top, self.bottom
             exit()
