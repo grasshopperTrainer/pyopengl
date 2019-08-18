@@ -692,7 +692,7 @@ class Raw_array:
         self._d = weakref.WeakKeyDictionary()
 
     def __set__(self, instance, value):
-        self._d[instance] = np.array(value)
+        self._d[instance] = np.array(value,dtype=np.float64)
 
     def __get__(self, instance, owner):
         return self._d[instance]
@@ -1019,6 +1019,8 @@ class Vector(Geometry):
 
     def flip(self):
         self.raw = -self.raw
+        return self
+
 
 class String(Geometry):
     """
@@ -1100,6 +1102,32 @@ class Polyline(String):
                 else:
                     raw = np.vstack([raw, arr])
             self.raw = raw.transpose()
+
+    def append(self, new_element):
+        if isinstance(new_element, Point):
+            pass
+        elif isinstance(new_element, Line):
+            pass
+        elif isinstance(new_element, Polyline):
+            pass
+
+        elif isinstance(new_element, (list, tuple)):
+            pass
+        else:
+            raise TypeError
+
+    def insert(self, new_element, index):
+        if isinstance(new_element, Point):
+            pass
+        elif isinstance(new_element, Line):
+            pass
+        elif isinstance(new_element, Polyline):
+            pass
+
+        elif isinstance(new_element, (list, tuple)):
+            pass
+        else:
+            raise TypeError
 
     @classmethod
     def from_raw(cls, raw:np.ndarray):

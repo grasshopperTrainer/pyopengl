@@ -79,7 +79,7 @@ class _Camera:
     def trans_look_at(self, target_point, upright=True):
         # need to match -z_axis head target_point
         p = pr.Point(*target_point)
-        v_p_to_o = pr.vector.con_two_points(p, self._plane.origin)
+        v_p_to_o = pr.vector.con_2_points(p, self._plane.origin)
         if upright:
             # and if upright set camera y_axis be on xz plane
             ref_p = pr.trans.move(pr.Vector(0,0,1),self._plane.origin)
