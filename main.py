@@ -11,7 +11,7 @@
 
 import prohopper as pr
 testing_vertex = [0,1],[5,0],[6,2],[3,3],[5,4],[3,5],[5,5],[6,3],[7,3],[8,7],[6,7],[5,6],[3,7],[1,5],[3,4],[2,2],[0,1]
-p = pr.Polyline(*testing_vertex)
+p = pr.Polygone(*testing_vertex)
 r = pr.tests.triangulatioin(p)
-print(r)
-print('end of code')
+# print(r)
+# print('end of code')

@@ -27,7 +27,7 @@ class Frame_renderer:
         if cls.renderer_obj is None:
             cls.renderer_obj = cls.renderer()
             cls.renderer_obj.shader_io.resize(4)
-            cls.renderer_obj.shader_io.vertex = (-1,1),(-1,-1),(1,-1),(1,1)
+            cls.renderer_obj.shader_io.vertices = (-1, 1), (-1, -1), (1, -1), (1, 1)
             cls.renderer_obj.shader_io.slot = 0
             cls.renderer_obj.shader_io.tex_coord = (0,1),(0,0),(1,0),(1,1)
 
@@ -60,7 +60,7 @@ class Stencil_cleaner:
         if cls.renderer_obj is None:
             cls.renderer_obj = cls.renderer()
             cls.renderer_obj.shader_io.resize(4)
-            cls.renderer_obj.shader_io.vertex = (-1, 1), (-1, -1), (1, -1), (1, 1)
+            cls.renderer_obj.shader_io.vertices = (-1, 1), (-1, -1), (1, -1), (1, 1)
             cls.renderer_obj.shader_io.push_latest()
 
         cls.renderer_obj._draw_(context)

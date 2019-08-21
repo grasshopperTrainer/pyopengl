@@ -92,7 +92,7 @@ class Typewriter_builder:
             left_top = np.array((originx+left_off, originy+bottom_off))
             vertex = left_top, left_top+np.array((0,-h)),left_top+np.array((w,-h)),left_top+np.array((w,0))
 
-            renderer.shader_io.vertex = vertex
+            renderer.shader_io.vertices = vertex
             renderer.shader_io.fill_color = color
             renderer.draw(0, comment=f'typing {char}')
 

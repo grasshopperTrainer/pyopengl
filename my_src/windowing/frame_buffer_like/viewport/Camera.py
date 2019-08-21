@@ -133,7 +133,7 @@ class _Camera:
         )
     @property
     def nflrbt(self):
-        arr = self._clip_space.raw
+        arr = self._clip_space.WCS
         return arr[2,4],arr[2,0],arr[0,4],arr[0,7],arr[1,5],arr[1,4]
 
     def report_pm_changed(self):

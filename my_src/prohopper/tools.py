@@ -1,14 +1,1621 @@
-from .primitives import *
+# from .primitives import *
 from .constants import *
+
+import numpy as np
+import copy
+import inspect
+import weakref
+from typing import *
+from numbers import Number
+from .errors import *
+from .constants import *
+
+def mymethod(func):
+    args_names, var_args, var_kwargs, defaults, kwonlyargs, kwonlydefaults,annotations = inspect.getfullargspec(func)
+
+    def wrapper(*args, **kwargs):
+        # TODO just enough for now need improvement?
+        # input checking
+        if var_args == None and var_kwargs == None:
+            given = len(args)+ len(kwargs)
+            if defaults == None:
+                if given != len(args_names):
+                    raise TypeError('missing argument')
+            else:
+                if not (given  >= len(args_names) - len(defaults) and given <= len(args_names)):
+                    # print(args, kwargs, args_names)
+                    # print(args_names)
+                    # print(var_args)
+                    # print(var_kwargs)
+                    # print(defaults)
+                    # print(kwonlyargs)
+                    # print(kwonlydefaults)
+                    # print(annotations)
+                    raise TypeError('missing argument')
+        else:
+            if len(args)+ len(kwargs) < len(args_names):
+                raise
+
+        # type checking
+        # need to build combined args list first
+        arg_dict = {}
+        args_list = args[len(args_names):]
+        kwargs_dict = {}
+        for a_name,a in zip(args_names, args):
+            arg_dict[a_name] = a
+        for a in kwargs:
+            # if given input is not a part of kwargs but args but given with name
+            if a in args_names:
+                # if its not for one that's already given through *args
+                if not a in arg_dict:
+                    arg_dict[a] = kwargs[a]
+                else:
+                    raise
+            else:
+                # real kwargs
+                kwargs_dict[a] = kwargs[a]
+
+        # for arguments
+        for a_name,a in arg_dict.items():
+            # if it has type hint
+            if a_name in annotations:
+                types = annotations[a_name]
+                if isinstance(types, (list, tuple)):
+                    istype = False
+                    # if arg can be one of types
+                    for t in types:
+                        if isinstance(a,t):
+                            istype = True
+                    if not istype:
+                        raise TypeError
+                elif isinstance(types, type(List)):
+                    pass
+                elif not isinstance(a, types):
+                    raise WrongInputTypeError(a, types)
+
+        # for variable arguments
+        if var_args in annotations:
+            types = annotations[var_args]
+            for a in args_list:
+                if isinstance(types, (list, tuple)):
+                    istype = False
+                    for t in types:
+                       if isinstance(a, t):
+                           istype = True
+                    if not istype:
+                        raise TypeError
+                elif isinstance(types, type(List)):
+                    pass
+                elif not isinstance(a, types):
+                    raise WrongInputTypeError(a, types)
+
+        # for variable keyword arguments
+        if var_kwargs in annotations:
+            types = annotations[var_kwargs]
+            types = list(types)
+            for a in kwargs_dict.values():
+                if isinstance(types, (tuple, list)):
+                    istype = False
+                    for t in types:
+                        if isinstance(a, t):
+                            istype = True
+                    if not istype:
+                        raise TypeError
+                elif isinstance(types, type(List)):
+                    pass
+                elif not isinstance(a, types):
+                    raise TypeError
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+class Primitive:
+    DIC = {}
+    DATATYPE = np.float32
+    TOLORENCE = 1.e-9
+
+    def __init__(self, data, title: str = None):
+        """
+        Parent of all tools_building classes.
+        rule#1_ in child class functions never return Hlist
+        - add functions for general management and meta control -
+        :param data:
+        :param title:
+        """
+        # make new dict for child class
+        if self.DIC == Primitive.DIC:
+            self.__class__.DIC = {}
+
+        # make name for indexing
+        if title is None:
+            title = str(len(self.keys()) + 1)
+        self._dict_insert_unique(self.__class__.DIC, title, data)
+        self._data = data
+
+    def _dict_insert_unique(self, dic: dict, key: str, value=None, preffix: str = 'new_', suffix: str = ''):
+        key_list = list(dic.keys())
+
+        def make_unique_name(source: list, target: str, preffix: str, suffix: str):
+            # function for detecting coincident name
+            new_name = target
+            for i in source:
+                if i == target:
+                    source.remove(i)
+                    new_target = preffix + target + suffix
+                    new_name = make_unique_name(source, new_target, preffix, suffix)
+                    """
+                    If coincident name is found, There is no need to continue iteration.
+                    Else recursion is called to compare with the elements that were passed
+                    in front in parent iteration. Coincident element is removed from
+                    the original list to avoid pointless iteration.
+                    """
+                    break
+            # finishing condition for recursive action
+            # return value only if 'for' is fully iterated -
+            # without getting into 'if' branch
+            return new_name
+
+        dic[make_unique_name(key_list, key, preffix, suffix)] = value
+
+    def __call__(self):
+        return self._data
+
+    @classmethod
+    def get_from_dic(cls, title: str):
+        return cls.dic[title]
+
+    @classmethod
+    def make_new(cls, data, title: str = None):
+        instance = cls(cls.DIC, data, title)
+
+    @classmethod
+    def get_dic(cls):
+        return cls.DIC
+
+    @classmethod
+    def keys(cls):
+        return cls.DIC.keys()
+
+    def print_data(self):
+        pass
+
+    def __str__(self):
+        return f'{self.__class__.__name__}'
+
+    # def set_data(self, data):
+    #     # to ensure all the proceeding numpy calculation efficient
+    #     if isinstance(data, np.ndarray):
+    #         data = self.__class__.DATATYPE(data)
+    #     self._data = data
+
+    # def get_data(self):
+    #     return self._data
+
+    def printmessage(self, text: str, header: str = 'ERROR '):
+        func_name = inspect.currentframe().f_back.f_code.co_name
+        fullvarinfo = inspect.getargvalues(inspect.currentframe().f_back)
+        varvalue = [fullvarinfo[3][i] for i in fullvarinfo[0]]
+        varinfo = []
+        for name, value in zip(fullvarinfo[0], varvalue):
+            varinfo.append(f'{name} : {str(value)}')
+
+        head = f'FROM {self.__class__.__name__}.{func_name}: '
+
+        varhead = ' ' * (len(head) - 6) + 'ARGS: ' + varinfo[0]
+        for i, j in enumerate(varinfo):
+            varinfo[i] = ' ' * len(head) + j
+
+        top = header + '-' * (len(head + text) - len(header))
+        bottom = '-' * len(head + text)
+
+        lines = top, head + text, varhead, *varinfo[1:], bottom
+
+        for i in lines:
+            print(i)
+
+
+class Item:
+
+    def __init__(self, data):
+        if not isinstance(data, Item):
+            self._data = data
+        else:
+            self._data = data._data
+
+    def __str__(self):
+        return str(self._data)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __getitem__(self, item):
+        return self._data
+
+    def __setitem__(self, key, value):
+        self._data = value
+
+    def __call__(self):
+        return self._data
+
+    def __add__(self, other):
+        return self._data + other._data
+
+    def set_data(self, v):
+        self.__init__(v)
+
+    def type(self):
+        return self._data.__class__
+
+
+# A stands for array? array list?
+class Tlist(Primitive):
+
+    def __init__(self, data: (list, tuple)):
+        """
+        write cases and rules
+        rule 1: Tlist either leaf or node
+        rule 2: leafs can contain any generics
+        rule 3: nods can contain only other Tlists
+        rule 4: input data should be given as list representing structure?
+        rule 5: if a user want to put generic iterables,
+        other function will be provided
+
+        case1 input generics and make leaf
+        case2 input Tlists and make node
+        :param data:
+        """
+
+        self._data = []
+        # check input type
+        if not isinstance(data, (list, tuple)):
+            self.printmessage('input should be list or tuple')
+            return None
+
+        self._data = self._parslist(data)
+        self._checkifleaf()
+
+    def _parslist(self, input: list):
+
+        # if all([isinstance(i,Item) for i in input]):
+        #     return input
+
+        if all([not isinstance(i, (list, tuple, Tlist)) for i in input]):
+            referenced = []
+            for i in input:
+                if isinstance(i, Item):
+                    referenced.append(i)
+                else:
+                    referenced.append(Item(i))
+            return referenced
+
+        else:
+            self._isleaf = False
+            parsed = []
+            for i in input:
+                '''
+                for example input is very complex:
+                [0,2,[2,3],Tlist,[Tlist,Tlist]]
+                target1 : generics? no generics remove this
+                target2 : Tlist
+                target3 : (list, tuple)
+                I'm gonna read from above into bottom
+                should i match the length of all branches?
+
+                '''
+                if not isinstance(i, (tuple, list, Tlist)):
+                    self.printmessage('inputs must be tuple, list, or Tlist')
+                    break
+                elif isinstance(i, (tuple, list)):
+
+                    branch = Tlist(self._parslist(i))
+                    branch._checkifleaf()
+                    parsed.append(branch)
+                elif isinstance(i, Tlist):
+                    i._checkifleaf()
+                    parsed.append(i)
+            return parsed
+
+    def _checkifleaf(self):
+        a = all([isinstance(i, Item) for i in self.get_data()]) and len(self.get_data()) is not 0
+        if len(self.get_data()) is 0:
+            a = True
+        self._isleaf = a
+
+    def append(self, shape):
+        pass
+
+    def insert(self, shape):
+        pass
+
+    def copy(self):
+        return copy.copy(self)
+
+    def deepcopy(self):
+        return copy.deepcopy(self)
+
+    def __add__(self, object):
+        try:
+            if self.isleaf() and object.isleaf():
+                return Tlist(self.get_data() + object.get_data())
+            else:
+                # newdata = []
+                # if self.isleaf():
+                #     newdata.append(self)
+                # else:
+                #     newdata += self.get_data()
+                #
+                # if object.isleaf():
+                #     newdata.append(object)
+                # else:
+                #     newdata += object.get_data()
+                return Tlist([self, object])
+
+        except:
+            self.printmessage("can't add object")
+            return self
+
+    def add(self, object):
+        a = copy.copy(self) + object
+        self.set_data(a.get_data())
+
+    def tile(self, length: int):
+        data = self._data
+        d = divmod(length, len(data))
+        self.set_data(data * d[0] + data[:d[1]])
+
+    def __getitem__(self, item):
+        # if item is not multiple...
+        if not isinstance(item, tuple):
+            # base condition
+            if self.isleaf():
+                """
+                supports several syntax for easy editing
+                1. [x] integer
+                2. [x:y] slice
+                3. [[x,y,z]] integers
+                4. [...] ellipsis
+                """
+                try:
+                    if isinstance(item, int):
+                        # to find value over index
+                        datalength = len(self._data)
+                        if item >= datalength:
+                            item -= datalength
+                        elif item < -len(self._data):
+                            item += datalength
+                        # ???
+                        return self._data[item]
+                    elif isinstance(item, (slice, int)):
+                        return Tlist(self._data[item])
+                    elif isinstance(item, list):
+                        items = []
+                        for i in item:
+                            items.append(self._data[i])
+                        return Tlist(items)
+                    elif item is Ellipsis:
+                        return self.get_data()
+                    else:
+                        self.printmessage('indexing type incorrect')
+                        return None
+
+                except:
+                    self.printmessage('index out of bound')
+                    return None
+            else:
+                if isinstance(item, (slice, int)):
+                    newdata = self.get_data()[item]
+                    if isinstance(newdata, Tlist):
+                        return newdata
+                    else:
+                        return Tlist(newdata)
+                elif isinstance(item, list):
+                    branches = []
+                    for i in item:
+                        branches.append(self[i])
+                    return Tlist(branches)
+                elif item is Ellipsis:
+                    print('get with ellipsis')
+                    return self
+        else:
+
+            itemfront = item[0]
+            itemnext = item[1:]
+            if len(itemnext) is 1:
+                itemnext = itemnext[0]
+            """
+            how many cases?
+            1.int x
+            2.list containing ints [x,y]
+            3.slice [:]
+            4.ellipsis [...]
+            """
+            if isinstance(itemfront, int):
+                return self[itemfront][itemnext]
+            elif isinstance(itemfront, list):
+                if self.isleaf():
+                    return self[itemfront][itemnext]
+                else:
+                    branches = []
+                    for i in itemfront:
+                        branches.append(self._data[i][itemnext])
+                    return Tlist(branches)
+            elif isinstance(itemfront, slice):
+
+                if self.isleaf():
+                    return self[itemfront][itemnext]
+                else:
+                    branches = self._data[itemfront]
+                    for i, v in enumerate(branches):
+                        branches[i] = v[itemnext]
+                        if not isinstance(branches[i], Tlist):
+                            branches[i] = Tlist([branches[i]])
+                    # isalltlists = [isinstance(i,Tlist) for i in branches]
+                    # isallprims = all([not i for i in isalltlists])
+                    # isalltlists = all(isalltlists)
+                    # ismixed = isallprims or isalltlists
+                    # # print()
+                    # # print(branches,ismixed)
+                    # if not ismixed:
+                    #     for i,v in enumerate(branches):
+                    #         if not isinstance(v,Tlist):
+                    #             branches[i] = Tlist([v])
+                    # # print(branches)
+                    return Tlist(branches)
+            elif itemfront is Ellipsis:
+                maxdepth = self.get_maxdepth()
+                if isinstance(itemnext, tuple):
+                    lennext = len(itemnext)
+                else:
+                    lennext = 1
+                newitem = [slice(None, None, None)] * (maxdepth - lennext)
+
+                if not isinstance(itemnext, tuple):
+                    newitem.append(itemnext)
+                else:
+                    newitem += itemnext
+                return self[tuple(newitem)]
+            else:
+                self.printmessage('incorrect item type')
+                raise
+
+    def get_maxdepth(self, _count=1):
+        depths = []
+        for i in self._data:
+            if not isinstance(i, Item):
+                depths.append(i.get_maxdepth(_count=_count + 1))
+            else:
+                return _count
+            # return depths
+            # depths.append(_count)
+        return max(depths)
+
+    def __setitem__(self, key, value):
+        print('set')
+        """
+        cases
+        1. key is slice [:]
+        2. key is single integer [x]
+        3. key is multiple integers [x,y,z]
+        4. ellipsis [...]
+        :param key:
+        :param value:
+        :return:
+        """
+        # make input iterable(list)
+        if not isinstance(value, tuple):
+            value = [value]
+        else:
+            value = list(value)
+
+        # input check first all has to be tlist or not tlists
+        # try:
+        istlists = [isinstance(i, Tlist) for i in value]
+        isprims = all([not i for i in istlists])
+        istlists = all(istlists)
+        # if data types are coherent proceed
+        if isprims or istlists:
+            # case 1,2
+            if isinstance(key, (slice, int)):
+                # transform integer into slice
+                if isinstance(key, int):
+                    if key < 0:
+                        key = key + len(self._data)
+                    key = slice(key, key + 1)
+                # case data is branches
+                if istlists:
+                    # branches replace items
+                    if self.isleaf():
+                        newtree = self[:key.start] + self[key] + self[key.stop:]
+                        self.set_data(newtree.get_data())
+                    # branches replace branches
+                    else:
+                        self._data[key] = value
+                # case data is python primitives
+                else:
+                    # primitives replace items
+                    if self.isleaf():
+                        value = [Item(i) for i in value]
+                        self._data[key] = value
+                    # primitives replace branches
+                    else:
+                        self.printmessage("can't replace branches with items", 'ANNOUNCE')
+                        raise
+            # case 3
+            elif isinstance(key, tuple):
+                # need to match number of value
+                # match length to key len
+                d = divmod(len(key), len(value))
+                matched = []
+                for i in range(d[0]):
+                    if i is 0:
+                        matched += value
+                    else:
+                        matched += copy.deepcopy(value)
+                matched += copy.deepcopy(value)[:d[1]]
+                for k, v in zip(key, matched):
+                    self.__setitem__(k, v)
+
+            # case 4
+            elif key is Ellipsis:
+                print('set with ellipsis')
+                pass
+            # false case
+            else:
+                self.printmessage('key type incorrect')
+
+        # except:
+        #     self._printmessage('input types incorrect')
+        #     pass
+
+    def set_data(self, data):
+        ids = []
+        for i, v in enumerate(data):
+            ids.append(id(v))
+            if id(v) in ids:
+                data[i] = copy.deepcopy(v)
+            if not isinstance(data[i], Tlist):
+                data[i] = Item(data[i])
+        self._data = data
+        self._checkifleaf()
+
+    # def view(self):
+    #     return Tlist([self])
+
+    def isleaf(self):
+        return self._isleaf
+
+    def get_allleafs(self):
+        leafs = []
+        if self.isleaf():
+            leafs.append(self)
+        else:
+            for i in self.get_data():
+                leafs += i.get_allleafs()
+        return leafs
+
+    def get_allitems(self):
+        items = []
+        if self.isleaf():
+            items += self.get_data()
+            return items
+        else:
+            for i in self.get_data():
+                items += i.get_allitems()
+
+        return items
+
+    def items(self, _count=0):
+        return Tlist(self.get_allitems())
+
+    def leafs(self):
+        return Tlist(self.get_allleafs())
+
+    def isleafsonly(self):
+        return all([i.isleaf() for i in self])
+
+    def pickleafs(self):
+        self.set_data(self.get_allleafs())
+
+    def growequal(self):
+        if self.isleaf():
+            return self
+        else:
+            branches = []
+            allleafs = all([i.isleaf() for i in self.get_data()])
+            if not allleafs:
+                for i in range(len(self.get_data())):
+                    if self[i].isleaf():
+                        self[i].set_data(Tlist([self[i]]))
+                    else:
+                        pass
+                newbranches = []
+                for i in self:
+                    newbranches += i.get_data()
+
+                allleafs = all([i.isleaf() for i in newbranches])
+                if not allleafs:
+                    Tlist(newbranches).growequal()
+                else:
+                    pass
+
+    def pruneall(self):
+        if self.isleaf():
+            return True
+        else:
+            for i in self:
+                if i.isleaf():
+                    pass
+                elif len(i) is 1:
+                    cut = True
+                    while cut:
+                        data = i.get_data()[0].get_data()
+
+                        i.set_data(data)
+                        if i.isleaf():
+                            cut = False
+                else:
+                    pass
+            # check
+            branches = []
+            for i in self:
+                if not i.isleaf():
+                    branches += i.get_data()
+            a = Tlist(branches)
+            a.pruneall()
+
+    def flatten(self, _count=0):
+        self.set_data(self.get_allitems())
+
+    def __len__(self):
+        return len(self._data)
+
+    def prunebottom(self, times: int = 1):
+        # repeat
+        for i in range(times):
+            if not self.isleaf():
+                branches = []
+                numsimple = 0
+                for i in self:
+
+                    if i.isleaf():
+                        branches.append(i)
+                        numsimple += 1
+                    else:
+                        a = i.get_data()
+                        branches += i.get_data()
+
+                # incase unwrapping when reached clean 2D structure
+                if numsimple is len(self.get_data()):
+                    flattened = []
+                    for i in branches:
+                        flattened += i.get_data()
+                    branches = flattened
+                self.set_data(branches)
+            else:
+                self.printmessage('Tlist is already flat', 'ANNOUNCE')
+                break
+
+    def growbottom(self, times: int = 1):
+
+        for i in range(times):
+            self.__init__([self.get_data()])
+            copy.copy(self)
+            # self.set_data([Tlist(self._data)])
+
+    def print_data(self, strings=False, _count=0):
+        lu = u'\u2554'
+        ru = u'\u2557'
+        ld = u'\u255a'
+        rd = u'\u255d'
+        vr = u'\u2551'
+        hr = u'\u2550'
+        lines = []
+        # base condition
+        if self.isleaf():
+            # condition for empty list
+            if len(self.get_data()) is not 0:
+                types = []
+                texts = []
+                lentypes = []
+                lentexts = []
+                for i in self.get_data():
+                    types.append(i.type().__name__)
+                    texts.append(str(i))
+                    lentypes.append(len(str(i.type())))
+                    lentexts.append(len(str(i)))
+
+                max_lentype = max(lentypes)
+                max_lentext = max(lentexts)
+                checkodd = ' ' * ((max_lentype + max_lentext + 1) % 2)  # add extra space to align
+                # format to match length of text line
+                types = [j + ' ' * (max_lentype - lentypes[i]) for i, j in enumerate(types)]
+                texts = [j + ' ' * (max_lentext - lentexts[i]) for i, j in enumerate(texts)]
+                lines = [vr + i + ':' + j + checkodd + vr for i, j in zip(types, texts)]
+                top = lu + hr * (len(lines[0]) - 2) + ru
+                bottom = ld + hr * (len(lines[0]) - 2) + rd
+                lines.insert(0, top)
+                lines.append(bottom)
+
+            else:
+
+                lines.append(lu + hr + ru)
+                lines.append(ld + hr + rd)
+
+        # recursion
+        else:
+            lines = []
+            blocklen = []
+
+            for i in self._data:
+                data = i.print_data(_count=_count + 1)
+                lines += data
+                blocklen.append(len(data[0]))
+
+            # for empty leaf
+            try:
+                max_blocklen = max(blocklen)
+            except:
+                max_blocklen = 0
+
+            # wrap for parent dimension
+            for i in range(len(lines)):
+                line = lines[i]
+                # format style: match position of dimension closure
+                if line[0] == vr:
+                    lines[i] = vr + line[0] + line[1:-1].center(max_blocklen - 2) + line[-1] + vr
+                else:
+                    lines[i] = vr + line[0] + line[1:-1].center(max_blocklen - 2, hr) + line[-1] + vr
+            # enclose blocks
+            top = lu + hr * (max_blocklen) + ru
+            bottom = ld + hr * (max_blocklen) + rd
+            lines.insert(0, top)
+            lines.append(bottom)
+
+        # when recursion is over print
+        if _count is 0:
+            if strings:
+                return lines
+            else:
+                for i in lines:
+                    print(i)
+        else:
+            return lines
+
+    def null(self):
+        items = self.get_allitems()
+        for i in items:
+            i[0] = None
+
+    def empty(self):
+        leafs = self.leafs()
+        for i in leafs:
+            i.set_data([])
+
+
+class Raw_array:
+    def __init__(self):
+        self._d = weakref.WeakKeyDictionary()
+
+    def __set__(self, instance, value):
+        self._d[instance] = np.array(value, dtype=np.float64)
+
+    def __get__(self, instance, owner):
+        try:
+            return self._d[instance]
+        except:
+            return None
+
+class Geometry(Primitive):
+    _raw = Raw_array()
+
+    @classmethod
+    def from_raw(cls, raw: np.ndarray):
+        raise Exception('not defined for this primitive yet')
+
+    # def bymatrix(self, value):
+    #     if isinstance(value, np.ndarray):
+    #         self.data = value
+    #     else:
+    #         self.printmessage("input isn't matrix")
+    #     return self
+
+    @property
+    def numvertex(self):
+
+        return self().shape[1]
+
+    @property
+    def length(self):
+        if self.numvertex is 1:
+            return None
+        else:
+            segments = self.segments
+            length = 0
+            for i in segments:
+                vec = i.vertices[1] - i.vertices[0]
+                length += np.linalg.norm(vec())
+            return length
+
+    @property
+    def segments(self):
+        lines = []
+
+        vertex = self.vertex
+
+        for i in range(self.numvertex):
+            v1 = vertex[i]
+            if i is self.numvertex - 1:
+                v2 = vertex[0]
+            else:
+                v2 = vertex[i + 1]
+            lines.append(Line(v1, v2))
+        return lines
+
+    @property
+    def matrix(self):
+        pass
+
+    @matrix.setter
+    def matrix(self, value):
+        pass
+
+    def __repr__(self):
+        return self.__str__()
+
+    @property
+    def raw(self) -> np.ndarray:
+        return self._raw
+
+    @raw.setter
+    def raw(self, v):
+        self._raw = v
+
+
+class Domain2d(Primitive):
+    '''
+    ???
+    '''
+
+    def __init__(self, domain1, domain2):
+        self.set_data([domain1, domain2])
+        pass
+
+
+class Domain(Primitive):
+    def __init__(self, start: (int, float) = None, end: (int, float) = None):
+        if start is None and end is None:
+            self.set_data(np.array([0, 1]))
+        else:
+            if end is None and start is not 0:
+                self.set_data(np.array([0, start]))
+            else:
+                if start is not end:
+                    self.set_data(np.array([start, end]))
+                else:
+                    self._0lengthexception()
+                return
+
+        self.start = None
+        self.end = None
+        self.length = None
+
+    def _0lengthexception(self):
+        self.printmessage("can't make 0 length domain", 'MESSEGE')
+
+    @property
+    def start(self):
+        return self._data[0]
+
+    @start.setter
+    def start(self, value):
+        if value is not self.end:
+            self._data[0] = value
+        else:
+            self._0lengthexception()
+
+    @property
+    def end(self):
+        return self._data[1]
+
+    @end.setter
+    def end(self, value):
+        if value is not self.start:
+            self._data[1] = value
+        else:
+            self._0lengthexception()
+
+    @property
+    def length(self):
+        se = self._data
+        return se[1] - se[0]
+
+
+class Vector_Point:
+    def __new__(cls, raw: np.ndarray):
+        if not isinstance(raw, np.ndarray):
+            raise TypeError
+        if raw.shape != (4, 1):
+            raise ValueError
+
+        # point
+        if raw[3, 0] == 1:
+            return Point().from_raw(raw)
+        # vector
+        elif raw[3, 0] == 0:
+            return Vector().from_raw(raw)
+        else:
+            raise ValueError
+
+
+class Point(Geometry):
+
+    def __init__(self, x: Number = 0, y: Number = 0, z: Number = 0):
+        self.raw = [[x], [y], [z], [1]]
+        self.iterstart = 0
+
+    def __str__(self):
+        return f'{self.__class__.__name__} : {[round(i, 2) for i in self.raw[:3, 0]]}'
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __add__(self, other):
+        if isinstance(other, Vector):
+            return Point.from_raw(self.raw + other.raw)
+        else:
+            raise
+
+    def __sub__(self, other):
+        if isinstance(other, Vector):
+            return Point.from_raw(self.raw - other.raw)
+        else:
+            raise
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.iterstart < len(self.get_data()) - 1:
+            self.iterstart += 1
+            return self().item(self.iterstart - 1)
+        else:
+            self.iterstart = 0
+            raise StopIteration
+
+    # def __add__(self, other):
+    #     if isinstance(other, Point):
+    #         pass
+    #     elif isinstance(other, (tuple, list)):
+    #         if len(other) == 3 and all([isinstance(i, Number) for i in other]):
+    #             self.raw += [[i] for i in other] + [[0]]
+    #     elif isinstance(other, np.ndarray):
+    #         raise
+    #     return self
+
+    def __radd__(self, other):
+        raise
+        pass
+
+    # def __eq__(self, other):
+    #     if isinstance(other, (tuple, list)):
+    #         raise
+    #     elif isinstance(other, Point):
+    #         if all([np.isclose(a,b,atol=DEF_TOLERANCE) for a,b in zip(self.xyz, other.xyz)]):
+    #             return True
+    #         else:
+    #             return False
+
+    @property
+    def x(self):
+        return self.raw[0, 0]
+
+    @x.setter
+    def x(self, v):
+        if isinstance(v, Number):
+            self.raw[0, 0] = v
+
+    @property
+    def y(self):
+        return self.raw[1, 0]
+
+    @y.setter
+    def y(self, v):
+        if isinstance(v, Number):
+            self.raw[1, 0] = v
+
+    @property
+    def z(self):
+        return self.raw[2, 0]
+
+    @z.setter
+    def z(self, v):
+        if isinstance(v, Number):
+            self.raw[2, 0] = v
+
+    @property
+    def xyz(self):
+        return self.raw[:3, 0].tolist()
+
+    def from_vector(self):
+        raise
+        pass
+
+    @classmethod
+    def from_raw(cls, raw: np.ndarray):
+        if not isinstance(raw, np.ndarray):
+            raise TypeError
+        if raw.shape != (4, 1) or raw[3, 0] != 1:
+            raise ValueError
+
+        return cls(*raw[:3, 0])
+
+
+class Vector(Geometry):
+
+    def __init__(self, x: Number = 0, y: Number = 0, z: Number = 0):
+        self.raw = [[x], [y], [z], [0]]
+
+    def __str__(self):
+        return f'{self.__class__.__name__} : {[round(i, 2) for i in self.raw[:3, 0]]}'
+
+    def __add__(self, other):
+        if isinstance(other, Vector):
+            new = self.raw.copy()
+            return Vector().from_raw(new + other.raw)
+        else:
+            raise
+
+    # def __truediv__(self, other):
+    #     if isinstance(other, Number):
+    #         v = self.raw.copy()
+    #         xyz= v[:3,0]/other
+    #         return Vector(*xyz)
+    #     else:
+    #         raise
+
+    def __mul__(self, other):
+        if isinstance(other, Number):
+            v = self.raw.copy()
+            xyz = v[:3, 0] * other
+            return Vector(*xyz)
+        elif isinstance(other, Vector):
+            return self.raw * other.raw
+
+    def dot(self, other):
+        return self.raw.flatten().dot(other.raw.flatten())
+
+    @property
+    def x(self):
+        return self.raw[0, 0]
+
+    @property
+    def y(self):
+        return self.raw[1, 0]
+
+    @property
+    def z(self):
+        return self.raw[2, 0]
+
+    @property
+    def xyz(self):
+        return self.raw[:3, 0].tolist()
+
+    def from_point(self, point: Point):
+        if not isinstance(point, Point):
+            raise
+        raw = point.raw.copy()
+        raw[3, 0] = 0
+        self.raw = raw
+        return self
+
+    @classmethod
+    def from_raw(cls, raw: np.ndarray):
+        if not isinstance(raw, np.ndarray):
+            raise TypeError
+        if raw.shape != (4, 1):
+            raise TypeError
+        return cls(*raw.transpose().tolist()[0][:3])
+
+    # functions that recieve single vector and returns single vector should be methods?
+    # or functions that mutates self should be methods?
+    # functions that return basic properties should be methods
+    @property
+    def length(self):
+        x, y, z = self.xyz
+        return np.sqrt(x * x + y * y + z * z)
+
+    def __neg__(self):
+        return self.__class__().from_raw(self.raw.copy() * (-1))
+
+    def flip(self):
+        self.raw = -self.raw
+        return self
+
+class String(Geometry):
+    """
+    class identifier reprisenting string
+    """
+
+    @property
+    def vertices(self):
+        return self.raw[:3].transpose().tolist()
+    @property
+    def start(self):
+        return self.raw[:3,0].tolist()
+    @property
+    def end(self):
+        return self.raw[:3, -1].tolist()
+
+    @property
+    def n_vertex(self):
+        return self.raw.shape[1]
+
+    @property
+    def length(self):
+        totall = 0
+        vertices = self.vertices
+        for i in range(self.n_vertex -1):
+            vec = []
+            for a,b in zip(vertices[i], vertices[i+1]):
+                vec.append(b-a)
+            l = np.sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2])
+            totall += l
+        return totall
+
+    def flip(self):
+        raw = np.flip(self.raw, 1)
+        self.raw = raw
+
+    def append(self, *new_element):
+        for e in new_element:
+
+            # this means raw not initiated and value is None
+            if not isinstance(self.raw, np.ndarray):
+                self.raw = e.raw.copy()
+                continue
+
+            if isinstance(e, Point):
+                if not point.coinside(string.end(self),e):
+                    self.raw = np.hstack((self.raw, e.raw.copy()))
+                else:
+                    raise
+
+            elif isinstance(e, Line):
+                if point.coinside(string.end(self), line.start(e)):
+                    self.raw = np.hstack((self.raw, line.end(e).raw.copy()))
+                elif point.coinside(string.end(self), line.end(e)):
+                    self.raw = np.hstack((self.raw, line.start(e).raw.copy()))
+                else:
+                    self.raw = np.hstack((self.raw, e.raw.copy()))
+
+            elif isinstance(e, Polyline):
+                if point.coinside(string.end(self), string.start(e)):
+                    self.raw = np.hstack((self.raw, e.raw[1:].copy()))
+                elif point.coinside(string.end(self), string.end(e)):
+                    self.raw = np.hstack((self.raw, np.flip(e.raw.copy(),1)[1:]))
+                else:
+                    self.raw = np.hstack((self.raw, e.raw.copy()))
+
+            elif isinstance(e, (list, tuple)):
+                if len(e) == 3 and all([isinstance(n,Number) for n in e]):
+                    self.raw = np.hstack((self.raw, np.array([ [n] for n in e]+[1])))
+            else:
+                raise TypeError
+        return self
+
+    def insert(self, new_element, index):
+        if isinstance(new_element, Point):
+            pass
+        elif isinstance(new_element, Line):
+            pass
+        elif isinstance(new_element, Polyline):
+            pass
+
+        elif isinstance(new_element, (list, tuple)):
+            pass
+        else:
+            raise TypeError
+
+
+
+class Line(String):
+    def __init__(self, start: (list, tuple) = [0, 0, 0], end: (list, tuple) = [1, 0, 0]):
+        if len(start) != 3 or len(end) != 3:
+            raise ValueError
+        if not all([all([isinstance(ii, Number) for ii in i]) for i in (start, end)]):
+            raise TypeError
+
+        start, end = start + [0], end + [0]
+        self.raw = np.array((start, end)).transpose()
+
+    def __str__(self):
+        return f'Line ' + '{:.3f}'.format(self.length)
+
+class Flat(Geometry):
+    """
+    for flat surface
+    """
+
+    def __init__(self, coordinates):
+        # need flatness check
+        pass
+
+    pass
+
+
+class Polyline(String):
+
+    def __init__(self, *points_coord):
+        if len(points_coord) == 0:
+            pass
+        else:
+            for coord in points_coord:
+                if not isinstance(coord, (tuple, list)):
+                    raise NotCoordinateLikeError
+                if len(coord) not in (3, 2):
+                    print(len(coord))
+                    raise NotCoordinateLikeError
+                if not all([isinstance(i, Number) for i in coord]):
+                    raise AllnumberError
+
+            # convert into arrays stack and transpose?
+            raw = None
+            for i, coord in enumerate(points_coord):
+                # do i need to remove duplicated point?
+                # if previous is the same with current ignore
+                if i != 0:
+                    if all([a == b for a, b in zip(points_coord[i - 1], coord)]):
+                        continue
+
+                # else append to array
+                if len(coord) == 3:
+                    coord = list(coord) + [1]
+                else:
+                    coord = list(coord) + [0, 1]
+                arr = np.array(coord)
+                if raw is None:
+                    raw = arr
+                else:
+                    raw = np.vstack([raw, arr])
+            self.raw = raw.transpose()
+
+
+
+    @classmethod
+    def from_raw(cls, raw: np.ndarray):
+        if not isinstance(raw, np.ndarray):
+            raise TypeError
+        if not all([i == 1 for i in raw[3]]):
+            raise ValueError
+
+        ins = cls()
+        ins.raw = raw
+        return ins
+
+
+class Polygone(Flat, Polyline, Geometry):
+    """
+    what is polygone and condition of it?
+    it has to be flat and consists of vertices and must be closed
+    """
+
+    def __init__(self, *coordinates):
+        if len(coordinates) == 0:
+            return
+
+        super().__init__(coordinates)
+        ps = []
+        for i in coordinates:
+            if not isinstance(i, (tuple, list)):
+                raise
+            if len(i) > 3:
+                raise NotCoordinateLikeError(i)
+            i = i + [0 for i in range(3 - len(i))]
+            ps.append(Point(*i))
+
+        # close check
+        if not point.coinside(ps[0], ps[-1]):
+            raise
+        #
+        # # anti-clockwise check
+        # pla = planar[1]
+        # clockwise = point.clockwise_check(ps, pla)
+        # if clockwise == 0:
+        #     ps = reversed(ps)
+        # else:
+        #     pass
+
+        self.raw = polyline.con_from_points(ps).raw
+
+
+    @property
+    def center(self):
+        coord = []
+        v_n = self.raw.shape[0]
+        for i in self.raw.tolist():
+            coord.append(sum(i) / v_n)
+        return Point(*coord[:3])
+
+    @classmethod
+    def from_raw(cls, raw: np.ndarray):
+        shape = raw.shape
+        if not (shape[0] == 4 and shape[1] >= 4):
+            raise
+        # all has to be points
+        if not all([i == 1 for i in raw[3]]):
+            raise
+
+        coordinates = raw[:3].transpose().tolist()
+        inst = cls(*coordinates)
+        return inst
+    def __str__(self):
+        return f'<Polygone> {self.raw.shape[1]-1} edges'
+
+class Triangle(Polygone):
+
+    def __init__(self, a, b, c):
+        """
+        all inputs should be points
+        :param args: coordinate of points
+        """
+        super().__init__(a, b, c)
+        # anti-clockwise check?
+        # general method usage?
+
+"""
+need configuration for complex shape
+"""
+
+
+class Brep:
+    pass
+
+
+class CSG:
+    pass
+
+
+class Tetragon(Polygone):
+    def __init__(self, a, b, c, d):
+        """
+        vectors represent order:
+
+        a------d
+        ;      ;
+        ;      ;
+        ;      ;
+        b------c
+
+        :param a,b,c,d: vertex of tetragon
+        """
+        super().__init__(a,b,c,d)
+
+
+    def __str__(self):
+        return f'{self.__class__.__name__} centered {self.center}'
+
+
+class Trapezoid(Tetragon):
+    def __init__(self, a, b, c, d):
+        """
+
+        :param a:
+        :param b:
+        :param c:
+        :param d:
+        """
+        super.__init__(a,b,c,d)
+        edges = polyline.edges()
+        # at least one pair has to be parallel
+        if not vector.is_parallel(edges[0],edges[2]) and not vector.is_parallel(edges[1], edges[3]):
+            raise
+
+
+class Parallelogram(Tetragon):
+    pass
+
+
+class Rectangle(Parallelogram):
+    pass
+
+
+class Rhombus(Parallelogram):
+    pass
+
+
+class Square(Rectangle):
+    pass
+
+
+class Hexahedron(Geometry):
+    def __init__(self,
+                 a=[-50, 50, -50], b=[-50, -50, -50], c=[50, -50, -50], d=[50, 50, -50],
+                 e=[-50, 50, 50], f=[-50, -50, 50], g=[50, -50, 50], h=[50, 50, 50]):
+        """
+        input vectors should follow order as shown below:
+             +z
+              :
+              :
+            e-;------h
+           /; ;     /l
+          / ; :    / l
+         /  ; :   /  l
+        f--------g   l
+        l   a....l...d
+        l  .  ;  l  /
+        l .   o--l-/------ +x
+        l.       l/
+        b------- c
+
+        yet raw array will store vertex values as following order -> d,c,b,a,e,f,g,h
+             +z
+              :
+              :
+            4-;------7
+           /; ;     /l
+          / ; :    / l
+         /  ; :   /  l
+        5--------6   l
+        l   3....l...0
+        l  .  ;  l  /
+        l .   o--l-/------ +x
+        l.       l/
+        2------- 1
+
+
+        :param a,b,c,d: vertex of top face going anti_clockwise
+        :param e,f,g,h: vertex of bottom face going anti_clockwise
+        """
+        # default box of size 100,100,100 centered at origin(0,0,0)
+        vertex = d, c, b, a, e, f, g, h
+        for i, v in enumerate(vertex):
+            if not isinstance(v, (list, tuple)):
+                raise
+            if len(v) != 3:
+                raise
+            if not all([isinstance(ii, Number) for ii in v]):
+                raise
+            vertex[i].append(1)
+        array = np.array(vertex).transpose()
+        self.raw = array
+
+    @property
+    def vertex(self):
+        l = self.raw[:3].transpose().tolist()
+        return l
+
+    @property
+    def center(self):
+        coord = []
+        for i in self.raw.tolist():
+            coord.append(sum(i) / 8)
+        return Point(*coord[:3])
+
+    def __str__(self):
+        return f'{self.__class__.__name__} centered {self.center}'
+
+
+class Box(Hexahedron):
+    def __init__(self,
+                 a, b, c, d,
+                 e, f, g, h):
+        # box check first
+        super().__init__(a, b, c, d, e, f, g, h)
+
+
+class Plane(Geometry):
+    """"""
+
+    def __init__(self,
+                 origin: (tuple, list) = [0, 0, 0],
+                 axis_x: (tuple, list) = [1, 0, 0],
+                 axis_y: (tuple, list) = [0, 1, 0],
+                 axis_z: (tuple, list) = [0, 0, 1]):
+
+        axis = axis_x, axis_y, axis_z
+        if not all([isinstance(i, (tuple, list)) for i in axis]):
+            print(axis)
+            raise
+        axis = [list(i) for i in axis]
+
+        # check dot product for perpendicularity 3 times!!!
+        xy_dp = sum((np.array(axis_x) * np.array(axis_y)).tolist())
+        yz_dp = sum((np.array(axis_y) * np.array(axis_z)).tolist())
+        zx_dp = sum((np.array(axis_z) * np.array(axis_x)).tolist())
+        if not np.isclose(sum([xy_dp, yz_dp, zx_dp]), 0., atol=self.TOLORENCE):
+            print(axis_x, axis_y, axis_z)
+            raise ValueError('given 3 vectors not perpendicular')
+        # TODO should right-hand right-hand be checked too? do i support right_handed LCS?
+        #   is it already checked by perpendicularity check?
+
+        # unitize
+        for i in axis:
+            l = np.sqrt(i[0] * i[0] + i[1] * i[1] + i[2] * i[2])
+            i[:] = i[0] / l, i[1] / l, i[2] / l
+        axis_x, axis_y, axis_z = axis
+
+        # one point three vectors
+        self.raw = np.array([[*origin, 1], [*axis_x, 0], [*axis_y, 0], [*axis_z, 0]]).transpose()
+
+    def __str__(self):
+        return f'{self.__class__.__name__} of origin {self.origin}'
+
+    @classmethod
+    def from_raw(cls, raw: np.ndarray):
+        if raw.shape != (4, 4):
+            raise
+        if not all([a == b for a, b in zip(raw[3], (1, 0, 0, 0))]):
+            raise
+        listed = [i[:3] for i in raw.transpose().tolist()]
+        return cls(*listed)
+
+    @property
+    def origin(self):
+        return Point(*self.raw[:3, 0])
+
+    @property
+    def x_axis(self):
+        return Vector(*self.raw[:3, 1])
+
+    @property
+    def y_axis(self):
+        return Vector(*self.raw[:3, 2])
+
+    @property
+    def z_axis(self):
+        return Vector(*self.raw[:3, 3])
+
+
+class Matrix(Primitive):
+    def __init__(self,
+                 e00: Number = 1, e01: Number = 0, e02: Number = 0, e03: Number = 0,
+                 e10: Number = 0, e11: Number = 1, e12: Number = 0, e13: Number = 0,
+                 e20: Number = 0, e21: Number = 0, e22: Number = 1, e23: Number = 0,
+                 e30: Number = 0, e31: Number = 0, e32: Number = 0, e33: Number = 1):
+
+        elements = [e00, e01, e02, e03,
+                    e10, e11, e12, e13,
+                    e20, e21, e22, e23,
+                    e30, e31, e32, e33]
+        if not all([isinstance(i, Number) for i in elements]):
+            raise ValueError
+        self.raw = np.array(elements).reshape((4, 4))
+
+    @classmethod
+    def from_raw(cls, raw):
+        if not isinstance(raw, np.ndarray):
+            raise
+        if raw.shape != (4, 4):
+            raise ValueError
+        return cls(*raw.flatten().tolist())
+
+    def __str__(self):
+        listed = self.raw.tolist()
+
+        for r, row in enumerate(listed):
+            for c, ii in enumerate(row):
+                listed[r][c] = '{: .2f}'.format(ii)
+            listed[r] = str(row)
+
+        listed[0] = f'{self.__class__.__name__} : ' + listed[0]
+        return '{:>45}\n{:>45}\n{:>45}\n{:>45}'.format(*listed)
+
+
+class Transformation(Primitive):
+
+    def __init__(self, array: np.ndarray):
+        self.set_data(array)
+
+    pass
 
 
 class intersection:
-    @staticmethod
-    def pline_line(pol:Polyline, lin:Line):
-        if not isinstance(pol, Polyline) or not isinstance(lin, Line):
-            raise TypeError
+    @mymethod
+    def pline_line(pol:(Polyline,Polygone), lin:Line):
         # TODO how to define plane of polyline
-        if lin.vertex[0][2] != 0 or lin.vertex[1][2] != 0:
+        if lin.vertices[0][2] != 0 or lin.vertices[1][2] != 0:
             raise Exception('not defined yet for 3d line')
         edges = polyline.edges(pol)
         inter = [[],[]]
@@ -35,7 +1642,7 @@ class intersection:
         return inter
 
     @staticmethod
-    def line_line(line1:Line, line2:Line, on_line=False):
+    def line_line(line1:Line, line2:Line, on_line=True):
         if not isinstance(line1,Line) or not isinstance(line2,Line):
             raise TypeError
         # need to define what is correct intersection
@@ -47,29 +1654,37 @@ class intersection:
         # let except #5 be considered as intersection
         # if line1.vertex
         (a,b),(c,d) = line.decon(line1), line.decon(line2)
-        directional1 = vector.con_from_line(line1)
-        directional2 = vector.con_from_line(line2)
-        if vector.compare_parallel(directional1, directional2):
+        directional1 = vector.con_line(line1)
+        directional2 = vector.con_line(line2)
+        if vector.is_parallel(directional1, directional2):
 
             #1
             if line.coinside(line1,line2) or line.coinside(line1, line.flipped(line2)):
                 return Line(a.xyz, b.xyz)
             #2
             elif point.is_on_line(line1,c):
-                if point.is_on_line(line1, d):
-                    return Line(c.xyz, d.xyz)
-                elif d.xyz[0] < a.xyz[0]:
-                    return Line(a.xyz, c.xyz)
-                elif d.xyz[0] > b.xyz[0]:
-                    return Line(c.xyz, b.xyz)
+                small, big = sorted((a.xyz[0], b.xyz[0]))
+                if c.x > small:
+                    if point.is_on_line(line1, d):
+                        return Line(c.xyz, d.xyz)
+                    elif d.xyz[0] < small:
+                        return Line(a.xyz, c.xyz)
+                    elif d.xyz[0] > big:
+                        return Line(c.xyz, b.xyz)
+                else:
+                    return c
 
             elif point.is_on_line(line2, a):
-                if point.is_on_line(line2,b):
-                    return Line(a.xyz, b.xyz)
-                elif b.xyz[0] > d.xyz[0]:
-                    return Line(a.xyz,d.xyz)
-                elif b.xyz[0] < c.xyz[0]:
-                    return Line(c.xyz, a.xyz)
+                small, big = sorted((c.xyz[0], d.xyz[0]))
+                if a.x > small:
+                    if point.is_on_line(line2,b):
+                        return Line(a.xyz, b.xyz)
+                    elif b.xyz[0] > big:
+                        return Line(a.xyz,d.xyz)
+                    elif b.xyz[0] < small:
+                        return Line(c.xyz, a.xyz)
+                else:
+                    return a
 
         else:
             #3 is merged with #4
@@ -81,7 +1696,7 @@ class intersection:
                 cross = vector.cross(directional2, vector.con_2_points(a, c))
                 r = cross.length / cross_two_directional.length
                 u = directional1*r
-                if vector.compare_parallel(cross, cross_two_directional) == 1:
+                if vector.is_parallel(cross, cross_two_directional) == 1:
                     new_p = a+u
                 else:
                     new_p = a-u
@@ -99,7 +1714,7 @@ class intersection:
 
 class tests:
     @staticmethod
-    def triangulatioin(pol:Polyline):
+    def triangulatioin(pol:Polygone):
         edges, vertices = polyline.decon(pol)
 
         vertices = vertices[:-1]
@@ -111,7 +1726,6 @@ class tests:
         vertices = point.sort(vertices, 'y')
         ys = point.y(*vertices)
         vertices_sorted = data.sublist_by_unique_key(vertices, ys)
-
         for i, l in enumerate(edges):
             s, e = line.decon(l)
             if s.y > e.y:
@@ -127,7 +1741,7 @@ class tests:
             c_line = line.con_point_vector(Point(x_start,y,0), Vector(c_line_length,0,0))
             print()
             print('vertex', vs)
-            print('crossing line:', c_line.vertex)
+            print('crossing line:', c_line.vertices)
             p_inter = []
             e_under = []
             e_cross = []
@@ -158,6 +1772,7 @@ class tests:
                 edges.remove(e)
 
             # make intersections unique
+            print(p_inter)
             p_inter = point.unique_points(p_inter)[0]
             p_inter = point.sort(p_inter,'x')
 
@@ -177,17 +1792,17 @@ class tests:
                 for i in range(len(p_inter)-1):
                     middle_p = point.average([p_inter[i], p_inter[i+1]])
                     print(middle_p)
-                    condition1 = polyline.point_in(pol, middle_p) == 1 # condition1; not on but in
+                    condition1 = polygone.point_in(pol, middle_p) == 1 # condition1; not on but in
                     condition2 = False # condition2; at least one vertex is a part of the segment
                     print('dddddddddddddd', vs)
-                    for v in vs:
-                        print(v, p_inter[i], p_inter[i+1])
-                        if point.coinside(v, p_inter[i]) or point.coinside(v, p_inter[i+1]):
+                    for y in vs:
+                        print(y, p_inter[i], p_inter[i+1])
+                        if point.coinside(y, p_inter[i]) or point.coinside(y, p_inter[i+1]):
                             condition2 = True
                             break
                     print('     conditions ', condition1, condition2)
-                    print('     ', v, p_inter[i], p_inter[i+1])
-                    print('     ', point.coinside(v, p_inter[i]) or point.coinside(v, p_inter[i+1]))
+                    print('     ', y, p_inter[i], p_inter[i+1])
+                    print('     ', point.coinside(y, p_inter[i]) or point.coinside(y, p_inter[i+1]))
                     if condition1 and condition2:
                         print(vs)
                         print(' correct segment', p_inter[i],p_inter[i+1])
@@ -203,10 +1818,13 @@ class tests:
                     segments_vertex += line.decon(s)
                 segments_vertex = point.unique_points(segments_vertex)[0]
                 to_remove = []
-                for v in vs:
+                print('+++++++++++++++++')
+                print(segments_vertex)
+                print(vs)
+                for y in vs:
                     for i in segments_vertex:
-                        if point.coinside(i,v):
-                            to_remove.append(v)
+                        if point.coinside(i,y):
+                            to_remove.append(y)
                             break
                 for i in to_remove:
                     vs.remove(i)
@@ -231,7 +1849,7 @@ class tests:
                             up = line.con_two_points(p, e_vertex[1])
 
                             # record for next local, global search
-                            print('     appending down', down.vertex)
+                            print('     appending down', down.vertices)
                             e_under.append(down)
                             edges.append(up)
                             # need this removal cus rest gonna be added to edges list
@@ -261,14 +1879,14 @@ class tests:
                         print('eeee', e_under)
                         for e in e_under:
                             has = line.has_vertex(e, trace)
-                            print(e.vertex)
+                            print(e.vertices)
                             print('kkk',has)
                             if has:
                                 v_next = line.decon(e)[has[1]-1]
                                 new_vec_trace = vector.con_2_points(trace, v_next)
                                 # anti clockwise condition
-                                side,angle = vector.left_right_halfspace(vec_trace, new_vec_trace)
-                                if math.one_of(side, 0,2):
+                                side,angle = vector.right_left_halfspace(vec_trace, new_vec_trace)
+                                if math.any_one_of(side, 1, 2):
                                     building_trapeziod.append(e)
                                     trace = v_next
                                     vec_trace = new_vec_trace
@@ -279,7 +1897,7 @@ class tests:
                         if not flag_found:
                             # seen through all edges but couldn't find one
                             # -> something is wrong
-                            print(s.vertex)
+                            print(s.vertices)
                             print(building_trapeziod)
                             raise
                         # if shape is closed
@@ -289,14 +1907,22 @@ class tests:
                             keys = [line.middle(l).y for l in building_trapeziod]
                             building_trapeziod = data.sublist_by_unique_key(building_trapeziod, keys)
                             building_trapeziod = sorted(building_trapeziod.items(), key = lambda x:x[0])
-                            for i, (v,l) in enumerate(building_trapeziod):
+
+                            flag_poly = False
+                            for i, (y,l) in enumerate(building_trapeziod):
                                 if len(l) != 1:
+                                    flag_poly = True
                                     building_trapeziod[i] = polyline.con_from_lines(l)
                                 else:
                                     building_trapeziod[i] = l[0]
+
                             building_trapeziod.insert(0,left)
                             # index 0 is alway top and goes clockwise
                             building_trapeziod = data.shift(building_trapeziod, -1)
+                            if flag_poly:
+                                a = polyline.join(*building_trapeziod)
+                                print(a)
+                                raise
                             trapezioid.append(building_trapeziod)
                             break
 
@@ -315,13 +1941,13 @@ class tests:
                     s,e = line.decon(l)
                     mark = []
                     # see if it's on the c_line
-                    for v in vs:
-                        if point.coinside(v, s):
-                            mark.append(v)
+                    for y in vs:
+                        if point.coinside(y, s):
+                            mark.append(y)
                             break
-                    for v in vs:
-                        if point.coinside(v, e):
-                            mark.append(v)
+                    for y in vs:
+                        if point.coinside(y, e):
+                            mark.append(y)
                             break
                     if len(mark) == 2:
                         vs.remove(mark[0])
@@ -341,9 +1967,10 @@ class tests:
                             building_peak.append(e)
                         if len(building_peak) == 2:
                             break
+                    print('ddd',p,building_peak)
                     vertex = line.start(building_peak[0]), line.start(building_peak[1])
                     for e in e_under:
-                        print(e.vertex,point.is_on_line(e,*vertex))
+                        print(e.vertices, point.is_on_line(e, *vertex))
                         if all(point.is_on_line(e, *vertex)):
                             building_peak.insert(0,e)
                             break
@@ -366,7 +1993,7 @@ class tests:
                     building_basin = [b]
                     e_under.remove(b)
                     trace, end = line.decon(b)
-                    vec_trace = vector.con_from_line(b).flip()
+                    vec_trace = vector.con_line(b).flip()
                     while True:
                         flag_found = False
                         # next edge is always the side of trapeziod
@@ -375,19 +2002,19 @@ class tests:
                         print(e_under)
                         for e in e_under:
                             has = line.has_vertex(e, trace)
-                            print(e.vertex, has, trace)
+                            print(e.vertices, has, trace)
                             if has:
                                 next_trace = line.decon(e)[has[1]-1]
                                 directional = vector.con_2_points(trace, next_trace)
-                                side, angle = vector.left_right_halfspace(vec_trace, directional)
-                                print(side, math.one_of(side, 0,2))
-                                if math.one_of(side, 0,2):
+                                side, angle = vector.right_left_halfspace(vec_trace, directional)
+                                print(side, math.any_one_of(side, 1, 2))
+                                if math.any_one_of(side, 1, 2):
                                     candidates.append((angle,directional,e,next_trace))
                                     flag_found = True
                                     print('ddddddd', candidates)
                         print('ddddddd', candidates)
                         if not flag_found:
-                            print(e_under[0].vertex)
+                            print(e_under[0].vertices)
                             print(b)
                             print(trace)
                             print(candidates)
@@ -414,10 +2041,60 @@ class tests:
         if len(edges) != 0:
             raise
 
+        for i in trapezioid:
+            print(i)
+
         # monotone Subdivision
         # basic tactic is to read stack and see if any of monotonal adjustant with bottom of inspected
         # another thing to check is parallelity of sides.
         # if any polyline is seen then this needs self division
+        monotone = []
+        for t in trapezioid:
+            if len(monotone) == 0:
+                top_edge = t[0]
+                shape = polygone.con_edges(t)
+                # or if manually checking horizontal edges
+                print(shape)
+                monotone.append([top_edge, shape])
+                continue
+            else:
+                # find bottom
+                shape = len(t)
+                if shape == 3:
+                    adding_bottom_e = t[0]
+                    adding_top_e = None
+                elif shape == 4:
+                    adding_bottom_e = t[2]
+                    adding_top_e = t[0]
+
+                for i,(top_edge, m) in enumerate(monotone):
+                    if top_edge == None:
+                        # top edge none means its closed, its monotone
+                        continue
+
+                    if isinstance(adding_bottom_e, Polyline) or isinstance(adding_top_e, Polyline):
+                        # if horizontal of trapezoid is polyline, means it has to be segmented?
+                        # or had it be done already?
+                        raise
+
+                    else:
+                        if line.coinside(top_edge, adding_bottom_e,consider_direction=True):
+                            print(m)
+                            pl1 = polyline.remove_edge(m,adding_bottom_e)
+                            t.remove(adding_bottom_e)
+                            pl2 = polyline.con_from_lines(t)
+
+                            print(pl1.vertices)
+                            print(pl2.vertices)
+                            new_mono = polyline.join(pl1,pl2)
+                            print(new_mono)
+                            new_mono = polyline.iron(new_mono)
+                            print(new_mono)
+                            # monotone[i][1] = polygone.merge(m,adding_shape)
+                            break
+
+
+                pass
 
 
         # triangulation
@@ -493,7 +2170,7 @@ class trans:
                 raise TypeError
         axis_start,_ = line.decon(axis)
         # vector from axis
-        axis_vector = vector.con_from_line(axis)
+        axis_vector = vector.con_line(axis)
         # what is this for? want to fine another vector that is close to x and perpendicular
         ref_point = Point(1,0,0)
 
@@ -528,6 +2205,33 @@ class trans:
 
 
 class line:
+    @mymethod
+    def unique_lines(lines:(list, tuple), consider_direction = False) -> list:
+        to_compare= lines.copy()
+        unique = []
+        while True:
+            for l in to_compare:
+                to_compare.remove(l)
+                unique.append(l)
+                similar = []
+                for ll in to_compare:
+                    if line.coinside(l, ll, consider_direction=consider_direction):
+                        similar.append(ll)
+                for i in similar:
+                    to_compare.remove(i)
+                break
+
+            if len(to_compare) == 0:
+                break
+
+        return unique
+
+    @staticmethod
+    def is_parallel(line1:Line, line2:Line) -> bool:
+        vector1, vector2 = vector.con_line(line1), vector.con_line(line2)
+        if math.any_one_of(vector.is_parallel(vector1, vector2), -1,1):
+            return True
+        return False
 
     @staticmethod
     def start(lin:Line) -> Point:
@@ -537,16 +2241,13 @@ class line:
     def end(lin:Line) -> Point:
         return Point(*lin.end)
 
-    @staticmethod
+    @mymethod
     def decon(lin:Line):
-        if not isinstance(lin,Line):
-            raise TypeError(f'given input type is {type(lin)}. Line type required')
-
         return [Point(*lin.raw.copy()[:3, 0]), Point(*lin.raw.copy()[:3, 1])]
 
     @staticmethod
     def has_vertex(lin:Line, poi:Point):
-        start, end = lin.vertex
+        start, end = lin.vertices
         coord = poi.xyz
         if all([a==b for a,b in zip(start,coord)]):
             return [ True, 0 ]
@@ -560,7 +2261,7 @@ class line:
         if not isinstance(lin, Line):
             raise TypeError
         coord = []
-        for a,b in zip(*lin.vertex):
+        for a,b in zip(*lin.vertices):
             coord.append((a+b)/2)
         return Point(*coord)
 
@@ -592,6 +2293,24 @@ class line:
 
 
 class data:
+    @mymethod
+    def filter_type(lis:(tuple, list), *t:type, include_exclude = True) -> list:
+        if include_exclude:
+            new_list = []
+        else:
+            new_list = lis.copy()
+
+        for i in lis:
+            for ii in t:
+                if isinstance(i, ii):
+                    if include_exclude:
+                        new_list.append(i)
+                    else:
+                        new_list.remove(i)
+
+        return new_list
+
+
     @staticmethod
     def shift(lis,step):
         new_lis = []
@@ -672,9 +2391,96 @@ class data:
 
         else:
             raise Exception('not defined yet')
+class string:
+    @mymethod
+    def start(stri:String) -> Point:
+        return Point(*stri.raw[:3, 0])
+    @mymethod
+    def end(stri:String) -> Point:
+        return Point(*stri.raw[:3, -1])
+    @mymethod
+    def flip(stri:String) -> String:
+        raw = np.flip(stri.raw.copy(), 1)
+        return stri.__class__.from_raw(raw)
 
+    @mymethod
+    def vertex(stri:String):
+        raw = stri.raw[:3].transpose().tolist()
+        points = []
+        for i in raw:
+            points.append(Point(*i))
+        return points
+
+    @mymethod
+    def edges(stri:String):
+        pass
+
+    @mymethod
+    def decon(stri:String):
+        raw = np.flip(stri.raw[:3].transpose().tolist())
+        points = []
+        for i in raw:
+            points.append(Point(*i))
+        edges = []
+        for i in range(len(points)-1):
+            edges.append(line.con_two_points(points[i], points[i+1]))
+        return [edges, points]
 
 class polyline:
+    @mymethod
+    def iron(poll:Polyline) -> Polyline:
+        # look through each edge and see the vector of it
+        edges = polyline.edges(poll)
+
+        for i,e in enumerate(edges):
+            this_v = vector.con_line(e)
+            para_edges = []
+            index = i
+            while True:
+                index = (index+1)%len(edges)
+                next_e = edges[index]
+                next_v = vector.con_line(next_e)
+                if vector.is_parallel(this_v, next_v) == 1:
+                    para_edges.append(next_e)
+                else:
+                    break
+            if len(para_edges) != 0:
+                s,e = line.start(e), line.end(para_edges[-1])
+                ironned = line.con_two_points(s,e)
+                edges[i] = ironned
+                for i in para_edges:
+                    edges.remove(i)
+
+        new_poll = poll.__class__().append(*edges)
+        return new_poll
+
+    @mymethod
+    def remove_edge(poll:Polyline, edge:Line) -> Polyline:
+        poll_vertices = polyline.vertices(poll)
+        split = None
+        s,e = line.decon(edge)
+        for i,v in enumerate(poll_vertices[1:-1]):
+            if point.coinside(v, s):
+                if point.coinside(poll_vertices[i+2],e):
+                    split = i+1
+                elif point.coinside(poll_vertices[i], e):
+                    split = i
+
+        if split is None:
+            return poll
+        first, second = poll_vertices[:split+1],poll_vertices[split+1:]
+        if point.coinside(first[0], second[-1]):
+            merged = second+first[1:]
+            return polyline.con_from_points(merged)
+        else:
+            return [polyline.con_from_points(first), polyline.con_from_points(second)]
+
+    @mymethod
+    def con_polygone(polg:[Polygone, Polyline],a:str, *b:int, **c:dict):
+        poll = Polyline()
+        poll.raw = polg.raw.copy()
+        return poll
+
     @staticmethod
     def start(pol: Polyline):
         if not isinstance(pol, Polyline):
@@ -699,10 +2505,52 @@ class polyline:
         excepts segments and return joined
         :return:
         """
+        new_p_lists = []
+        for l in segments:
+            if not isinstance(l, String):
+                raise WrongInputTypeError(l, String)
+            new_p_lists.append(string.vertex(l))
 
-    @staticmethod
-    def con_any_from_lines():
-        pass
+        print('new p list',len(new_p_lists), new_p_lists)
+        organized = []
+        while True:
+            for l in new_p_lists:
+                print('join looking for joint ', l)
+                organized.append(l)
+                new_p_lists.remove(l)
+                to_remove = []
+                for ll in new_p_lists:
+                    to_remove.append(ll)
+                    # search for joint
+                    if point.coinside(l[0],ll[0]):
+                        l[:] = list(reversed(ll)) + l[1:]
+                    elif point.coinside(l[0],ll[-1]):
+                        l[:] = ll + l[1:]
+                    elif point.coinside(l[-1],ll[0]):
+                        l[:] = l + ll[1:]
+                    elif point.coinside(l[-1],ll[-1]):
+                        l[:] = l + list(reversed(ll)[1:])
+                    else:
+                        to_remove.remove(ll)
+
+                for i in to_remove:
+                    new_p_lists.remove(i)
+
+                break
+            if len(new_p_lists) == 0:
+                break
+
+        shapes = []
+        for l in organized:
+            shape = polyline.con_from_points(l)
+            if polyline.is_closed(shape):
+                shape = polygone.con_polyline(shape)
+            shapes.append(shape)
+
+        if len(shapes) == 1:
+            return shapes[0]
+        return shapes
+
 
     @staticmethod
     def con_from_lines(lines:(tuple, list)) -> Polyline:
@@ -758,74 +2606,10 @@ class polyline:
 
         return Polyline.from_raw(raw)
 
-    @staticmethod
-    def point_in(pol:Polyline, poi:Point):
-        """
-        tests whether point is (out in on) the polyline
-        returns:
-        0 if point is out
-        1 if point is in
-        2 if point is on the boundary
-        :param pol: closed Polygon
-        :param poi: Point to test
-        :return: out, in, on sign
-        """
-        if not isinstance(pol, Polyline) or not isinstance(poi, Point):
-            raise TypeError
-        if not polyline.is_closed(pol):
-            return None
 
-        edges,vertices = polyline.decon(pol)
-
-        # see point on polyline
-        for e in edges:
-            if poi.x == 7 and poi.y == 7:
-                print(e.vertex, point.is_on_line(e,poi))
-            if point.is_on_line(e, poi):
-                return 2
-
-        # see point in out polyline
-        x_max = sorted(set(pol.raw[0]))[-1]
-        end_point = Point(*poi.xyz)
-        end_point.x = x_max+1
-
-        c_line = line.con_two_points(poi, end_point)
-        iter_count = 0
-
-        while True:
-            flag_break = True
-            # if can't find the case something is wrong
-            if iter_count == 100:
-                raise
-
-            # see if crossing is valid
-            inter = intersection.pline_line(pol, c_line)
-            for i in inter:
-                if isinstance(i, Line) or any(point.in_points(vertices, *inter)):
-                    # if any of crossing is a vertex it can be a peak so find crossing again
-                    flag_break = False
-                    break
-
-            if flag_break:
-                break
-            else:
-                # do crossing test with modified c_line
-                c_line.raw[1,1] += 1
-                iter_count += 1
-
-        # # check peaks
-        # if len(inter) != 0:
-        #     mask = point.in_points(cloud, *inter)
-        #     inter = data.cull_pattern(inter, mask, flip_mask=True)
-
-        # count intersection
-        if len(inter)%2 == 0:
-            return 0
-        else:
-            return 1
 
     @staticmethod
-    def decon(pol:Polyline) -> list:
+    def decon(pol:Union[Polyline,Polygone]) -> list:
         """
         deconstructs polyline into points and lines
         :param pol:
@@ -843,8 +2627,8 @@ class polyline:
         return [lines, points]
 
     @staticmethod
-    def vertices(pol: Polyline):
-        coords = pol.raw[:3].transpose().tolist()
+    def vertices(poll: Polyline):
+        coords = poll.raw[:3].transpose().tolist()
         points = []
         for i in coords:
             points.append(Point(*i))
@@ -866,8 +2650,188 @@ class polyline:
         else:
             return False
 
+class polygone:
+
+    @mymethod
+    def string_in(polg:Polygone, line:String):
+        pass
+
+    @mymethod
+    def point_in(pol: Polygone, poi: Point):
+        """
+        tests whether point is (out in on) the polyline
+        returns:
+        0 if point is out
+        1 if point is in
+        2 if point is on the boundary
+        :param pol: closed Polygon
+        :param poi: Point to test
+        :return: out, in, on sign
+        """
+        if not polyline.is_closed(pol):
+            return None
+        edges, vertices = polyline.decon(pol)
+
+        # see point on polyline
+        for e in edges:
+            if poi.x == 7 and poi.y == 7:
+                print(e.vertices, point.is_on_line(e, poi))
+            if point.is_on_line(e, poi):
+                return 2
+
+        # see point in out polyline
+        x_max = sorted(set(pol.raw[0]))[-1]
+        end_point = Point(*poi.xyz)
+        end_point.x = x_max + 1
+
+        c_line = line.con_two_points(poi, end_point)
+        iter_count = 0
+
+        while True:
+            flag_break = True
+            # if can't find the case something is wrong
+            if iter_count == 100:
+                raise
+
+            # see if crossing is valid
+            inter = intersection.pline_line(pol, c_line)
+            # if any one of intersection is a line or a vertex do it again
+            print(inter)
+            print('sss', data.filter_type(inter, Line))
+
+            if len(data.filter_type(inter,Line)) != 0:
+                flag_break = False
+            elif any(point.in_points(vertices, *inter)):
+                flag_break = False
+
+            if flag_break:
+                break
+            else:
+                c_line.raw[1,1] += 1
+                iter_count += 1
+
+        # # check peaks
+        # if len(inter) != 0:
+        #     mask = point.in_points(cloud, *inter)
+        #     inter = data.cull_pattern(inter, mask, flip_mask=True)
+
+        # count intersection
+        if len(inter) % 2 == 0:
+            return 0
+        else:
+            return 1
+
+    @mymethod
+    def con_edges(edges:List[Line]):
+        # need edge crossing checking
+        poll = polyline.con_from_lines(edges)
+        return polygone.con_polyline(poll)
+
+    @mymethod
+    def con_polyline(poll:Polyline):
+        return Polygone.from_raw(poll.raw.copy())
+
+
+    @mymethod
+    def merge(polg1:Polygone, polg2:Polygone, iron=True):
+        raise
+        print(polg1, polg2)
+        edges1, edges2 = polyline.edges(polg1), polyline.edges(polg2)
+        print(edges1)
+        print(edges2)
+        # find all intersections
+        intersec = [[],[]]
+        for e in edges1:
+            for ee in edges2:
+                i = intersection.line_line(e, ee)
+                if isinstance(i, Line):
+                    print('intersection', e.vertices, ee.vertices)
+                    intersec[0].append(i)
+                elif isinstance(i, Point):
+                    intersec[1].append(i)
+        print(intersec)
+        intersec[0] = line.unique_lines(intersec[0])
+        intersec[1] = point.unique_points(intersec[1])[0]
+        print('ddd')
+        print(intersec)
+        for i in intersec[0]:
+            print(i.vertices)
+        lines_point_pool = []
+        for l in intersec[0]:
+            lines_point_pool += line.decon(l)
+        mask = point.in_points(lines_point_pool, *intersec[1])
+        intersec[1] = data.cull_pattern(intersec[1], mask, flip_mask=True)
+
+
+        pass
+
+    @mymethod
+    def split(polg:Polygone, lin:Line) -> List[Polygone]:
+
+        pass
+
+
+
 
 class point:
+
+    @mymethod
+    def coplanar(points:Union[Tuple[Number,Number,Number], List[Number]]):
+        raise
+
+
+    @staticmethod
+    def clockwise_check(points:(tuple, list), pla:Plane=Plane()):
+        """
+        see if points are ordered clockwise or anti-clockwise
+        signs indicate followings;
+        0 - clockwise
+        1 - anti-clockwise
+        None - can't define
+
+        :param points: list of points to test
+        :param pla: reference plane
+        :return: one of (0,1,None)
+        """
+        if len(points) <= 2:
+            # can't know order
+            return None
+        for p in points:
+            if not isinstance(p, Point):
+                raise WrongInputTypeError(Point, p)
+
+        vectors = []
+        for i in range(len(points)-1):
+            vectors.append(vector.con_2_points(points[i], points[i+1]))
+
+        order = 2
+        for i in range(len(vectors)-1):
+            o = vector.right_left_halfspace(vectors[i], vectors[i + 1], pla)
+            if o == 3:
+                return None
+
+            if o == 2:
+                continue
+            else:
+                if order == 2:
+                    order = o
+                else:
+                    if order == 0:
+                        if o == 0:
+                            pass
+                        else:
+                            return None
+                    else:
+                        if o == 1:
+                            pass
+                        else:
+                            return None
+        if order == 2:
+            return None
+        else:
+            return order
+
+
     @staticmethod
     def xyz(*points):
         lis = []
@@ -912,11 +2876,11 @@ class point:
             return lis[0]
         return lis
 
-    @staticmethod
-    def in_points(cloud:(tuple, list), *points:Point):
+    @mymethod
+    def in_points(cloud:(tuple, list), *points:Point) -> List[bool]:
         mask = []
         if len(points) == 0:
-            raise
+            return []
 
         for p in points:
             co = False
@@ -927,8 +2891,8 @@ class point:
             mask.append(co)
         return mask
 
-    @staticmethod
-    def unique_points(points:(list, tuple)):
+    @mymethod
+    def unique_points(points:(list, tuple)) -> List[Point]:
         """
         leave only unique points
         :param points:
@@ -939,7 +2903,8 @@ class point:
         unique_index = []
         for p in points:
             if not isinstance(p, Point):
-                raise TypeError
+
+                raise WrongInputTypeError(p, Point)
 
             unique = True
             for i,up in enumerate(unique_points):
@@ -1014,7 +2979,7 @@ class point:
     @staticmethod
     def is_on_line(lin:Line, *points:(tuple, list)) -> bool:
         results = []
-        directional1 = vector.con_from_line(lin)
+        directional1 = vector.con_line(lin)
         for poi in points:
             if not isinstance(poi, Point):
                 raise TypeError
@@ -1024,7 +2989,7 @@ class point:
                 continue
 
             directional2 = vector.con_2_points(Point(*lin.start), poi)
-            if vector.compare_parallel(directional1,directional2):
+            if vector.is_parallel(directional1, directional2):
                 vertex = [lin.start[0], lin.end[0]]
                 vertex = sorted(vertex)
                 x = poi.x
@@ -1098,7 +3063,7 @@ class math:
             raise TypeError
 
     @staticmethod
-    def one_of(compared, *values):
+    def any_one_of(compared, *values):
         for v in values:
             if compared == v:
                 return True
@@ -1157,13 +3122,20 @@ class vector:
 
 
     @staticmethod
-    def left_right_halfspace(vec_reference:Vector, vec_target:Vector, pla:Plane= Plane()) -> int:
+    def right_left_halfspace(vec_reference:Vector, vec_target:Vector, pla:Plane= Plane()) -> int:
         """
         identifies whether vector is on the left or right half space
+        signs indicate followings;
+
+        0 - right
+        1 - left
+        2 - same direction
+        3 - reversed direction
+
         :param vec_reference:
         :param vec_target:
         :param pla:
-        :return: [ left_right_sign, angle_to_left_right ]
+        :return: [ right_left_sign, angle_to_left_right ]
         """
         quarter = vector.quarter_plane(vec_reference, pla=pla)
         ref_angle = vector.angle_plane(vec_reference,pla=pla)
@@ -1176,38 +3148,38 @@ class vector:
                 if np.isclose(target_angle, ref_angle + tri.pi, atol=DEF_TOLERANCE):
                     return [3, tri.pi]
                 elif target_angle > ref_angle and target_angle < ref_angle + tri.pi:
-                    return [0,target_angle - ref_angle]
+                    return [1,target_angle - ref_angle]
                 elif target_angle < ref_angle:
-                    return [1, ref_angle - target_angle]
+                    return [0, ref_angle - target_angle]
                 else:
-                    return [1, ref_angle - (target_angle - tri.pi2)]
+                    return [0, ref_angle - (target_angle - tri.pi2)]
             elif quarter == 1:
                 if np.isclose(target_angle, ref_angle + tri.pi, atol=DEF_TOLERANCE):
                     return [3, tri.pi]
                 elif target_angle > ref_angle and target_angle < ref_angle + tri.pi:
-                    return [0, target_angle - ref_angle]
+                    return [1, target_angle - ref_angle]
                 elif target_angle < ref_angle:
-                    return [1, ref_angle - target_angle]
+                    return [0, ref_angle - target_angle]
                 else:
-                    return [1, target_angle - (ref_angle + tri.pi)]
+                    return [0, target_angle - (ref_angle + tri.pi)]
             elif quarter == 2:
                 if np.isclose(target_angle, ref_angle - tri.pi, atol=DEF_TOLERANCE):
                     return [3, tri.pi]
                 elif target_angle > ref_angle -tri.pi and target_angle < ref_angle:
-                    return [1, ref_angle - target_angle]
+                    return [0, ref_angle - target_angle]
                 elif target_angle < ref_angle - tri.pi:
-                    return [0, ref_angle - tri.pi - target_angle]
+                    return [1, ref_angle - tri.pi - target_angle]
                 else:
-                    return [0, target_angle - ref_angle]
+                    return [1, target_angle - ref_angle]
             elif quarter == 3:
                 if np.isclose(target_angle, ref_angle - tri.pi, atol=DEF_TOLERANCE):
                     return [3, tri.pi]
                 elif target_angle < ref_angle and target_angle > ref_angle - tri.pi:
-                    return [1, ref_angle - target_angle]
+                    return [0, ref_angle - target_angle]
                 elif target_angle > ref_angle:
-                    return [0, target_angle - ref_angle]
+                    return [1, target_angle - ref_angle]
                 else:
-                    return [0, ref_angle - tri.pi - target_angle]
+                    return [1, ref_angle - tri.pi - target_angle]
 
 
     @staticmethod
@@ -1234,7 +3206,7 @@ class vector:
         return Vector(*cross)
 
     @staticmethod
-    def compare_parallel(vec1:Vector, vec2:Vector) -> int:
+    def is_parallel(vec1:Vector, vec2:Vector) -> int:
         """
         definition of return value
         -1 opposite direction
@@ -1245,16 +3217,18 @@ class vector:
         :param vec2:
         :return:
         """
-        cos_v = vector.angle_2_vectors(vec1, vec2)
-        if cos_v == None:
+        unit1, unit2 = vector.unit(vec1), vector.unit(vec2)
+        if unit1 == None or unit2 == None:
             return None
+
+        cos_v = vector.dot(unit1, unit2)
+
+        if np.isclose(cos_v, 1, atol=DEF_TOLERANCE):
+            return 1
+        elif np.isclose(cos_v, -1, atol=DEF_TOLERANCE):
+            return -1
         else:
-            if np.isclose(cos_v, 0, atol=DEF_TOLERANCE):
-                return 1
-            elif np.isclose(cos_v, np.pi, atol=DEF_TOLERANCE):
-                return -1
-            else:
-                return 0
+            return 0
 
     @staticmethod
     def con_2_points(start:Point, end:Point) -> Vector:
@@ -1336,7 +3310,7 @@ class vector:
     #     return newv
 
     @staticmethod
-    def con_from_line(line:Line):
+    def con_line(line:Line):
         if not isinstance(line, Line):
             raise TypeError
         xyz = []
@@ -1601,6 +3575,9 @@ class matrix:
         return Matrix.from_raw(result)
 
 class plane:
+    @staticmethod
+    def con_from_points():
+        pass
 
     @staticmethod
     def relocate(pla:Plane, new_origin:Point) -> Plane:
