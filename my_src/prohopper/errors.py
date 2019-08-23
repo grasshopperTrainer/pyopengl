@@ -15,6 +15,11 @@ class NotFlatError(MyError):
         if msg == None:
             return 'given is not flat'
         return self.msg
+class FunctionNotDefinedError(MyError):
+    def __str__(self):
+        if msg == None:
+            return 'Function is not yet defined'
+        return self.msg
 
 class WrongInputTypeError(Exception):
     def __init__(self, given_value=None, *target_type):

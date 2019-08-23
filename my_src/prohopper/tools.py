@@ -9,121 +9,792 @@ from typing import *
 from numbers import Number
 from .errors import *
 from .constants import *
-from .family_tree_list import Family_tree_list
+
+# def mymethod(func):
+#     args_names, var_args, var_kwargs, defaults, kwonlyargs, kwonlydefaults,annotations = inspect.getfullargspec(func)
+#
+#     def wrapper(*args, **kwargs):
+#         # TODO just enough for now need improvement?
+#         # input checking
+#         if var_args == None and var_kwargs == None:
+#             given = len(args)+ len(kwargs)
+#             if defaults == None:
+#                 if given != len(args_names):
+#                     raise TypeError('missing argument')
+#             else:
+#                 if not (given  >= len(args_names) - len(defaults) and given <= len(args_names)):
+#                     # print(args, kwargs, args_names)
+#                     # print(args_names)
+#                     # print(var_args)
+#                     # print(var_kwargs)
+#                     # print(defaults)
+#                     # print(kwonlyargs)
+#                     # print(kwonlydefaults)
+#                     # print(annotations)
+#                     raise TypeError('missing argument')
+#         else:
+#             if len(args)+ len(kwargs) < len(args_names):
+#                 raise
+#
+#         # type checking
+#         # need to build combined args list first
+#         arg_dict = {}
+#         args_list = args[len(args_names):]
+#         kwargs_dict = {}
+#         for a_name,a in zip(args_names, args):
+#             arg_dict[a_name] = a
+#         for a in kwargs:
+#             # if given input is not a part of kwargs but args but given with name
+#             if a in args_names:
+#                 # if its not for one that's already given through *args
+#                 if not a in arg_dict:
+#                     arg_dict[a] = kwargs[a]
+#                 else:
+#                     raise
+#             else:
+#                 # real kwargs
+#                 kwargs_dict[a] = kwargs[a]
+#
+#         # for arguments
+#         for a_name,a in arg_dict.items():
+#             # if it has type hint
+#             if a_name in annotations:
+#                 types = annotations[a_name]
+#                 if isinstance(types, (list, tuple)):
+#                     istype = False
+#                     # if arg can be one of types
+#                     for t in types:
+#                         if isinstance(a,t):
+#                             istype = True
+#                     if not istype:
+#                         raise TypeError
+#                 elif isinstance(types, type(List)):
+#                     pass
+#                 elif not isinstance(a, types):
+#                     raise WrongInputTypeError(a, types)
+#
+#         # for variable arguments
+#         if var_args in annotations:
+#             types = annotations[var_args]
+#             for a in args_list:
+#                 if isinstance(types, (list, tuple)):
+#                     istype = False
+#                     for t in types:
+#                        if isinstance(a, t):
+#                            istype = True
+#                     if not istype:
+#                         raise TypeError
+#                 elif isinstance(types, type(List)):
+#                     pass
+#                 elif not isinstance(a, types):
+#                     raise WrongInputTypeError(a, types)
+#
+#         # for variable keyword arguments
+#         if var_kwargs in annotations:
+#             types = annotations[var_kwargs]
+#             types = list(types)
+#             for a in kwargs_dict.values():
+#                 if isinstance(types, (tuple, list)):
+#                     istype = False
+#                     for t in types:
+#                         if isinstance(a, t):
+#                             istype = True
+#                     if not istype:
+#                         raise TypeError
+#                 elif isinstance(types, type(List)):
+#                     pass
+#                 elif not isinstance(a, types):
+#                     raise TypeError
+#
+#         return func(*args, **kwargs)
+#
+#     return wrapper
+
+def list_executer(func, args, kwargs):
+    pass
+
+class Primitive:
+    DIC = {}
+    DATATYPE = np.float32
+    TOLORENCE = 1.e-9
+
+    def __init__(self, data, title: str = None):
+        """
+        Parent of all tools_building classes.
+        rule#1_ in child class functions never return Hlist
+        - add functions for general management and meta control -
+        :param data:
+        :param title:
+        """
+        # make new dict for child class
+        if self.DIC == Primitive.DIC:
+            self.__class__.DIC = {}
+
+        # make name for indexing
+        if title is None:
+            title = str(len(self.keys()) + 1)
+        self._dict_insert_unique(self.__class__.DIC, title, data)
+        self._data = data
+
+    def _dict_insert_unique(self, dic: dict, key: str, value=None, preffix: str = 'new_', suffix: str = ''):
+        key_list = list(dic.keys())
+
+        def make_unique_name(source: list, target: str, preffix: str, suffix: str):
+            # function for detecting coincident name
+            new_name = target
+            for i in source:
+                if i == target:
+                    source.remove(i)
+                    new_target = preffix + target + suffix
+                    new_name = make_unique_name(source, new_target, preffix, suffix)
+                    """
+                    If coincident name is found, There is no need to continue iteration.
+                    Else recursion is called to compare with the elements that were passed
+                    in front in parent iteration. Coincident element is removed from
+                    the original list to avoid pointless iteration.
+                    """
+                    break
+            # finishing condition for recursive action
+            # return value only if 'for' is fully iterated -
+            # without getting into 'if' branch
+            return new_name
+
+        dic[make_unique_name(key_list, key, preffix, suffix)] = value
+
+    def __call__(self):
+        return self._data
+
+    @classmethod
+    def get_from_dic(cls, title: str):
+        return cls.dic[title]
+
+    @classmethod
+    def make_new(cls, data, title: str = None):
+        instance = cls(cls.DIC, data, title)
+
+    @classmethod
+    def get_dic(cls):
+        return cls.DIC
+
+    @classmethod
+    def keys(cls):
+        return cls.DIC.keys()
+
+    def print_data(self):
+        pass
+
+    def __str__(self):
+        return f'{self.__class__.__name__}'
+
+    # def set_data(self, data):
+    #     # to ensure all the proceeding numpy calculation efficient
+    #     if isinstance(data, np.ndarray):
+    #         data = self.__class__.DATATYPE(data)
+    #     self._data = data
+
+    # def get_data(self):
+    #     return self._data
+
+    def printmessage(self, text: str, header: str = 'ERROR '):
+        func_name = inspect.currentframe().f_back.f_code.co_name
+        fullvarinfo = inspect.getargvalues(inspect.currentframe().f_back)
+        varvalue = [fullvarinfo[3][i] for i in fullvarinfo[0]]
+        varinfo = []
+        for name, value in zip(fullvarinfo[0], varvalue):
+            varinfo.append(f'{name} : {str(value)}')
+
+        head = f'FROM {self.__class__.__name__}.{func_name}: '
+
+        varhead = ' ' * (len(head) - 6) + 'ARGS: ' + varinfo[0]
+        for i, j in enumerate(varinfo):
+            varinfo[i] = ' ' * len(head) + j
+
+        top = header + '-' * (len(head + text) - len(header))
+        bottom = '-' * len(head + text)
+
+        lines = top, head + text, varhead, *varinfo[1:], bottom
+
+        for i in lines:
+            print(i)
 
 
-def mymethod(func):
-    args_names, var_args, var_kwargs, defaults, kwonlyargs, kwonlydefaults,annotations = inspect.getfullargspec(func)
-    def wrapper(*args, **kwargs):
-        flag_mutate_self = False
-        if hasattr(args[0], '_caller'):
-            flag_mutate_self == True
-            args = list(args)
-            args[0] = args[0]._caller
+class Item:
 
-        # TODO just enough for now need improvement?
-        # input checking
-        if var_args == None and var_kwargs == None:
-            given = len(args)+ len(kwargs)
-            if defaults == None:
-                if given != len(args_names):
-                    raise TypeError('missing argument')
-            else:
-                if not (given  >= len(args_names) - len(defaults) and given <= len(args_names)):
-                    # print(args, kwargs, args_names)
-                    # print(args_names)
-                    # print(var_args)
-                    # print(var_kwargs)
-                    # print(defaults)
-                    # print(kwonlyargs)
-                    # print(kwonlydefaults)
-                    # print(annotations)
-                    raise TypeError('missing argument')
+    def __init__(self, data):
+        if not isinstance(data, Item):
+            self._data = data
         else:
-            if len(args)+ len(kwargs) < len(args_names):
+            self._data = data._data
+
+    def __str__(self):
+        return str(self._data)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __getitem__(self, item):
+        return self._data
+
+    def __setitem__(self, key, value):
+        self._data = value
+
+    def __call__(self):
+        return self._data
+
+    def __add__(self, other):
+        return self._data + other._data
+
+    def set_data(self, v):
+        self.__init__(v)
+
+    def type(self):
+        return self._data.__class__
+
+
+# A stands for array? array list?
+class Tlist(Primitive):
+
+    def __init__(self, data: (list, tuple)):
+        """
+        write cases and rules
+        rule 1: Tlist either leaf or node
+        rule 2: leafs can contain any generics
+        rule 3: nods can contain only other Tlists
+        rule 4: input data should be given as list representing structure?
+        rule 5: if a user want to put generic iterables,
+        other function will be provided
+
+        case1 input generics and make leaf
+        case2 input Tlists and make node
+        :param data:
+        """
+
+        self._data = []
+        # check input type
+        if not isinstance(data, (list, tuple)):
+            self.printmessage('input should be list or tuple')
+            return None
+
+        self._data = self._parslist(data)
+        self._checkifleaf()
+
+    def _parslist(self, input: list):
+
+        # if all([isinstance(i,Item) for i in input]):
+        #     return input
+
+        if all([not isinstance(i, (list, tuple, Tlist)) for i in input]):
+            referenced = []
+            for i in input:
+                if isinstance(i, Item):
+                    referenced.append(i)
+                else:
+                    referenced.append(Item(i))
+            return referenced
+
+        else:
+            self._isleaf = False
+            parsed = []
+            for i in input:
+                '''
+                for example input is very complex:
+                [0,2,[2,3],Tlist,[Tlist,Tlist]]
+                target1 : generics? no generics remove this
+                target2 : Tlist
+                target3 : (list, tuple)
+                I'm gonna read from above into bottom
+                should i match the length of all branches?
+
+                '''
+                if not isinstance(i, (tuple, list, Tlist)):
+                    self.printmessage('inputs must be tuple, list, or Tlist')
+                    break
+                elif isinstance(i, (tuple, list)):
+
+                    branch = Tlist(self._parslist(i))
+                    branch._checkifleaf()
+                    parsed.append(branch)
+                elif isinstance(i, Tlist):
+                    i._checkifleaf()
+                    parsed.append(i)
+            return parsed
+
+    def _checkifleaf(self):
+        a = all([isinstance(i, Item) for i in self.get_data()]) and len(self.get_data()) is not 0
+        if len(self.get_data()) is 0:
+            a = True
+        self._isleaf = a
+
+    def append(self, shape):
+        pass
+
+    def insert(self, shape):
+        pass
+
+    def copy(self):
+        return copy.copy(self)
+
+    def deepcopy(self):
+        return copy.deepcopy(self)
+
+    def __add__(self, object):
+        try:
+            if self.isleaf() and object.isleaf():
+                return Tlist(self.get_data() + object.get_data())
+            else:
+                # newdata = []
+                # if self.isleaf():
+                #     newdata.append(self)
+                # else:
+                #     newdata += self.get_data()
+                #
+                # if object.isleaf():
+                #     newdata.append(object)
+                # else:
+                #     newdata += object.get_data()
+                return Tlist([self, object])
+
+        except:
+            self.printmessage("can't add object")
+            return self
+
+    def add(self, object):
+        a = copy.copy(self) + object
+        self.set_data(a.get_data())
+
+    def tile(self, length: int):
+        data = self._data
+        d = divmod(length, len(data))
+        self.set_data(data * d[0] + data[:d[1]])
+
+    def __getitem__(self, item):
+        # if item is not multiple...
+        if not isinstance(item, tuple):
+            # base condition
+            if self.isleaf():
+                """
+                supports several syntax for easy editing
+                1. [x] integer
+                2. [x:y] slice
+                3. [[x,y,z]] integers
+                4. [...] ellipsis
+                """
+                try:
+                    if isinstance(item, int):
+                        # to find value over index
+                        datalength = len(self._data)
+                        if item >= datalength:
+                            item -= datalength
+                        elif item < -len(self._data):
+                            item += datalength
+                        # ???
+                        return self._data[item]
+                    elif isinstance(item, (slice, int)):
+                        return Tlist(self._data[item])
+                    elif isinstance(item, list):
+                        items = []
+                        for i in item:
+                            items.append(self._data[i])
+                        return Tlist(items)
+                    elif item is Ellipsis:
+                        return self.get_data()
+                    else:
+                        self.printmessage('indexing type incorrect')
+                        return None
+
+                except:
+                    self.printmessage('index out of bound')
+                    return None
+            else:
+                if isinstance(item, (slice, int)):
+                    newdata = self.get_data()[item]
+                    if isinstance(newdata, Tlist):
+                        return newdata
+                    else:
+                        return Tlist(newdata)
+                elif isinstance(item, list):
+                    branches = []
+                    for i in item:
+                        branches.append(self[i])
+                    return Tlist(branches)
+                elif item is Ellipsis:
+                    print('get with ellipsis')
+                    return self
+        else:
+
+            itemfront = item[0]
+            itemnext = item[1:]
+            if len(itemnext) is 1:
+                itemnext = itemnext[0]
+            """
+            how many cases?
+            1.int x
+            2.list containing ints [x,y]
+            3.slice [:]
+            4.ellipsis [...]
+            """
+            if isinstance(itemfront, int):
+                return self[itemfront][itemnext]
+            elif isinstance(itemfront, list):
+                if self.isleaf():
+                    return self[itemfront][itemnext]
+                else:
+                    branches = []
+                    for i in itemfront:
+                        branches.append(self._data[i][itemnext])
+                    return Tlist(branches)
+            elif isinstance(itemfront, slice):
+
+                if self.isleaf():
+                    return self[itemfront][itemnext]
+                else:
+                    branches = self._data[itemfront]
+                    for i, v in enumerate(branches):
+                        branches[i] = v[itemnext]
+                        if not isinstance(branches[i], Tlist):
+                            branches[i] = Tlist([branches[i]])
+                    # isalltlists = [isinstance(i,Tlist) for i in branches]
+                    # isallprims = all([not i for i in isalltlists])
+                    # isalltlists = all(isalltlists)
+                    # ismixed = isallprims or isalltlists
+                    # # print()
+                    # # print(branches,ismixed)
+                    # if not ismixed:
+                    #     for i,v in enumerate(branches):
+                    #         if not isinstance(v,Tlist):
+                    #             branches[i] = Tlist([v])
+                    # # print(branches)
+                    return Tlist(branches)
+            elif itemfront is Ellipsis:
+                maxdepth = self.get_maxdepth()
+                if isinstance(itemnext, tuple):
+                    lennext = len(itemnext)
+                else:
+                    lennext = 1
+                newitem = [slice(None, None, None)] * (maxdepth - lennext)
+
+                if not isinstance(itemnext, tuple):
+                    newitem.append(itemnext)
+                else:
+                    newitem += itemnext
+                return self[tuple(newitem)]
+            else:
+                self.printmessage('incorrect item type')
                 raise
 
-        # type checking
-        # need to build combined args list first
-        arg_dict = {}
-        args_list = args[len(args_names):]
-        kwargs_dict = {}
-        for a_name,a in zip(args_names, args):
-            arg_dict[a_name] = a
-        for a in kwargs:
-            # if given input is not a part of kwargs but args but given with name
-            if a in args_names:
-                # if its not for one that's already given through *args
-                if not a in arg_dict:
-                    arg_dict[a] = kwargs[a]
-                else:
-                    raise
+    def get_maxdepth(self, _count=1):
+        depths = []
+        for i in self._data:
+            if not isinstance(i, Item):
+                depths.append(i.get_maxdepth(_count=_count + 1))
             else:
-                # real kwargs
-                kwargs_dict[a] = kwargs[a]
+                return _count
+            # return depths
+            # depths.append(_count)
+        return max(depths)
 
-        # for arguments
-        for a_name,a in arg_dict.items():
-            # if it has type hint
-            if a_name in annotations:
-                types = annotations[a_name]
-                if isinstance(types, (list, tuple)):
-                    istype = False
-                    # if arg can be one of types
-                    for t in types:
-                        if isinstance(a,t):
-                            istype = True
-                    if not istype:
-                        raise TypeError
-                elif isinstance(types, type(List)):
-                    pass
-                elif not isinstance(a, types):
-                    raise WrongInputTypeError(a, types)
-
-        # for variable arguments
-        if var_args in annotations:
-            types = annotations[var_args]
-            for a in args_list:
-                if isinstance(types, (list, tuple)):
-                    istype = False
-                    for t in types:
-                       if isinstance(a, t):
-                           istype = True
-                    if not istype:
-                        raise TypeError
-                elif isinstance(types, type(List)):
-                    pass
-                elif not isinstance(a, types):
-                    raise WrongInputTypeError(a, types)
-
-        # for variable keyword arguments
-        if var_kwargs in annotations:
-            types = annotations[var_kwargs]
-            types = list(types)
-            for a in kwargs_dict.values():
-                if isinstance(types, (tuple, list)):
-                    istype = False
-                    for t in types:
-                        if isinstance(a, t):
-                            istype = True
-                    if not istype:
-                        raise TypeError
-                elif isinstance(types, type(List)):
-                    pass
-                elif not isinstance(a, types):
-                    raise TypeError
-
-        result = func(*args, **kwargs)
-        if 'return' in annotations:
-            if isinstance(result, annotations['return']) and flag_mutate_self:
-                args[0].raw = result.raw
-                return args[0]
-            else:
-                return result
+    def __setitem__(self, key, value):
+        print('set')
+        """
+        cases
+        1. key is slice [:]
+        2. key is single integer [x]
+        3. key is multiple integers [x,y,z]
+        4. ellipsis [...]
+        :param key:
+        :param value:
+        :return:
+        """
+        # make input iterable(list)
+        if not isinstance(value, tuple):
+            value = [value]
         else:
-            return result
+            value = list(value)
 
-    return wrapper
+        # input check first all has to be tlist or not tlists
+        # try:
+        istlists = [isinstance(i, Tlist) for i in value]
+        isprims = all([not i for i in istlists])
+        istlists = all(istlists)
+        # if data types are coherent proceed
+        if isprims or istlists:
+            # case 1,2
+            if isinstance(key, (slice, int)):
+                # transform integer into slice
+                if isinstance(key, int):
+                    if key < 0:
+                        key = key + len(self._data)
+                    key = slice(key, key + 1)
+                # case data is branches
+                if istlists:
+                    # branches replace items
+                    if self.isleaf():
+                        newtree = self[:key.start] + self[key] + self[key.stop:]
+                        self.set_data(newtree.get_data())
+                    # branches replace branches
+                    else:
+                        self._data[key] = value
+                # case data is python primitives
+                else:
+                    # primitives replace items
+                    if self.isleaf():
+                        value = [Item(i) for i in value]
+                        self._data[key] = value
+                    # primitives replace branches
+                    else:
+                        self.printmessage("can't replace branches with items", 'ANNOUNCE')
+                        raise
+            # case 3
+            elif isinstance(key, tuple):
+                # need to match number of value
+                # match length to key len
+                d = divmod(len(key), len(value))
+                matched = []
+                for i in range(d[0]):
+                    if i is 0:
+                        matched += value
+                    else:
+                        matched += copy.deepcopy(value)
+                matched += copy.deepcopy(value)[:d[1]]
+                for k, v in zip(key, matched):
+                    self.__setitem__(k, v)
+
+            # case 4
+            elif key is Ellipsis:
+                print('set with ellipsis')
+                pass
+            # false case
+            else:
+                self.printmessage('key type incorrect')
+
+        # except:
+        #     self._printmessage('input types incorrect')
+        #     pass
+
+    def set_data(self, data):
+        ids = []
+        for i, v in enumerate(data):
+            ids.append(id(v))
+            if id(v) in ids:
+                data[i] = copy.deepcopy(v)
+            if not isinstance(data[i], Tlist):
+                data[i] = Item(data[i])
+        self._data = data
+        self._checkifleaf()
+
+    # def view(self):
+    #     return Tlist([self])
+
+    def isleaf(self):
+        return self._isleaf
+
+    def get_allleafs(self):
+        leafs = []
+        if self.isleaf():
+            leafs.append(self)
+        else:
+            for i in self.get_data():
+                leafs += i.get_allleafs()
+        return leafs
+
+    def get_allitems(self):
+        items = []
+        if self.isleaf():
+            items += self.get_data()
+            return items
+        else:
+            for i in self.get_data():
+                items += i.get_allitems()
+
+        return items
+
+    def items(self, _count=0):
+        return Tlist(self.get_allitems())
+
+    def leafs(self):
+        return Tlist(self.get_allleafs())
+
+    def isleafsonly(self):
+        return all([i.isleaf() for i in self])
+
+    def pickleafs(self):
+        self.set_data(self.get_allleafs())
+
+    def growequal(self):
+        if self.isleaf():
+            return self
+        else:
+            branches = []
+            allleafs = all([i.isleaf() for i in self.get_data()])
+            if not allleafs:
+                for i in range(len(self.get_data())):
+                    if self[i].isleaf():
+                        self[i].set_data(Tlist([self[i]]))
+                    else:
+                        pass
+                newbranches = []
+                for i in self:
+                    newbranches += i.get_data()
+
+                allleafs = all([i.isleaf() for i in newbranches])
+                if not allleafs:
+                    Tlist(newbranches).growequal()
+                else:
+                    pass
+
+    def pruneall(self):
+        if self.isleaf():
+            return True
+        else:
+            for i in self:
+                if i.isleaf():
+                    pass
+                elif len(i) is 1:
+                    cut = True
+                    while cut:
+                        data = i.get_data()[0].get_data()
+
+                        i.set_data(data)
+                        if i.isleaf():
+                            cut = False
+                else:
+                    pass
+            # check
+            branches = []
+            for i in self:
+                if not i.isleaf():
+                    branches += i.get_data()
+            a = Tlist(branches)
+            a.pruneall()
+
+    def flatten(self, _count=0):
+        self.set_data(self.get_allitems())
+
+    def __len__(self):
+        return len(self._data)
+
+    def prunebottom(self, times: int = 1):
+        # repeat
+        for i in range(times):
+            if not self.isleaf():
+                branches = []
+                numsimple = 0
+                for i in self:
+
+                    if i.isleaf():
+                        branches.append(i)
+                        numsimple += 1
+                    else:
+                        a = i.get_data()
+                        branches += i.get_data()
+
+                # incase unwrapping when reached clean 2D structure
+                if numsimple is len(self.get_data()):
+                    flattened = []
+                    for i in branches:
+                        flattened += i.get_data()
+                    branches = flattened
+                self.set_data(branches)
+            else:
+                self.printmessage('Tlist is already flat', 'ANNOUNCE')
+                break
+
+    def growbottom(self, times: int = 1):
+
+        for i in range(times):
+            self.__init__([self.get_data()])
+            copy.copy(self)
+            # self.set_data([Tlist(self._data)])
+
+    def print_data(self, strings=False, _count=0):
+        lu = u'\u2554'
+        ru = u'\u2557'
+        ld = u'\u255a'
+        rd = u'\u255d'
+        vr = u'\u2551'
+        hr = u'\u2550'
+        lines = []
+        # base condition
+        if self.isleaf():
+            # condition for empty list
+            if len(self.get_data()) is not 0:
+                types = []
+                texts = []
+                lentypes = []
+                lentexts = []
+                for i in self.get_data():
+                    types.append(i.type().__name__)
+                    texts.append(str(i))
+                    lentypes.append(len(str(i.type())))
+                    lentexts.append(len(str(i)))
+
+                max_lentype = max(lentypes)
+                max_lentext = max(lentexts)
+                checkodd = ' ' * ((max_lentype + max_lentext + 1) % 2)  # add extra space to align
+                # format to match length of text line
+                types = [j + ' ' * (max_lentype - lentypes[i]) for i, j in enumerate(types)]
+                texts = [j + ' ' * (max_lentext - lentexts[i]) for i, j in enumerate(texts)]
+                lines = [vr + i + ':' + j + checkodd + vr for i, j in zip(types, texts)]
+                top = lu + hr * (len(lines[0]) - 2) + ru
+                bottom = ld + hr * (len(lines[0]) - 2) + rd
+                lines.insert(0, top)
+                lines.append(bottom)
+
+            else:
+
+                lines.append(lu + hr + ru)
+                lines.append(ld + hr + rd)
+
+        # recursion
+        else:
+            lines = []
+            blocklen = []
+
+            for i in self._data:
+                data = i.print_data(_count=_count + 1)
+                lines += data
+                blocklen.append(len(data[0]))
+
+            # for empty leaf
+            try:
+                max_blocklen = max(blocklen)
+            except:
+                max_blocklen = 0
+
+            # wrap for parent dimension
+            for i in range(len(lines)):
+                line = lines[i]
+                # format style: match position of dimension closure
+                if line[0] == vr:
+                    lines[i] = vr + line[0] + line[1:-1].center(max_blocklen - 2) + line[-1] + vr
+                else:
+                    lines[i] = vr + line[0] + line[1:-1].center(max_blocklen - 2, hr) + line[-1] + vr
+            # enclose blocks
+            top = lu + hr * (max_blocklen) + ru
+            bottom = ld + hr * (max_blocklen) + rd
+            lines.insert(0, top)
+            lines.append(bottom)
+
+        # when recursion is over print
+        if _count is 0:
+            if strings:
+                return lines
+            else:
+                for i in lines:
+                    print(i)
+        else:
+            return lines
+
+    def null(self):
+        items = self.get_allitems()
+        for i in items:
+            i[0] = None
+
+    def empty(self):
+        leafs = self.leafs()
+        for i in leafs:
+            i.set_data([])
+
 
 class Raw_array:
     def __init__(self):
@@ -138,591 +809,70 @@ class Raw_array:
         except:
             return None
 
-class Primitive:
-    pass
-
-class Geometric_value:
+class Geometry(Primitive):
     _raw = Raw_array()
-
-    @property
-    def raw(self):
-        return self._raw
-    def reset_raw(self, array:np.ndarray):
-        if isinstance(v, np.ndarray):
-            self._raw = v
-    def copy(self):
-        new = copy.deepcopy(self)
-        new._raw = self.raw.copy()
-        return new
-
-    # @raw.setter
-    # def raw(self, v):
-    #     self._raw = v
-
-class Plane(Geometric_value):
-    _tree = Family_tree_list()
-    _raw = Raw_array()
-    def __init__(self,
-                 o: (tuple, list) = [0, 0, 0],
-                 x: (tuple, list) = [1, 0, 0],
-                 y: (tuple, list) = [0, 1, 0],
-                 z: (tuple, list) = [0, 0, 1],
-                 master=None):
-
-        print('init of plane')
-        if master == None:
-            # this means it's in the outermost world coordinate system
-            # there is no other coordinate system wrapping this plane
-            self._tree.invite_member(self)
-            master = None
-        elif not isinstance(master, Plane):
-            raise WrongInputTypeError(master, Plane)
-        else:
-            # hierarchy
-            self._tree.invite_as_child_of(master, self)
-
-        # format origin
-        if not isinstance(o, (tuple, list)):
-            raise NotCoordinateLikeError(o)
-        if len(o) != 3:
-            raise NotCoordinateLikeError(o)
-
-        # format axis
-        axis = x, y, z
-        for i,a in enumerate(axis):
-            if not isinstance(a, (tuple, list)):
-                raise NotCoordinateLikeError(a)
-            if len(a) != 3:
-                raise NotCoordinateLikeError(a)
-            # make unit vectors
-            x,y,z = a
-            l = np.sqrt(x*x +y*y +z*z,dtype=DEF_FLOAT_FORMAT)
-            for ii, v in enumerate(a):
-                a[ii] = np.divide(v,l,dtype=DEF_FLOAT_FORMAT)
-
-
-        # sinbular object to wrap
-        self.object = None
-        self._raw = np.vstack((np.array([o, *axis]).transpose(), np.array([1, 0, 0, 0])))
-
-    @property
-    def family_tree(self):
-        return self._tree
-
-    # def __str__(self):
-    #     return f'<Plane {self._raw[:3,0]}>'
 
     @classmethod
     def from_raw(cls, raw: np.ndarray):
-        if raw.shape != (4, 4):
-            raise
-        if not all([a == b for a, b in zip(raw[3], (1, 0, 0, 0))]):
-            raise
-        listed = [i[:3] for i in raw.transpose().tolist()]
-        return cls(*listed)
+        raise Exception('not defined for this primitive yet')
 
-    @property
-    def origin(self):
-        return self._raw[:3, 0]
-
-    @property
-    def x_axis(self):
-        return self._raw[:3,1]
-
-    @property
-    def y_axis(self):
-        return self._raw[:3,2]
-
-    @property
-    def z_axis(self):
-        return self._raw[:3,3]
-
-    def get_x_axis(self):
-        return Vector(*self.x_axis)
-    def get_y_axis(self):
-        return Vector(*self.y_axis)
-    def get_z_axis(self):
-        return Vector(*self.z_axis)
-    def get_origin(self):
-        return Point.con_xyz(*self.origin)
-
-    def is_default(self):
-        if all(np.equal(self._raw, np.array([[0,1,0,0],[0,0,1,0],[0,0,0,1],[1,0,0,0]])).flatten()):
-            return True
-        return False
-#     @staticmethod
-#     def con_from_points():
-#         pass
-#
-#     @staticmethod
-#     def relocate(pla:Plane, new_origin:Point) -> Plane:
-#         new_raw = pla.raw.copy()
-#         new_raw[:3, 0] = new_origin.xyz
-#         return Plane.from_raw(new_raw)
-#
-
-    def decon(self):
-        """
-        deconstruct plane
-        returns origin, vector-x, vector-y, vectorz-z
-        :param pla: plane to deconstruct
-        :return: [ Point, Vector, Vector, Vector ]
-        """
-
-        return [self.get_origin(),self.get_x_axis(),self.get_y_axis(),self.get_z_axis()]
-#
-#     @staticmethod
-#     def con_2_vectors(axis1: Vector, axis2: Vector, axis1_hint: str, axis2_hint: str, origin:Point):
-#
-#         """
-#         Build a plane from given two axis.
-#         If given axes are not perpendicular axis2 will be transformed to make it correct as axis2_hint.
-#
-#         :param origin: origin of the new plane
-#         :param axis1: first axis of the plane
-#         :param axis2: second axis of the plane
-#         :param axis1_hint: one of ('x','y','z')
-#         :param axis2_hint: one of ('x','y','z')
-#         :return: plane
-#         """
-#         projected = vector.project_on_another(axis1, axis2)
-#         axis2 = vector.con_2_points(point.con_from_vector(projected), point.con_from_vector(axis2))
-#         axis3 = vector.cross(axis1, axis2)
-#
-#         axis_dic = {'x':None,'y':None,'z':None}
-#         axis_dic[axis1_hint] = axis1
-#         axis_dic[axis2_hint] = axis2
-#         for i in axis_dic:
-#             if i == None:
-#                 axis_dic[i] = axis3
-#
-#         if any([i is None for i in axis_dic.values()]):
-#             raise
-#         return plane.con_3_vectors(*axis_dic.value(),origin)
-#
-#
-#     @staticmethod
-#     def con_vector_point(axis: Vector, poi: Point, axis_hint: str, point_hint: str, origin: Point = Point()):
-#         projected_point = point.perpendicular_on_vector(axis, poi)
-#         perpen_v = vector.con_2_points(projected_point, poi)
-#         # and build a reference plane
-#         ref_plane = plane.con_2_vectors(axis, perpen_v, axis_hint, point_hint, origin)
-#         return ref_plane
-#
-#     @staticmethod
-#     def con_3_vectors(x_axis: Vector, y_axis: Vector, z_axis: Vector, origin: Point = Point()):
-#         if not all([isinstance(i, Vector) for i in (x_axis, y_axis, z_axis)]):
-#             raise TypeError
-#
-#         return Plane(origin.xyz, x_axis.xyz, y_axis.xyz, z_axis.xyz)
-
-
-
-
-class Geometry:
-
-    _raw = Raw_array()
-    def __init__(self):
-        self._flag_recal_wc = True
-        self._wc = None
-        self._pla = Plane()
-        self._TM = np.eye(4)
-        self._ITM = np.eye(4)
-    def copy(self):
-        new = copy.deepcopy(self)
-        new._raw = self._raw.copy()
-
-        return new
-    # @property
-    # def TM(self):
-    #     return self._TM
-    # @property
-    # def ITM(self):
-    #     return self._ITM
-
-    # @property
-    # def raw(self):
-    #     return self._raw
-    # @raw.setter
-    # def raw(self, v):
-    #     self._raw = v
-
-    @property
-    def pla(self):
-        return self._pla
-
-    def reset_plane(self, pla):
-        self._flag_recal_wc = True
-        self._pla = pla
-    #     pass
-    #
-    # @pla.setter
-    # def pla(self,v):
-    #     self._flag_recal_wc = True
-    #     if not isinstance(v, Plane):
-    #         raise WrongInputTypeError(v, Plane)
-    #     self._pla = v
-
-    @property
-    def LC(self):
-        """
-        local coordinates
-        :return:
-        """
-        return self.raw
-
-    @property
-    def WC(self):
-        """
-        world coordinates
-        its the coordinate at outermost plane(world
-        :return:
-        """
-        if self._flag_recal_wc:
-            print(self.pla.raw)
-            m = Matrix.trans_between_origin_and_plane(self.pla)
-            print(m.raw)
-            exit()
-            # print(self)
-            # print(self.pla.raw)
-            # m = matrix.trans_from_origin_to_plane(self.pla)
-            # print(m)
-            # print(self.trans.transform(self.pla,m).raw)
-            # exit()
-            # self._flag_recal_wc = False
-        pass
-
-    @mymethod
-    def coord_on_level(self, l):
-        """
-        coordinate on the level of planes
-        0 is local(LC)
-        1 is outer
-        ...
-        -1 is outermost(WC)
-        :param l:
-        :return:
-        """
-        pass
-
-class OneD(Geometry):
-    pass
-class TwoD(Geometry):
-    pass
-class ThreeD(Geometry):
-    pass
-
-class Point(OneD, Primitive):
-
-    def __init__(self):
-        super().__init__()
-
-        self._raw = [[0], [0], [0], [1]]
-
-    def __str__(self):
-        return f'<Point>'
-
-
-    @property
-    def x(self):
-        return self.raw[0, 0]
-
-    @x.setter
-    def x(self, v):
-        if isinstance(v, Number):
-            self.raw[0, 0] = v
-
-    @property
-    def y(self):
-        return self.raw[1, 0]
-
-    @y.setter
-    def y(self, v):
-        if isinstance(v, Number):
-            self.raw[1, 0] = v
-
-    @property
-    def z(self):
-        return self.raw[2, 0]
-
-    @z.setter
-    def z(self, v):
-        if isinstance(v, Number):
-            self.raw[2, 0] = v
-
-    @property
-    def xyz(self):
-        return self._raw[:3, 0].tolist()
-
-    def from_vector(self):
-        raise
-        pass
-
-    @classmethod
-    def from_raw(cls, raw: np.ndarray):
-        if not isinstance(raw, np.ndarray):
-            raise TypeError
-        if raw.shape != (4, 1) or raw[3, 0] != 1:
-            raise ValueError
-
-        return cls(*raw[:3, 0])
-
-    @classmethod
-    def con_xyz(cls, x: Number, y: Number, z: Number):
-        ins = cls()
-        trans.move(ins,Vector(x, y, z))
-        return ins
-    #
-    # @mymethod
-    # def coplanar(points: Union[Tuple[Number, Number, Number], List[Number]]):
-    #     raise
-    #
-    # @staticmethod
-    # def clockwise_check(points: (tuple, list), pla: Plane = Plane()):
-    #     """
-    #     see if points are ordered clockwise or anti-clockwise
-    #     signs indicate followings;
-    #     0 - clockwise
-    #     1 - anti-clockwise
-    #     None - can't define
-    #
-    #     :param points: list of points to test
-    #     :param pla: reference plane
-    #     :return: one of (0,1,None)
-    #     """
-    #     if len(points) <= 2:
-    #         # can't know order
-    #         return None
-    #     for p in points:
-    #         if not isinstance(p, Point):
-    #             raise WrongInputTypeError(Point, p)
-    #
-    #     vectors = []
-    #     for i in range(len(points) - 1):
-    #         vectors.append(vector.con_2_points(points[i], points[i + 1]))
-    #
-    #     order = 2
-    #     for i in range(len(vectors) - 1):
-    #         o = vector.right_left_halfspace(vectors[i], vectors[i + 1], pla)
-    #         if o == 3:
-    #             return None
-    #
-    #         if o == 2:
-    #             continue
-    #         else:
-    #             if order == 2:
-    #                 order = o
-    #             else:
-    #                 if order == 0:
-    #                     if o == 0:
-    #                         pass
-    #                     else:
-    #                         return None
-    #                 else:
-    #                     if o == 1:
-    #                         pass
-    #                     else:
-    #                         return None
-    #     if order == 2:
-    #         return None
+    # def bymatrix(self, value):
+    #     if isinstance(value, np.ndarray):
+    #         self.data = value
     #     else:
-    #         return order
-    #
-    # @staticmethod
-    # def xyz(*points):
-    #     lis = []
-    #     for p in points:
-    #         if not isinstance(p, Point):
-    #             raise TypeError
-    #         lis.append(p.xyz)
-    #     if len(lis) == 1:
-    #         return lis[0]
-    #     return lis
-    #
-    # @staticmethod
-    # def x(*points):
-    #     lis = []
-    #     for p in points:
-    #         if not isinstance(p, Point):
-    #             raise TypeError
-    #         lis.append(p.x)
-    #     if len(lis) == 1:
-    #         return lis[0]
-    #     return lis
-    #
-    # @staticmethod
-    # def y(*points):
-    #     lis = []
-    #     for p in points:
-    #         if not isinstance(p, Point):
-    #             raise TypeError
-    #         lis.append(p.y)
-    #     if len(lis) == 1:
-    #         return lis[0]
-    #     return lis
-    #
-    # @staticmethod
-    # def z(*points):
-    #     lis = []
-    #     for p in points:
-    #         if not isinstance(p, Point):
-    #             raise TypeError
-    #         lis.append(p.z)
-    #     if len(lis) == 1:
-    #         return lis[0]
-    #     return lis
-    #
-    # @mymethod
-    # def in_points(cloud: (tuple, list), *points: Point) -> List[bool]:
-    #     mask = []
-    #     if len(points) == 0:
-    #         return []
-    #
-    #     for p in points:
-    #         co = False
-    #         for i in cloud:
-    #             if point.coinside(p, i):
-    #                 co = True
-    #                 break
-    #         mask.append(co)
-    #     return mask
-    #
-    # @mymethod
-    # def unique_points(points: (list, tuple)) -> List[Point]:
-    #     """
-    #     leave only unique points
-    #     :param points:
-    #     :return: [ [unique_points], [uniqueness index of all input] ]
-    #     """
-    #     # what index? index of uniqueness?
-    #     unique_points = []
-    #     unique_index = []
-    #     for p in points:
-    #         if not isinstance(p, Point):
-    #             raise WrongInputTypeError(p, Point)
-    #
-    #         unique = True
-    #         for i, up in enumerate(unique_points):
-    #             # if there is one that has same coordinate value don't add
-    #             # if all is looked and there's isn't one coinside then add
-    #             coinsides = True
-    #             for a, b in zip(up.xyz, p.xyz):
-    #                 # if any component is different go to next
-    #                 if a != b:
-    #                     coinsides = False
-    #                     break
-    #             # for all components equal inspecting point is not unique
-    #             if coinsides:
-    #                 unique = False
-    #                 unique_index.append(i)
-    #                 break
-    #             else:
-    #                 unique_index.append(len(unique_points))
-    #                 continue
-    #
-    #         if unique:
-    #             unique_points.append(p)
-    #         else:
-    #             continue
-    #     return [unique_points, unique_index]
-    #
-    @classmethod
-    def coinside(cls, point1, point2, atol=None) -> bool:
-        if atol != None:
-            raise
+    #         self.printmessage("input isn't matrix")
+    #     return self
+
+    @property
+    def numvertex(self):
+
+        return self().shape[1]
+
+    @property
+    def length(self):
+        if self.numvertex is 1:
+            return None
         else:
-            return all(np.equal(point1._raw, point2._raw).flatten())
-    #
-    # @staticmethod
-    # def sort(points, mask: str = 'x'):
-    #     """
-    #     sort points by given ingredient
-    #
-    #     :param mask: key to sort with, one of 'x','y','z'
-    #     :param points: points to sort
-    #     :return: sorted list of points
-    #     """
-    #     mask_index = {'x': 0, 'y': 1, 'z': 2}
-    #     if not mask in mask_index:
-    #         raise ValueError
-    #     if not all([isinstance(p, Point) for p in points]):
-    #         raise TypeError
-    #
-    #     keys = []
-    #     i = mask_index[mask]
-    #     for p in points:
-    #         keys.append(p.xyz[i])
-    #     sorted_list = sorted(zip(keys, points), key=lambda x: x[0])
-    #
-    #     points = [i[1] for i in sorted_list]
-    #     return points
-    #
-    # @staticmethod
-    # def sort_chunck():
-    #     pass
-    #
-    # @staticmethod
-    # def equal(point1: Point, point2: Point) -> bool:
-    #     if not isinstance(point1, Point) or not isinstance(point2, Point):
-    #         return TypeError
-    #     for a, b in zip(point1.xyz, point2.xyz):
-    #         if not np.isclose(a, b, atol=DEF_TOLERANCE):
-    #             return False
-    #     return True
-    #
-    # @staticmethod
-    # def is_on_line(lin: Line, *points: (tuple, list)) -> bool:
-    #     results = []
-    #     directional1 = vector.con_line(lin)
-    #     for poi in points:
-    #         if not isinstance(poi, Point):
-    #             raise TypeError
-    #
-    #         if line.has_vertex(lin, poi):
-    #             results.append(True)
-    #             continue
-    #
-    #         directional2 = vector.con_2_points(Point(*lin.start), poi)
-    #         if vector.is_parallel(directional1, directional2):
-    #             vertex = [lin.start[0], lin.end[0]]
-    #             vertex = sorted(vertex)
-    #             x = poi.x
-    #             print(x, vertex)
-    #             if x >= vertex[0] and x <= vertex[1]:
-    #                 results.append(True)
-    #             else:
-    #                 results.append(False)
-    #         else:
-    #             results.append(False)
-    #
-    #     if len(results) == 1:
-    #         return results[0]
-    #     return results
-    #
-    # @staticmethod
-    # def con_from_vector(vec: Vector):
-    #     return Point(*vec.xyz)
-    #
-    # @staticmethod
-    # def perpendicular_on_vector(vec: Vector, poi: Point):
-    #     vec2 = vector.con_point(poi)
-    #     a = vector.angle_2_vectors(vec, vec2)
-    #     l = np.cos(a) * vec2.length
-    #     new_v = vector.amplitude(vec, l)
-    #     return point.con_from_vector(new_v)
-    #
-    # @staticmethod
-    # def average(points: (list, tuple)) -> Point:
-    #     coords = []
-    #     for p in points:
-    #         if not isinstance(p, Point):
-    #             raise TypeError
-    #         coords.append(p.xyz)
-    #     coords = np.array(coords).transpose()
-    #     new = []
-    #     for l in coords:
-    #         new.append(sum(l) / len(points))
-    #     return Point(*new)
+            segments = self.segments
+            length = 0
+            for i in segments:
+                vec = i.vertices[1] - i.vertices[0]
+                length += np.linalg.norm(vec())
+            return length
+
+    @property
+    def segments(self):
+        lines = []
+
+        vertex = self.vertex
+
+        for i in range(self.numvertex):
+            v1 = vertex[i]
+            if i is self.numvertex - 1:
+                v2 = vertex[0]
+            else:
+                v2 = vertex[i + 1]
+            lines.append(Line(v1, v2))
+        return lines
+
+    @property
+    def matrix(self):
+        pass
+
+    @matrix.setter
+    def matrix(self, value):
+        pass
+
+    def __repr__(self):
+        return self.__str__()
+
+    @property
+    def raw(self) -> np.ndarray:
+        return self._raw
+
+    @raw.setter
+    def raw(self, v):
+        self._raw = v
 
 
 class Domain2d(Primitive):
@@ -801,16 +951,116 @@ class Vector_Point:
             raise ValueError
 
 
+class Point(Geometry):
 
-
-
-class Vector(Geometric_value):
-    # this is not a geometry
     def __init__(self, x: Number = 0, y: Number = 0, z: Number = 0):
-        self._raw = [[x], [y], [z], [0]]
+        self.raw = [[x], [y], [z], [1]]
+        self.iterstart = 0
 
     def __str__(self):
-        return f'<Vector> {self.raw[:3].tolist()}'
+        return f'{self.__class__.__name__} : {[round(i, 2) for i in self.raw[:3, 0]]}'
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __add__(self, other):
+        if isinstance(other, Vector):
+            return Point.from_raw(self.raw + other.raw)
+        else:
+            raise
+
+    def __sub__(self, other):
+        if isinstance(other, Vector):
+            return Point.from_raw(self.raw - other.raw)
+        else:
+            raise
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.iterstart < len(self.get_data()) - 1:
+            self.iterstart += 1
+            return self().item(self.iterstart - 1)
+        else:
+            self.iterstart = 0
+            raise StopIteration
+
+    # def __add__(self, other):
+    #     if isinstance(other, Point):
+    #         pass
+    #     elif isinstance(other, (tuple, list)):
+    #         if len(other) == 3 and all([isinstance(i, Number) for i in other]):
+    #             self.raw += [[i] for i in other] + [[0]]
+    #     elif isinstance(other, np.ndarray):
+    #         raise
+    #     return self
+
+    def __radd__(self, other):
+        raise
+        pass
+
+    # def __eq__(self, other):
+    #     if isinstance(other, (tuple, list)):
+    #         raise
+    #     elif isinstance(other, Point):
+    #         if all([np.isclose(a,b,atol=DEF_TOLERANCE) for a,b in zip(self.xyz, other.xyz)]):
+    #             return True
+    #         else:
+    #             return False
+
+    @property
+    def x(self):
+        return self.raw[0, 0]
+
+    @x.setter
+    def x(self, v):
+        if isinstance(v, Number):
+            self.raw[0, 0] = v
+
+    @property
+    def y(self):
+        return self.raw[1, 0]
+
+    @y.setter
+    def y(self, v):
+        if isinstance(v, Number):
+            self.raw[1, 0] = v
+
+    @property
+    def z(self):
+        return self.raw[2, 0]
+
+    @z.setter
+    def z(self, v):
+        if isinstance(v, Number):
+            self.raw[2, 0] = v
+
+    @property
+    def xyz(self):
+        return self.raw[:3, 0].tolist()
+
+    def from_vector(self):
+        raise
+        pass
+
+    @classmethod
+    def from_raw(cls, raw: np.ndarray):
+        if not isinstance(raw, np.ndarray):
+            raise TypeError
+        if raw.shape != (4, 1) or raw[3, 0] != 1:
+            raise ValueError
+
+        return cls(*raw[:3, 0])
+
+
+class Vector(Geometry):
+
+    def __init__(self, x: Number = 0, y: Number = 0, z: Number = 0):
+        self.raw = [[x], [y], [z], [0]]
+
+    def __str__(self):
+        return f'{self.__class__.__name__} : {[round(i, 2) for i in self.raw[:3, 0]]}'
 
     def __add__(self, other):
         if isinstance(other, Vector):
@@ -840,24 +1090,19 @@ class Vector(Geometric_value):
 
     @property
     def x(self):
-        return self._raw[0, 0]
+        return self.raw[0, 0]
 
     @property
     def y(self):
-        return self._raw[1, 0]
+        return self.raw[1, 0]
 
     @property
     def z(self):
-        return self._raw[2, 0]
+        return self.raw[2, 0]
 
     @property
     def xyz(self):
-        return self._raw[:3, 0].tolist()
-
-    @property
-    def length(self):
-        x,y,z = self.xyz
-        return np.sqrt(x*x+y*y+z*z,dtype = DEF_FLOAT_FORMAT)
+        return self.raw[:3, 0].tolist()
 
     def from_point(self, point: Point):
         if not isinstance(point, Point):
@@ -867,343 +1112,28 @@ class Vector(Geometric_value):
         self.raw = raw
         return self
 
-    def project_on_xy(self, pla:Plane= Plane()):
-        if pla.is_default():
-            self._raw[2,0] = 0
-        else:
-            on_x = self.copy().project_on_vector(pla.get_x_axis())
-            on_y = self.copy().project_on_vector(pla.get_x_axis())
-            new = on_x + on_y
-            self._raw[:] = new[:]
-        return self
-
-    def project_on_vector(self, vec_ref):
-        self.amplitude(self.dot(vec_ref)/vec_ref.length)
-        return self
-    # @classmethod
-    # def from_raw(cls, raw: np.ndarray):
-    #     if not isinstance(raw, np.ndarray):
-    #         raise TypeError
-    #     if raw.shape != (4, 1):
-    #         raise TypeError
-    #     return cls(*raw.transpose().tolist()[0][:3])
-    #
-    # # functions that recieve single vector and returns single vector should be methods?
-    # # or functions that mutates self should be methods?
-    # # functions that return basic properties should be methods
-    # @property
-    # def length(self):
-    #     x, y, z = self.xyz
-    #     return np.sqrt(x * x + y * y + z * z)
-    #
-    # def __neg__(self):
-    #     return self.__class__().from_raw(self.raw.copy() * (-1))
-    #
-    #
-    # @mymethod
-    # def right_left_halfspace(vec_reference, vec_target, pla: Plane = Plane()) -> int:
-    #     """
-    #     identifies whether vector is on the left or right half space
-    #     signs indicate followings;
-    #
-    #     0 - right
-    #     1 - left
-    #     2 - same direction
-    #     3 - reversed direction
-    #
-    #     :param vec_reference:
-    #     :param vec_target:
-    #     :param pla:
-    #     :return: [ right_left_sign, angle_to_left_right ]
-    #     """
-    #     quarter = vector.quarter_plane(vec_reference, pla=pla)
-    #     ref_angle = vector.angle_plane(vec_reference, pla=pla)
-    #     target_angle = vector.angle_plane(vec_target, pla=pla)
-    #
-    #     if np.isclose(target_angle, ref_angle, atol=DEF_TOLERANCE):
-    #         return [2, 0]
-    #     else:
-    #         if quarter == 0:
-    #             if np.isclose(target_angle, ref_angle + tri.pi, atol=DEF_TOLERANCE):
-    #                 return [3, tri.pi]
-    #             elif target_angle > ref_angle and target_angle < ref_angle + tri.pi:
-    #                 return [1, target_angle - ref_angle]
-    #             elif target_angle < ref_angle:
-    #                 return [0, ref_angle - target_angle]
-    #             else:
-    #                 return [0, ref_angle - (target_angle - tri.pi2)]
-    #         elif quarter == 1:
-    #             if np.isclose(target_angle, ref_angle + tri.pi, atol=DEF_TOLERANCE):
-    #                 return [3, tri.pi]
-    #             elif target_angle > ref_angle and target_angle < ref_angle + tri.pi:
-    #                 return [1, target_angle - ref_angle]
-    #             elif target_angle < ref_angle:
-    #                 return [0, ref_angle - target_angle]
-    #             else:
-    #                 return [0, target_angle - (ref_angle + tri.pi)]
-    #         elif quarter == 2:
-    #             if np.isclose(target_angle, ref_angle - tri.pi, atol=DEF_TOLERANCE):
-    #                 return [3, tri.pi]
-    #             elif target_angle > ref_angle - tri.pi and target_angle < ref_angle:
-    #                 return [0, ref_angle - target_angle]
-    #             elif target_angle < ref_angle - tri.pi:
-    #                 return [1, ref_angle - tri.pi - target_angle]
-    #             else:
-    #                 return [1, target_angle - ref_angle]
-    #         elif quarter == 3:
-    #             if np.isclose(target_angle, ref_angle - tri.pi, atol=DEF_TOLERANCE):
-    #                 return [3, tri.pi]
-    #             elif target_angle < ref_angle and target_angle > ref_angle - tri.pi:
-    #                 return [0, ref_angle - target_angle]
-    #             elif target_angle > ref_angle:
-    #                 return [1, target_angle - ref_angle]
-    #             else:
-    #                 return [1, ref_angle - tri.pi - target_angle]
-    #
-    # @mymethod
-    # def project_on_another(vec_projected_on, vec_projecting):
-    #     u1, u2 = vector.unit(vec_projected_on), vector.unit(vec_projecting)
-    #     cos_v = vector.dot(u1, u2)
-    #     projected = vector.amplitude(vec_projected_on, cos_v * vector.length(vec_projecting))
-    #     return projected
-    #
-    # @mymethod
-    # def length(vec) -> float:
-    #     x, y, z = vec.xyz
-    #     return np.sqrt(x * x + y * y + z * z)
-    #
-    def __add__(self, another):
-        new_v = self.copy()
-        return new_v.addition(another)
-
-    def addition(self, vec):
-        self._raw[:] = self._raw + vec._raw
-        return self
-
-    def div(self, v):
-        self._raw[:] = np.divide(self._raw, np.array([[v],[v],[v],[1]]))
-        return self
-    def mult(self, v):
-        self._raw[:] = np.multiply(self._raw, np.array([[v],[v],[v],[1]]))
-        return self
     @classmethod
-    def dot(cls, vec1, vec2) -> float:
-        return vec1.raw.flatten().dot(vec2.raw.flatten())
-    @classmethod
-    def cross(cls, vec1, vec2):
-        cross = np.cross(vec1.raw[:3, 0], vec2.raw[:3, 0])
-        return cls(*cross)
+    def from_raw(cls, raw: np.ndarray):
+        if not isinstance(raw, np.ndarray):
+            raise TypeError
+        if raw.shape != (4, 1):
+            raise TypeError
+        return cls(*raw.transpose().tolist()[0][:3])
 
+    # functions that recieve single vector and returns single vector should be methods?
+    # or functions that mutates self should be methods?
+    # functions that return basic properties should be methods
+    @property
+    def length(self):
+        x, y, z = self.xyz
+        return np.sqrt(x * x + y * y + z * z)
 
-    # @mymethod
-    # def is_parallel(vec1, vec2) -> int:
-    #     """
-    #     definition of return value
-    #     -1 opposite direction
-    #     0 non-parallel
-    #     +1 same direction
-    #
-    #     :param vec1:
-    #     :param vec2:
-    #     :return:
-    #     """
-    #     unit1, unit2 = vector.unit(vec1), vector.unit(vec2)
-    #     if unit1 == None or unit2 == None:
-    #         return None
-    #
-    #     cos_v = vector.dot(unit1, unit2)
-    #
-    #     if np.isclose(cos_v, 1, atol=DEF_TOLERANCE):
-    #         return 1
-    #     elif np.isclose(cos_v, -1, atol=DEF_TOLERANCE):
-    #         return -1
-    #     else:
-    #         return 0
-    #
-    # @mymethod
-    # def con_2_points(start: Point, end: Point):
-    #     coord = []
-    #     for a, b in zip(start.xyz, end.xyz):
-    #         coord.append(b - a)
-    #     return (*coord)
-    #
-    # @mymethod
-    # def quarter_plane(vec, pla: Plane = Plane()) -> int:
-    #     angle = vector.angle_plane(vec, pla)
-    #     if angle >= 0 and angle <= np.pi / 2:
-    #         return 0
-    #     elif angle > np.pi / 2 and angle <= np.pi:
-    #         return 1
-    #     elif angle > np.pi and angle <= np.pi * 1.5:
-    #         return 2
-    #     else:
-    #         return 3
-    #
-    # @mymethod
-    # def quarter_on_plane(vec, plane_hint: str):
-    #     if not isinstance(vec, ):
-    #         raise TypeError
-    #     x, y, z = vec.xyz
-    #     if plane_hint == 'xy' or plane_hint == 'yx':
-    #         if x >= 0:
-    #             if y >= 0:
-    #                 return 0
-    #             else:
-    #                 return 3
-    #         else:
-    #             if y >= 0:
-    #                 return 1
-    #             else:
-    #                 return 2
-    #
-    #     elif plane_hint == 'yz' or plane_hint == 'zy':
-    #         if y >= 0:
-    #             if z >= 0:
-    #                 return 0
-    #             else:
-    #                 return 3
-    #         else:
-    #             if z >= 0:
-    #                 return 1
-    #             else:
-    #                 return 2
-    #
-    #     elif plane_hint == 'zx' or plane_hint == 'xz':
-    #         if z >= 0:
-    #             if x >= 0:
-    #                 return 0
-    #             else:
-    #                 return 3
-    #         else:
-    #             if x >= 0:
-    #                 return 1
-    #             else:
-    #                 return 2
-    #     else:
-    #         raise ValueError
-    #
+    def __neg__(self):
+        return self.__class__().from_raw(self.raw.copy() * (-1))
 
-    @classmethod
-    def con_point(cls, poi: Point):
-        return cls(*poi.xyz)
-    #
-    # # @tlist.calbranch
-    # # def average(*vectors):
-    # #     v = [i() for i in vectors]
-    # #     pass
-    # #
-    # #
-    # # @tlist.calitem
-    # # def con2pt(start: Point, end: Point):
-    # #     newv = ()
-    # #     newv.set_data(np.subtract(end(), start()))
-    # #     return newv
-    #
-    # @mymethod
-    # def con_line(line: Line):
-    #     if not isinstance(line, Line):
-    #         raise TypeError
-    #     xyz = []
-    #     for a, b in zip(line.start, line.end):
-    #         xyz.append(b - a)
-    #     return (*xyz)
-    #
-
-    #
-    # @mymethod
-    # def divide(vector, v, raw=False):
-    #     pass
-    #
-
-    def amplitude(self, amp: Number):
-        self.mult(amp/self.length)
-        return self
     def flip(self):
-        self.raw[:] = self.raw *[[-1],[-1],[-1],[0]]
+        self.raw = -self.raw
         return self
-
-    @classmethod
-    def unit(cls, vec):
-        new = vec.copy().amplitude(1)
-        return new
-
-    def unitize(self):
-        self.amplitude(1)
-
-    def decon(self):
-        return self.xyz
-
-    @classmethod
-    def decon_vectors(self, pla:Plane = Plane()):
-        pass
-
-    @classmethod
-    def angle_2(cls, from_vector, to_vector, degree=False) -> Number:
-        u1, u2 = cls.unit(from_vector), cls.unit(to_vector)
-        if any([i == None for i in (u1, u2)]):
-            return None
-        cos_value = u1.raw.flatten().dot(u2.raw.flatten())
-        angle = tri.arccos(cos_value)
-        if degree:
-            return tri.radian_degree(angle)
-        else:
-            return angle
-
-    @classmethod
-    def angle_plane(cls, vec, pla: Plane, degree: bool = False) -> Number:
-        """
-        return angle in range of (0, 2pi) from x-axis of plane incrementing counter-clockwise
-        :param vec:
-        :param pla:
-        :param degree:
-        :return:
-        """
-        o, x, y, z = Plane.decon(pla)
-        vec = Vector.unit(vec)
-        cos_value1, cos_value2 = Vector.dot(x, vec), Vector.dot(y, vec)
-        if cos_value1 >= 0:
-            if cos_value2 >= 0:
-                angle = tri.arccos(cos_value1)
-            else:
-                angle = np.pi * 2 - tri.arccos(cos_value1)
-        else:
-            if cos_value2 >= 0:
-                angle = tri.arccos(cos_value1)
-            else:
-                angle = np.pi * 2 - tri.arccos(cos_value1)
-
-        if degree:
-            return tri.radian_degree(angle)
-        else:
-            return angle
-    #
-    # @mymethod
-    # def deconstruct(vector, ):
-    #     on_xy = vector.raw.copy()
-    #     on_xy[2, 0] = 0
-    #     on_yz = vector.raw.copy()
-    #     on_yz[0, 0] = 0
-    #     on_xz = vector.raw.copy()
-    #     on_xz[1, 0] = 0
-    #     return ().from_raw(on_xy), ().from_raw(on_yz), ().from_raw(on_xz)
-    #
-    # @mymethod
-    # def project_on_xyplane(vec):
-    #     new = vec.raw.copy()
-    #     new[2, 0] = 0
-    #     return ().from_raw(new)
-    #
-    # @mymethod
-    # def project_on_yzplane(vec):
-    #     new = vec.raw.copy()
-    #     new[0, 0] = 0
-    #     return ().from_raw(new)
-    #
-    # @mymethod
-    # def project_on_xzplane(vec):
-    #     new = vec.raw.copy()
-    #     new[1, 0] = 0
-    #     return ().from_raw(new)
 
 class String(Geometry):
     """
@@ -1212,17 +1142,17 @@ class String(Geometry):
 
     @property
     def vertices(self):
-        return self._raw[:3].transpose().tolist()
+        return self.raw[:3].transpose().tolist()
     @property
     def start(self):
-        return self._raw[:3,0].tolist()
+        return self.raw[:3,0].tolist()
     @property
     def end(self):
-        return self._raw[:3, -1].tolist()
+        return self.raw[:3, -1].tolist()
 
     @property
     def n_vertex(self):
-        return self._raw.shape[1]
+        return self.raw.shape[1]
 
     @property
     def length(self):
@@ -1236,9 +1166,9 @@ class String(Geometry):
             totall += l
         return totall
 
-    # def flip(self):
-    #     raw = np.flip(self.raw, 1)
-    #     self.raw = raw
+    def flip(self):
+        raw = np.flip(self.raw, 1)
+        self.raw = raw
 
     def append(self, *new_element):
         for e in new_element:
@@ -1291,10 +1221,16 @@ class String(Geometry):
             raise TypeError
 
 
+
 class Line(String):
-    def __init__(self, mag:Number=1):
-        super().__init__()
-        self._raw = [[0,mag],[0,0],[0,0],[1,1]]
+    def __init__(self, start: (list, tuple) = [0, 0, 0], end: (list, tuple) = [1, 0, 0]):
+        if len(start) != 3 or len(end) != 3:
+            raise ValueError
+        if not all([all([isinstance(ii, Number) for ii in i]) for i in (start, end)]):
+            raise TypeError
+
+        start, end = start + [0], end + [0]
+        self.raw = np.array((start, end)).transpose()
 
     def __str__(self):
         return f'Line ' + '{:.3f}'.format(self.length)
@@ -1393,7 +1329,7 @@ class Polygone(Flat, Polyline, Geometry):
         # else:
         #     pass
 
-        self.raw = polyline.con_from_points(ps).raw
+        self.raw = polyline.con_points(ps).raw
 
 
     @property
@@ -1571,10 +1507,70 @@ class Box(Hexahedron):
         super().__init__(a, b, c, d, e, f, g, h)
 
 
+class Plane(Geometry):
+    """"""
+
+    def __init__(self,
+                 origin: (tuple, list) = [0, 0, 0],
+                 axis_x: (tuple, list) = [1, 0, 0],
+                 axis_y: (tuple, list) = [0, 1, 0],
+                 axis_z: (tuple, list) = [0, 0, 1]):
+
+        axis = axis_x, axis_y, axis_z
+        if not all([isinstance(i, (tuple, list)) for i in axis]):
+            print(axis)
+            raise
+        axis = [list(i) for i in axis]
+
+        # check dot product for perpendicularity 3 times!!!
+        xy_dp = sum((np.array(axis_x) * np.array(axis_y)).tolist())
+        yz_dp = sum((np.array(axis_y) * np.array(axis_z)).tolist())
+        zx_dp = sum((np.array(axis_z) * np.array(axis_x)).tolist())
+        if not np.isclose(sum([xy_dp, yz_dp, zx_dp]), 0., atol=self.TOLORENCE):
+            print(axis_x, axis_y, axis_z)
+            raise ValueError('given 3 vectors not perpendicular')
+        # TODO should right-hand right-hand be checked too? do i support right_handed LCS?
+        #   is it already checked by perpendicularity check?
+
+        # unitize
+        for i in axis:
+            l = np.sqrt(i[0] * i[0] + i[1] * i[1] + i[2] * i[2])
+            i[:] = i[0] / l, i[1] / l, i[2] / l
+        axis_x, axis_y, axis_z = axis
+
+        # one point three vectors
+        self.raw = np.array([[*origin, 1], [*axis_x, 0], [*axis_y, 0], [*axis_z, 0]]).transpose()
+
+    def __str__(self):
+        return f'{self.__class__.__name__} of origin {self.origin}'
+
+    @classmethod
+    def from_raw(cls, raw: np.ndarray):
+        if raw.shape != (4, 4):
+            raise
+        if not all([a == b for a, b in zip(raw[3], (1, 0, 0, 0))]):
+            raise
+        listed = [i[:3] for i in raw.transpose().tolist()]
+        return cls(*listed)
+
+    @property
+    def origin(self):
+        return Point(*self.raw[:3, 0])
+
+    @property
+    def x_axis(self):
+        return Vector(*self.raw[:3, 1])
+
+    @property
+    def y_axis(self):
+        return Vector(*self.raw[:3, 2])
+
+    @property
+    def z_axis(self):
+        return Vector(*self.raw[:3, 3])
 
 
-
-class Matrix(Geometric_value):
+class Matrix(Primitive):
     def __init__(self,
                  e00: Number = 1, e01: Number = 0, e02: Number = 0, e03: Number = 0,
                  e10: Number = 0, e11: Number = 1, e12: Number = 0, e13: Number = 0,
@@ -1587,7 +1583,7 @@ class Matrix(Geometric_value):
                     e30, e31, e32, e33]
         if not all([isinstance(i, Number) for i in elements]):
             raise ValueError
-        self._raw = np.array(elements).reshape((4, 4))
+        self.raw = np.array(elements).reshape((4, 4))
 
     @classmethod
     def from_raw(cls, raw):
@@ -1608,159 +1604,6 @@ class Matrix(Geometric_value):
         listed[0] = f'{self.__class__.__name__} : ' + listed[0]
         return '{:>45}\n{:>45}\n{:>45}\n{:>45}'.format(*listed)
 
-    @staticmethod
-    def trans_from_origin_to_plane(pla: Plane):
-        return matrix.trans_between_origin_and_plane(pla)[1]
-
-    @staticmethod
-    def trans_from_plane_to_origin(pla: Plane):
-        return matrix.trans_between_origin_and_plane(pla)[0]
-
-    @staticmethod
-    def trans_between_origin_and_plane(pla: Plane):
-        """
-        calculates two transform matrices
-            [0] to_origin_matrix: transform matrix from plane to origin
-            [1] to_plane_matrix: transform matrix from origin to plane
-
-        :param pla: target plane
-        :return: (tom, tpm)
-        """
-        to_origin_matrices = []
-        to_plane_matrices = []
-
-        pla = pla.copy()
-        origin = pla.get_origin()
-
-        # this is the last move
-        if not Point.coinside(pla.get_origin(),Point()):
-            to_plane_vector = Vector.con_point(origin)
-            to_plane_matrices.append(Matrix.translation(to_plane_vector))
-            to_origin_matrices.append(Matrix.translation(to_plane_vector.flip()))
-
-        # match rotation
-        # from z look x and match
-        # from y look x and match
-        # from x look y and match
-        x_axis = pla.get_x_axis()
-        x_on_xyplane = x_axis.project_on_xy()
-        alpha = Vector.angle_plane(x_on_xyplane, Plane())
-        if np.isclose(alpha, 0, atol=DEF_TOLERANCE):
-            pass
-        else:
-            trans.rotate_around_z(pla, -alpha)
-            to_origin_matrices.insert(0, Matrix.rotation_z(-alpha))
-            to_plane_matrices.append(Matrix.rotation_z(alpha))
-        # it must be already on yz plane
-        x_on_xzplane = pla.get_x_axis()
-        alpha = Vector.angle_plane(x_on_xzplane, Plane(y=[0,0,1],z=[0,-1,0]))
-        if np.isclose(alpha, 0, atol=DEF_TOLERANCE):
-            pass
-        else:
-            trans.rotate_around_y(pla, alpha)
-            to_origin_matrices.insert(0, Matrix.rotation_y(alpha))
-            to_plane_matrices.append(Matrix.rotation_y(-alpha))
-
-        y_on_yzplane = pla.get_y_axis()
-        alpha = Vector.angle_plane(y_on_yzplane, Plane(x=[0,1,0],y=[0,0,1],z=[1,0,0]))
-        if np.isclose(alpha, 0, atol=DEF_TOLERANCE):
-            pass
-        else:
-            trans.rotate_around_x(pla, -alpha)
-            to_origin_matrices.insert(0, Matrix.rotation_x(-alpha))
-            to_plane_matrices.append(Matrix.rotation_x(alpha))
-
-
-        to_origin_matrix = Matrix.combine(*to_origin_matrices)
-        to_plane_matrix = Matrix.combine(*to_plane_matrices)
-
-        return to_origin_Matrix, to_plane_Matrix
-
-    @staticmethod
-    def translation(vec: Vector):
-        if not isinstance(vec, Vector):
-            raise TypeError
-        matrix = np.eye(4)
-        matrix[:3, 3] = vec.xyz
-        return Matrix().from_raw(matrix)
-
-    @staticmethod
-    def rotation_x(angle, degrees=False):
-        matrix = np.eye(4)
-        if degrees:
-            angle = tri.degree_radian(angle)
-        matrix[1] = 0, np.cos(angle), -tri.sin(angle), 0
-        matrix[2] = 0, tri.sin(angle), np.cos(angle), 0
-
-        return Matrix().from_raw(matrix)
-
-    @staticmethod
-    def rotation_y(angle, degrees=False):
-        matrix = np.eye(4)
-        if degrees:
-            angle = np.radians(angle)
-        matrix[0] = tri.cos(angle), 0, tri.sin(angle), 0
-        matrix[2] = -tri.sin(angle), 0, tri.cos(angle), 0
-        return Matrix().from_raw(matrix)
-
-    @staticmethod
-    def rotation_z(angle, degrees=False):
-        """
-        counter-clockwise looking at origin
-        :param angle:
-        :param degrees:
-        :return:
-        """
-        matrix = np.eye(4)
-        if degrees:
-            angle = np.radians(angle)
-        matrix[0] = tri.cos(angle), -tri.sin(angle), 0, 0
-        matrix[1] = tri.sin(angle), tri.cos(angle), 0, 0
-        return Matrix().from_raw(matrix)
-
-    @staticmethod
-    def scale(x, y, z):
-        return Matrix(x, 0, 0, 0,
-                      0, y, 0, 0,
-                      0, 0, z, 0,
-                      0, 0, 0, 1)
-
-    @staticmethod
-    def rotation_vector(vec: Vector, angle: Number, degree=False):
-        raise
-
-    @staticmethod
-    def transform(matrix, geometry):
-        pass
-
-    @staticmethod
-    def transformation_2_planes(from_plane: Plane, to_plane: Plane):
-        if not isinstance(from_plane, Plane) or not isinstance(to_plane, Plane):
-            raise TypeError
-        to_plane_from_origin = matrix.trans_from_origin_to_plane(to_plane)
-        to_origin_from_plane = matrix.trans_from_plane_to_origin(from_plane)
-        print(to_plane_from_origin)
-        print(to_origin_from_plane)
-
-        matrix.combine()
-        exit()
-
-    @staticmethod
-    def combine(*mat):
-        """
-        Combine transformation matrices.
-        Bear in mind that combination order goes from right to left,
-        in other words, from index -1 to index 0.
-
-        :param mat: matrices to combine
-        :return: combined matrix
-        """
-        result = np.eye(4)
-        for m in reversed(mat):
-            x = m.raw.copy()
-            result = x.dot(result)
-        return Matrix.from_raw(result)
-
 
 class Transformation(Primitive):
 
@@ -1771,7 +1614,7 @@ class Transformation(Primitive):
 
 
 class intersection:
-    @mymethod
+    @staticmethod
     def pline_line(pol:(Polyline,Polygone), lin:Line):
         # TODO how to define plane of polyline
         if lin.vertices[0][2] != 0 or lin.vertices[1][2] != 0:
@@ -1894,7 +1737,7 @@ class tests:
                     l.flip()
 
         # trapezoidal Decomposition
-        trapezioid = []
+        trapezoid = []
         for y, vs in vertices_sorted.items():
             # first draw a line and find intersecting points
             c_line = line.con_point_vector(Point(x_start,y,0), Vector(c_line_length,0,0))
@@ -1951,7 +1794,7 @@ class tests:
                 for i in range(len(p_inter)-1):
                     middle_p = point.average([p_inter[i], p_inter[i+1]])
                     print(middle_p)
-                    condition1 = polygone.point_in(pol, middle_p) == 1 # condition1; not on but in
+                    condition1 = polygone.point_in(pol, middle_p) == 2 # condition1; not on but in
                     condition2 = False # condition2; at least one vertex is a part of the segment
                     print('dddddddddddddd', vs)
                     for y in vs:
@@ -1965,7 +1808,7 @@ class tests:
                     if condition1 and condition2:
                         print(vs)
                         print(' correct segment', p_inter[i],p_inter[i+1])
-                        segments.append(line.con_two_points(p_inter[i],p_inter[i+1]))
+                        segments.append(line.con_points(p_inter[i], p_inter[i + 1]))
 
                     else:
                         # segments.append(None)
@@ -2004,8 +1847,8 @@ class tests:
                             e_vertex = line.decon(e)
 
                             # need to split
-                            down = line.con_two_points(e_vertex[0], p)
-                            up = line.con_two_points(p, e_vertex[1])
+                            down = line.con_points(e_vertex[0], p)
+                            up = line.con_points(p, e_vertex[1])
 
                             # record for next local, global search
                             print('     appending down', down.vertices)
@@ -2071,7 +1914,7 @@ class tests:
                             for i, (y,l) in enumerate(building_trapeziod):
                                 if len(l) != 1:
                                     flag_poly = True
-                                    building_trapeziod[i] = polyline.con_from_lines(l)
+                                    building_trapeziod[i] = polyline.con_from_strings(l)
                                 else:
                                     building_trapeziod[i] = l[0]
 
@@ -2079,10 +1922,23 @@ class tests:
                             # index 0 is alway top and goes clockwise
                             building_trapeziod = data.shift(building_trapeziod, -1)
                             if flag_poly:
-                                a = polyline.join(*building_trapeziod)
-                                print(a)
-                                raise
-                            trapezioid.append(building_trapeziod)
+                                # add crossing lines and then round up partially with segments
+                                up_down = [building_trapeziod[0],building_trapeziod[2]]
+                                v_lists = []
+                                for i in up_down:
+                                    if isinstance(i, Line):
+                                        v_lists.append(string.vertices(i)[0])
+                                    else:
+                                        v_lists.append(string.vertices(i)[1:-1])
+                                matched = data.long(*v_lists)
+                                split_edges = []
+                                for s,e in zip(matched[1],matched[0]):
+                                    split_edges.append(line.con_points(s, e))
+                                shape = polyline.join(*building_trapeziod)
+                                shapes = polygone.split(shape, *split_edges)
+                                exit()
+                            else:
+                                trapezoid.append(building_trapeziod)
                             break
 
             # dealing with peak and basin
@@ -2141,7 +1997,7 @@ class tests:
                         raise
                     for i in building_peak:
                         e_under.remove(i)
-                    trapezioid.append(building_peak)
+                    trapezoid.append(building_peak)
 
                 # find basins
                 e_under += basins
@@ -2193,14 +2049,14 @@ class tests:
                         if point.coinside(trace, end):
                             break
 
-                    trapezioid.append(building_basin)
+                    trapezoid.append(building_basin)
 
             edges += e_under
 
         if len(edges) != 0:
             raise
 
-        for i in trapezioid:
+        for i in trapezoid:
             print(i)
 
         # monotone Subdivision
@@ -2208,7 +2064,7 @@ class tests:
         # another thing to check is parallelity of sides.
         # if any polyline is seen then this needs self division
         monotone = []
-        for t in trapezioid:
+        for t in trapezoid:
             if len(monotone) == 0:
                 top_edge = t[0]
                 shape = polygone.con_edges(t)
@@ -2241,7 +2097,7 @@ class tests:
                             print(m)
                             pl1 = polyline.remove_edge(m,adding_bottom_e)
                             t.remove(adding_bottom_e)
-                            pl2 = polyline.con_from_lines(t)
+                            pl2 = polyline.con_from_strings(t)
 
                             print(pl1.vertices)
                             print(pl2.vertices)
@@ -2273,12 +2129,6 @@ class morph:
             raise
 
 class trans:
-    def __init__(self, caller):
-        self._caller = caller
-
-    @ mymethod
-    def test(first, second):
-        print('this is a test method', first)
 
     @staticmethod
     def orient(geo:Geometry, source:Plane, target:Plane) -> Geometry:
@@ -2296,36 +2146,22 @@ class trans:
         return geo
 
     @staticmethod
-    def move(geo:Geometry, vec: Vector) -> Geometry:
-        x = Matrix.translation(vec)
-
+    def move(geo:Geometry, vec: Vector):
+        x = matrix.translation(vec)
         return trans.transform(geo, x)
-
+    
     # @tlist.calitem
     # def test(x, y):
     #     print(x, y)
     #     pass
-
-
+    
     @staticmethod
-    def transform(geo:Geometry, *matrices:Matrix) -> Geometry:
-        """
-
-        :param geo:
-        :param matrices:
-        :return:
-        """
-        # not going to change coordinate directly
-        # yet gonna change plane indication world orientation of geometry
-        if isinstance(geo, Geometry):
-            r = geo.pla.raw
-        elif isinstance(goe, (Vector,Plane)):
-            r = geo.raw
-
-        # calculate backward
+    def transform(geometry:Geometry, *matrices:Matrix):
+        r = geometry.raw
         for m in reversed(matrices):
-            r[:] = m.raw.dot(r)
-        return geo
+            r = m.raw.dot(r)
+        return geometry.__class__.from_raw(np.array(r))
+    
     # @tlist.calitem
     # def rect_mapping(geometry: Geometry, source: Rect, target: Rect):
     #     source_v = source.vertex()
@@ -2369,43 +2205,69 @@ class trans:
 
     @staticmethod
     def rotate_around_x(geometry:Geometry, angle, degree=False, ):
-        """
-        roatate counter_clockwise looking at origin
-        :param geometry:
-        :param angle:
-        :param degree:
-        :return:
-        """
         x = matrix.rotation_x(angle, degree)
         return trans.transform(geometry,x)
 
     @staticmethod
     def rotate_around_y(geometry:Geometry, angle, degree=False):
-        """
-        rotate counter_clockwise looking at origin
-        :param geometry:
-        :param angle:
-        :param degree:
-        :return:
-        """
         x = matrix.rotation_y(angle, degree)
         return trans.transform(geometry,x)
 
     @staticmethod
-    def rotate_around_z(geo:Geometry, angle:Number, degree=False):
-        """
-        rotate counter_clockwise looking at origin
-        :param geo:
-        :param angle:
-        :param degree:
-        :return:
-        """
+    def rotate_around_z(geometry:Vector, angle, degree=False):
         x = matrix.rotation_z(angle, degree)
-        return trans.transform(geo, x)
+        return trans.transform(geometry,x)
 
 
 class line:
-    @mymethod
+    @staticmethod
+    def touching_another(lin1:Line, lin2:Line):
+        order = None
+        if point.coinside(line.end(lin1), line.start(lin2)):
+            order = 1,0
+        elif point.coinside(line.end(lin1),line.end(lin2)):
+            order = 1,1
+        elif point.coinside(line.start(lin1), line.start(lin2)):
+            order = 0,0
+        elif point.coinside(line.start(lin1), line.end(lin2)):
+            order = 0,1
+        return order
+
+    # @staticmethod
+    # def pick_polygons(line_list:(tuple,list), pla:Plane):
+    #     print(line_list)
+    #     print(pla)
+    #     while True:
+    #         temp_lines = []
+    #         for i in line_list:
+    #             print('looking for a line', i.vertices)
+    #             touching = []
+    #             for ii in line_list:
+    #                 touch_sign = line.touching_another(i,ii)
+    #                 if touch_sign != None:
+    #                     if touch_sign[0] == 1:
+    #                         if touch_sign[1] == 0:
+    #                             touching.append(ii)
+    #                         else:
+    #                             touching.append(line.flipped(ii))
+    #
+    #             if len(touching) == 0:
+    #                 print('no touching line')
+    #                 continue
+    #             else:
+    #                 print('     touching lines')
+    #                 for i in touching:
+    #                     print('     ', i.vertices)
+    #
+    #                 temp_lines.append(i)
+    #                 line_list.remove(i)
+    #
+    #         if len(line_list) == 0:
+    #             break
+    #
+    #     exit()
+    #     pass
+    @staticmethod
     def unique_lines(lines:(list, tuple), consider_direction = False) -> list:
         to_compare= lines.copy()
         unique = []
@@ -2441,7 +2303,7 @@ class line:
     def end(lin:Line) -> Point:
         return Point(*lin.end)
 
-    @mymethod
+    @staticmethod
     def decon(lin:Line):
         return [Point(*lin.raw.copy()[:3, 0]), Point(*lin.raw.copy()[:3, 1])]
 
@@ -2479,12 +2341,12 @@ class line:
         return Line(lin.end,lin.start)
 
     @staticmethod
-    def con_two_points(start:Point, end:Point) -> Line:
+    def con_points(start:Point, end:Point) -> Line:
         return Line(start.xyz, end.xyz)
 
     @staticmethod
     def con_point_vector(start:Point, vec:Vector) -> Line:
-        return line.con_two_points(start, trans.move(vec, start))
+        return line.con_points(start, trans.move(start, vec))
 
     @staticmethod
     def con_from_vector(vector:Vector):
@@ -2493,7 +2355,55 @@ class line:
 
 
 class data:
-    @mymethod
+
+    @staticmethod
+    def long(lis1:(tuple, list),lis2:(tuple, list),style=0)-> (tuple, list):
+        """
+        lengthen lists to match longest list
+        style;
+        0 - duplicates last to fill gap
+        1 - repeat whole list to fill gap
+
+        :param lis:
+        :param style:
+        :return:
+        """
+        new1, new2 = lis1.copy(),lis2.copy()
+        if len(new1) == len(new2):
+            return [new1, new2]
+
+        gap = len(new1)-len(new2)
+        flipped = False
+        if gap > 0:
+            big_small = [new1, new2]
+        else:
+            big_small = [new2, new1]
+            flipped = True
+
+        gap = abs(gap)
+        # means list1 is bigger than list2
+        if style == 0:
+            big_small[1] += [big_small[1][-1]]*gap
+
+        elif style == 1:
+            # list1 is bigger than list2
+            l_small = len(big_small[1])
+            quotient, remainder = gap // l_small, gap % l_small
+            big_small[1] += big_small[1]*quotient + big_small[1][:remainder]
+
+        else:
+            FunctionNotDefinedError()
+
+        if flipped:
+            return [big_small[1], big_small[0]]
+        else:
+            return big_small
+
+    @staticmethod
+    def short():
+        pass
+
+    @staticmethod
     def filter_type(lis:(tuple, list), *t:type, include_exclude = True) -> list:
         if include_exclude:
             new_list = []
@@ -2592,30 +2502,39 @@ class data:
         else:
             raise Exception('not defined yet')
 class string:
-    @mymethod
+    @staticmethod
+    def vertex(stri:String, index):
+        raw = stri.raw[:3,index].copy()
+        return Point(*raw)
+
+    @staticmethod
     def start(stri:String) -> Point:
         return Point(*stri.raw[:3, 0])
-    @mymethod
+    @staticmethod
     def end(stri:String) -> Point:
         return Point(*stri.raw[:3, -1])
-    @mymethod
+    @staticmethod
     def flip(stri:String) -> String:
         raw = np.flip(stri.raw.copy(), 1)
         return stri.__class__.from_raw(raw)
 
-    @mymethod
-    def vertex(stri:String):
+    @staticmethod
+    def vertices(stri:String):
         raw = stri.raw[:3].transpose().tolist()
         points = []
         for i in raw:
             points.append(Point(*i))
         return points
 
-    @mymethod
+    @staticmethod
     def edges(stri:String):
-        pass
+        edges = []
+        vertices = stri.vertices
+        for i in range(len(vertices) -1):
+            edges.append(Line(vertices[i], vertices[i+1]))
+        return edges
 
-    @mymethod
+    @staticmethod
     def decon(stri:String):
         raw = np.flip(stri.raw[:3].transpose().tolist())
         points = []
@@ -2623,11 +2542,11 @@ class string:
             points.append(Point(*i))
         edges = []
         for i in range(len(points)-1):
-            edges.append(line.con_two_points(points[i], points[i+1]))
+            edges.append(line.con_points(points[i], points[i + 1]))
         return [edges, points]
 
 class polyline:
-    @mymethod
+    @staticmethod
     def iron(poll:Polyline) -> Polyline:
         # look through each edge and see the vector of it
         edges = polyline.edges(poll)
@@ -2646,7 +2565,7 @@ class polyline:
                     break
             if len(para_edges) != 0:
                 s,e = line.start(e), line.end(para_edges[-1])
-                ironned = line.con_two_points(s,e)
+                ironned = line.con_points(s, e)
                 edges[i] = ironned
                 for i in para_edges:
                     edges.remove(i)
@@ -2654,7 +2573,7 @@ class polyline:
         new_poll = poll.__class__().append(*edges)
         return new_poll
 
-    @mymethod
+    @staticmethod
     def remove_edge(poll:Polyline, edge:Line) -> Polyline:
         poll_vertices = polyline.vertices(poll)
         split = None
@@ -2671,11 +2590,11 @@ class polyline:
         first, second = poll_vertices[:split+1],poll_vertices[split+1:]
         if point.coinside(first[0], second[-1]):
             merged = second+first[1:]
-            return polyline.con_from_points(merged)
+            return polyline.con_points(merged)
         else:
-            return [polyline.con_from_points(first), polyline.con_from_points(second)]
+            return [polyline.con_points(first), polyline.con_points(second)]
 
-    @mymethod
+    @staticmethod
     def con_polygone(polg:[Polygone, Polyline],a:str, *b:int, **c:dict):
         poll = Polyline()
         poll.raw = polg.raw.copy()
@@ -2709,7 +2628,7 @@ class polyline:
         for l in segments:
             if not isinstance(l, String):
                 raise WrongInputTypeError(l, String)
-            new_p_lists.append(string.vertex(l))
+            new_p_lists.append(string.vertices(l))
 
         print('new p list',len(new_p_lists), new_p_lists)
         organized = []
@@ -2742,7 +2661,7 @@ class polyline:
 
         shapes = []
         for l in organized:
-            shape = polyline.con_from_points(l)
+            shape = polyline.con_points(l)
             if polyline.is_closed(shape):
                 shape = polygone.con_polyline(shape)
             shapes.append(shape)
@@ -2753,31 +2672,39 @@ class polyline:
 
 
     @staticmethod
-    def con_from_lines(lines:(tuple, list)) -> Polyline:
+    def con_from_strings(lines:(tuple, list)) -> Polyline:
+        """
+        Join given strings and form single polyline.
+        :param lines:
+        :return:
+        """
+        for i in lines:
+            print(i.vertices)
         if not isinstance(lines, (tuple, list)):
             raise TypeError
         if len(lines) == 0:
             return None
         lines = lines.copy()
         starting_line= lines.pop(0)
-        sorted_vertex = line.decon(starting_line)
+        sorted_vertex = string.vertices(starting_line)
         while True:
             flag_found = False
             to_remove = []
             for l in lines:
                 cloud = sorted_vertex[0], sorted_vertex[-1]
                 # if the line can be joined from start or end of collected
-                s,e = line.decon(l)
+                vs = string.vertices(l)
+                s,e = vs[0],vs[-1]
                 if any(point.in_points(cloud, s,e)):
                     flag_found = True
                     if point.coinside(sorted_vertex[0], s):
-                        sorted_vertex.insert(0,e)
+                        sorted_vertex = list(reversed(vs))[:-1] + sorted_vertex
                     elif point.coinside(sorted_vertex[0], e):
-                        sorted_vertex.insert(0,s)
+                        sorted_vertex = vs[:-1] + sorted_vertex
                     elif point.coinside(sorted_vertex[-1], s):
-                        sorted_vertex.append(e)
+                        sorted_vertex += vs[1:]
                     elif point.coinside(sorted_vertex[-1], e):
-                        sorted_vertex.append(s)
+                        sorted_vertex += list(reversed(vs))[1:]
                     to_remove.append(l)
 
             if not flag_found:
@@ -2789,10 +2716,10 @@ class polyline:
             if len(lines) == 0:
                 break
 
-        return polyline.con_from_points(sorted_vertex)
+        return polyline.con_points(sorted_vertex)
 
     @staticmethod
-    def con_from_points(points_list:(tuple, list)) -> Polyline:
+    def con_points(points_list:(tuple, list)) -> Polyline:
         if not isinstance(points_list, (tuple, list)):
             raise TypeError
         if len(points_list) == 0:
@@ -2822,24 +2749,20 @@ class polyline:
 
         lines = []
         for i in range(len(points)-1):
-            lines.append(line.con_two_points(points[i], points[i+1]))
+            lines.append(line.con_points(points[i], points[i + 1]))
 
         return [lines, points]
 
     @staticmethod
-    def vertices(poll: Polyline):
-        coords = poll.raw[:3].transpose().tolist()
-        points = []
-        for i in coords:
-            points.append(Point(*i))
-        return points
+    def vertices(poll):
+        return string.vertices(poll)
 
     @staticmethod
     def edges(pol:Polyline):
         lines = []
         points = polyline.vertices(pol)
         for i in range(len(points)-1):
-            lines.append(line.con_two_points(points[i],points[i+1]))
+            lines.append(line.con_points(points[i], points[i + 1]))
         return lines
 
     @staticmethod
@@ -2852,18 +2775,18 @@ class polyline:
 
 class polygone:
 
-    @mymethod
+    @staticmethod
     def string_in(polg:Polygone, line:String):
         pass
 
-    @mymethod
+    @staticmethod
     def point_in(pol: Polygone, poi: Point):
         """
         tests whether point is (out in on) the polyline
         returns:
         0 if point is out
-        1 if point is in
-        2 if point is on the boundary
+        1 if point is on the boundary
+        2 if point is in
         :param pol: closed Polygon
         :param poi: Point to test
         :return: out, in, on sign
@@ -2877,14 +2800,14 @@ class polygone:
             if poi.x == 7 and poi.y == 7:
                 print(e.vertices, point.is_on_line(e, poi))
             if point.is_on_line(e, poi):
-                return 2
+                return 1
 
         # see point in out polyline
         x_max = sorted(set(pol.raw[0]))[-1]
         end_point = Point(*poi.xyz)
         end_point.x = x_max + 1
 
-        c_line = line.con_two_points(poi, end_point)
+        c_line = line.con_points(poi, end_point)
         iter_count = 0
 
         while True:
@@ -2919,20 +2842,24 @@ class polygone:
         if len(inter) % 2 == 0:
             return 0
         else:
-            return 1
+            return 2
 
-    @mymethod
+    @staticmethod
     def con_edges(edges:List[Line]):
         # need edge crossing checking
-        poll = polyline.con_from_lines(edges)
+        poll = polyline.con_from_strings(edges)
+        if poll is None:
+            return None
         return polygone.con_polyline(poll)
 
-    @mymethod
+    @staticmethod
     def con_polyline(poll:Polyline):
+        if not polyline.is_closed(poll):
+            return None
         return Polygone.from_raw(poll.raw.copy())
 
 
-    @mymethod
+    @staticmethod
     def merge(polg1:Polygone, polg2:Polygone, iron=True):
         raise
         print(polg1, polg2)
@@ -2965,13 +2892,483 @@ class polygone:
 
         pass
 
-    @mymethod
-    def split(polg:Polygone, lin:Line) -> List[Polygone]:
+    @staticmethod
+    def split(polg:Polygone, *lin_cutter:Line) -> List[Polygone]:
+        # check planarity
+        shapes = [polg]
+        # check intersections
+        for c in lin_cutter:
+            new_shapes = []
+            for shape in shapes:
+                edges = string.edges(shape)
+                inter_points = []
+                splited_vertices = [line.start(edges[0])]
+                split_increment = 0
+                for b,e in enumerate(edges):
+                    # find intersection
+                    inter = intersection.line_line(e,c)
+                    s,e = line.decon(e)
+                    splited_vertices.append(e)
+                    if isinstance(inter, Point):
+                        # consider when intersection is below end
+                        # if this is not considered next edges will create cuplicated intersection
+                        if point.coinside(inter, s):
+                            pass
+                        elif point.coinside(inter, e):
+                            inter_points.append([b+1+split_increment, inter])
+                        else:
+                            inter_points.append([b+1+split_increment, inter]) # i+ is to indicate vertex index
+                            split_increment += 1
+                            # and how can at the same time split edge and store?
+                            # adding as a list not to change length, not to interfear iteration
+                            splited_vertices.insert(-1,inter)
 
+                if len(inter_points) < 2:
+                    new_shapes.append(shape)
+                    continue
+                # now need to find portals
+                # need to order points on line then pick valid segments
+                # then porsion lists then combine lists to form a shape
+                print(inter_points)
+                _, index = point.sort_on_line([i[1] for i in inter_points],c)
+                inter_points = data.list_item(inter_points, *index)
+                # s,e = string.vertex(shape,0), string.vertex(shape,-2)
+                bridges = []
+                splits = set()
+                for b in range(len(inter_points) -1):
+                    print(inter_points)
+                    p1,p2 = inter_points[b][1], inter_points[b+1][1]
+                    split = set((inter_points[b][0], inter_points[b+1][0]))
+
+                    mid_point = point.average([p1,p2])
+                    # if point is in
+                    if polygone.point_in(shape,mid_point) == 2:
+                        # TODO for curved or pline need more generalization of segment
+                        if isinstance(c, Line):
+                            segment = line.con_points(p1,p2)
+                        elif isinstance(c, Polyline):
+                            raise FunctionNotDefinedError()
+                        else:
+                            raise FunctionNotDefinedError()
+                        bridges.append([p1, p2, segment])
+                        splits = splits.union(split)
+
+                if len(splits) < 2:
+                    new_shapes.append(shape)
+                    continue
+
+                # split edges
+                splits = sorted(splits)
+                sub_edge_list = []
+                print(splits)
+                # manage very end
+                front = list(reversed(splited_vertices[splits[-1]:][:-1]))
+                back = splited_vertices[:splits[0]+1]
+                sub_edge_list.append([front[0],back[-1], polyline.con_points(front+back)])
+
+                for b in range(len(splits)-1):
+                    s_i,e_i = splits[b], splits[b+1]
+                    vertices = splited_vertices[s_i:e_i+1]
+                    sub_edge_list.append([vertices[0],vertices[-1],polyline.con_points(vertices)])
+
+                # not jump with portals
+                edges_list = []
+                while True:
+                    new_set = []
+                    start, end, edge = sub_edge_list.pop()
+                    new_set.append(edge)
+                    while True:
+                        # look for all bridge connection
+                        bridges_copy = bridges.copy()
+                        while True:
+                            flag_not_found = True
+                            for b in bridges_copy:
+                                print(end,b[:2])
+                                mask = point.in_points([end], *b[:2])
+                                print(mask)
+                                if any(mask):
+                                    bridges_copy.remove(b)
+                                    new_set.append(b[2])
+                                    end = data.cull_pattern(b[:2],mask, flip_mask=True)[0]
+                                    flag_not_found = False
+                                    break
+                                else:
+                                    pass
+
+                            if flag_not_found:
+                                break
+                        # if travel is closed
+                        if point.coinside(start, end):
+                            edges_list.append(new_set)
+                            break
+                        # look for another chunk
+                        else:
+                            for sub in sub_edge_list:
+                                if point.coinside(end, sub[0]):
+                                    sub_edge_list.remove(sub)
+                                    new_set.append(sub[2])
+                                    end = sub[1]
+                                    break
+
+                    if len(sub_edge_list) == 0:
+                        break
+
+                # form new polygon
+                for i,l in enumerate(edges_list):
+                    edges_list[i] = polygone.con_edges(l)
+
+                new_shapes += edges_list
+
+            shapes = new_shapes
+
+        return  shapes
+
+
+
+class point:
+    @staticmethod
+    def decon(poi:Point) -> [Number,Number,Number]:
+        """
+        Deconstructs point into x,y,z coordinates.
+        :param poi:
+        :return:
+        """
+        return poi.raw[:3,0].transpose().tolist()
+
+    @staticmethod
+    def dist_2_points(poi1:Point, poi2:Point) -> Number:
+        """
+        Calculates distance between two points.
+        :param poi1:
+        :param poi2:
+        :return:
+        """
+        v = []
+        for a,b in zip(point.decon(poi1), point.decon(poi2)):
+            v.append(b-a)
+        l = math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2])
+        return l
+
+    @staticmethod
+    def dist_to_line(poi:Point, lin:Line) -> Number:
+        """
+        Calculates shortest distence between the line and the point
+
+        :param poi:
+        :param lin:
+        :return:
+        """
+        p_poi = point.project_on_line(poi, lin)
+        return point.dist_2_points(poi,p_poi)
+
+    @staticmethod
+    def project_on_line(poi:Point, lin:Line) -> Point:
+        """
+        Project point on line of which projection line draws
+        shortest between the point ant the line.
+
+        :param poi:
+        :param lin:
+        :return:
+        """
+        origin = line.start(lin)
+        v_to_poi = vector.con_2_points(origin,poi)
+        v_from_start = vector.project_on_another(vector.con_line(lin), v_to_poi)
+        p_p = trans.move(origin,v_from_start)
+        return p_p
+
+    @staticmethod
+    def sort_on_line(points:(tuple,list), lin:Line) -> (tuple,list):
+        """
+        sorts points along the line
+        if dirctional value is the same, point closer to line will come first
+        :param points:
+        :param lin:
+        :return:
+        """
+        origin = line.start(lin)
+        vec_lin = vector.con_line(lin)
+        vectors = {}
+        for i,p in enumerate(points):
+            vec_o_to_p = vector.con_2_points(origin, p)
+            vec_pro = vector.project_on_another(vec_lin, vec_o_to_p)
+            dist_f_origin = vector.length(vec_pro)
+            dist_f_pp = point.dist_2_points(trans.move(origin,vec_pro), p)
+            if dist_f_origin not in vectors:
+                vectors[dist_f_origin] = []
+                vectors[dist_f_origin].append([dist_f_pp, i, p])
+            else:
+                vectors[dist_f_origin].append([dist_f_pp, i, p])
+
+        # outer sort
+        s = [i[1] for i in sorted(vectors.items(), key = lambda x:x[0])]
+        points = []
+        index = []
+        for l in s:
+            if len(l) == 1:
+                points.append(l[0][2])
+                index.append(l[0][1])
+            else:
+                # inner sort
+                index_point = [i[1:] for i in sorted(l, key=lambda x:x[0])]
+                points += [i[1] for i in index_point]
+                index += [i[0] for i in index_point]
+        return [points, index]
+
+    @staticmethod
+    def coplanar(points:Union[Tuple[Number,Number,Number], List[Number]]):
+        raise
+
+
+    @staticmethod
+    def clockwise_check(points:(tuple, list), pla:Plane=Plane()):
+        """
+        see if points are ordered clockwise or anti-clockwise
+        signs indicate followings;
+        0 - clockwise
+        1 - anti-clockwise
+        None - can't define
+
+        :param points: list of points to test
+        :param pla: reference plane
+        :return: one of (0,1,None)
+        """
+        if len(points) <= 2:
+            # can't know order
+            return None
+        for p in points:
+            if not isinstance(p, Point):
+                raise WrongInputTypeError(Point, p)
+
+        vectors = []
+        for i in range(len(points)-1):
+            vectors.append(vector.con_2_points(points[i], points[i+1]))
+
+        order = 2
+        for i in range(len(vectors)-1):
+            o = vector.right_left_halfspace(vectors[i], vectors[i + 1], pla)
+            if o == 3:
+                return None
+
+            if o == 2:
+                continue
+            else:
+                if order == 2:
+                    order = o
+                else:
+                    if order == 0:
+                        if o == 0:
+                            pass
+                        else:
+                            return None
+                    else:
+                        if o == 1:
+                            pass
+                        else:
+                            return None
+        if order == 2:
+            return None
+        else:
+            return order
+
+
+    @staticmethod
+    def xyz(*points):
+        lis = []
+        for p in points:
+            if not isinstance(p, Point):
+                raise TypeError
+            lis.append(p.xyz)
+        if len(lis) == 1:
+            return lis[0]
+        return lis
+
+    @staticmethod
+    def x(*points):
+        lis = []
+        for p in points:
+            if not isinstance(p, Point):
+                raise TypeError
+            lis. append(p.x)
+        if len(lis) == 1:
+            return lis[0]
+        return lis
+
+    @staticmethod
+    def y(*points):
+        lis = []
+        for p in points:
+            if not isinstance(p, Point):
+                raise TypeError
+            lis.append(p.y)
+        if len(lis) == 1:
+            return lis[0]
+        return lis
+
+    @staticmethod
+    def z(*points):
+        lis = []
+        for p in points:
+            if not isinstance(p, Point):
+                raise TypeError
+            lis.append(p.z)
+        if len(lis) == 1:
+            return lis[0]
+        return lis
+
+    @staticmethod
+    def in_points(cloud:(tuple, list), *points:Point) -> List[bool]:
+        mask = []
+        if len(points) == 0:
+            return []
+
+        for p in points:
+            co = False
+            for i in cloud:
+                if point.coinside(p, i):
+                    co = True
+                    break
+            mask.append(co)
+        return mask
+
+    @staticmethod
+    def unique_points(points:(list, tuple)) -> List[Point]:
+        """
+        leave only unique points
+        :param points:
+        :return: [ [unique_points], [uniqueness index of all input] ]
+        """
+        # what index? index of uniqueness?
+        unique_points = []
+        unique_index = []
+        for p in points:
+            if not isinstance(p, Point):
+
+                raise WrongInputTypeError(p, Point)
+
+            unique = True
+            for i,up in enumerate(unique_points):
+                # if there is one that has same coordinate value don't add
+                # if all is looked and there's isn't one coinside then add
+                coinsides = True
+                for a,b in zip(up.xyz, p.xyz):
+                    # if any component is different go to next
+                    if a != b:
+                        coinsides = False
+                        break
+                # for all components equal inspecting point is not unique
+                if coinsides:
+                    unique = False
+                    unique_index.append(i)
+                    break
+                else:
+                    unique_index.append(len(unique_points))
+                    continue
+
+            if unique:
+                unique_points.append(p)
+            else:
+                continue
+        return [unique_points, unique_index]
+
+    @staticmethod
+    def coinside(point1:Point, point2:Point, atol=None) -> bool:
+        if atol != None:
+            raise
+        else:
+            return all(np.equal(point1.raw, point2.raw).flatten())
+
+    @staticmethod
+    def sort(points, mask:str = 'x'):
+        """
+        sort points by given ingredient
+
+        :param mask: key to sort with, one of 'x','y','z'
+        :param points: points to sort
+        :return: sorted list of points
+        """
+        mask_index = {'x':0,'y':1,'z':2}
+        if not mask in mask_index:
+            raise ValueError
+        if not all([isinstance(p, Point) for p in points]):
+
+            raise TypeError
+
+        keys = []
+        i = mask_index[mask]
+        for p in points:
+            keys.append(p.xyz[i])
+        sorted_list = sorted(zip(keys, points),key=lambda x: x[0])
+
+        points = [i[1] for i in sorted_list]
+        return points
+
+    @staticmethod
+    def sort_chunck():
         pass
 
+    @staticmethod
+    def equal(point1:Point, point2:Point) -> bool:
+        if not isinstance(point1, Point) or not isinstance(point2, Point):
+            return TypeError
+        for a,b in zip(point1.xyz, point2.xyz):
+            if not np.isclose(a,b, atol=DEF_TOLERANCE):
+                return False
+        return True
 
+    @staticmethod
+    def is_on_line(lin:Line, *points:(tuple, list)) -> bool:
+        results = []
+        directional1 = vector.con_line(lin)
+        for poi in points:
+            if not isinstance(poi, Point):
+                raise TypeError
 
+            if line.has_vertex(lin,poi):
+                results.append(True)
+                continue
+
+            directional2 = vector.con_2_points(Point(*lin.start), poi)
+            if vector.is_parallel(directional1, directional2):
+                vertex = [lin.start[0], lin.end[0]]
+                vertex = sorted(vertex)
+                x = poi.x
+                print(x,vertex)
+                if x >= vertex[0] and x <= vertex[1]:
+                    results.append(True)
+                else:
+                    results.append(False)
+            else:
+                results.append(False)
+
+        if len(results) == 1:
+            return results[0]
+        return results
+
+    @staticmethod
+    def con_from_vector(vec:Vector):
+        return Point(*vec.xyz)
+
+    @staticmethod
+    def perpendicular_on_vector(vec: Vector, poi: Point):
+        vec2 = vector.con_point(poi)
+        a = vector.angle_2_vectors(vec, vec2)
+        l = np.cos(a) * vec2.length
+        new_v = vector.amplitude(vec, l)
+        return point.con_from_vector(new_v)
+
+    @staticmethod
+    def average(points:(list, tuple)) -> Point:
+        coords = []
+        for p in points:
+            if not isinstance(p, Point):
+                raise TypeError
+            coords.append(p.xyz)
+        coords = np.array(coords).transpose()
+        new = []
+        for l in coords:
+            new.append(sum(l)/len(points))
+        return Point(*new)
 
 
 class math:
@@ -3032,13 +3429,13 @@ class trigonometry:
 
     @staticmethod
     def sin(v):
-        return np.cos(v,dtype=DEF_FLOAT_FORMAT)
+        np.cos(v,dtype=DEF_FLOAT_FORMAT)
     @staticmethod
     def cos(v):
-        return np.cos(v,dtype=DEF_FLOAT_FORMAT)
+        np.cos(v,dtype=DEF_FLOAT_FORMAT)
     @staticmethod
     def tan(v):
-        return np.tan(v,dtype=DEF_FLOAT_FORMAT)
+        np.tan(v,dtype=DEF_FLOAT_FORMAT)
 
     @staticmethod
     def arccos(cos_v):
@@ -3058,9 +3455,662 @@ class trigonometry:
 class tri(trigonometry):
     pass
 
+class vector:
+    @staticmethod
+    def con_zero_vector():
+        """
+        Returns new zero vector
+        :return:
+        """
+        return Vector(0,0,0)
+
+    @staticmethod
+    def decon(vec:Vector):
+        """
+        Returns vector x,y,z elements
+        :param vec:
+        :return:
+        """
+        return vec.raw[:3, 0].transpose().tolist()
+
+    @staticmethod
+    def is_zero(vec:Vector):
+        x,y,z = vector.decon(vec)
+        if x == 0 and y == 0 and z == 0:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def is_unit(vec:Vector):
+        if vector.length(vec) == 1:
+            return True
+        return False
 
 
 
+    @staticmethod
+    def right_left_halfspace(vec_reference:Vector, vec_target:Vector, pla:Plane= Plane()) -> int:
+        """
+        identifies whether vector is on the left or right half space
+        signs indicate followings;
+
+        0 - right
+        1 - left
+        2 - same direction
+        3 - reversed direction
+
+        :param vec_reference:
+        :param vec_target:
+        :param pla:
+        :return: [ right_left_sign, angle_to_left_right ]
+        """
+        quarter = vector.quarter_plane(vec_reference, pla=pla)
+        ref_angle = vector.angle_plane(vec_reference,pla=pla)
+        target_angle = vector.angle_plane(vec_target, pla=pla)
+
+        if np.isclose(target_angle, ref_angle, atol=DEF_TOLERANCE):
+            return [2, 0]
+        else:
+            if quarter == 0:
+                if np.isclose(target_angle, ref_angle + tri.pi, atol=DEF_TOLERANCE):
+                    return [3, tri.pi]
+                elif target_angle > ref_angle and target_angle < ref_angle + tri.pi:
+                    return [1,target_angle - ref_angle]
+                elif target_angle < ref_angle:
+                    return [0, ref_angle - target_angle]
+                else:
+                    return [0, ref_angle - (target_angle - tri.pi2)]
+            elif quarter == 1:
+                if np.isclose(target_angle, ref_angle + tri.pi, atol=DEF_TOLERANCE):
+                    return [3, tri.pi]
+                elif target_angle > ref_angle and target_angle < ref_angle + tri.pi:
+                    return [1, target_angle - ref_angle]
+                elif target_angle < ref_angle:
+                    return [0, ref_angle - target_angle]
+                else:
+                    return [0, target_angle - (ref_angle + tri.pi)]
+            elif quarter == 2:
+                if np.isclose(target_angle, ref_angle - tri.pi, atol=DEF_TOLERANCE):
+                    return [3, tri.pi]
+                elif target_angle > ref_angle -tri.pi and target_angle < ref_angle:
+                    return [0, ref_angle - target_angle]
+                elif target_angle < ref_angle - tri.pi:
+                    return [1, ref_angle - tri.pi - target_angle]
+                else:
+                    return [1, target_angle - ref_angle]
+            elif quarter == 3:
+                if np.isclose(target_angle, ref_angle - tri.pi, atol=DEF_TOLERANCE):
+                    return [3, tri.pi]
+                elif target_angle < ref_angle and target_angle > ref_angle - tri.pi:
+                    return [0, ref_angle - target_angle]
+                elif target_angle > ref_angle:
+                    return [1, target_angle - ref_angle]
+                else:
+                    return [1, ref_angle - tri.pi - target_angle]
+
+
+    @staticmethod
+    def project_on_another(vec_projected_on:Vector, vec_projecting:Vector) -> Vector:
+        u1,u2 = vector.unit(vec_projected_on), vector.unit(vec_projecting)
+        if u1 is None or u2 is None:
+            return vector.con_zero_vector()
+
+        cos_v = vector.dot(u1,u2)
+        projected = vector.amplitude(vec_projected_on, cos_v * vector.length(vec_projecting))
+        return projected
+
+    @staticmethod
+    def length(vec:Vector) -> float:
+        x,y,z = vec.xyz
+        return np.sqrt(x*x + y*y + z*z)
+
+    @staticmethod
+    def dot(vec1:Vector, vec2:Vector) -> float:
+        print(vec1, vec2)
+        return vec1.raw.flatten().dot(vec2.raw.flatten())
+
+    @staticmethod
+    def cross(vec1:Vector, vec2:Vector) -> Vector:
+        if not isinstance(vec1, Vector) or not isinstance(vec2, Vector):
+            raise TypeError
+        cross = np.cross(vec1.raw[:3,0], vec2.raw[:3,0])
+        return Vector(*cross)
+
+    @staticmethod
+    def is_parallel(vec1:Vector, vec2:Vector) -> int:
+        """
+        definition of return value
+        -1 opposite direction
+        0 non-parallel
+        +1 same direction
+
+        :param vec1:
+        :param vec2:
+        :return:
+        """
+        unit1, unit2 = vector.unit(vec1), vector.unit(vec2)
+        if unit1 == None or unit2 == None:
+            return None
+
+        cos_v = vector.dot(unit1, unit2)
+
+        if np.isclose(cos_v, 1, atol=DEF_TOLERANCE):
+            return 1
+        elif np.isclose(cos_v, -1, atol=DEF_TOLERANCE):
+            return -1
+        else:
+            return 0
+
+    @staticmethod
+    def con_2_points(start:Point, end:Point) -> Vector:
+        coord = []
+        for a,b in zip(start.xyz, end.xyz):
+            coord.append(b-a)
+        return Vector(*coord)
+
+    @staticmethod
+    def quarter_plane(vec:Vector, pla:Plane = Plane()) -> int:
+        angle = vector.angle_plane(vec,pla)
+        if angle >= 0 and angle <= np.pi/2:
+            return 0
+        elif angle > np.pi/2 and angle <= np.pi:
+            return 1
+        elif angle > np.pi and angle <= np.pi*1.5:
+            return 2
+        else:
+            return 3
+
+    @staticmethod
+    def quarter_on_plane(vec:Vector, plane_hint:str):
+        if not isinstance(vec, Vector):
+            raise TypeError
+        x,y,z = vec.xyz
+        if plane_hint == 'xy' or plane_hint == 'yx':
+            if x >= 0:
+                if y >= 0:
+                    return 0
+                else:
+                    return 3
+            else:
+                if y >= 0:
+                    return 1
+                else:
+                    return 2
+
+        elif plane_hint == 'yz' or plane_hint == 'zy':
+            if y >= 0:
+                if z >= 0:
+                    return 0
+                else:
+                    return 3
+            else:
+                if z >= 0:
+                    return 1
+                else:
+                    return 2
+
+        elif plane_hint == 'zx' or plane_hint == 'xz':
+            if z >= 0:
+                if x >= 0:
+                    return 0
+                else:
+                    return 3
+            else:
+                if x >= 0:
+                    return 1
+                else:
+                    return 2
+        else:
+            raise ValueError
+
+    @staticmethod
+    def con_point(poi:Point):
+        return Vector(*poi.xyz)
+
+
+    # @tlist.calbranch
+    # def average(*vectors: Vector):
+    #     v = [i() for i in vectors]
+    #     pass
+    #
+    #
+    # @tlist.calitem
+    # def con2pt(start: Point, end: Point):
+    #     newv = Vector()
+    #     newv.set_data(np.subtract(end(), start()))
+    #     return newv
+
+    @staticmethod
+    def con_line(line:Line):
+        if not isinstance(line, Line):
+            raise TypeError
+        xyz = []
+        for a, b in zip(line.start, line.end):
+            xyz.append(b - a)
+        return Vector(*xyz)
+
+    @staticmethod
+    def unit(vec:Vector):
+        if not isinstance(vec, Vector):
+            raise WrongInputTypeError(Vector, vec)
+        if vec.length == 0:
+            return None
+        xyz = []
+        for i in vec.xyz:
+            xyz.append(i/vec.length)
+        return Vector(*xyz)
+
+    @staticmethod
+    def divide(vector:Vector, v, raw=False):
+        pass
+
+    # @staticmethod
+    # def multiply(vector:Vector, v, ):
+    #     if raw:
+    #         return vector.raw*v
+    #     else:
+    #         return vector*v
+
+    @staticmethod
+    def amplitude(vector:Vector, amp:Number):
+        new_v = vector*(amp/vector.length)
+        return new_v
+
+    @staticmethod
+    def flip(vector:Vector):
+        if not isinstance(vector, Vector):
+            raise TypeError
+        return Vector().from_raw(vector.raw*[[-1],[-1],[-1],[0]])
+
+    @staticmethod
+    def angle_2_vectors(from_vector, to_vector, degree=False):
+        u1,u2 = vector.unit(from_vector), vector.unit(to_vector)
+        if any([i==None for i in (u1,u2)]):
+            return None
+        cos_value = u1.raw.flatten().dot(u2.raw.flatten())
+        angle = tri.arccos(cos_value)
+        if degree:
+            return tri.radian_degree(angle)
+        else:
+            return angle
+
+    @staticmethod
+    def angle_plane(vec:Vector, pla:Plane, degree:bool=False) -> Number:
+        if not isinstance(vec,Vector):
+            raise WrongInputTypeError(Vector, vec)
+        if not isinstance(pla, Plane):
+            raise WrongInputTypeError(Plane, pla)
+        if not isinstance(degree, bool):
+            raise WrongInputTypeError(bool, degree)
+
+        o,x,y,z = plane.decon(pla)
+        vec = vector.unit(vec)
+        cos_value1, cos_value2 = vector.dot(x,vec), vector.dot(y,vec)
+        if cos_value1 >= 0:
+            if cos_value2 >= 0:
+                angle = tri.arccos(cos_value1)
+            else:
+                angle = np.pi*2 - tri.arccos(cos_value1)
+        else:
+            if cos_value2 >= 0:
+                angle = tri.arccos(cos_value1)
+            else:
+                angle = np.pi*2 - tri.arccos(cos_value1)
+        print(angle)
+        if degree:
+            return tri.radian_degree(angle)
+        else:
+            return angle
+
+
+
+
+    @staticmethod
+    def decon_into_vectors(vec:Vector):
+        on_xy = vec.raw.copy()
+        on_xy[2,0] = 0
+        on_yz = vec.raw.copy()
+        on_yz[0,0] = 0
+        on_xz = vec.raw.copy()
+        on_xz[1,0] = 0
+        return Vector().from_raw(on_xy),Vector().from_raw(on_yz),Vector().from_raw(on_xz)
+
+    @staticmethod
+    def project_on_xyplane(vec:Vector):
+        new = vec.raw.copy()
+        new[2,0] = 0
+        return Vector().from_raw(new)
+
+    @staticmethod
+    def project_on_yzplane(vec:Vector):
+        new = vec.raw.copy()
+        new[0, 0] = 0
+        return Vector().from_raw(new)
+
+    @staticmethod
+    def project_on_xzplane(vec:Vector):
+        new = vec.raw.copy()
+        new[1, 0] = 0
+        return Vector().from_raw(new)
+
+class matrix:
+    @staticmethod
+    def trans_from_origin_to_plane(pla:Plane) -> Matrix:
+        return matrix.trans_between_origin_and_plane(pla)[1]
+    @staticmethod
+    def trans_from_plane_to_origin(pla:Plane) -> Matrix:
+        return matrix.trans_between_origin_and_plane(pla)[0]
+
+    @staticmethod
+    def trans_between_origin_and_plane(pla:Plane) -> (Matrix, Matrix):
+        """
+        calculates two transform matrices
+            [0] to_origin_matrix: transform matrix from plane to origin
+            [1] to_plane_matrix: transform matrix from origin to plane
+
+        :param pla: target plane
+        :return: (tom, tpm)
+        """
+        to_origin_matrices = []
+        to_plane_matrices = []
+        origin, axis_x, axis_y, axis_z = plane.decon(pla)
+        # this is the last move
+        to_plane_vector = vector.con_point(origin)
+        to_origin_matrices.append(matrix.translation(-to_plane_vector))
+        to_plane_matrices.append(matrix.translation(to_plane_vector))
+
+        # need to match each vectors
+        # gonna match x,y,z
+        # so looking into z rotation first
+
+        # look for a vector that can be rotated
+        vector_on_xy = vector.project_on_xyplane(axis_x)
+        if vector_on_xy.length != 0:
+            angle = vector.angle_2_vectors(Vector(1,0,0), vector_on_xy)
+        else:
+            vector_on_xy = vector.project_on_xyplane(axis_y)
+            angle = vector.angle_2_vectors(Vector(0,1,0), vector_on_xy)
+        quarter = vector.quarter_on_plane(vector_on_xy,'xy')
+        if quarter == 0 or quarter == 1:
+            angle = -angle
+        to_origin = matrix.rotation_z(angle)
+        to_plane = matrix.rotation_z(-angle)
+        to_origin_matrices.insert(0,to_origin)
+        to_plane_matrices.append(to_plane)
+        axis_x = trans.transform(axis_x, to_origin)
+        axis_y = trans.transform(axis_y, to_origin)
+        axis_z = trans.transform(axis_z, to_origin)
+
+        # look into x rotation
+        vector_on_yz = vector.project_on_yzplane(axis_y)
+        if vector_on_yz.length != 0:
+            angle = vector.angle_2_vectors(Vector(0,1,0), vector_on_yz)
+        else:
+            vector_on_yz = vector.project_on_yzplane(axis_z)
+            angle = vector.angle_2_vectors(Vector(0,0,1), vector_on_yz)
+        quarter = vector.quarter_on_plane(vector_on_yz, 'yz')
+        if quarter == 0 or quarter == 1:
+            angle = -angle
+        to_origin = matrix.rotation_x(angle)
+        to_plane = matrix.rotation_x(-angle)
+        to_origin_matrices.insert(0,to_origin)
+        to_plane_matrices.append(to_plane)
+        axis_x = trans.transform(axis_x, to_origin)
+        axis_y = trans.transform(axis_y, to_origin)
+        axis_z = trans.transform(axis_z, to_origin)
+
+        # look into y rotation
+        vector_on_xz = vector.project_on_xzplane(axis_z)
+        if vector_on_xz.length != 0:
+            angle = vector.angle_2_vectors(Vector(0,0,1), vector_on_xz)
+        else:
+            vector_on_xz = vector.project_on_xzplane(axis_x)
+            angle = vector.angle_2_vectors(Vector(1,0,0), vector_on_xz)
+        quarter = vector.quarter_on_plane(vector_on_xz, 'xz')
+        if quarter == 0 or quarter == 1:
+            angle = -angle
+        to_origin = matrix.rotation_y(angle)
+        to_plane = matrix.rotation_y(-angle)
+        to_origin_matrices.insert(0, to_origin)
+        to_plane_matrices.append(to_plane)
+
+        # all matrices collected
+        to_origin_matrix = matrix.combine_matrix(*to_origin_matrices)
+        to_plane_matrix = matrix.combine_matrix(*to_plane_matrices)
+
+        return to_origin_matrix, to_plane_matrix
+
+    @staticmethod
+    def translation(vec: Vector):
+        if not isinstance(vec, Vector):
+            raise TypeError
+        matrix = np.eye(4)
+        matrix[:3, 3] = vec.xyz
+        return Matrix().from_raw(matrix)
+
+    @staticmethod
+    def rotation_x(angle, degrees=False):
+        matrix = np.eye(4)
+        if degrees:
+            angle = tri.degree_radian(angle)
+        matrix[1] = 0, np.cos(angle), -tri.sin(angle), 0
+        matrix[2] = 0, tri.sin(angle), np.cos(angle), 0
+
+        return Matrix().from_raw(matrix)
+
+    @staticmethod
+    def rotation_y(angle, degrees=False):
+        matrix = np.eye(4)
+        if degrees:
+            angle = np.radians(angle)
+        matrix[0] = tri.cos(angle), 0, tri.sin(angle), 0
+        matrix[2] = -tri.sin(angle), 0, tri.cos(angle), 0
+        return Matrix().from_raw(matrix)
+
+    @staticmethod
+    def rotation_z(angle, degrees=False):
+        matrix = np.eye(4)
+        if degrees:
+            angle = np.radians(angle)
+        matrix[0] = tri.cos(angle), -tri.sin(angle), 0, 0
+        matrix[1] = tri.sin(angle), tri.cos(angle), 0, 0
+        return Matrix().from_raw(matrix)
+
+    @staticmethod
+    def scale(x,y,z):
+        return Matrix(x,0,0,0,
+                      0,y,0,0,
+                      0,0,z,0,
+                      0,0,0,1)
+
+    @staticmethod
+    def rotation_vector(vec:Vector, angle:Number, degree=False):
+        raise
+
+    @staticmethod
+    def transform(matrix: Matrix, geometry):
+        pass
+
+    @staticmethod
+    def transformation_2_planes(from_plane: Plane, to_plane: Plane):
+        if not isinstance(from_plane, Plane) or not isinstance(to_plane, Plane):
+            raise TypeError
+        exit()
+
+    @staticmethod
+    def combine_matrix(*mat):
+        result = np.eye(4)
+        for m in reversed(mat):
+            x = m.raw.copy()
+            result = x.dot(result)
+        return Matrix.from_raw(result)
+
+class plane:
+    @staticmethod
+    def con_from_points():
+        pass
+
+    @staticmethod
+    def relocate(pla:Plane, new_origin:Point) -> Plane:
+        new_raw = pla.raw.copy()
+        new_raw[:3, 0] = new_origin.xyz
+        return Plane.from_raw(new_raw)
+
+    @staticmethod
+    def decon(pla:Plane) -> [Point, Vector, Vector, Vector]:
+        """
+        deconstruct plane
+        returns origin, vector-x, vector-y, vectorz-z
+        :param pla: plane to deconstruct
+        :return: [ Point, Vector, Vector, Vector ]
+        """
+        return [Point(*pla.raw[:3,0]), Vector(*pla.raw[:3, 1]),Vector(*pla.raw[:3, 2]),Vector(*pla.raw[:3, 3])]
+
+    @staticmethod
+    def con_2_vectors(axis1: Vector, axis2: Vector, axis1_hint: str, axis2_hint: str, origin:Point):
+
+        """
+        Build a plane from given two axis.
+        If given axes are not perpendicular axis2 will be transformed to make it correct as axis2_hint.
+
+        :param origin: origin of the new plane
+        :param axis1: first axis of the plane
+        :param axis2: second axis of the plane
+        :param axis1_hint: one of ('x','y','z')
+        :param axis2_hint: one of ('x','y','z')
+        :return: plane
+        """
+        projected = vector.project_on_another(axis1, axis2)
+        axis2 = vector.con_2_points(point.con_from_vector(projected), point.con_from_vector(axis2))
+        axis3 = vector.cross(axis1, axis2)
+
+        axis_dic = {'x':None,'y':None,'z':None}
+        axis_dic[axis1_hint] = axis1
+        axis_dic[axis2_hint] = axis2
+        for i in axis_dic:
+            if i == None:
+                axis_dic[i] = axis3
+
+        if any([i is None for i in axis_dic.values()]):
+            raise
+        return plane.con_3_vectors(*axis_dic.value(),origin)
+
+        # # check perpendicularity and if not build new axis2
+        # if not np.isclose(vector.dot(axis1, axis2), 0.0, atol=DEF_TOLERANCE):
+        #     p = point.con_from_vector(axis2)
+        #     p_on_v = point.perpendicular_on_vector(axis1, p)
+        #     axis2 = vector.con_2_points(p_on_v, p)
+        # # make a set
+        # axis = {'x':None, 'y':None, 'z':None}
+        # axis[axis1_hint] = axis1
+        # axis[axis2_hint] = axis2
+        #
+        # matrices_origin_to_plane = [matrix.translation(vector.con_from_point(origin))]
+        # if axis['x'] != None:
+        #     # if axis is given need to match to origin's axis
+        #     # determine by rotating which origin axis y or z
+        #     # TODO what to do with tolarence
+        #     # if np.isclose(v.z,0.0,atol=TOLERANCE):
+        #     if not np.isclose(axis['x'].z,0.0,atol=DEF_TOLERANCE):
+        #         # there is a value to rotate around y axis
+        #         projected = vector.project_on_xzplane(axis['x'])
+        #         q = vector.quarter_on_plane(projected,'xz')
+        #         angle = vector.angle_2_vectors(Vector(1,0,0), projected)
+        #         if q == 0 or q == 1:
+        #             angle = -angle
+        #         to_origin = matrix.rotation_y(angle)
+        #         to_plane = matrix.rotation_y(-angle)
+        #         matrices_origin_to_plane.append(to_plane)
+        #         axis[axis1_hint] = trans.transform(axis[axis1_hint], to_origin)
+        #         axis[axis2_hint] = trans.transform(axis[axis2_hint], to_origin)
+        #     if not np.isclose(axis['x'].y,0.0,atol=DEF_TOLERANCE):
+        #         # there is a value to rotate around z axis
+        #         projected = vector.project_on_xyplane(axis['x'])
+        #         q = vector.quarter_on_plane(projected, 'xy')
+        #         angle = vector.angle_2_vectors(Vector(1,0,0), projected)
+        #         if q == 0 or q == 1:
+        #             angle = -angle
+        #         to_origin = matrix.rotation_z(angle)
+        #         to_plane = matrix.rotation_z(-angle)
+        #         matrices_origin_to_plane.append(to_plane)
+        #         axis[axis1_hint] = trans.transform(axis[axis1_hint], to_origin)
+        #         axis[axis2_hint] = trans.transform(axis[axis2_hint], to_origin)
+        #
+        # if axis['y'] != None:
+        #     if not np.isclose(axis['y'].z,0.0,atol=DEF_TOLERANCE):
+        #         # there is a value to rotate around x axis
+        #         projected = vector.project_on_yzplane(axis['y'])
+        #         q = vector.quarter_on_plane(projected, 'yz')
+        #         angle = vector.angle_2_vectors(Vector(0, 1, 0), projected)
+        #         if q == 0 or q == 1:
+        #             angle = -angle
+        #         to_origin = matrix.rotation_x(angle)
+        #         to_plane = matrix.rotation_x(-angle)
+        #         matrices_origin_to_plane.append(to_plane)
+        #         axis[axis1_hint] = trans.transform(axis[axis1_hint], to_origin)
+        #         axis[axis2_hint] = trans.transform(axis[axis2_hint], to_origin)
+        #     if not np.isclose(axis['y'].x,0.0,atol=DEF_TOLERANCE):
+        #         # there is a value to rotate around z axis
+        #         projected = vector.project_on_xyplane(axis['y'])
+        #         q = vector.quarter_on_plane(projected, 'xy')
+        #         angle = vector.angle_2_vectors(Vector(0, 1, 0), projected)
+        #         if q == 0 or q == 1:
+        #             angle = -angle
+        #         to_origin = matrix.rotation_z(angle)
+        #         to_plane = matrix.rotation_z(-angle)
+        #         matrices_origin_to_plane.append(to_plane)
+        #         axis[axis1_hint] = trans.transform(axis[axis1_hint], to_origin)
+        #         axis[axis2_hint] = trans.transform(axis[axis2_hint], to_origin)
+        #
+        # if axis['z'] != None:
+        #     # if axis is given need to match to origin's axis
+        #     # determine by rotating which origin axis y or z
+        #     # TODO what to do with tolarence
+        #     # if np.isclose(v.z,0.0,atol=TOLERANCE):
+        #     if not np.isclose(axis['z'].y,0.0,atol=DEF_TOLERANCE):
+        #         # there is a value to rotate around y axis
+        #         projected = vector.project_on_yzplane(axis['z'])
+        #         q = vector.quarter_on_plane(projected, 'yz')
+        #         angle = vector.angle_2_vectors(Vector(0, 0, 1), projected)
+        #         if q == 0 or q == 1:
+        #             angle = -angle
+        #         to_origin = matrix.rotation_x(angle)
+        #         to_plane = matrix.rotation_x(-angle)
+        #         matrices_origin_to_plane.append(to_plane)
+        #         axis[axis1_hint] = trans.transform(axis[axis1_hint], to_origin)
+        #         axis[axis2_hint] = trans.transform(axis[axis2_hint], to_origin)
+        #     if not np.isclose(axis['z'].x,0.0,atol=DEF_TOLERANCE):
+        #         # there is a value to rotate around z axis
+        #         projected = vector.project_on_xzplane(axis['z'])
+        #         q = vector.quarter_on_plane(projected, 'xz')
+        #         angle = vector.angle_2_vectors(Vector(0, 0, 1), projected)
+        #         if q == 0 or q == 1:
+        #             angle = -angle
+        #         to_origin = matrix.rotation_y(angle)
+        #         to_plane = matrix.rotation_y(-angle)
+        #         matrices_origin_to_plane.append(to_plane)
+        #         axis[axis1_hint] = trans.transform(axis[axis1_hint], to_origin)
+        #         axis[axis2_hint] = trans.transform(axis[axis2_hint], to_origin)
+        #
+        # default_plane = Plane([0,0,0],[1,0,0],[0,1,0],[0,0,1])
+        # default_plane = trans.transform(default_plane, *matrices_origin_to_plane)
+        # return default_plane
+
+    @staticmethod
+    def con_vector_point(axis: Vector, poi: Point, axis_hint: str, point_hint: str, origin: Point = Point(0, 0, 0)):
+        projected_point = point.perpendicular_on_vector(axis, poi)
+        perpen_v = vector.con_2_points(projected_point, poi)
+        # and build a reference plane
+        ref_plane = plane.con_2_vectors(axis, perpen_v, axis_hint, point_hint, origin)
+        return ref_plane
+
+    @staticmethod
+    def con_3_vectors(x_axis: Vector, y_axis: Vector, z_axis: Vector, origin: Point = Point(0, 0, 0)):
+        if not all([isinstance(i, Vector) for i in (x_axis, y_axis, z_axis)]):
+            raise TypeError
+
+        return Plane(origin.xyz, x_axis.xyz, y_axis.xyz, z_axis.xyz)
 
 class rectangle:
     @staticmethod
