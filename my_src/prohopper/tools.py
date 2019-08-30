@@ -1153,6 +1153,9 @@ class String(Geometry):
     @property
     def n_vertex(self):
         return self.raw.shape[1]
+    @property
+    def n_segment(self):
+        return self.raw.shape[1]-1
 
     @property
     def length(self):
@@ -1362,7 +1365,7 @@ class Triangle(Polygone):
         all inputs should be points
         :param args: coordinate of points
         """
-        super().__init__(a, b, c)
+        super().__init__(a, b, c,a)
         # anti-clockwise check?
         # general method usage?
 
@@ -1716,404 +1719,166 @@ class intersection:
 
 class tests:
     @staticmethod
-    def triangulatioin(pol:Polygone):
-        edges, vertices = polyline.decon(pol)
+    def triangulatioin(polg:Polygone):
+        edges, vertices = polyline.decon(polg)
 
         vertices = vertices[:-1]
-        unique_x = sorted(set(pol.raw[0]))
+        unique_x = sorted(set(polg.raw[0]))
+        unique_y = sorted(set(polg.raw[1]))
         x_min,x_max = unique_x[0], unique_x[-1]
         x_start = x_min - 1
         c_line_length = x_max-x_min+2
-        # sort for convenience
-        vertices = point.sort(vertices, 'y')
-        ys = point.y(*vertices)
-        vertices_sorted = data.sublist_by_unique_key(vertices, ys)
-        for i, l in enumerate(edges):
-            s, e = line.decon(l)
-            if s.y > e.y:
-                l.flip()
-            elif s.y == e.y:
-                if s.x > e.x:
-                    l.flip()
+        c_lines = [line.con_point_vector(Point(x_start,y,0),Vector(c_line_length,0,0)) for y in unique_y]
 
-        # trapezoidal Decomposition
-        trapezoid = []
-        for y, vs in vertices_sorted.items():
-            # first draw a line and find intersecting points
-            c_line = line.con_point_vector(Point(x_start,y,0), Vector(c_line_length,0,0))
-            print()
-            print('vertex', vs)
-            print('crossing line:', c_line.vertices)
-            p_inter = []
-            e_under = []
-            e_cross = []
-            for e in edges:
-                # all intersection given as a point or a line
-                if e.start[1] == y:
-                    # ignore because there must be another conneted to this edge's start
-                    p_inter.append(line.start(e))
-                elif e.start[1] < y and y < e.end[1]:
-                    p_inter.append(intersection.line_line(c_line, e))
-                    e_cross.append(e)
-
-                elif e.end[1] == y:
-                    if e.start[1] != y:
-                        # edge below
-                        e_under.append(e)
-                        p_inter.append(line.end(e))
-
-                elif e.end[1] < y:
-                    # this must be left over from provious iteration
-                    e_under.append(e)
-
-            # no detection must be when another co_linear another vertex has finished cut off
-            if len(e_under+e_cross) == 0:
-                continue
-            # remove collected edges
-            for e in e_under+e_cross:
-                edges.remove(e)
-
-            # make intersections unique
-            print(p_inter)
-            p_inter = point.unique_points(p_inter)[0]
-            p_inter = point.sort(p_inter,'x')
-
-            # several cased for number of intersection points
-            n = len(p_inter)
-            print(' intersections', p_inter)
-            if n == 0:
-                # this can't happen except for the point lowest
-                raise
-            elif n == 1:
-                # peak dealing will be after segments are delt
-                pass
-            else:
-                # need to look for valid c_line segment
-                # find position of vertex
-                segments = []
-                for i in range(len(p_inter)-1):
-                    middle_p = point.average([p_inter[i], p_inter[i+1]])
-                    print(middle_p)
-                    condition1 = polygone.point_in(pol, middle_p) == 2 # condition1; not on but in
-                    condition2 = False # condition2; at least one vertex is a part of the segment
-                    print('dddddddddddddd', vs)
-                    for y in vs:
-                        print(y, p_inter[i], p_inter[i+1])
-                        if point.coinside(y, p_inter[i]) or point.coinside(y, p_inter[i+1]):
-                            condition2 = True
-                            break
-                    print('     conditions ', condition1, condition2)
-                    print('     ', y, p_inter[i], p_inter[i+1])
-                    print('     ', point.coinside(y, p_inter[i]) or point.coinside(y, p_inter[i+1]))
-                    if condition1 and condition2:
-                        print(vs)
-                        print(' correct segment', p_inter[i],p_inter[i+1])
-                        segments.append(line.con_points(p_inter[i], p_inter[i + 1]))
-
+        # trapezoids
+        trapezoid = polygone.split(polg,*c_lines)
+        to_replace = []
+        # subdivision
+        for i,s in enumerate(trapezoid):
+            # split shapes with segmented edges
+            if s.n_vertex > 5:
+                edges = polyline.edges(s)
+                ys = [point.y(line.middle(e)) for e in edges]
+                sorted_e_by_y = sorted(data.sublist_by_unique_key(edges,ys).items(), key = lambda x:x[0])
+                polys = [polyline.join(es[1]) for es in data.list_item(sorted_e_by_y,0,2)]
+                middle_vertices = []
+                for poly in polys:
+                    if poly.n_vertex == 2:
+                        middle_vertices.append(polyline.start(poly))
                     else:
-                        # segments.append(None)
-                        pass
+                        middle_vertices.append(polyline.vertices(poly)[1:-1])
+                crossing_lines = [line.con_points(a,b) for a,b in zip(*data.long(*middle_vertices))]
+                new_shapes = polygone.split(s,*crossing_lines)
+                to_replace.append([i,new_shapes])
 
-                # this is to leave peak candidate
-                segments_vertex = []
-                for s in segments:
-                    segments_vertex += line.decon(s)
-                segments_vertex = point.unique_points(segments_vertex)[0]
-                to_remove = []
-                print('+++++++++++++++++')
-                print(segments_vertex)
-                print(vs)
-                for y in vs:
-                    for i in segments_vertex:
-                        if point.coinside(i,y):
-                            to_remove.append(y)
-                            break
-                for i in to_remove:
-                    vs.remove(i)
+        indicies, lists = list(zip(*to_replace))
+        lists = list(lists)
+        splited = []
+        #start
+        splited += trapezoid[0:indicies[0]]
+        splited += lists.pop(0)
+        #middle
+        for i in range(len(indicies) - 1):
+            splited += trapezoid[indicies[i]+1:indicies[i+1]]
+            splited += lists.pop(0)
+        #end
+        splited += trapezoid[indicies[-1]+1:]
+        trapezoid = splited
 
-
-                edges += segments
-                print('     segments', segments)
-                # now i have correct c_line_segment so cut original polyline and make trapezioid out or it
-                for s in segments:
-                    print(s)
-                    s_vertex = line.decon(s)
-                    print('         e_cross', e_cross)
-                    for e in e_cross:
-                        mask = point.is_on_line(e, *s_vertex)
-                        print('----------------', mask, e, s_vertex)
-                        if any(mask):
-                            p = data.cull_pattern(s_vertex, mask)[0]
-                            e_vertex = line.decon(e)
-
-                            # need to split
-                            down = line.con_points(e_vertex[0], p)
-                            up = line.con_points(p, e_vertex[1])
-
-                            # record for next local, global search
-                            print('     appending down', down.vertices)
-                            e_under.append(down)
-                            edges.append(up)
-                            # need this removal cus rest gonna be added to edges list
-                            e_cross.remove(e)
-                            break
-                edges += e_cross
-                print(segments)
-                print(e_cross)
-                print(e_under)
-                e_under += segments
-                for s in segments:
-                    if s in e_under:
-                        e_under.remove(s)
-                    else:
-                        # previouse iteration could have removed a segment
-                        # as taking it as a part of its boundary
-                        continue
-
-                    building_trapeziod = [s]
-                    # track edges
-                    default_plane = Plane()
-                    trace = line.start(s)
-                    vec_trace = vector.con_2_points(*reversed(line.decon(s)))
-                    while True:
-                        # how to move anti_clockwise
-                        flag_found = False
-                        print('eeee', e_under)
-                        for e in e_under:
-                            has = line.has_vertex(e, trace)
-                            print(e.vertices)
-                            print('kkk',has)
-                            if has:
-                                v_next = line.decon(e)[has[1]-1]
-                                new_vec_trace = vector.con_2_points(trace, v_next)
-                                # anti clockwise condition
-                                side,angle = vector.right_left_halfspace(vec_trace, new_vec_trace)
-                                if math.any_one_of(side, 1, 2):
-                                    building_trapeziod.append(e)
-                                    trace = v_next
-                                    vec_trace = new_vec_trace
-                                    e_under.remove(e)
-                                    flag_found = True
-                                    break
-
-                        if not flag_found:
-                            # seen through all edges but couldn't find one
-                            # -> something is wrong
-                            print(s.vertices)
-                            print(building_trapeziod)
-                            raise
-                        # if shape is closed
-                        if point.coinside(trace, line.end(s)):
-                            # replace colinear edges to pline and organize
-                            left = building_trapeziod.pop(1)
-                            keys = [line.middle(l).y for l in building_trapeziod]
-                            building_trapeziod = data.sublist_by_unique_key(building_trapeziod, keys)
-                            building_trapeziod = sorted(building_trapeziod.items(), key = lambda x:x[0])
-
-                            flag_poly = False
-                            for i, (y,l) in enumerate(building_trapeziod):
-                                if len(l) != 1:
-                                    flag_poly = True
-                                    building_trapeziod[i] = polyline.con_from_strings(l)
-                                else:
-                                    building_trapeziod[i] = l[0]
-
-                            building_trapeziod.insert(0,left)
-                            # index 0 is alway top and goes clockwise
-                            building_trapeziod = data.shift(building_trapeziod, -1)
-                            if flag_poly:
-                                # add crossing lines and then round up partially with segments
-                                up_down = [building_trapeziod[0],building_trapeziod[2]]
-                                v_lists = []
-                                for i in up_down:
-                                    if isinstance(i, Line):
-                                        v_lists.append(string.vertices(i)[0])
-                                    else:
-                                        v_lists.append(string.vertices(i)[1:-1])
-                                matched = data.long(*v_lists)
-                                split_edges = []
-                                for s,e in zip(matched[1],matched[0]):
-                                    split_edges.append(line.con_points(s, e))
-                                shape = polyline.join(*building_trapeziod)
-                                shapes = polygone.split(shape, *split_edges)
-                                exit()
-                            else:
-                                trapezoid.append(building_trapeziod)
-                            break
-
-            # dealing with peak and basin
-            # condition
-            if len(e_under) != 0 and len(vs) != 0:
-                print('-----------------')
-                print('dealing with basin')
-                print(vs)
-                print(segments)
-                print(edges)
-                print(e_under, len(e_under))
-                peaks,basins = [],[]
-                # find basins
-                for l in edges:
-                    s,e = line.decon(l)
-                    mark = []
-                    # see if it's on the c_line
-                    for y in vs:
-                        if point.coinside(y, s):
-                            mark.append(y)
-                            break
-                    for y in vs:
-                        if point.coinside(y, e):
-                            mark.append(y)
-                            break
-                    if len(mark) == 2:
-                        vs.remove(mark[0])
-                        vs.remove(mark[1])
-                        basins.append(l)
-                for i in basins:
-                    edges.remove(i)
-                # rest are peaks
-                peaks = vs
-
-                # find peaks
-                for p in peaks:
-                    vs.remove(p)
-                    building_peak = []
-                    for e in e_under:
-                        if point.coinside(line.end(e), p):
-                            building_peak.append(e)
-                        if len(building_peak) == 2:
-                            break
-                    print('ddd',p,building_peak)
-                    vertex = line.start(building_peak[0]), line.start(building_peak[1])
-                    for e in e_under:
-                        print(e.vertices, point.is_on_line(e, *vertex))
-                        if all(point.is_on_line(e, *vertex)):
-                            building_peak.insert(0,e)
-                            break
-                    if len(building_peak) != 3:
-                        print(p)
-                        print(vertex)
-                        print(building_peak)
-                        print(e_under)
-                        raise
-                    for i in building_peak:
-                        e_under.remove(i)
-                    trapezoid.append(building_peak)
-
-                # find basins
-                e_under += basins
-                print(e_under)
-                for b in basins:
-                    if b not in basins:
-                        continue
-                    building_basin = [b]
-                    e_under.remove(b)
-                    trace, end = line.decon(b)
-                    vec_trace = vector.con_line(b).flip()
-                    while True:
-                        flag_found = False
-                        # next edge is always the side of trapeziod
-                        # but next can have multiple edges connected to the end of previous
-                        candidates = []
-                        print(e_under)
-                        for e in e_under:
-                            has = line.has_vertex(e, trace)
-                            print(e.vertices, has, trace)
-                            if has:
-                                next_trace = line.decon(e)[has[1]-1]
-                                directional = vector.con_2_points(trace, next_trace)
-                                side, angle = vector.right_left_halfspace(vec_trace, directional)
-                                print(side, math.any_one_of(side, 1, 2))
-                                if math.any_one_of(side, 1, 2):
-                                    candidates.append((angle,directional,e,next_trace))
-                                    flag_found = True
-                                    print('ddddddd', candidates)
-                        print('ddddddd', candidates)
-                        if not flag_found:
-                            print(e_under[0].vertices)
-                            print(b)
-                            print(trace)
-                            print(candidates)
-                            print(building_basin)
-                            raise
-
-                        if len(candidates) != 1:
-                            _,vec_trace,e,trace = math.biggest(candidates,key=lambda x:x[0])
-                            building_basin.append(e)
-                            e_under.remove(e)
-                        else:
-                            _,vec_trace,e,trace = candidates[0]
-                            print('xxx', e, trace)
-                            building_basin.append(e)
-                            e_under.remove(e)
-
-                        if point.coinside(trace, end):
-                            break
-
-                    trapezoid.append(building_basin)
-
-            edges += e_under
-
-        if len(edges) != 0:
-            raise
-
-        for i in trapezoid:
-            print(i)
 
         # monotone Subdivision
-        # basic tactic is to read stack and see if any of monotonal adjustant with bottom of inspected
-        # another thing to check is parallelity of sides.
-        # if any polyline is seen then this needs self division
         monotone = []
         for t in trapezoid:
-            if len(monotone) == 0:
-                top_edge = t[0]
-                shape = polygone.con_edges(t)
-                # or if manually checking horizontal edges
-                print(shape)
-                monotone.append([top_edge, shape])
-                continue
+            # there is trapezoid
+            # there is triangle: valley and peak
+            # find bottom and check if there is touching monotone
+            edges = string.edges(t)
+            mid_ps = [line.middle(e) for e in edges]
+            matched = data.sublist_by_unique_key(edges, [p.y for p in mid_ps])
+            matched = sorted(matched.items(), key = lambda x:x[0])
+
+            # this means peak or trapezoid
+            if len(matched[0][1]) == 1:
+                bottom_e = matched[0][1][0]
+                # this means peak
+                if len(matched[-1][1]) != 1:
+                    top_e == None
+                else:
+                    top_e = matched[-1][1][0]
+
+            # this means shape is a valley
             else:
-                # find bottom
-                shape = len(t)
-                if shape == 3:
-                    adding_bottom_e = t[0]
-                    adding_top_e = None
-                elif shape == 4:
-                    adding_bottom_e = t[2]
-                    adding_top_e = t[0]
+                bottom_e = None
+                top_e = matched[-1][1][0]
 
-                for i,(top_edge, m) in enumerate(monotone):
-                    if top_edge == None:
-                        # top edge none means its closed, its monotone
-                        continue
-
-                    if isinstance(adding_bottom_e, Polyline) or isinstance(adding_top_e, Polyline):
-                        # if horizontal of trapezoid is polyline, means it has to be segmented?
-                        # or had it be done already?
-                        raise
-
-                    else:
-                        if line.coinside(top_edge, adding_bottom_e,consider_direction=True):
-                            print(m)
-                            pl1 = polyline.remove_edge(m,adding_bottom_e)
-                            t.remove(adding_bottom_e)
-                            pl2 = polyline.con_from_strings(t)
-
-                            print(pl1.vertices)
-                            print(pl2.vertices)
-                            new_mono = polyline.join(pl1,pl2)
-                            print(new_mono)
-                            new_mono = polyline.iron(new_mono)
-                            print(new_mono)
-                            # monotone[i][1] = polygone.merge(m,adding_shape)
+            if bottom_e == None:
+                monotone.append([top_e,bottom_e, t])
+            else:
+                # to narrow searching look for y position
+                # look for length
+                # then look for vertex
+                flag_merged = True
+                for i,(te,be,s) in enumerate(monotone):
+                    flag_merged = False
+                    if te != None and bottom_e != None:
+                        if line.coinside(te, bottom_e, directional=False):
+                            monotone[i] = top_e, be, polygone.join(s,t)
+                            flag_merged = True
+                            break
+                    if be != None and top_e != None:
+                        if line.coinside(be, top_e, directional=False):
+                            monotone[i] = te, bottom_e, polygone.join(s,t)
+                            flag_merged = True
                             break
 
+                if not flag_merged:
+                    # if this is unique
+                    monotone.append([top_e,bottom_e, t])
 
-                pass
-
+        for i,m in enumerate(monotone):
+            monotone[i] = string.iron(m[2])
 
         # triangulation
         # deed to considier out of shape triangulation
+        triangles = []
+        for iii,m in enumerate(monotone):
+
+            vs = string.vertices(m)[:-1]
+            l = len(vs)
+            ys = [p.y for p in vs]
+            # v_sorted = [i[0] for i in sorted(zip(vs, ys), key = lambda x:x[1])]
+            # index_lowest = v_sorted[0]
+            # print(index_lowest)
+            print(ys)
+            index_lowest = [i[0] for i in sorted(zip(range(len(ys)),ys), key= lambda x:x[1])][0]
+            oriented_vs = data.shift(list(zip(range(len(vs)),vs)), index_lowest)
+            stack = [oriented_vs.pop(0)]
+            next_two = oriented_vs[0], oriented_vs[-1]
+            print(next_two)
+            s = sorted(next_two, key= lambda x:x[1].y)
+            stack.append(s[0])
+            oriented_vs.remove(s[0])
+
+            while True:
+                if len(oriented_vs) == 0:
+                    break
+                # look for lowest of remaining 0-lower 1-higher
+                next_two = sorted((oriented_vs[0],oriented_vs[-1]), key = lambda x:x[1].y)
+                oriented_vs.remove(next_two[0])
+                # now two cases
+                i = next_two[0][0]
+
+                if (i-1)%(l-1) == stack[0][0] or (i+1)%(l-1) == stack[0][0]:
+                    print('connect all')
+                    for i in range(len(stack)-1, 0, -1):
+                        points = next_two[0],stack[i], stack[i-1]
+                        triangles.append(points)
+                    stack = [stack[-1],next_two[0]]
+                # check vector then form triangle
+                else:
+                    print('evaluate connection')
+                    vr = vector.side(vector.con_2_points(stack[0][1], next_two[1][1]),vector.con_2_points(stack[0][1],stack[1][1]))
+                    stack_to_remove = []
+                    for i in range(len(stack)-1, 0, -1):
+                        new_p = next_two[0][1]
+                        v1 = vector.con_2_points(new_p, stack[i][1])
+                        v2 = vector.con_2_points(new_p, stack[i-1][1])
+                        side = vector.side(v1,v2)
+                        if vr[0] == side[0]:
+                            triangles.append((next_two[0],stack[i],stack[i-1]))
+                            stack_to_remove.append(sorted(zip((stack[i],stack[i-1]),(v1,v2)), key=lambda x:x[1].length)[0][0])
+                        else:
+                            break
+
+                    for i in stack_to_remove:
+                        stack.remove(i)
+
+                    stack.append(next_two[0])
+
+        print()
+        for i in triangles:
+            print(i)
+        print('dddd')
 
 
 class morph:
@@ -2220,6 +1985,14 @@ class trans:
 
 
 class line:
+    def __new__(cls, to_cast):
+        if isinstance(to_cast, Polyline):
+            if to_cast.n_vertex == 2:
+                return Line(*to_cast.vertices)
+            else:
+                return None
+
+
     @staticmethod
     def touching_another(lin1:Line, lin2:Line):
         order = None
@@ -2277,7 +2050,7 @@ class line:
                 unique.append(l)
                 similar = []
                 for ll in to_compare:
-                    if line.coinside(l, ll, consider_direction=consider_direction):
+                    if line.coinside(l, ll, directional=consider_direction):
                         similar.append(ll)
                 for i in similar:
                     to_compare.remove(i)
@@ -2328,8 +2101,8 @@ class line:
         return Point(*coord)
 
     @staticmethod
-    def coinside(line1:Line, line2:Line, consider_direction = True) -> bool:
-        if consider_direction:
+    def coinside(line1:Line, line2:Line, directional = True) -> bool:
+        if directional:
             return np.sum(np.equal(line1.raw, line2.raw)) == 8
         else:
             return any([
@@ -2355,6 +2128,49 @@ class line:
 
 
 class data:
+    @staticmethod
+    def boundary(lis:(tuple, list), values_pick_from:(tuple, list)=None):
+        """
+        Returns biggest and smallest of iterable
+        :param lis:
+        :param values_pick_from:
+        :return:
+        """
+        if values_pick_from == None:
+            s = sorted(lis)
+            return [s[0], s[-1]]
+        else:
+            s = sorted(zip(lis, values_pick_from), key=lambda x:x[0])
+            return [s[0][1],s[-1][1]]
+
+    @staticmethod
+    def biggest(lis:(tuple,list), values_pick_from:(tuple, list)=None):
+        """
+        Returns biggest of iterable
+        :param lis:
+        :param values_pick_from:
+        :return:
+        """
+        return data.boundary(lis, values_pick_from)[-1]
+
+    @staticmethod
+    def smallest(lis:(tuple, list), values_pick_from:(tuple, list)=None):
+        """
+        Returns smallest of iterable
+        :param lis:
+        :param values_pick_from:
+        :return:
+        """
+        return data.boundary(lis, values_pick_from)[0]
+
+    @staticmethod
+    def flip(lis1:(tuple, list), lis2:(tuple,list)):
+        if len(lis1) != len(lis2):
+            raise
+        try:
+            return list(zip(lis1, lis2))
+        except:
+            return None
 
     @staticmethod
     def long(lis1:(tuple, list),lis2:(tuple, list),style=0)-> (tuple, list):
@@ -2501,7 +2317,36 @@ class data:
 
         else:
             raise Exception('not defined yet')
+
 class string:
+
+    @staticmethod
+    def iron(poll:String) -> String:
+        # look through each edge and see the vector of it
+        edges = polyline.edges(poll)
+
+        for i, e in enumerate(edges):
+            this_v = vector.con_line(e)
+            para_edges = []
+            index = i
+            while True:
+                index = (index + 1) % len(edges)
+                next_e = edges[index]
+                next_v = vector.con_line(next_e)
+                if vector.is_parallel(this_v, next_v) == 1:
+                    para_edges.append(next_e)
+                else:
+                    break
+            if len(para_edges) != 0:
+                s, e = line.start(e), line.end(para_edges[-1])
+                ironned = line.con_points(s, e)
+                edges[i] = ironned
+                for i in para_edges:
+                    edges.remove(i)
+
+        new_poll = poll.__class__().append(*edges)
+        return new_poll
+
     @staticmethod
     def vertex(stri:String, index):
         raw = stri.raw[:3,index].copy()
@@ -2546,35 +2391,10 @@ class string:
         return [edges, points]
 
 class polyline:
-    @staticmethod
-    def iron(poll:Polyline) -> Polyline:
-        # look through each edge and see the vector of it
-        edges = polyline.edges(poll)
 
-        for i,e in enumerate(edges):
-            this_v = vector.con_line(e)
-            para_edges = []
-            index = i
-            while True:
-                index = (index+1)%len(edges)
-                next_e = edges[index]
-                next_v = vector.con_line(next_e)
-                if vector.is_parallel(this_v, next_v) == 1:
-                    para_edges.append(next_e)
-                else:
-                    break
-            if len(para_edges) != 0:
-                s,e = line.start(e), line.end(para_edges[-1])
-                ironned = line.con_points(s, e)
-                edges[i] = ironned
-                for i in para_edges:
-                    edges.remove(i)
-
-        new_poll = poll.__class__().append(*edges)
-        return new_poll
 
     @staticmethod
-    def remove_edge(poll:Polyline, edge:Line) -> Polyline:
+    def remove_segment_edge(poll:Polyline, edge:Line) -> Polyline:
         poll_vertices = polyline.vertices(poll)
         split = None
         s,e = line.decon(edge)
@@ -2593,6 +2413,23 @@ class polyline:
             return polyline.con_points(merged)
         else:
             return [polyline.con_points(first), polyline.con_points(second)]
+
+    @staticmethod
+    def remove_segment_index(poll:Polyline, index:int):
+        index = index % poll.n_segment
+        raw = poll.raw.copy()
+        if polyline.is_closed(poll):
+            front, back = raw[:, index+1:], raw[:, 1:index+1]
+            new_raw = np.column_stack((front,back))
+            return Polyline.from_raw(new_raw)
+
+        else:
+            raise
+            first, second = raw[:,:index], raw[:, index+1:]
+            polls = []
+
+
+
 
     @staticmethod
     def con_polygone(polg:[Polygone, Polyline],a:str, *b:int, **c:dict):
@@ -2619,7 +2456,7 @@ class polyline:
         return [ Point(*pol.raw[:3, 0]), Point(*pol.raw[:3, -1]) ]
 
     @staticmethod
-    def join(*segments:(tuple, list)):
+    def join(segments:(tuple, list)):
         """
         excepts segments and return joined
         :return:
@@ -2630,11 +2467,9 @@ class polyline:
                 raise WrongInputTypeError(l, String)
             new_p_lists.append(string.vertices(l))
 
-        print('new p list',len(new_p_lists), new_p_lists)
         organized = []
         while True:
             for l in new_p_lists:
-                print('join looking for joint ', l)
                 organized.append(l)
                 new_p_lists.remove(l)
                 to_remove = []
@@ -2776,6 +2611,25 @@ class polyline:
 class polygone:
 
     @staticmethod
+    def join(polg1:Polygone, polg2:Polygone):
+        # search for edges coinside
+        edges1,edges2 = string.edges(polg1), string.edges(polg2)
+        segments = []
+        for i,e in enumerate(edges1):
+            for ii,ee in enumerate(edges2):
+                if line.coinside(e, ee, directional= False):
+                    # coinsides.append()
+                    segments.append(polyline.remove_segment_index(polg1,i))
+                    segments.append(polyline.remove_segment_index(polg2, ii))
+        if len(segments) != 2:
+            raise FunctionNotDefinedError
+        new_polg = polygone.con_polyline(polyline.join(segments))
+        if new_polg == None:
+            return [polg1, polg2]
+        else:
+            return new_polg
+
+    @staticmethod
     def string_in(polg:Polygone, line:String):
         pass
 
@@ -2898,6 +2752,7 @@ class polygone:
         shapes = [polg]
         # check intersections
         for c in lin_cutter:
+
             new_shapes = []
             for shape in shapes:
                 edges = string.edges(shape)
@@ -2922,21 +2777,22 @@ class polygone:
                             # and how can at the same time split edge and store?
                             # adding as a list not to change length, not to interfear iteration
                             splited_vertices.insert(-1,inter)
+                    elif isinstance(inter, Line):
+                        inter_points.append([b+1+split_increment, line.end(inter)])
 
                 if len(inter_points) < 2:
+                    # print(f'     inter_point {inter_points} returning', shape)
                     new_shapes.append(shape)
                     continue
                 # now need to find portals
                 # need to order points on line then pick valid segments
                 # then porsion lists then combine lists to form a shape
-                print(inter_points)
                 _, index = point.sort_on_line([i[1] for i in inter_points],c)
                 inter_points = data.list_item(inter_points, *index)
                 # s,e = string.vertex(shape,0), string.vertex(shape,-2)
                 bridges = []
                 splits = set()
                 for b in range(len(inter_points) -1):
-                    print(inter_points)
                     p1,p2 = inter_points[b][1], inter_points[b+1][1]
                     split = set((inter_points[b][0], inter_points[b+1][0]))
 
@@ -2953,18 +2809,20 @@ class polygone:
                         bridges.append([p1, p2, segment])
                         splits = splits.union(split)
 
-                if len(splits) < 2:
+                if len(splits) < 1:
+                    # print(f'     splits {splits} returning', shape)
                     new_shapes.append(shape)
                     continue
 
                 # split edges
                 splits = sorted(splits)
                 sub_edge_list = []
-                print(splits)
+
                 # manage very end
                 front = list(reversed(splited_vertices[splits[-1]:][:-1]))
                 back = splited_vertices[:splits[0]+1]
-                sub_edge_list.append([front[0],back[-1], polyline.con_points(front+back)])
+                merged = front+back
+                sub_edge_list.append([merged[0],merged[-1], polyline.con_points(merged)])
 
                 for b in range(len(splits)-1):
                     s_i,e_i = splits[b], splits[b+1]
@@ -2973,57 +2831,105 @@ class polygone:
 
                 # not jump with portals
                 edges_list = []
+
                 while True:
                     new_set = []
-                    start, end, edge = sub_edge_list.pop()
+                    # looking from the begining
+                    start, end, edge = sub_edge_list.pop(0)
                     new_set.append(edge)
+                    # to look through looping
+                    flag_looped = False
                     while True:
-                        # look for all bridge connection
-                        bridges_copy = bridges.copy()
-                        while True:
-                            flag_not_found = True
-                            for b in bridges_copy:
-                                print(end,b[:2])
-                                mask = point.in_points([end], *b[:2])
-                                print(mask)
-                                if any(mask):
-                                    bridges_copy.remove(b)
-                                    new_set.append(b[2])
-                                    end = data.cull_pattern(b[:2],mask, flip_mask=True)[0]
-                                    flag_not_found = False
-                                    break
-                                else:
-                                    pass
-
-                            if flag_not_found:
+                        # if there is a bridge that can loop
+                        for b in bridges:
+                            mask = point.in_points([start, end],*b[:2])
+                            if sum(mask) == 2:
+                                new_set.append(b[2])
+                                flag_looped = True
                                 break
-                        # if travel is closed
-                        if point.coinside(start, end):
+                        if flag_looped:
                             edges_list.append(new_set)
                             break
-                        # look for another chunk
-                        else:
-                            for sub in sub_edge_list:
-                                if point.coinside(end, sub[0]):
-                                    sub_edge_list.remove(sub)
-                                    new_set.append(sub[2])
-                                    end = sub[1]
-                                    break
 
+                        # else follow bridges
+                        bridges_copy = bridges.copy()
+                        flag_exist_bridge_connected = False
+                        while True:
+                            flag_bridge_found = False
+                            for b in bridges_copy:
+                                # if bridge is connected to the end of pline
+                                mask = point.in_points([end], *b[:2])
+                                if any(mask):
+                                    flag_exist_bridge_connected = True
+                                    bridges_copy.remove(b)
+                                    new_set.append(b[2])
+                                    # verify which one is the end
+                                    end = data.cull_pattern(b[:2], mask, flip_mask=True)[0]
+                                    # check if loop is done
+                                    if point.coinside(start, end):
+                                        flag_looped = True
+                                        break
+                                    else:
+                                        # if loop isn't done check for another bridge
+                                        flag_bridge_found = True
+
+                            if not flag_bridge_found or flag_looped:
+                                break
+
+                        if flag_looped:
+                            # if looped no need to check for another segment
+                            edges_list.append(new_set)
+                            break
+
+                        # if not looped but can't find bridge connected somthing is wrong
+                        elif not flag_exist_bridge_connected:
+                            raise
+
+                        # when there is no bridge to follow follow another chunk
+                        flag_chunk_found = False
+                        for sub in sub_edge_list:
+                            if point.coinside(end, sub[0]):
+                                sub_edge_list.remove(sub)
+                                new_set.append(sub[2])
+                                end = sub[1]
+
+                                if point.coinside(start,end):
+                                    # if by adding chunck loop is done no need to check bridges
+                                    flag_looped = True
+                                else:
+                                    flag_chunk_found = True
+                                break
+                        if flag_looped:
+                            edges_list.append(new_set)
+                            break
+
+                        # if there is no chunck connected something is wrong
+                        elif not flag_chunk_found:
+                            print(new_set)
+                            for i in new_set:
+                                print(i.vertices)
+                            raise
+
+                        # chunck is found but no loop : go back and look for bridges
+                        else:
+                            continue
+
+                    # if all is seen spliting is done
                     if len(sub_edge_list) == 0:
                         break
 
                 # form new polygon
                 for i,l in enumerate(edges_list):
                     edges_list[i] = polygone.con_edges(l)
-
                 new_shapes += edges_list
-
             shapes = new_shapes
-
         return  shapes
 
-
+class triangle:
+    @staticmethod
+    def con_edges(edges: (tuple, list)):
+        polg = polygone.con_edges(edges)
+        return Triangle(*polg.vertices[:-1])
 
 class point:
     @staticmethod
@@ -3086,6 +2992,8 @@ class point:
         :param lin:
         :return:
         """
+        print()
+        print("     sort_on_line")
         origin = line.start(lin)
         vec_lin = vector.con_line(lin)
         vectors = {}
@@ -3146,7 +3054,7 @@ class point:
 
         order = 2
         for i in range(len(vectors)-1):
-            o = vector.right_left_halfspace(vectors[i], vectors[i + 1], pla)
+            o = vector.side(vectors[i], vectors[i + 1], pla)
             if o == 3:
                 return None
 
@@ -3490,7 +3398,7 @@ class vector:
 
 
     @staticmethod
-    def right_left_halfspace(vec_reference:Vector, vec_target:Vector, pla:Plane= Plane()) -> int:
+    def side(vec_reference:Vector, vec_target:Vector, pla:Plane= Plane()) -> int:
         """
         identifies whether vector is on the left or right half space
         signs indicate followings;
@@ -3567,7 +3475,6 @@ class vector:
 
     @staticmethod
     def dot(vec1:Vector, vec2:Vector) -> float:
-        print(vec1, vec2)
         return vec1.raw.flatten().dot(vec2.raw.flatten())
 
     @staticmethod
@@ -4129,6 +4036,11 @@ class rectangle:
 
         else:
             raise TypeError
+
+    @staticmethod
+    def con_edges(edges:Line):
+        polg = polygone.con_edges(edges)
+        return Rectangle(*polg.vertices[:-1])
 
 
 class hexahedron:
