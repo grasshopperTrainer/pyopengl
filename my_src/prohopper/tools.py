@@ -801,7 +801,10 @@ class Raw_array:
         self._d = weakref.WeakKeyDictionary()
 
     def __set__(self, instance, value):
-        self._d[instance] = np.array(value, dtype=np.float64)
+        if isinstance(value, np.ndarray):
+            self._d[instance] = value.astype(dtype=DEF_FLOAT_FORMAT, copy=False)
+        else:
+            self._d[instance] = np.array(value, dtype=DEF_FLOAT_FORMAT, copy = False)
 
     def __get__(self, instance, owner):
         try:
@@ -874,6 +877,10 @@ class Geometry(Primitive):
     def raw(self, v):
         self._raw = v
 
+    def copy(self):
+        c = copy.deepcopy(self)
+        c.raw = self.raw.copy()
+        return c
 
 class Domain2d(Primitive):
     '''
@@ -958,10 +965,11 @@ class Point(Geometry):
         self.iterstart = 0
 
     def __str__(self):
-        return f'{self.__class__.__name__} : {[round(i, 2) for i in self.raw[:3, 0]]}'
+        try:
+            return f'{self.__class__.__name__} : {[round(i, 2) for i in self.raw[:3, 0]]}'
+        except:
+            return f"can't print"
 
-    def __repr__(self):
-        return self.__str__()
 
     def __add__(self, other):
         if isinstance(other, Vector):
@@ -1300,7 +1308,7 @@ class Polyline(String):
         return ins
 
 
-class Polygone(Flat, Polyline, Geometry):
+class Polygone(Flat, Polyline):
     """
     what is polygone and condition of it?
     it has to be flat and consists of vertices and must be closed
@@ -1346,6 +1354,10 @@ class Polygone(Flat, Polyline, Geometry):
     @classmethod
     def from_raw(cls, raw: np.ndarray):
         shape = raw.shape
+        print(shape,len(shape))
+
+        if len(shape) == 1:
+
         if not (shape[0] == 4 and shape[1] >= 4):
             raise
         # all has to be points
@@ -1372,11 +1384,97 @@ class Triangle(Polygone):
 """
 need configuration for complex shape
 """
+class Edge_list:
+    def __init__(self):
+        self._v_start = None
+        self._v_end = None
+        self._f_right = None
+        self._f_left = None
+        self._e_r_ccw = None
+        self._e_r_cw = None
+        self._e_l_ccw = None
+        self._e_l_cw = None
+    @property
+    def vertex(self):
+        return self._v_start, self._v_end
+    @property
+    def faces(self):
+        return self._f_left, self._f_right
+    @property
+    def top_edges(self):
+        return self._e_l_ccw, self._e_r_cw
+    @property
+    def bottom_edges(self):
+        return self._e_l_cw, self._e_r_ccw
+    @property
+    def left_edges(self):
+        return self._e_l_cw, self._e_l_ccw
+    @property
+    def right_edges(self):
+        return self._e_r_ccw, self._e_r_cw
 
 
-class Brep:
+class Winged_edge:
+    def __init__(self):
+        """
+        should input data to be stored internalized?
+        """
+        self._face = {}
+        self._edge = {}
+        self._vertex = {}
+
+    def append_vertex(self,*poi):
+        for p in poi:
+            if isinstance(p, Point):
+                for v in self._vertex:
+                    if not point.coinside(v, p):
+                        self._vertex[p] = []
+                    else:
+                        pass
+            else:
+                raise FunctionNotDefinedError
+
+    def append_edge(self, *edge):
+
+        self._edge[edge] = []
+
+    def append_face(self, *face):
+        # what if there already exist other faces
+        # does such testing has to be done here?
+        self._face[face] = []
+
+    def append_point_index(self, p_list, i_list):
+        print('appending point index')
+        print(p_list)
+        print(i_list)
+        # point is the base
+        # edges and faces will have references raw data to these points
+        new_vs = [p.copy() for p in p_list]
+        faces = []
+        edges_index = []
+        for l in i_list:
+            raw = np.empty(shape=len(l), dtype=np.ndarray)
+            raws = [new_vs[i].raw for i in l]
+            raw[:] = raws
+            # TODO how to duplication check? is explicity checking necessary?
+            # add faces
+            faces.append(Polygone.from_raw(raw))
+            # add edges
+            for i in l:
+                first, second= l[i], l[(i+1)%len(l)]
+                if [first, second] not in edges_index and [second,first] not in edges_index:
+                    edges_index.append([first,second])
+        print(faces)
+        print(edges_index)
+        exit()
+
+
+class Brep(Winged_edge):
+    def __init__(self):
+        super().__init__()
+
+class Mesh(Winged_edge):
     pass
-
 
 class CSG:
     pass
@@ -1720,9 +1818,9 @@ class intersection:
 class tests:
     @staticmethod
     def triangulatioin(polg:Polygone):
-        edges, vertices = polyline.decon(polg)
+        edges, original_vs = polyline.decon(polg)
 
-        vertices = vertices[:-1]
+        original_vs = original_vs[:-1]
         unique_x = sorted(set(polg.raw[0]))
         unique_y = sorted(set(polg.raw[1]))
         x_min,x_max = unique_x[0], unique_x[-1]
@@ -1818,40 +1916,58 @@ class tests:
         for i,m in enumerate(monotone):
             monotone[i] = string.iron(m[2])
 
+
         # triangulation
-        # deed to considier out of shape triangulation
         triangles = []
         for iii,m in enumerate(monotone):
 
+            # organize local set of vertices
             vs = string.vertices(m)[:-1]
             l = len(vs)
             ys = [p.y for p in vs]
-            # v_sorted = [i[0] for i in sorted(zip(vs, ys), key = lambda x:x[1])]
-            # index_lowest = v_sorted[0]
-            # print(index_lowest)
-            print(ys)
             index_lowest = [i[0] for i in sorted(zip(range(len(ys)),ys), key= lambda x:x[1])][0]
-            oriented_vs = data.shift(list(zip(range(len(vs)),vs)), index_lowest)
-            stack = [oriented_vs.pop(0)]
-            next_two = oriented_vs[0], oriented_vs[-1]
-            print(next_two)
+            oriented_vs = data.shift(vs, index_lowest)
+
+            # form world index list
+            index_list = []
+            vs = (a for a in oriented_vs)
+            searching = next(vs)
+            i = 0
+            l = len(original_vs)
+            while True:
+                i = i % l
+                try:
+                    if point.coinside(original_vs[i], searching):
+                        index_list.append(i)
+                        searching = next(vs)
+                except :
+                    break
+                i += 1
+            index_vertex = list(zip(index_list, oriented_vs))
+
+            # initiation
+            stack = [index_vertex.pop(0)]
+            next_two = index_vertex[0], index_vertex[-1]
             s = sorted(next_two, key= lambda x:x[1].y)
             stack.append(s[0])
-            oriented_vs.remove(s[0])
+            index_vertex.remove(s[0])
 
             while True:
-                if len(oriented_vs) == 0:
+                print('------')
+                print(stack)
+                print('------')
+                if len(index_vertex) == 0:
                     break
                 # look for lowest of remaining 0-lower 1-higher
-                next_two = sorted((oriented_vs[0],oriented_vs[-1]), key = lambda x:x[1].y)
-                oriented_vs.remove(next_two[0])
+                next_two = sorted((index_vertex[0],index_vertex[-1]), key = lambda x:x[1].y)
+                index_vertex.remove(next_two[0])
                 # now two cases
                 i = next_two[0][0]
 
-                if (i-1)%(l-1) == stack[0][0] or (i+1)%(l-1) == stack[0][0]:
+                if (i-1)%l == stack[0][0] or (i+1)%l == stack[0][0]:
                     print('connect all')
                     for i in range(len(stack)-1, 0, -1):
-                        points = next_two[0],stack[i], stack[i-1]
+                        points = next_two[0][0],stack[i][0], stack[i-1][0]
                         triangles.append(points)
                     stack = [stack[-1],next_two[0]]
                 # check vector then form triangle
@@ -1865,8 +1981,14 @@ class tests:
                         v2 = vector.con_2_points(new_p, stack[i-1][1])
                         side = vector.side(v1,v2)
                         if vr[0] == side[0]:
-                            triangles.append((next_two[0],stack[i],stack[i-1]))
-                            stack_to_remove.append(sorted(zip((stack[i],stack[i-1]),(v1,v2)), key=lambda x:x[1].length)[0][0])
+                            triangles.append((next_two[0][0],stack[i][0],stack[i-1][0]))
+
+                            if stack[i][1].y != stack[i-1][1].y:
+                                to_remove = stack[i]
+                            else:
+                                to_remove = sorted(zip((stack[i],stack[i-1]),(v1,v2)), key=lambda x:x[1].length)[0][0]
+                            stack_to_remove.append(to_remove)
+
                         else:
                             break
 
@@ -1875,10 +1997,25 @@ class tests:
 
                     stack.append(next_two[0])
 
-        print()
-        for i in triangles:
-            print(i)
-        print('dddd')
+        b = brep.con_point_index(original_vs,triangles)
+        return b
+
+class brep:
+    @staticmethod
+    def con_point_index(point_list, index_list):
+        b = Brep()
+        b.append_point_index(point_list, index_list)
+        # faces = []
+        # for l in index_list:
+        #     vs = [point_list[i] for i in l]
+        #     polg = polygone.con_points(vs)
+        #     faces.append(polg)
+        #
+        # b.append_face(*faces)
+        # print(point_list)
+        # print(index_list)
+        # exit()
+        return b
 
 
 class morph:
@@ -2609,6 +2746,17 @@ class polyline:
             return False
 
 class polygone:
+
+    @staticmethod
+    def con_points(points:(tuple, list)):
+
+        print(points)
+        print(points[-1].copy())
+        points += points[-1].copy()
+        print(points)
+        exit()
+        poll = polyline.con_points(points)
+        return polygone.con_polyline(poll)
 
     @staticmethod
     def join(polg1:Polygone, polg2:Polygone):
