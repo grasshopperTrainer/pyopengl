@@ -4,22 +4,50 @@ class MyError(Exception):
         if msg != None and not isinstance(msg, str):
             raise TypeError
 
+class MyWarning(UserWarning):
+    def __init__(self, msg=None):
+        self.msg = None
+        if msg != None and not isinstance(msg, str):
+            raise TypeError
 
 class AllnumberError(MyError):
     def __str__(self):
-        if msg == None:
+        if self.msg == None:
             return 'all values should be numeric(Number type)'
         return self.msg
 class NotFlatError(MyError):
     def __str__(self):
-        if msg == None:
+        if self.msg == None:
             return 'given is not flat'
         return self.msg
 class FunctionNotDefinedError(MyError):
     def __str__(self):
-        if msg == None:
+        if self.msg == None:
             return 'Function is not yet defined'
         return self.msg
+
+class InvalidInputWarning(MyWarning):
+    def __str__(self):
+        if selfmsg == None:
+            return "Input is Invalid."
+        else:
+            return self.msg
+class NullOutputWarning(MyWarning):
+    def __str__(self):
+        if self.msg == None:
+            return "Couldn't generate output."
+        else:
+            return self.msg
+class NotAllPointsWarning(MyWarning):
+    def __str__(self):
+        return "All input portion should represents Point"
+
+class TempInstanceWarning(MyWarning):
+    def __str__(self):
+        if self.msg == None:
+            return "Instance is not fully constructed yet."
+        else:
+            return self.msg
 
 class WrongInputTypeError(Exception):
     def __init__(self, given_value=None, *target_type):

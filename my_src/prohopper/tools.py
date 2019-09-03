@@ -5,6 +5,8 @@ import numpy as np
 import copy
 import inspect
 import weakref
+import warnings
+
 from typing import *
 from numbers import Number
 from .errors import *
@@ -114,108 +116,110 @@ def list_executer(func, args, kwargs):
     pass
 
 class Primitive:
-    DIC = {}
-    DATATYPE = np.float32
-    TOLORENCE = 1.e-9
+    pass
 
-    def __init__(self, data, title: str = None):
-        """
-        Parent of all tools_building classes.
-        rule#1_ in child class functions never return Hlist
-        - add functions for general management and meta control -
-        :param data:
-        :param title:
-        """
-        # make new dict for child class
-        if self.DIC == Primitive.DIC:
-            self.__class__.DIC = {}
-
-        # make name for indexing
-        if title is None:
-            title = str(len(self.keys()) + 1)
-        self._dict_insert_unique(self.__class__.DIC, title, data)
-        self._data = data
-
-    def _dict_insert_unique(self, dic: dict, key: str, value=None, preffix: str = 'new_', suffix: str = ''):
-        key_list = list(dic.keys())
-
-        def make_unique_name(source: list, target: str, preffix: str, suffix: str):
-            # function for detecting coincident name
-            new_name = target
-            for i in source:
-                if i == target:
-                    source.remove(i)
-                    new_target = preffix + target + suffix
-                    new_name = make_unique_name(source, new_target, preffix, suffix)
-                    """
-                    If coincident name is found, There is no need to continue iteration.
-                    Else recursion is called to compare with the elements that were passed
-                    in front in parent iteration. Coincident element is removed from
-                    the original list to avoid pointless iteration.
-                    """
-                    break
-            # finishing condition for recursive action
-            # return value only if 'for' is fully iterated -
-            # without getting into 'if' branch
-            return new_name
-
-        dic[make_unique_name(key_list, key, preffix, suffix)] = value
-
-    def __call__(self):
-        return self._data
-
-    @classmethod
-    def get_from_dic(cls, title: str):
-        return cls.dic[title]
-
-    @classmethod
-    def make_new(cls, data, title: str = None):
-        instance = cls(cls.DIC, data, title)
-
-    @classmethod
-    def get_dic(cls):
-        return cls.DIC
-
-    @classmethod
-    def keys(cls):
-        return cls.DIC.keys()
-
-    def print_data(self):
-        pass
-
-    def __str__(self):
-        return f'{self.__class__.__name__}'
-
-    # def set_data(self, data):
-    #     # to ensure all the proceeding numpy calculation efficient
-    #     if isinstance(data, np.ndarray):
-    #         data = self.__class__.DATATYPE(data)
-    #     self._data = data
-
-    # def get_data(self):
-    #     return self._data
-
-    def printmessage(self, text: str, header: str = 'ERROR '):
-        func_name = inspect.currentframe().f_back.f_code.co_name
-        fullvarinfo = inspect.getargvalues(inspect.currentframe().f_back)
-        varvalue = [fullvarinfo[3][i] for i in fullvarinfo[0]]
-        varinfo = []
-        for name, value in zip(fullvarinfo[0], varvalue):
-            varinfo.append(f'{name} : {str(value)}')
-
-        head = f'FROM {self.__class__.__name__}.{func_name}: '
-
-        varhead = ' ' * (len(head) - 6) + 'ARGS: ' + varinfo[0]
-        for i, j in enumerate(varinfo):
-            varinfo[i] = ' ' * len(head) + j
-
-        top = header + '-' * (len(head + text) - len(header))
-        bottom = '-' * len(head + text)
-
-        lines = top, head + text, varhead, *varinfo[1:], bottom
-
-        for i in lines:
-            print(i)
+#     DIC = {}
+#     DATATYPE = np.float32
+#     TOLORENCE = 1.e-9
+#
+#     def __init__(self, data, title: str = None):
+#         """
+#         Parent of all tools_building classes.
+#         rule#1_ in child class functions never return Hlist
+#         - add functions for general management and meta control -
+#         :param data:
+#         :param title:
+#         """
+#         # make new dict for child class
+#         if self.DIC == Primitive.DIC:
+#             self.__class__.DIC = {}
+#
+#         # make name for indexing
+#         if title is None:
+#             title = str(len(self.keys()) + 1)
+#         self._dict_insert_unique(self.__class__.DIC, title, data)
+#         self._data = data
+#
+#     def _dict_insert_unique(self, dic: dict, key: str, value=None, preffix: str = 'new_', suffix: str = ''):
+#         key_list = list(dic.keys())
+#
+#         def make_unique_name(source: list, target: str, preffix: str, suffix: str):
+#             # function for detecting coincident name
+#             new_name = target
+#             for i in source:
+#                 if i == target:
+#                     source.remove(i)
+#                     new_target = preffix + target + suffix
+#                     new_name = make_unique_name(source, new_target, preffix, suffix)
+#                     """
+#                     If coincident name is found, There is no need to continue iteration.
+#                     Else recursion is called to compare with the elements that were passed
+#                     in front in parent iteration. Coincident element is removed from
+#                     the original list to avoid pointless iteration.
+#                     """
+#                     break
+#             # finishing condition for recursive action
+#             # return value only if 'for' is fully iterated -
+#             # without getting into 'if' branch
+#             return new_name
+#
+#         dic[make_unique_name(key_list, key, preffix, suffix)] = value
+#
+#     def __call__(self):
+#         return self._data
+#
+#     @classmethod
+#     def get_from_dic(cls, title: str):
+#         return cls.dic[title]
+#
+#     @classmethod
+#     def make_new(cls, data, title: str = None):
+#         instance = cls(cls.DIC, data, title)
+#
+#     @classmethod
+#     def get_dic(cls):
+#         return cls.DIC
+#
+#     @classmethod
+#     def keys(cls):
+#         return cls.DIC.keys()
+#
+#     def print_data(self):
+#         pass
+#
+#     def __str__(self):
+#         return f'{self.__class__.__name__}'
+#
+#     # def set_data(self, data):
+#     #     # to ensure all the proceeding numpy calculation efficient
+#     #     if isinstance(data, np.ndarray):
+#     #         data = self.__class__.DATATYPE(data)
+#     #     self._data = data
+#
+#     # def get_data(self):
+#     #     return self._data
+#
+#     def printmessage(self, text: str, header: str = 'ERROR '):
+#         func_name = inspect.currentframe().f_back.f_code.co_name
+#         fullvarinfo = inspect.getargvalues(inspect.currentframe().f_back)
+#         varvalue = [fullvarinfo[3][i] for i in fullvarinfo[0]]
+#         varinfo = []
+#         for name, value in zip(fullvarinfo[0], varvalue):
+#             varinfo.append(f'{name} : {str(value)}')
+#
+#         head = f'FROM {self.__class__.__name__}.{func_name}: '
+#
+#         varhead = ' ' * (len(head) - 6) + 'ARGS: ' + varinfo[0]
+#         for i, j in enumerate(varinfo):
+#             varinfo[i] = ' ' * len(head) + j
+#
+#         top = header + '-' * (len(head + text) - len(header))
+#         bottom = '-' * len(head + text)
+#
+#         lines = top, head + text, varhead, *varinfo[1:], bottom
+#
+#         for i in lines:
+#             print(i)
 
 
 class Item:
@@ -802,7 +806,10 @@ class Raw_array:
 
     def __set__(self, instance, value):
         if isinstance(value, np.ndarray):
-            self._d[instance] = value.astype(dtype=DEF_FLOAT_FORMAT, copy=False)
+            if value.dtype == object:
+                self._d[instance] = value
+            else:
+                self._d[instance] = value.astype(dtype=DEF_FLOAT_FORMAT, copy=False)
         else:
             self._d[instance] = np.array(value, dtype=DEF_FLOAT_FORMAT, copy = False)
 
@@ -812,62 +819,12 @@ class Raw_array:
         except:
             return None
 
-class Geometry(Primitive):
+class Geometry:
     _raw = Raw_array()
 
     @classmethod
     def from_raw(cls, raw: np.ndarray):
         raise Exception('not defined for this primitive yet')
-
-    # def bymatrix(self, value):
-    #     if isinstance(value, np.ndarray):
-    #         self.data = value
-    #     else:
-    #         self.printmessage("input isn't matrix")
-    #     return self
-
-    @property
-    def numvertex(self):
-
-        return self().shape[1]
-
-    @property
-    def length(self):
-        if self.numvertex is 1:
-            return None
-        else:
-            segments = self.segments
-            length = 0
-            for i in segments:
-                vec = i.vertices[1] - i.vertices[0]
-                length += np.linalg.norm(vec())
-            return length
-
-    @property
-    def segments(self):
-        lines = []
-
-        vertex = self.vertex
-
-        for i in range(self.numvertex):
-            v1 = vertex[i]
-            if i is self.numvertex - 1:
-                v2 = vertex[0]
-            else:
-                v2 = vertex[i + 1]
-            lines.append(Line(v1, v2))
-        return lines
-
-    @property
-    def matrix(self):
-        pass
-
-    @matrix.setter
-    def matrix(self, value):
-        pass
-
-    def __repr__(self):
-        return self.__str__()
 
     @property
     def raw(self) -> np.ndarray:
@@ -876,10 +833,31 @@ class Geometry(Primitive):
     @raw.setter
     def raw(self, v):
         self._raw = v
+    def copy(self, level=1):
+        """
+        Copy with different level.
 
-    def copy(self):
-        c = copy.deepcopy(self)
-        c.raw = self.raw.copy()
+        0 - shallow copy. copies objects's instance only and raw data will be just passed.
+        1 - deep copies object and raw data will be copied too
+            Yet if raw is an array of arrays(like as polyline being constructed from point arrays),
+            inner arrays will remain as original.
+        2 - deep copies both object and raw data. original and copies ones won't share anything.
+
+        :param level: 0,1,2
+        :return: copied instance
+        """
+        if level == 0:
+            c = copy.copy(self)
+            c.raw = self.raw
+        elif level == 1:
+            c = copy.deepcopy(self)
+            c.raw = self.raw.copy()
+        elif level == 2:
+            c = copy.deepcopy(self)
+            c.raw = copy.deepcopy(self.raw)
+        else:
+            raise
+
         return c
 
 class Domain2d(Primitive):
@@ -959,7 +937,6 @@ class Vector_Point:
 
 
 class Point(Geometry):
-
     def __init__(self, x: Number = 0, y: Number = 0, z: Number = 0):
         self.raw = [[x], [y], [z], [1]]
         self.iterstart = 0
@@ -968,8 +945,10 @@ class Point(Geometry):
         try:
             return f'{self.__class__.__name__} : {[round(i, 2) for i in self.raw[:3, 0]]}'
         except:
-            return f"can't print"
+            return "<Point>"
 
+    def __repr__(self):
+        return self.__str__()
 
     def __add__(self, other):
         if isinstance(other, Vector):
@@ -1052,6 +1031,15 @@ class Point(Geometry):
         raise
         pass
 
+    @staticmethod
+    def check_raw_pointness(*raw):
+        for r in raw:
+            if r.shape != (4, 1):
+                return False
+            if r[3, 0] != 1:
+                return False
+        return True
+
     @classmethod
     def from_raw(cls, raw: np.ndarray):
         if not isinstance(raw, np.ndarray):
@@ -1128,6 +1116,16 @@ class Vector(Geometry):
             raise TypeError
         return cls(*raw.transpose().tolist()[0][:3])
 
+    @staticmethod
+    def check_raw_vectorness(*raw):
+        for r in raw:
+            if r.shape != (4,1):
+                return False
+            if r[3,0] != 0:
+                return False
+        return True
+
+
     # functions that recieve single vector and returns single vector should be methods?
     # or functions that mutates self should be methods?
     # functions that return basic properties should be methods
@@ -1149,87 +1147,144 @@ class String(Geometry):
     """
 
     @property
+    def coordinates(self):
+        return (r.transpose()[0][:3].tolist() for r in self.raw)
+    @property
+    def front_coord(self):
+        return self.raw[0].transpose()[0][:3].tolist()
+    @property
+    def back_coord(self):
+        return self.raw[-1].transpose()[0][:3].tolist()
+    def index_coord(self, index):
+        return self.raw[index].transpose()[0][:3].tolist()
+
+    @property
+    def xs(self):
+        return (r[0,0] for r in self.raw)
+    @property
+    def ys(self):
+        return (r[1,0] for r in self.raw)
+    @property
+    def zs(self):
+        return (r[2,0] for r in self.raw)
+
+    @property
     def vertices(self):
-        return self.raw[:3].transpose().tolist()
+        return (Point.from_raw(r) for r in self.raw)
     @property
-    def start(self):
-        return self.raw[:3,0].tolist()
-    @property
-    def end(self):
-        return self.raw[:3, -1].tolist()
+    def edges(self):
+        return (Line.from_raw(self.raw[i:i+2]) for i in range(self.n_segment))
 
     @property
     def n_vertex(self):
-        return self.raw.shape[1]
+        return self.raw.shape[0]
     @property
     def n_segment(self):
-        return self.raw.shape[1]-1
+        return self.raw.shape[0]-1
 
     @property
     def length(self):
-        totall = 0
-        vertices = self.vertices
-        for i in range(self.n_vertex -1):
-            vec = []
-            for a,b in zip(vertices[i], vertices[i+1]):
-                vec.append(b-a)
-            l = np.sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2])
-            totall += l
-        return totall
+        def IT():
+            i = 0
+            l = self.n_segment
+            sub = self.raw[i:i+2]
+            while i < l:
+                yield np.sqrt(np.sum(np.square(np.diff(sub))[0]))
+                i += 1
+        sum = np.sum(np.fromiter(IT(), dtype=DEF_FLOAT_FORMAT))
+        return sum
 
     def flip(self):
-        raw = np.flip(self.raw, 1)
-        self.raw = raw
+        self.raw[:] = list(reversed(self.raw[:]))
 
-    def append(self, *new_element):
-        for e in new_element:
-
-            # this means raw not initiated and value is None
-            if not isinstance(self.raw, np.ndarray):
-                self.raw = e.raw.copy()
-                continue
-
-            if isinstance(e, Point):
-                if not point.coinside(string.end(self),e):
-                    self.raw = np.hstack((self.raw, e.raw.copy()))
+    def iron(self):
+        # look through each edge and see the vector of it
+        vs = list(self.vertices)
+        l = len(vs)
+        loop = np.all(np.equal(self.raw[0], self.raw[-1]))
+        index = 0
+        to_remove = []
+        while True:
+            if index == (l-1):
+                self.raw = np.delete(self.raw, obj=to_remove, axis=0)
+                if not loop:
+                    return self
                 else:
-                    raise
+                    # extra final
+                    final_v = vector.con_2_points(vs[-2], vs[-1])
+                    first_v = vector.con_2_points(vs[0], vs[1])
 
-            elif isinstance(e, Line):
-                if point.coinside(string.end(self), line.start(e)):
-                    self.raw = np.hstack((self.raw, line.end(e).raw.copy()))
-                elif point.coinside(string.end(self), line.end(e)):
-                    self.raw = np.hstack((self.raw, line.start(e).raw.copy()))
+                    if vector.is_parallel(final_v, first_v) == 1:
+                        self.raw = np.delete(self.raw, obj=-1, axis=0)
+                        self.raw[0] = vs[-1].raw
+                        return self
+                    else:
+                        return self
+
+
+            this_v = vector.con_2_points(vs[index],vs[index+1])
+            while True:
+                index += 1
+
+                if index == (l-1):
+                    break
+
+                next_v = vector.con_2_points(vs[index], vs[index+1])
+                # parallel check
+                if vector.is_parallel(this_v, next_v) == 1:
+                    to_remove.append(index)
                 else:
-                    self.raw = np.hstack((self.raw, e.raw.copy()))
+                    break
 
-            elif isinstance(e, Polyline):
-                if point.coinside(string.end(self), string.start(e)):
-                    self.raw = np.hstack((self.raw, e.raw[1:].copy()))
-                elif point.coinside(string.end(self), string.end(e)):
-                    self.raw = np.hstack((self.raw, np.flip(e.raw.copy(),1)[1:]))
-                else:
-                    self.raw = np.hstack((self.raw, e.raw.copy()))
-
-            elif isinstance(e, (list, tuple)):
-                if len(e) == 3 and all([isinstance(n,Number) for n in e]):
-                    self.raw = np.hstack((self.raw, np.array([ [n] for n in e]+[1])))
-            else:
-                raise TypeError
-        return self
-
-    def insert(self, new_element, index):
-        if isinstance(new_element, Point):
-            pass
-        elif isinstance(new_element, Line):
-            pass
-        elif isinstance(new_element, Polyline):
-            pass
-
-        elif isinstance(new_element, (list, tuple)):
-            pass
-        else:
-            raise TypeError
+    # def append(self, *new_element):
+    #     for e in new_element:
+    #
+    #         # this means raw not initiated and value is None
+    #         if not isinstance(self.raw, np.ndarray):
+    #             self.raw = e.raw.copy()
+    #             continue
+    #
+    #         if isinstance(e, Point):
+    #             if not point.coinside(string.end(self),e):
+    #                 self.raw = np.hstack((self.raw, e.raw.copy()))
+    #             else:
+    #                 raise
+    #
+    #         elif isinstance(e, Line):
+    #             if point.coinside(string.end(self), line.start(e)):
+    #                 self.raw = np.hstack((self.raw, line.end(e).raw.copy()))
+    #             elif point.coinside(string.end(self), line.end(e)):
+    #                 self.raw = np.hstack((self.raw, line.start(e).raw.copy()))
+    #             else:
+    #                 self.raw = np.hstack((self.raw, e.raw.copy()))
+    #
+    #         elif isinstance(e, Polyline):
+    #             if point.coinside(string.end(self), string.start(e)):
+    #                 self.raw = np.hstack((self.raw, e.raw[1:].copy()))
+    #             elif point.coinside(string.end(self), string.end(e)):
+    #                 self.raw = np.hstack((self.raw, np.flip(e.raw.copy(),1)[1:]))
+    #             else:
+    #                 self.raw = np.hstack((self.raw, e.raw.copy()))
+    #
+    #         elif isinstance(e, (list, tuple)):
+    #             if len(e) == 3 and all([isinstance(n,Number) for n in e]):
+    #                 self.raw = np.hstack((self.raw, np.array([ [n] for n in e]+[1])))
+    #         else:
+    #             raise TypeError
+    #     return self
+    #
+    # def insert(self, new_element, index):
+    #     if isinstance(new_element, Point):
+    #         pass
+    #     elif isinstance(new_element, Line):
+    #         pass
+    #     elif isinstance(new_element, Polyline):
+    #         pass
+    #
+    #     elif isinstance(new_element, (list, tuple)):
+    #         pass
+    #     else:
+    #         raise TypeError
 
 
 
@@ -1237,14 +1292,36 @@ class Line(String):
     def __init__(self, start: (list, tuple) = [0, 0, 0], end: (list, tuple) = [1, 0, 0]):
         if len(start) != 3 or len(end) != 3:
             raise ValueError
-        if not all([all([isinstance(ii, Number) for ii in i]) for i in (start, end)]):
-            raise TypeError
+        raw = np.empty(2,dtype=np.ndarray)
+        for i,c in enumerate((start,end)):
+            if not all([isinstance(i, Number) for i in c]):
+                raise TypeError
+            arr = c + [0]*(3 -len(c)) + [1]
+            raw[i] = np.expand_dims(np.array(arr),axis=1)
 
-        start, end = start + [0], end + [0]
-        self.raw = np.array((start, end)).transpose()
+        self.raw = raw
+
+
+    @classmethod
+    def from_raw(cls, raw: np.ndarray):
+        if raw.shape != (2,):
+            raise
+
+        if not Point.check_raw_pointness(*raw):
+            raise
+
+        inst = cls()
+        inst.raw = raw
+        return inst
 
     def __str__(self):
-        return f'Line ' + '{:.3f}'.format(self.length)
+        try:
+            return f'Line ' + '{:.3f}'.format(self.length)
+        except:
+            return '<Line>'
+
+    def __repr__(self):
+        return self.__str__()
 
 class Flat(Geometry):
     """
@@ -1259,89 +1336,91 @@ class Flat(Geometry):
 
 
 class Polyline(String):
-
-    def __init__(self, *points_coord):
-        if len(points_coord) == 0:
-            pass
+    def __new__(cls, *coordinates):
+        print('new polyline', coordinates)
+        if coordinates == (None,):
+            return super().__new__(cls)
+        elif len(coordinates) < 1:
+            warnings.warn("", NullOutputWarning)
+            return None
         else:
-            for coord in points_coord:
-                if not isinstance(coord, (tuple, list)):
-                    raise NotCoordinateLikeError
-                if len(coord) not in (3, 2):
-                    print(len(coord))
-                    raise NotCoordinateLikeError
-                if not all([isinstance(i, Number) for i in coord]):
-                    raise AllnumberError
+            return super().__new__(cls)
 
-            # convert into arrays stack and transpose?
-            raw = None
-            for i, coord in enumerate(points_coord):
-                # do i need to remove duplicated point?
-                # if previous is the same with current ignore
-                if i != 0:
-                    if all([a == b for a, b in zip(points_coord[i - 1], coord)]):
-                        continue
+    def __init__(self, *coordinates):
+        print('init polyline')
+        if coordinates == (None,):
+            warnings.warn("",TempInstanceWarning)
+            return
 
-                # else append to array
-                if len(coord) == 3:
-                    coord = list(coord) + [1]
-                else:
-                    coord = list(coord) + [0, 1]
-                arr = np.array(coord)
-                if raw is None:
-                    raw = arr
-                else:
-                    raw = np.vstack([raw, arr])
-            self.raw = raw.transpose()
+        for coord in coordinates:
+            if not isinstance(coord, (tuple, list)):
+                raise NotCoordinateLikeError
+            if len(coord) > 3:
+                raise NotCoordinateLikeError
+            if not all([isinstance(i, Number) for i in coord]):
+                raise AllnumberError
 
+        # duplication check, duplicated only near
+        dup_checked = []
+        latest = [None,None,None]
+        for c in coordinates:
+            if all([a == b for a,b in zip(latest, c)]):
+                continue
+            else:
+                dup_checked.append(c)
+                latest = c
 
+        raw = np.empty(len(dup_checked), dtype=np.ndarray)
+        # convert into arrays stack and transpose?
+        for i,c in enumerate(dup_checked):
+            c += [0]*(3-len(c)) + [1]
+            raw[i] = np.expand_dims(np.array(c,dtype=DEF_FLOAT_FORMAT), axis=1)
+
+        self.raw = raw
 
     @classmethod
     def from_raw(cls, raw: np.ndarray):
-        if not isinstance(raw, np.ndarray):
-            raise TypeError
-        if not all([i == 1 for i in raw[3]]):
-            raise ValueError
+        if len(raw.shape) != 1:
+            warnings.warn("Input shape incorrect", NullOutputWarning)
+            return None
 
-        ins = cls()
+        if not Point.check_raw_pointness(*raw):
+            warnings.warn("", NotAllPointsWarning)
+            warnings.warn("Input not point_like", NullOutputWarning)
+            return None
+
+        ins = cls(None)
         ins.raw = raw
         return ins
 
 
-class Polygone(Flat, Polyline):
+class Face:
+    pass
+
+
+class Polygone(Flat, Face, Polyline):
     """
     what is polygone and condition of it?
     it has to be flat and consists of vertices and must be closed
     """
+    def __new__(cls, *coordinates):
+        if coordinates == (None,):
+            warnings.warn("", TempInstanceWarning)
+            return object.__new__(cls)
+        elif len(coordinates) < 4:
+            warnings.warn("", NullOutputWarning)
+            return None
+        # every condition is the same except point order is looped
+        elif not all([a == b for a,b in zip(coordinates[0],coordinates[-1])]):
+            warnings.warn("", NullOutputWarning)
+            return None
+        else:
+            return object.__new__(cls)
+
 
     def __init__(self, *coordinates):
-        if len(coordinates) == 0:
-            return
-
+        print('init polygone')
         super().__init__(coordinates)
-        ps = []
-        for i in coordinates:
-            if not isinstance(i, (tuple, list)):
-                raise
-            if len(i) > 3:
-                raise NotCoordinateLikeError(i)
-            i = i + [0 for i in range(3 - len(i))]
-            ps.append(Point(*i))
-
-        # close check
-        if not point.coinside(ps[0], ps[-1]):
-            raise
-        #
-        # # anti-clockwise check
-        # pla = planar[1]
-        # clockwise = point.clockwise_check(ps, pla)
-        # if clockwise == 0:
-        #     ps = reversed(ps)
-        # else:
-        #     pass
-
-        self.raw = polyline.con_points(ps).raw
-
 
     @property
     def center(self):
@@ -1353,22 +1432,32 @@ class Polygone(Flat, Polyline):
 
     @classmethod
     def from_raw(cls, raw: np.ndarray):
-        shape = raw.shape
-        print(shape,len(shape))
 
-        if len(shape) == 1:
+        if len(raw.shape) != 1 or raw.shape[0] < 4:
+            warnings.warn("Input shape incorrect", NullOutputWarning)
+            return None
 
-        if not (shape[0] == 4 and shape[1] >= 4):
-            raise
-        # all has to be points
-        if not all([i == 1 for i in raw[3]]):
-            raise
+        if not Point.check_raw_pointness(*raw):
+            warnings.warn(NotAllPointsWarning, NullOutputWarning)
+            return None
 
-        coordinates = raw[:3].transpose().tolist()
-        inst = cls(*coordinates)
-        return inst
+        if not np.array_equal(raw[0], raw[-1]):
+            warnings.warn("Point inputs not looped", NullOutputWarning)
+            return None
+
+        ins = cls(None)
+        ins.raw = raw
+        return ins
+
     def __str__(self):
-        return f'<Polygone> {self.raw.shape[1]-1} edges'
+        try:
+            return f'<Polygone> {self.n_segment} edges'
+        except:
+            return '<Polygone>'
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class Triangle(Polygone):
 
@@ -1377,7 +1466,7 @@ class Triangle(Polygone):
         all inputs should be points
         :param args: coordinate of points
         """
-        super().__init__(a, b, c,a)
+        super().__init__(a, b, c, a)
         # anti-clockwise check?
         # general method usage?
 
@@ -1441,31 +1530,38 @@ class Winged_edge:
     def append_face(self, *face):
         # what if there already exist other faces
         # does such testing has to be done here?
-        self._face[face] = []
+        for f in face:
+            if not isinstance(f, Face):
+                raise TypeError
+            # search in existing faces
+            flag_exits = False
+            for existing_f in self._face:
+                if np.array_equal(existing_f.raw,f.raw):
+                    flag_exits = True
+                    break
+            if flag_exits:
+                continue
+            # if this is a new face
+            else:
+                e = f.edges
+                self._face[f] = list(e)
+                print(self._face)
+                print(self._face)
+                a = np.array([[[1,2,3]],[[4,5,6]]])
+                c = np.array([[[7,8,9]],[[10,11,12]]])
+                b = np.empty(2)
+                print(a[0,0])
+                b[0] = a[0]
+                b[1] = a[0]
+                print(b)
+                print(a)
 
-    def append_point_index(self, p_list, i_list):
-        print('appending point index')
-        print(p_list)
-        print(i_list)
-        # point is the base
-        # edges and faces will have references raw data to these points
-        new_vs = [p.copy() for p in p_list]
-        faces = []
-        edges_index = []
-        for l in i_list:
-            raw = np.empty(shape=len(l), dtype=np.ndarray)
-            raws = [new_vs[i].raw for i in l]
-            raw[:] = raws
-            # TODO how to duplication check? is explicity checking necessary?
-            # add faces
-            faces.append(Polygone.from_raw(raw))
-            # add edges
-            for i in l:
-                first, second= l[i], l[(i+1)%len(l)]
-                if [first, second] not in edges_index and [second,first] not in edges_index:
-                    edges_index.append([first,second])
-        print(faces)
-        print(edges_index)
+                exit()
+
+
+
+            print(f)
+            exit()
         exit()
 
 
@@ -1627,7 +1723,7 @@ class Plane(Geometry):
         xy_dp = sum((np.array(axis_x) * np.array(axis_y)).tolist())
         yz_dp = sum((np.array(axis_y) * np.array(axis_z)).tolist())
         zx_dp = sum((np.array(axis_z) * np.array(axis_x)).tolist())
-        if not np.isclose(sum([xy_dp, yz_dp, zx_dp]), 0., atol=self.TOLORENCE):
+        if not np.isclose(sum([xy_dp, yz_dp, zx_dp]), 0., atol=DEF_TOLERANCE):
             print(axis_x, axis_y, axis_z)
             raise ValueError('given 3 vectors not perpendicular')
         # TODO should right-hand right-hand be checked too? do i support right_handed LCS?
@@ -1639,11 +1735,18 @@ class Plane(Geometry):
             i[:] = i[0] / l, i[1] / l, i[2] / l
         axis_x, axis_y, axis_z = axis
 
+        raw = np.empty(4, dtype=np.ndarray)
         # one point three vectors
-        self.raw = np.array([[*origin, 1], [*axis_x, 0], [*axis_y, 0], [*axis_z, 0]]).transpose()
+        o = Point(*origin).raw
+        x,y,z = [Vector(*axis_x).raw for i in (axis_x,axis_y,axis_z)]
+        raw[:] = o,x,y,z
+        self.raw = raw
 
     def __str__(self):
-        return f'{self.__class__.__name__} of origin {self.origin}'
+        try:
+            return f'{self.__class__.__name__} of origin {self.origin}'
+        except:
+            return '<Plane>'
 
     @classmethod
     def from_raw(cls, raw: np.ndarray):
@@ -1656,19 +1759,19 @@ class Plane(Geometry):
 
     @property
     def origin(self):
-        return Point(*self.raw[:3, 0])
+        return Point.from_raw(self.raw[0])
 
     @property
     def x_axis(self):
-        return Vector(*self.raw[:3, 1])
+        return Vector.from_raw(self.raw[1])
 
     @property
     def y_axis(self):
-        return Vector(*self.raw[:3, 2])
+        return Vector.from_raw(self.raw[2])
 
     @property
     def z_axis(self):
-        return Vector(*self.raw[:3, 3])
+        return Vector.from_raw(self.raw[3])
 
 
 class Matrix(Primitive):
@@ -1718,7 +1821,7 @@ class intersection:
     @staticmethod
     def pline_line(pol:(Polyline,Polygone), lin:Line):
         # TODO how to define plane of polyline
-        if lin.vertices[0][2] != 0 or lin.vertices[1][2] != 0:
+        if any([z != 0 for z in lin.zs]):
             raise Exception('not defined yet for 3d line')
         edges = polyline.edges(pol)
         inter = [[],[]]
@@ -1819,10 +1922,9 @@ class tests:
     @staticmethod
     def triangulatioin(polg:Polygone):
         edges, original_vs = polyline.decon(polg)
-
         original_vs = original_vs[:-1]
-        unique_x = sorted(set(polg.raw[0]))
-        unique_y = sorted(set(polg.raw[1]))
+        unique_x = sorted(set(polg.xs))
+        unique_y = sorted(set(polg.ys))
         x_min,x_max = unique_x[0], unique_x[-1]
         x_start = x_min - 1
         c_line_length = x_max-x_min+2
@@ -1831,6 +1933,7 @@ class tests:
         # trapezoids
         trapezoid = polygone.split(polg,*c_lines)
         to_replace = []
+
         # subdivision
         for i,s in enumerate(trapezoid):
             # split shapes with segmented edges
@@ -1914,8 +2017,7 @@ class tests:
                     monotone.append([top_e,bottom_e, t])
 
         for i,m in enumerate(monotone):
-            monotone[i] = string.iron(m[2])
-
+            monotone[i] = m[2].iron()
 
         # triangulation
         triangles = []
@@ -1928,7 +2030,7 @@ class tests:
             index_lowest = [i[0] for i in sorted(zip(range(len(ys)),ys), key= lambda x:x[1])][0]
             oriented_vs = data.shift(vs, index_lowest)
 
-            # form world index list
+            # form world index list form index_vertex_pair
             index_list = []
             vs = (a for a in oriented_vs)
             searching = next(vs)
@@ -1937,7 +2039,7 @@ class tests:
             while True:
                 i = i % l
                 try:
-                    if point.coinside(original_vs[i], searching):
+                    if point.coinside(oriented_vs[i], searching):
                         index_list.append(i)
                         searching = next(vs)
                 except :
@@ -2003,18 +2105,13 @@ class tests:
 class brep:
     @staticmethod
     def con_point_index(point_list, index_list):
+        faces = []
+        for l in index_list:
+            ps = [point_list[i] for i in l]
+            faces.append(polygone.con_points(ps))
         b = Brep()
-        b.append_point_index(point_list, index_list)
-        # faces = []
-        # for l in index_list:
-        #     vs = [point_list[i] for i in l]
-        #     polg = polygone.con_points(vs)
-        #     faces.append(polg)
-        #
-        # b.append_face(*faces)
-        # print(point_list)
-        # print(index_list)
-        # exit()
+        b.append_face(*faces)
+
         return b
 
 
@@ -2125,7 +2222,7 @@ class line:
     def __new__(cls, to_cast):
         if isinstance(to_cast, Polyline):
             if to_cast.n_vertex == 2:
-                return Line(*to_cast.vertices)
+                return Line(*to_cast.coordinates)
             else:
                 return None
 
@@ -2207,19 +2304,19 @@ class line:
 
     @staticmethod
     def start(lin:Line) -> Point:
-        return Point(*lin.start)
+        return Point(*lin.front_coord)
 
     @staticmethod
     def end(lin:Line) -> Point:
-        return Point(*lin.end)
+        return Point(*lin.back_coord)
 
     @staticmethod
     def decon(lin:Line):
-        return [Point(*lin.raw.copy()[:3, 0]), Point(*lin.raw.copy()[:3, 1])]
+        return [Point(*lin.front_coord), Point(*lin.back_coord)]
 
     @staticmethod
     def has_vertex(lin:Line, poi:Point):
-        start, end = lin.vertices
+        start, end = lin.coordinates
         coord = poi.xyz
         if all([a==b for a,b in zip(start,coord)]):
             return [ True, 0 ]
@@ -2233,22 +2330,22 @@ class line:
         if not isinstance(lin, Line):
             raise TypeError
         coord = []
-        for a,b in zip(*lin.vertices):
+        for a,b in zip(*lin.coordinates):
             coord.append((a+b)/2)
         return Point(*coord)
 
     @staticmethod
     def coinside(line1:Line, line2:Line, directional = True) -> bool:
         if directional:
-            return np.sum(np.equal(line1.raw, line2.raw)) == 8
+            return np.sum([np.equal(a,b) for a,b in zip(line1.raw, line2.raw)]) == 8
         else:
             return any([
-                np.sum(np.equal(line1.raw, line2.raw)) == 8,
-                np.sum(np.equal(line1.raw, np.flip(line2.raw,1))) == 8])
+                np.sum([np.equal(a,b) for a,b in zip(line1.raw, line2.raw)]) == 8,
+                np.sum([np.equal(a,b) for a,b in zip(line1.raw, np.flip(line2.raw))]) == 8])
 
     @staticmethod
     def flipped(lin:Line):
-        return Line(lin.end,lin.start)
+        return Line(lin.back_coord, lin.front_coord)
 
     @staticmethod
     def con_points(start:Point, end:Point) -> Line:
@@ -2322,6 +2419,8 @@ class data:
         :return:
         """
         new1, new2 = lis1.copy(),lis2.copy()
+        print(new1)
+        print(new2)
         if len(new1) == len(new2):
             return [new1, new2]
 
@@ -2458,33 +2557,6 @@ class data:
 class string:
 
     @staticmethod
-    def iron(poll:String) -> String:
-        # look through each edge and see the vector of it
-        edges = polyline.edges(poll)
-
-        for i, e in enumerate(edges):
-            this_v = vector.con_line(e)
-            para_edges = []
-            index = i
-            while True:
-                index = (index + 1) % len(edges)
-                next_e = edges[index]
-                next_v = vector.con_line(next_e)
-                if vector.is_parallel(this_v, next_v) == 1:
-                    para_edges.append(next_e)
-                else:
-                    break
-            if len(para_edges) != 0:
-                s, e = line.start(e), line.end(para_edges[-1])
-                ironned = line.con_points(s, e)
-                edges[i] = ironned
-                for i in para_edges:
-                    edges.remove(i)
-
-        new_poll = poll.__class__().append(*edges)
-        return new_poll
-
-    @staticmethod
     def vertex(stri:String, index):
         raw = stri.raw[:3,index].copy()
         return Point(*raw)
@@ -2502,17 +2574,16 @@ class string:
 
     @staticmethod
     def vertices(stri:String):
-        raw = stri.raw[:3].transpose().tolist()
         points = []
-        for i in raw:
+        for i in stri.coordinates:
             points.append(Point(*i))
         return points
 
     @staticmethod
     def edges(stri:String):
         edges = []
-        vertices = stri.vertices
-        for i in range(len(vertices) -1):
+        vertices = list(stri.coordinates)
+        for i in range(stri.n_segment):
             edges.append(Line(vertices[i], vertices[i+1]))
         return edges
 
@@ -2552,18 +2623,23 @@ class polyline:
             return [polyline.con_points(first), polyline.con_points(second)]
 
     @staticmethod
-    def remove_segment_index(poll:Polyline, index:int):
+    def remove_indexed_segment(poll:Polyline, index:int):
         index = index % poll.n_segment
-        raw = poll.raw.copy()
         if polyline.is_closed(poll):
-            front, back = raw[:, index+1:], raw[:, 1:index+1]
-            new_raw = np.column_stack((front,back))
+            raw = copy.deepcopy(poll.raw)
+            front, back = raw[index+1:], raw[1:index+1]
+            new_raw = np.concatenate((front, back))
             return Polyline.from_raw(new_raw)
 
         else:
-            raise
-            first, second = raw[:,:index], raw[:, index+1:]
-            polls = []
+            if index == 0 or index == (poll.n_vertex-1):
+                return Polyline.from_raw(np.delete(poll.raw,index))
+            else:
+                raw = copy.deepcopy(poll.raw)
+                front, back = raw[:index+1], raw[index+1:]
+                return [Polyline.from_raw(front), Polyline.from_raw(back)]
+
+
 
 
 
@@ -2578,13 +2654,13 @@ class polyline:
     def start(pol: Polyline):
         if not isinstance(pol, Polyline):
             raise TypeError
-        return Point(*pol.raw[:3, 0])
+        return Point(*pol.front_coord)
 
     @staticmethod
     def end(pol: Polyline):
         if not isinstance(pol, Polyline):
             raise TypeError
-        return Point(*pol.raw[:3, -1])
+        return Point(*pol.back_coord)
 
     @staticmethod
     def start_end(pol:Polyline):
@@ -2634,6 +2710,8 @@ class polyline:
         shapes = []
         for l in organized:
             shape = polyline.con_points(l)
+            print(l)
+            print(shape)
             if polyline.is_closed(shape):
                 shape = polygone.con_polyline(shape)
             shapes.append(shape)
@@ -2651,7 +2729,7 @@ class polyline:
         :return:
         """
         for i in lines:
-            print(i.vertices)
+            print(i.coordinates)
         if not isinstance(lines, (tuple, list)):
             raise TypeError
         if len(lines) == 0:
@@ -2691,17 +2769,18 @@ class polyline:
         return polyline.con_points(sorted_vertex)
 
     @staticmethod
-    def con_points(points_list:(tuple, list)) -> Polyline:
+    def con_points(points_list:(tuple, list), copy = True) -> Polyline:
         if not isinstance(points_list, (tuple, list)):
             raise TypeError
         if len(points_list) == 0:
+            warnings.warn("N of points should be more than 2",InvalidInputWarning)
             return None
 
-        raw = points_list[0].raw.copy()
-        for p in points_list[1:]:
+        raw = np.empty(len(points_list), dtype=np.ndarray)
+        for i,p in enumerate(points_list):
             if not isinstance(p, Point):
-                raise
-            raw = np.hstack((raw, p.raw.copy()))
+                raise WrongInputTypeError
+            raw[i] = p.raw.copy() if copy else p.raw
 
         return Polyline.from_raw(raw)
 
@@ -2714,11 +2793,9 @@ class polyline:
         :param pol:
         :return: [ list of lines, list of points ]
         """
-        coords = pol.raw[:3].transpose().tolist()
         points = []
-        for i in coords:
+        for i in pol.coordinates:
             points.append(Point(*i))
-
         lines = []
         for i in range(len(points)-1):
             lines.append(line.con_points(points[i], points[i + 1]))
@@ -2740,7 +2817,8 @@ class polyline:
     @staticmethod
     def is_closed(pol:Polyline):
         raw = pol.raw
-        if all(np.equal(raw[:3,-1], raw[:3,0])):
+
+        if all(np.equal(raw[0], raw[-1])):
             return True
         else:
             return False
@@ -2749,12 +2827,7 @@ class polygone:
 
     @staticmethod
     def con_points(points:(tuple, list)):
-
-        print(points)
-        print(points[-1].copy())
-        points += points[-1].copy()
-        print(points)
-        exit()
+        points += [points[0].copy()]
         poll = polyline.con_points(points)
         return polygone.con_polyline(poll)
 
@@ -2766,9 +2839,8 @@ class polygone:
         for i,e in enumerate(edges1):
             for ii,ee in enumerate(edges2):
                 if line.coinside(e, ee, directional= False):
-                    # coinsides.append()
-                    segments.append(polyline.remove_segment_index(polg1,i))
-                    segments.append(polyline.remove_segment_index(polg2, ii))
+                    segments.append(polyline.remove_indexed_segment(polg1, i))
+                    segments.append(polyline.remove_indexed_segment(polg2, ii))
         if len(segments) != 2:
             raise FunctionNotDefinedError
         new_polg = polygone.con_polyline(polyline.join(segments))
@@ -2794,18 +2866,17 @@ class polygone:
         :return: out, in, on sign
         """
         if not polyline.is_closed(pol):
+            warnings.warn("Polyline not closed", NullOutputWarning)
             return None
         edges, vertices = polyline.decon(pol)
 
         # see point on polyline
         for e in edges:
-            if poi.x == 7 and poi.y == 7:
-                print(e.vertices, point.is_on_line(e, poi))
             if point.is_on_line(e, poi):
                 return 1
 
         # see point in out polyline
-        x_max = sorted(set(pol.raw[0]))[-1]
+        x_max = sorted(set(pol.xs))[-1]
         end_point = Point(*poi.xyz)
         end_point.x = x_max + 1
 
@@ -2821,8 +2892,6 @@ class polygone:
             # see if crossing is valid
             inter = intersection.pline_line(pol, c_line)
             # if any one of intersection is a line or a vertex do it again
-            print(inter)
-            print('sss', data.filter_type(inter, Line))
 
             if len(data.filter_type(inter,Line)) != 0:
                 flag_break = False
@@ -2832,7 +2901,7 @@ class polygone:
             if flag_break:
                 break
             else:
-                c_line.raw[1,1] += 1
+                c_line.raw[1][1] += 1
                 iter_count += 1
 
         # # check peaks
@@ -2857,7 +2926,9 @@ class polygone:
     @staticmethod
     def con_polyline(poll:Polyline):
         if not polyline.is_closed(poll):
+            warnings.warn("", NullOutputWarning)
             return None
+
         return Polygone.from_raw(poll.raw.copy())
 
 
@@ -2874,7 +2945,7 @@ class polygone:
             for ee in edges2:
                 i = intersection.line_line(e, ee)
                 if isinstance(i, Line):
-                    print('intersection', e.vertices, ee.vertices)
+                    print('intersection', e.coordinates, ee.coordinates)
                     intersec[0].append(i)
                 elif isinstance(i, Point):
                     intersec[1].append(i)
@@ -2884,7 +2955,7 @@ class polygone:
         print('ddd')
         print(intersec)
         for i in intersec[0]:
-            print(i.vertices)
+            print(i.coordinates)
         lines_point_pool = []
         for l in intersec[0]:
             lines_point_pool += line.decon(l)
@@ -2943,9 +3014,9 @@ class polygone:
                 for b in range(len(inter_points) -1):
                     p1,p2 = inter_points[b][1], inter_points[b+1][1]
                     split = set((inter_points[b][0], inter_points[b+1][0]))
-
                     mid_point = point.average([p1,p2])
                     # if point is in
+                    print('in check',polygone.point_in(shape, mid_point))
                     if polygone.point_in(shape,mid_point) == 2:
                         # TODO for curved or pline need more generalization of segment
                         if isinstance(c, Line):
@@ -2956,6 +3027,7 @@ class polygone:
                             raise FunctionNotDefinedError()
                         bridges.append([p1, p2, segment])
                         splits = splits.union(split)
+                print('splits', splits)
 
                 if len(splits) < 1:
                     # print(f'     splits {splits} returning', shape)
@@ -3055,7 +3127,7 @@ class polygone:
                         elif not flag_chunk_found:
                             print(new_set)
                             for i in new_set:
-                                print(i.vertices)
+                                print(i.coordinates)
                             raise
 
                         # chunck is found but no loop : go back and look for bridges
@@ -3077,7 +3149,7 @@ class triangle:
     @staticmethod
     def con_edges(edges: (tuple, list)):
         polg = polygone.con_edges(edges)
-        return Triangle(*polg.vertices[:-1])
+        return Triangle(*polg.coordinates[:-1])
 
 class point:
     @staticmethod
@@ -3384,9 +3456,9 @@ class point:
                 results.append(True)
                 continue
 
-            directional2 = vector.con_2_points(Point(*lin.start), poi)
+            directional2 = vector.con_2_points(Point(*lin.front_coord), poi)
             if vector.is_parallel(directional1, directional2):
-                vertex = [lin.start[0], lin.end[0]]
+                vertex = [lin.front_coord[0], lin.back_coord[0]]
                 vertex = sorted(vertex)
                 x = poi.x
                 print(x,vertex)
@@ -3741,7 +3813,7 @@ class vector:
         if not isinstance(line, Line):
             raise TypeError
         xyz = []
-        for a, b in zip(line.start, line.end):
+        for a, b in zip(line.front_coord, line.back_coord):
             xyz.append(b - a)
         return Vector(*xyz)
 
@@ -3812,7 +3884,6 @@ class vector:
                 angle = tri.arccos(cos_value1)
             else:
                 angle = np.pi*2 - tri.arccos(cos_value1)
-        print(angle)
         if degree:
             return tri.radian_degree(angle)
         else:
@@ -4020,7 +4091,11 @@ class plane:
         :param pla: plane to deconstruct
         :return: [ Point, Vector, Vector, Vector ]
         """
-        return [Point(*pla.raw[:3,0]), Vector(*pla.raw[:3, 1]),Vector(*pla.raw[:3, 2]),Vector(*pla.raw[:3, 3])]
+        raw = pla.raw
+        return [Point.from_raw(raw[0].copy()),
+                Vector.from_raw(raw[1].copy()),
+                Vector.from_raw(raw[2].copy()),
+                Vector.from_raw(raw[3].copy())]
 
     @staticmethod
     def con_2_vectors(axis1: Vector, axis2: Vector, axis1_hint: str, axis2_hint: str, origin:Point):
@@ -4188,7 +4263,7 @@ class rectangle:
     @staticmethod
     def con_edges(edges:Line):
         polg = polygone.con_edges(edges)
-        return Rectangle(*polg.vertices[:-1])
+        return Rectangle(*polg.coordinates[:-1])
 
 
 class hexahedron:
