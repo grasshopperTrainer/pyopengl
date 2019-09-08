@@ -833,7 +833,14 @@ class Geometry:
     @raw.setter
     def raw(self, v):
         self._raw = v
-    def copy(self, level=1):
+
+    def __copy__(self):
+        raise
+
+    def __deepcopy__(self, memodict={}):
+        raise
+
+    def copy(self, level=2):
         """
         Copy with different level.
 
@@ -847,18 +854,16 @@ class Geometry:
         :return: copied instance
         """
         if level == 0:
-            c = copy.copy(self)
-            c.raw = self.raw
+            return copy.copy(self)
         elif level == 1:
-            c = copy.deepcopy(self)
+            c = copy.copy(self)
             c.raw = self.raw.copy()
+            return c
         elif level == 2:
-            c = copy.deepcopy(self)
-            c.raw = copy.deepcopy(self.raw)
+            return copy.deepcopy(self)
         else:
             raise
 
-        return c
 
 class Domain2d(Primitive):
     '''
@@ -949,6 +954,15 @@ class Point(Geometry):
 
     def __repr__(self):
         return self.__str__()
+    def __copy__(self):
+        inst = self.__class__()
+        inst.raw = self.raw
+        return inst
+
+    def __deepcopy__(self, memodict={}):
+        inst = self.__class__()
+        inst.raw = self.raw.copy()
+        return inst
 
     def __add__(self, other):
         if isinstance(other, Vector):
@@ -1047,7 +1061,9 @@ class Point(Geometry):
         if raw.shape != (4, 1) or raw[3, 0] != 1:
             raise ValueError
 
-        return cls(*raw[:3, 0])
+        inst = cls()
+        inst.raw = raw
+        return inst
 
 
 class Vector(Geometry):
@@ -1378,6 +1394,16 @@ class Polyline(String):
 
         self.raw = raw
 
+    def __copy__(self):
+        inst = self.__class__(None)
+        inst.raw = self.raw
+        return inst
+
+    def __deepcopy__(self, memodict={}):
+        inst = self.__class__(None)
+        inst.raw = copy.deepcopy(self.raw)
+        return inst
+
     @classmethod
     def from_raw(cls, raw: np.ndarray):
         if len(raw.shape) != 1:
@@ -1419,7 +1445,7 @@ class Polygone(Flat, Face, Polyline):
 
 
     def __init__(self, *coordinates):
-        print('init polygone')
+        # print('init polygone')
         super().__init__(coordinates)
 
     @property
@@ -1473,34 +1499,80 @@ class Triangle(Polygone):
 """
 need configuration for complex shape
 """
+
+
+
+
 class Edge_list:
-    def __init__(self):
-        self._v_start = None
-        self._v_end = None
-        self._f_right = None
-        self._f_left = None
-        self._e_r_ccw = None
-        self._e_r_cw = None
-        self._e_l_ccw = None
-        self._e_l_cw = None
+    class weakrefer:
+        def __init__(self):
+            self._dict = weakref.WeakKeyDictionary()
+
+        def __set__(self, instance, value):
+            self._dict[instance] = weakref.ref(value)
+
+        def __get__(self, instance, owner):
+            if instance in self._dict:
+                return self._dict[instance]()
+            else:
+                return None
+
+    v_start = weakrefer()
+    v_end = weakrefer()
+    f_right = weakrefer()
+    f_left = weakrefer()
+    e_r_cw = weakrefer()
+    e_r_ccw = weakrefer()
+    e_l_ccw = weakrefer()
+    e_l_cw= weakrefer()
+
+    def print_info(self):
+        return f"""v_start:{self.v_start}, v_end:{self.v_end}
+f_left:{self.f_left}, f_right:{self.f_right}
+e_l_ccw:{self.e_l_ccw}, e_l_cw:{self.e_l_cw}, e_r_cw:{self.e_r_cw}, e_r_ccw:{self.e_r_ccw}"""
+
     @property
-    def vertex(self):
-        return self._v_start, self._v_end
+    def vertices(self):
+        return set(self.v_start, self.v_end)
+
+    @vertices.setter
+    def verteices(self, v:(tuple,list)):
+        if not isinstance(v, (tuple,list)):
+            raise TypeError
+        if len(v) != 2:
+            raise ValueError
+
+        self.v_start = v[0]
+        self.v_end = v[1]
+
     @property
     def faces(self):
-        return self._f_left, self._f_right
+        return set(self.f_left, self.f_right)
+
+
     @property
     def top_edges(self):
-        return self._e_l_ccw, self._e_r_cw
+        return self.e_l_ccw, self.e_r_cw
     @property
     def bottom_edges(self):
-        return self._e_l_cw, self._e_r_ccw
+        return self.e_l_cw, self.e_r_ccw
     @property
     def left_edges(self):
-        return self._e_l_cw, self._e_l_ccw
+        return self.e_l_cw, self.e_l_ccw
     @property
     def right_edges(self):
-        return self._e_r_ccw, self._e_r_cw
+        return self.e_r_ccw, self.e_r_cw
+    def get_edge_position(self, pos:str):
+        if pos == 'lcw':
+            return self.e_l_cw
+        elif pos == 'lccw':
+            return self.e_l_ccw
+        elif pos == 'rcw':
+            return self.e_r_cw
+        elif pos == 'rccw':
+            return self.e_r_ccw
+        else:
+            raise
 
 
 class Winged_edge:
@@ -1512,57 +1584,325 @@ class Winged_edge:
         self._edge = {}
         self._vertex = {}
 
-    def append_vertex(self,*poi):
+
+
+    def search_vertex_edges(self,v):
+        return self._vertex[v]
+
+    def search_vertex_vertices(self, v):
+        vs = []
+        for e in self._vertex[v]:
+            v_start = self._edge[e].v_start
+            if v_start == v:
+                vs.append(self._edge[e].v_end)
+            else:
+                vs.append(v_start)
+        return vs
+
+    def vertex_search_faces(self, v):
+        edges = self._vertex[v]
+        faces = set()
+        for f,edge_set in self._face.items():
+            for e in edges:
+                if e in edge_set:
+                    faces.add(f)
+                    break
+        return faces
+
+    def search_vertex_boundary_faces(self, v):
+        faces = [set(self._edge[e].faces) for e in self._vertex[v]]
+        unique = set()
+        for f in faces:
+            unique.symmetric_difference_update(f)
+        return unique
+
+    def search_edge_faces(self, e):
+        faces = [f[0] for f in self._face.items() if e in f[1]]
+        return faces
+
+    def get_vertex(self, *vertex):
+        vertices = []
+        for v in vertex:
+            if not isinstance(v, Point):
+                raise TypeError
+
+            for i in self._vertex:
+                if point.coinside(i, v):
+                    return i
+            return None
+
+    def get_edge(self, e):
+        if not isinstance(v, Line):
+            raise FunctionNotDefinedError
+
+        for i in self._edge:
+            if line.coinside(i, e, directional=False):
+                return i
+        return None
+
+    def get_face(self, f):
+        try:
+            es = f.edges
+            es_of_ds = []
+            for e in es:
+                searched = self.get_edge(e)
+                if searched == None:
+                    return None
+                else:
+                    es_of_ds.append(e)
+            face = set().intersection_update([self._edge[e].faces for e in es_of_ds])
+            if len(face) == 0:
+                return None
+            elif len(face) == 1:
+                return face.pop()
+            else:
+                raise
+        except:
+            return None
+
+    def search_face_edges(self, f):
+        return self._face[f]
+
+    def face_search_faces_adjacent(self, f):
+        edges = self._face[f]
+        faces = set()
+        for e in edges:
+            for f,es in self._face.items():
+                if e in es:
+                    faces.add(f)
+        return faces
+
+    def face_search_faces_surrounding(self, f):
+        faces = set()
+        for v in self.face_search_vertices(f):
+            faces.update(self.vertex_search_faces(v))
+        return faces
+
+    def face_search_vertices(self, f):
+        vertices = set()
+        for edge_set in self._face[f]:
+            for e in edge_set:
+                vertices.update(self._edge[e].vertices)
+        return vertices
+
+    def search_border(self):
+        borders = []
+        edge_dict = self._edge.copy()
+
+        # find and remove stray edges
+        to_remove = []
+        for edge, edge_list in edge_dict.items():
+            if len(edge_list.faces) == 0:
+                borders.append(set(edge))
+                to_remove.append(edge)
+        for i in to_remove:
+            edge_dict.pop(i)
+
+        searching_border = set()
+        latest_edge = None
+        latest_vertex = None
+        # searching_face = None
+
+        while True:
+            # search starting pos
+            try:
+                if latest_vertex == None:
+                    for edge, edge_list in edge_dict:
+                        faces = edge_list.faces
+                        if len(faces) == 1:
+                            edge_dict.pop(edge)
+
+                            # new initiation
+                            searching_border = set(edge)
+                            latest_edge = edge
+                            latest_vertex = edge_list.v_end
+                            raise
+            except:
+                pass
+            # reached end without raise -> means there is no boundary like
+            else:
+                if len(borders) == 0:
+                    return None
+                return borders
+
+            # search for next
+            edge_set = self._vertex[latest_vertex]
+            for e in edge_set:
+                # if edge is in stack
+                if e in edge_dict:
+                    edge_dict.pop(e)
+                    faces = self._edge[e].faces
+
+                    if len(faces) == 1:
+                        face = [f for f in faces if f != None][0]
+                        # see if edge is reachable through faces
+                        vertex_faces = self.vertex_search_faces(latest_vertex)
+                        search_face = [vertex_faces.pop(i) for i,f in enumerate(vertex_faces) if e in self._face[f]][0]
+
+                        flag_reached = False
+                        while True:
+                            flag_found = False
+                            for f in vertex_faces:
+                                adjacent_edge = self.faces_search_edge_sharing(search_face, f)
+                                if adjacent_edge != None:
+                                    # if reachable
+                                    if adjacent_edge in self._face[face]:
+                                        flag_reached = True
+                                    else:
+                                        flag_found = True
+                                        search_face = f
+
+
+                            if not flag_found:
+                                break
+
+                        # this edge can reach previous
+                        if flag_reached:
+                            # means looped and is the end of this search
+                            if e in searching_border:
+                                borders.append(searching_border)
+                                latest_vertex = None
+                                break
+                            else:
+                                searching_border.add(e)
+                                latest_edge = e
+                                latest_vertex = self._edge[e].vertices.remove(latest_vertex).pop()
+
+                        else:
+                            continue
+            if len(edge_dict) == 0:
+                break
+        return borders
+
+    def face_search_face_edge_sharing(self,face1, edge):
+        if edge not in self._face[face1]:
+            raise
+        raise
+
+    def faces_search_edge_sharing(self, face1,face2):
+        f = self._face[face1].intersection(self._face[face2])
+        if len(f) == 0:
+            return None
+        elif len(f) == 1:
+            return f.pop()
+        else:
+            raise
+
+    def search_edge_extension(self,e,position,step:int=None):
+        """
+        Follow edge that formes interior, area?
+        :param e:
+        :param position: 'rcw'(right clockwise),'rccw'(right counter clockwise),'lcw','lccw'
+        :param step:
+        :return:
+        """
+        if step == None:
+            step = len(self._edge)
+
+        edges = [e, self._edge[e].get_position(position)]
+        for i in range(step):
+            el = self._edge[edges[-1]]
+            prev = edges[-2]
+            if el.e_l_cw == prev:
+                opposite = el.e_l_ccw
+            elif el.e_l_ccw == prev:
+                opposite = el.e_l_cw
+            elif el.e_r_cw == prev:
+                opposite = el.e_r_ccw
+            elif el.e_r_ccw == prev:
+                opposite = el.e_r_cw
+            else:
+                raise
+
+            # no continue
+            if opposite == None:
+                break
+            # looped
+            elif opposite == edges[0]:
+                break
+
+        return edges
+
+
+
+    def is_vertex_interior(self,v):
+        edge_set = self._vertex[v]
+        for e in edge_set:
+            faces = self._edge[e].faces
+            if len(faces) == 0:
+                # TODO this is unmanifold case
+                return False
+            if len(faces) == 1:
+                return False
+        return True
+
+    def is_edge_interior(self,e):
+        if len(self._edge[e].faces) == 2:
+            return True
+        return False
+
+    def if_face_interior(self,f):
+        pass
+
+    def append_vertex(self, *poi, _copy=True):
+        # appended = []
         for p in poi:
-            if isinstance(p, Point):
-                for v in self._vertex:
-                    if not point.coinside(v, p):
-                        self._vertex[p] = []
-                    else:
-                        pass
+            v_searched = self.get_vertex(p)
+            if v_searched == None:
+                if _copy:
+                    p = copy.deepcopy(p)
+                self._vertex[p] = weakref.WeakSet()
+                # appended.append(p)
+            else:
+                # appended.append(v_searched)
+                pass
+        # return appended
+
+    def append_edge(self, *edge, _copy=True):
+        for e in edge:
+            if self.get_edge(e) == None:
+                if _copy:
+                    e = copy.deepcopy(e)
+                edge_list = Edge_list()
+                # edge list filling required
+
+                self._edge[e] = edge_list
             else:
                 raise FunctionNotDefinedError
 
-    def append_edge(self, *edge):
-
-        self._edge[edge] = []
-
-    def append_face(self, *face):
+    def append_face(self, *face, copy=True):
+        print('appending face')
         # what if there already exist other faces
         # does such testing has to be done here?
+        if copy:
+            face = [i.copy(2) for i in face]
+
         for f in face:
-            if not isinstance(f, Face):
-                raise TypeError
-            # search in existing faces
-            flag_exits = False
-            for existing_f in self._face:
-                if np.array_equal(existing_f.raw,f.raw):
-                    flag_exits = True
-                    break
-            if flag_exits:
-                continue
-            # if this is a new face
-            else:
-                e = f.edges
-                self._face[f] = list(e)
-                print(self._face)
-                print(self._face)
-                a = np.array([[[1,2,3]],[[4,5,6]]])
-                c = np.array([[[7,8,9]],[[10,11,12]]])
-                b = np.empty(2)
-                print(a[0,0])
-                b[0] = a[0]
-                b[1] = a[0]
-                print(b)
-                print(a)
+            vertices = f.vertices
+            self.append_vertex(*vertices)
+            print(self.get_vertex(vertices))
 
-                exit()
-
-
-
-            print(f)
             exit()
         exit()
+
+
+
+    def vertex_common_edges(self, *edges):
+        for i in edges:
+            if i not in self._edge:
+                raise
+        vertices = []
+        for e in edges:
+            vertices.append(set(self._edge[e]))
+
+        the_one = set()
+        for i in verteices:
+            the_one.intersection_update(*vertices)
+
+        if len(the_one) != 0:
+            return the_one
+        else:
+            return None
 
 
 class Brep(Winged_edge):
