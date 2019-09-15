@@ -835,10 +835,14 @@ class Geometry:
         self._raw = v
 
     def __copy__(self):
-        raise
+        inst = self.__class__()
+        inst.raw = self.raw
+        return inst
 
     def __deepcopy__(self, memodict={}):
-        raise
+        inst = self.__class__()
+        inst.raw = self.raw.copy()
+        return inst
 
     def copy(self, level=2):
         """
@@ -954,15 +958,15 @@ class Point(Geometry):
 
     def __repr__(self):
         return self.__str__()
-    def __copy__(self):
-        inst = self.__class__()
-        inst.raw = self.raw
-        return inst
-
-    def __deepcopy__(self, memodict={}):
-        inst = self.__class__()
-        inst.raw = self.raw.copy()
-        return inst
+    # def __copy__(self):
+    #     inst = self.__class__()
+    #     inst.raw = self.raw
+    #     return inst
+    #
+    # def __deepcopy__(self, memodict={}):
+    #     inst = self.__class__()
+    #     inst.raw = self.raw.copy()
+    #     return inst
 
     def __add__(self, other):
         if isinstance(other, Vector):
@@ -1423,6 +1427,9 @@ class Polyline(String):
 class Face:
     pass
 
+class Surface:
+    pass
+
 
 class Polygone(Flat, Face, Polyline):
     """
@@ -1527,16 +1534,15 @@ class Edge_list:
     e_l_cw= weakrefer()
 
     def print_info(self):
-        return f"""v_start:{self.v_start}, v_end:{self.v_end}
-f_left:{self.f_left}, f_right:{self.f_right}
-e_l_ccw:{self.e_l_ccw}, e_l_cw:{self.e_l_cw}, e_r_cw:{self.e_r_cw}, e_r_ccw:{self.e_r_ccw}"""
+        print(f"v_start:{self.v_start}, v_end:{self.v_end}, f_left:{self.f_left}, f_right:{self.f_right}, "
+              f"e_l_ccw:{self.e_l_ccw}, e_l_cw:{self.e_l_cw}, e_r_cw:{self.e_r_cw}, e_r_ccw:{self.e_r_ccw}")
 
     @property
     def vertices(self):
-        return set(self.v_start, self.v_end)
+        return self.v_start, self.v_end
 
     @vertices.setter
-    def verteices(self, v:(tuple,list)):
+    def vertices(self, v:(tuple,list)):
         if not isinstance(v, (tuple,list)):
             raise TypeError
         if len(v) != 2:
@@ -1547,7 +1553,7 @@ e_l_ccw:{self.e_l_ccw}, e_l_cw:{self.e_l_cw}, e_r_cw:{self.e_r_cw}, e_r_ccw:{sel
 
     @property
     def faces(self):
-        return set(self.f_left, self.f_right)
+        return self.f_left, self.f_right
 
 
     @property
@@ -1562,6 +1568,10 @@ e_l_ccw:{self.e_l_ccw}, e_l_cw:{self.e_l_cw}, e_r_cw:{self.e_r_cw}, e_r_ccw:{sel
     @property
     def right_edges(self):
         return self.e_r_ccw, self.e_r_cw
+    @property
+    def edges(self):
+        return (self.e_l_cw, self.e_r_ccw, self.e_r_cw, self.e_l_ccw)
+
     def get_edge_position(self, pos:str):
         if pos == 'lcw':
             return self.e_l_cw
@@ -1574,6 +1584,46 @@ e_l_ccw:{self.e_l_ccw}, e_l_cw:{self.e_l_cw}, e_r_cw:{self.e_r_cw}, e_r_ccw:{sel
         else:
             raise
 
+    def set_edge_position(self, pos:(int,str), e):
+        if pos == 'lcw' or pos == 0:
+            self.e_l_cw = e
+        elif pos == 'rccw' or pos == 1:
+            self.e_r_ccw = e
+        elif pos == 'rcw' or pos == 2:
+            self.e_r_cw = e
+        elif pos == 'lccw' or pos == 3:
+            self.e_l_ccw = e
+        else:
+            raise
+
+    def get_index_empty_face(self):
+        """
+        Returns position(s) of empty Faces
+
+        :return: 0 or 1 if one of two is empty
+                2 if both are empty
+                -1 if no position is empty
+        """
+        face_index = [i for i,f in enumerate(self.faces) if f == None]
+        if len(face_index) == 0:
+            return -1
+        elif len(face_index) == 1:
+            return face_index[0]
+        else:
+            return 2
+
+    def get_face_index(self, i):
+        if i not in (0,1):
+            raise
+        return self.f_left if i == 0 else self.f_right
+    def set_face_index(self, i, f):
+        if i not in (0,1):
+            raise
+        if i == 0:
+            self.f_left = f
+        else:
+            self.f_right = f
+
 
 class Winged_edge:
     def __init__(self):
@@ -1585,9 +1635,6 @@ class Winged_edge:
         self._vertex = {}
 
 
-
-    def search_vertex_edges(self,v):
-        return self._vertex[v]
 
     def search_vertex_vertices(self, v):
         vs = []
@@ -1609,6 +1656,9 @@ class Winged_edge:
                     break
         return faces
 
+    def vertex_search_edges(self, v):
+        return list(self._vertex[v])
+
     def search_vertex_boundary_faces(self, v):
         faces = [set(self._edge[e].faces) for e in self._vertex[v]]
         unique = set()
@@ -1616,29 +1666,54 @@ class Winged_edge:
             unique.symmetric_difference_update(f)
         return unique
 
-    def search_edge_faces(self, e):
-        faces = [f[0] for f in self._face.items() if e in f[1]]
+    def edge_search_faces(self, e, all=False):
+        if all:
+            faces = [f[0] for f in self._face.items() if e in f[1]]
+        else:
+            faces = self._edge[e].faces
         return faces
 
     def get_vertex(self, *vertex):
         vertices = []
         for v in vertex:
             if not isinstance(v, Point):
-                raise TypeError
+                raise WrongInputTypeError(v, Point)
 
-            for i in self._vertex:
-                if point.coinside(i, v):
-                    return i
+            try:
+                for i in self._vertex:
+                    if point.coinside(i, v):
+                        raise
+            except:
+                vertices.append(i)
+            else:
+                vertices.append(None)
+
+        if len(vertices) == 0:
             return None
+        elif len(vertices) == 1:
+            return vertices[0]
+        return vertices
 
-    def get_edge(self, e):
-        if not isinstance(v, Line):
-            raise FunctionNotDefinedError
+    def get_edge(self, *edges):
+        searched = []
+        for e in edges:
+            if not isinstance(e, Line):
+                raise FunctionNotDefinedError
+            try:
+                for i in self._edge:
+                    if line.coinside(i, e, directional=False):
+                        raise
+            except:
+                searched.append(i)
+            else:
+                searched.append(None)
 
-        for i in self._edge:
-            if line.coinside(i, e, directional=False):
-                return i
-        return None
+        if len(searched) == 0:
+            return None
+        elif len(searched) == 1:
+            return searched[0]
+        else:
+            return searched
 
     def get_face(self, f):
         try:
@@ -1660,8 +1735,6 @@ class Winged_edge:
         except:
             return None
 
-    def search_face_edges(self, f):
-        return self._face[f]
 
     def face_search_faces_adjacent(self, f):
         edges = self._face[f]
@@ -1680,10 +1753,12 @@ class Winged_edge:
 
     def face_search_vertices(self, f):
         vertices = set()
-        for edge_set in self._face[f]:
-            for e in edge_set:
-                vertices.update(self._edge[e].vertices)
+        for edge in self._face[f]:
+            vertices.update(self._edge[edge].vertices)
         return vertices
+
+    def face_search_edges(self, f):
+        return self._face[f]
 
     def search_border(self):
         borders = []
@@ -1845,44 +1920,273 @@ class Winged_edge:
         pass
 
     def append_vertex(self, *poi, _copy=True):
-        # appended = []
+        """
+
+        :param poi:
+        :param _copy:
+        :return: list of appended vertices
+        """
+        inner_vertices = []
         for p in poi:
             v_searched = self.get_vertex(p)
             if v_searched == None:
                 if _copy:
                     p = copy.deepcopy(p)
                 self._vertex[p] = weakref.WeakSet()
-                # appended.append(p)
+                inner_vertices.append(p)
             else:
-                # appended.append(v_searched)
+                inner_vertices.append(v_searched)
                 pass
-        # return appended
+        return inner_vertices
+
+    def edge_search_pos_of_winged_edge(self, winged_edge, source_edge):
+        pass
+    def edge_search_pos_from_winged_edge(self, winged_edge, target_edge):
+        pass
+    def edges_search_vertex_shared(self, *edges):
+        """
+        Searched vertex shared between multiple edges.
+        :param edges: edges to search with
+        :return: None - edges do not share a vertex
+                 Point - shared Vertex
+        """
+        result = set().intersection_update(*(set(self._edge[e].vertices) for e in edges))
+        if result != None:
+            return result.pop()
+        return result
+
+    # def edges_search_ordered_vertices(self, *edges):
+    #     vertices = []
+    #     for e in edges:
+    #         vs = self._edge[e].vertices
+    #         for v in vs:
+    #             if v not in vertices:
+    #                 vertices.append(v)
+    #     return vertices
+
+    def winged_edge_search_edge_index(self, edge, winged_edge):
+        """
+        Find index of an edge viewed from one of its winged edge.
+
+        :param pos_shared_vertex: index from the edge of shared with winged edge
+        :param pos_winged_edge: winged position of winged edge seeing from the edge
+        :param return_string: return string sign if set True
+        :return: winged position
+        """
+
+        x = np.array([[1,3],[0,2],[1,3],[0,2]])
+
+        e_vertices = self._edge[edge].vertices
+        e_edges = self._edge[edge].edges
+        index_winged_edge = None
+        for i,e in enumerate(e_edges):
+            if e_edges == winged_edge:
+                index_winged_edge = i
+                break
+        if index_winged_edge == None:
+            raise Exception('Given edge is not a winged edge')
+        winged_edge = self._edge[edge].edges[index_winged_edge]
+        if winged_edge == None:
+            raise
+        we_vertices = self._edge[winged_edge].vertices
+        # find common vertex
+        if we_vertices[0] in e_vertices:
+            index_common_vertex = 0
+        elif we_vertices[1] in e_vertices:
+            index_common_vertex = 1
+        else:
+            raise
+        return x[index_winged_edge, index_common_vertex]
+
+    def winged_edge_search_shared_face_index(self, edge, winged_edge):
+        """
+        Find index of face viewing from one of its winged edge.
+        :param index_face: index of face to search for (0 or 1)
+        :param index_winged_edge: edge viewed from
+        :param return_string: return string sign if True
+        :return: index of Face
+        """
+        e_edges = self._edge[edge].edges
+        index_winged_edge = None
+        for i,e in enumerate(e_edges):
+            if e == winged_edge:
+                index_winged_edge = i
+                break
+        if index_winged_edge == None:
+            raise Exception('Given edge is not a winged edge')
+
+        # i0 is face index of this edge, i1 is face index viewd from winged edge
+        x = np.array([[(0,1),(0,0)],[(1,0),(1,1)],[(1,1),(1,0)],[(0,0),(0,1)]])
+        winged_edge = self._edge[edge].edges[index_winged_edge]
+
+        if winged_edge == None:
+            raise
+
+        e_vertices = self._edge[edge].vertices
+        we_vertices = self._edge[winged_edge].vertices
+
+        if we_vertices[0] in e_vertices:
+            index_common_vertex = 0
+        elif we_vertices[1] in e_vertices:
+            index_common_vertex = 1
+        else:
+            raise
+        return x[index_winged_edge, index_common_vertex]
 
     def append_edge(self, *edge, _copy=True):
+        print('appending edge')
+        inner_edges = []
         for e in edge:
-            if self.get_edge(e) == None:
+            if not isinstance(e, Line):
+                raise FunctionNotDefinedError
+
+            e_searched = self.get_edge(e)
+            # if doesn't exist in data set
+            if e_searched == None:
                 if _copy:
                     e = copy.deepcopy(e)
+                edge_vertices = list(e.vertices)
+                # find or set interior vertices
+                edge_vertices = self.append_vertex(*edge_vertices, _copy=False) # copy here is important to preserve edge's raw data
                 edge_list = Edge_list()
+                inner_edges.append(e)
                 # edge list filling required
+                edge_list.vertices = edge_vertices # put vertices
+                self._vertex[edge_vertices[0]].add(e) # put edge in vertex_list
+                self._vertex[edge_vertices[1]].add(e) # put edge in vertex_list
+                # no faces yet
+                # set winged edge for both start and end
+                for i in range(2):
+                    shared_edges = self.vertex_search_edges(edge_vertices[i])
+                    shared_edges.remove(e)
+                    for shared_edge in shared_edges:
+                        el = self._edge[shared_edge]
+                        faces = el.faces
+                        if len(faces) == 2:
+                            continue
+                        else:
+                            if el.v_start == edge_vertices[i]:
+                                candidates = [1,2]
+                            elif el.v_end == edge_vertices[i]:
+                                candidates = [2,3]
+                            empty_winged = [c for c in candidates if el.get_edge_position(c) != None]
+                            if len(empty_winged) != 1:
+                                raise
+                            empty_winged = empty_winged[0]
 
+                        if len(faces) == 1:
+                            el.set_edge_position(empty_winged, e)
+                            index_from_this = self.winged_edge_pos_conversion(i,empty_winged)
+                            if edge_list.get_edge_position(index_from_this) == None:
+                                edge_list.set_edge_position(index_from_this, shared_edge)
+
+                        elif len(faces) == 2:
+                            raise
+
+                # update edge list
                 self._edge[e] = edge_list
             else:
-                raise FunctionNotDefinedError
+                inner_edges.append(e_searched)
+
+        return inner_edges
 
     def append_face(self, *face, copy=True):
         print('appending face')
         # what if there already exist other faces
         # does such testing has to be done here?
         if copy:
-            face = [i.copy(2) for i in face]
+            face = [f.copy(2) for f in face]
 
         for f in face:
-            vertices = f.vertices
-            self.append_vertex(*vertices)
-            print(self.get_vertex(vertices))
-
+            print(f)
             exit()
+            # if face already exist do nothing
+            # but how faces can be check as equal?
+            for i in self._face:
+                if surface.coinside(f, i, directional= False):
+                    continue
+
+            inner_edges = self.append_edge(*f.edges, _copy=False)
+            # check if there is a face surrounded by edges
+            # see if there is any faces stored multiple times
+            the_face = set().intersection_update(*(set(self._edge[e].faces) for e in inner_edges))
+            flag_has_ref_face = False
+            if the_face == None:
+                # need to find ref_face
+                for e in inner_edges:
+                    empty = self._edge[e].get_index_empty_face()
+                    if empty in (0,1):
+                        # reference this face, go to 'except' verse
+                        flag_has_ref_face = True
+                        break
+                if flag_has_ref_face: # if ref face exist
+                    # this referencing is not related with data set itself.
+                    ref_face = self._edge[e].get_face_index(int(not empty))
+                    # try to match direction with ref_face
+                    flag_break == False
+                    for ref_e in ref_face.edges:
+                        for e in f.edges:
+                            para = line.is_parallel(ref_e, e)
+                            if para == 1: # need flip
+                                f.flip()
+                                flag_break = True
+                                break
+                            elif para == -1:
+                                flag_break = True
+                                break
+                            else:
+                                pass
+                        if flag_break:
+                            break
+
+                    # now append to edges
+                    for i,ie in enumerate(inner_edges):
+                        sign = ie.get_index_empty_face()
+                        # if one is empty set put into empty
+                        if sign in (0,1):
+                            if sign == 0:
+                                ie.f_left = f
+                            else:
+                                ie.f_right = f
+                        # if both are empty check where previous edge is
+                        elif sign == 2:
+                            f_index_prev,f_index_curr = self.winged_edge_search_shared_face_index(edge=inner_edges[i-1],winged_edge=ie)
+                            f_prev = self._edge[inner_edges[i-1]].get_face_index(f_index_prev)
+                            if f_prev == None:
+                                raise
+                            el = self._edge[ie]
+                            if el.get_face_index(f_index_curr) != None:
+                                raise
+                            el.set_face_index(f_index_curr, f_prev)
+
+                        # if both are full something is wrong
+                        else:
+                            raise
+
+                else: # ref face doesn't exist
+                    # if no reference found look into all edges and decied on which side to store the face
+                    for ie in inner_edges:
+                        vs = self._edge[ie].vertices
+                        # to determine wheather the face is on the left or on the right
+                        # compare face vertex order with ref edge v_order
+                        for i,r in enumerate(f.raw):
+                            if np.array_equal(r, vs[0].raw): # find vertex that matches
+                                if np.array_equal(f.raw[(i+1)%len(f.raw)], vs[1].raw): # see if edge is directed as of the face
+                                    self._edge[ie].f_left = f # put into left face because data structure follows anti-clockwise
+                                else: # face's boundary is ordered reversed to referencing edge
+                                    self._edge[ie].f_right = f
+                                break
+
+
+            elif len(the_face) == 1: # face defined by edges already exist then do what?
+                # don't change properties of edges
+                pass
+            else: # len(the_face) can't exceed 1 so this is an error
+                raise
+            # always
+            self._face[f] = weakref.WeakSet(inner_edges)
+
+
         exit()
 
 
@@ -2638,9 +2942,7 @@ class line:
     @staticmethod
     def is_parallel(line1:Line, line2:Line) -> bool:
         vector1, vector2 = vector.con_line(line1), vector.con_line(line2)
-        if math.any_one_of(vector.is_parallel(vector1, vector2), -1,1):
-            return True
-        return False
+        return vector.is_parallel(vector1, vector2)
 
     @staticmethod
     def start(lin:Line) -> Point:
@@ -2937,6 +3239,15 @@ class string:
         for i in range(len(points)-1):
             edges.append(line.con_points(points[i], points[i + 1]))
         return [edges, points]
+
+class surface:
+    @staticmethod
+    def coinside(face1, face2):
+        if type(face1) != type(face2):
+            return False
+
+        if isinstance(face1, polyline):
+            pass
 
 class polyline:
 
